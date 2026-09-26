@@ -73,7 +73,11 @@ As novas contas acrescentam **dois estilos** que complementam a linha contemplat
 - Aventura e família entram nos três pilares com a mesma tipografia, mas com luz de dia e movimento.
 
 ### Identidade própria
-As referências usam uma **cor de marca** nas faixas e nos detalhes (a terracota da Rio de Contas). O Cabanas deve usar **as cores do próprio logo**: **[a confirmar com o dono: logo e cores oficiais da marca]**.
+As referências usam uma **cor de marca** nas faixas e nos detalhes (a terracota da Rio de Contas). O Cabanas usa **as cores do próprio logo** (ver `contexto/marca/identidade.md`):
+- **Faixa atrás do título (pilar 2):** marrom madeira `#847059`, ou verde folha `#90AB49` nos posts de sustentabilidade.
+- **Linhas finas e CTA:** laranja janela `#F58634`, com moderação.
+- **Texto sobre foto:** creme ou branco quente.
+- **Tipografia:** título serifado (como nas referências) + apoio em **sem serifa geométrica, caixa alta espaçada** (como no logo).
 
 ## 5. Especificações práticas (para quem faz a arte, no Canva ou por designer)
 - **Fontes sugeridas** (serifadas, disponíveis no Canva/Google Fonts): *Playfair Display* ou *Cormorant Garamond* para o título, com uma palavra em **bold** e outra em *itálico*; letras espaçadas para a linha de apoio.
