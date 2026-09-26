@@ -61,3 +61,4 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | Google Drive conectado; banco de imagens definido na pasta "Imagens do hotel cabanas" (ainda vazia). | Configuração do dono |
 | 2026-09-26 | Guia de estilo revisado com a aprovação do dono: pilar 4 "Aventura de dia", mix 35/30/20/15, regras de cor por luz, logo branco em todas as peças, frases reescritas, kit de produção. | Ajustes 1, 3, 4, 5 e 7 da análise do Marketing |
 | 2026-09-26 | Marketing v2.3: leitura do Google Drive (banco de imagens), somente leitura e restrita à pasta oficial. | Aprovação do dono |
+| 2026-09-26 | Logo branco monocromático recebido (`contexto/marca/logo-hotel-cabanas-branco.png`, PNG transparente). | Material do dono |

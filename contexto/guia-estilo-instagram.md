@@ -7,7 +7,7 @@
 ## 0. Esclarecimento do dono (2026-09-26): leia primeiro
 - As referências servem **para tipografia e para o uso de um logo discreto que valoriza o cenário**. **Não** são referência de fotografia, cenas, tons ou objetos (fogueira, velas, casais de luxo etc.).
 - **As fotos virão do banco de imagens real do hotel.** O tratamento de imagem segue a própria foto: nunca escurecer rios nem a água cristalina.
-- **Logo:** será usada uma **versão monocromática branca**, discreta, aplicada sobre as fotos (a ser enviada pelo dono).
+- **Logo:** **versão monocromática branca**, discreta, aplicada sobre as fotos: `contexto/marca/logo-hotel-cabanas-branco.png` (fundo transparente).
 - **Posts atuais do hotel** (`referencias-instagram/posts-atuais-cabanas/`) já seguem essa linha: título serifado ("Cabana Master") ou manuscrito ("Café da manhã") sobre foto real, com o logo branco no canto. O objetivo é **refinar** esse padrão, não trocá-lo.
 - As seções abaixo sobre fotografia e cenas das referências valem apenas como inspiração de **clima**; em caso de conflito, **este item 0 prevalece**.
 

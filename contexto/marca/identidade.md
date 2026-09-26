@@ -21,9 +21,9 @@
 - Essa combinação une o estilo das referências à identidade própria do Cabanas.
 
 ## Assinatura padrão das peças (rodapé editorial)
-Linha fina **laranja** → "BONITO / MS" (caixa alta espaçada) → logo pequeno ou o slogan **"O seu lugar de conexão com a natureza"**.
+Linha fina **laranja** → "BONITO / MS" (caixa alta espaçada) → **logo branco pequeno** (`logo-hotel-cabanas-branco.png`) ou o slogan **"O seu lugar de conexão com a natureza"**.
 
 ## Versões do logo (decisão do dono, 2026-09-26)
 - **Colorido:** fundos claros, site, documentos.
-- **Monocromático branco:** **padrão nos posts do Instagram**, discreto sobre a foto, no canto ou no rodapé. *(Arquivo a ser enviado pelo dono.)*
+- **Monocromático branco:** **padrão nos posts do Instagram**, discreto sobre a foto, no canto ou no rodapé. Arquivo: **`contexto/marca/logo-hotel-cabanas-branco.png`** (PNG com fundo transparente, 2000 × 1575 px, enviado pelo dono em 2026-09-26).
 
