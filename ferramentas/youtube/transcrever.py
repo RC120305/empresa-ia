@@ -56,10 +56,14 @@ def main():
     except ImportError:
         sys.exit("Falta o yt-dlp. Rode: pip install yt-dlp")
 
-    idiomas = f"{a.idioma},{a.idioma}-BR,{a.idioma}-orig,en"
+    idiomas = f"{a.idioma},{a.idioma}-BR,{a.idioma}-orig,en"  # lista fechada: evita dezenas de traduções automáticas (erro 429)
     with tempfile.TemporaryDirectory() as tmp:
         cmd = [
             sys.executable, "-m", "yt_dlp", a.url,
+            # O YouTube pede "confirme que não é um robô" para servidores em nuvem; o player
+            # incorporado (web_embedded) continua entregando as legendas sem login.
+            "--extractor-args", "youtube:player_client=web_embedded",
+            "--ignore-no-formats-error", "--sleep-subtitles", "2",
             "--skip-download", "--write-subs", "--write-auto-subs",
             "--sub-langs", idiomas, "--sub-format", "vtt",
             "--write-info-json", "--playlist-end", str(a.limite),
