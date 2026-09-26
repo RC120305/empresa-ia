@@ -26,7 +26,7 @@
 > **Capacidade para 5 pessoas: somente a Cabana Master e o Apartamento Conjugado** (confirmado pelo dono).
 
 ### Atividades internas (sem deslocamento)
-Balneário próprio (banho de rio), boia cross, arvorismo, flutuação, caiaque, tirolesa, stand up paddle, arco e flecha, trilhas de contemplação, mountain bike e observação de aves.
+Balneário próprio (banho de rio), boia cross, arvorismo, flutuação, caiaque, tirolesa, stand up paddle, arco e flecha, trilhas de contemplação, ciclovia de 6 km (para quem traz a própria bicicleta: **o hotel não empresta nem aluga bicicletas**, confirmado pelo dono em 2026-09-26) e observação de aves.
 
 ### Infraestrutura
 Restaurante, café da manhã completo, piscina aquecida, hidromassagem, sauna a vapor, quadra de beach tênis e decks à beira do rio.
@@ -56,7 +56,7 @@ Restaurante, café da manhã completo, piscina aquecida, hidromassagem, sauna a 
 | 2 | **Os Namorados do Paraíso** | Casal urbano de 30 a 32 anos | Privacidade, romance, cabana na árvore | Instagram, Pinterest, Google Search |
 | 3 | **O Caçador de Emoções** | Jovens de ~25 anos em grupo | Adrenalina, variedade, segurança | YouTube, TikTok, Instagram, Google |
 | 4 | **O Refúgio da Alma** | 55+, casal ou amigos | Tranquilidade, conforto, acessibilidade, boa comida | Google Search, Facebook, agências |
-| 5a | **O Ciclista Explorador** | Praticante de mountain bike | Trilhas e ciclovia | Google, Facebook, Instagram |
+| 5a | **O Ciclista Explorador** | Praticante de mountain bike (traz a própria bike) | Trilhas e ciclovia | Google, Facebook, Instagram |
 | 5b | **O Ornitólogo da Natureza** | Observador de aves | 140 espécies, silêncio | Google, Facebook, Instagram |
 | 6 | **O Guardião da Natureza** | Eco-consciente (~35 anos) | Sustentabilidade autêntica, sem greenwashing | Instagram, blogs, Google |
 
@@ -90,10 +90,30 @@ Restaurante, café da manhã completo, piscina aquecida, hidromassagem, sauna a 
 - **Eliminar:** burocracias (check-in/check-out lentos) e serviços genéricos que não reforçam a PUV.
 - **Reduzir:** a pressão por ocupação a qualquer custo e o marketing genérico.
 - **Aumentar:** os quatro "5s" (balneário, natureza, atividades, acomodações), a qualidade percebida e a comunicação do custo-benefício.
-- **Criar:**
+- **Criar** ⚠️ *(projetos planejados, **não existem ainda: não comunicar como serviço**)*:
   - **Gastronomia distintiva:** farm-to-table, jantares na natureza, workshops de culinária regional.
   - **Recreação infantil na natureza:** "Exploradores da Natureza", "Pequenos Cientistas de Bonito".
   - **Sustentabilidade visível:** tours, voluntariado, painéis, certificações e ações diárias com hóspedes.
 
 ## 8. Tom de voz (derivado do guia)
 Acolhedor, familiar, inspirador e autêntico. Fala de natureza com encantamento, sem exageros nem greenwashing. Nunca promete o que o hotel não entrega. Segurança sempre em primeiro lugar.
+
+## 9. Informações de marketing do dono (2026-09-26)
+> Respostas do dono à auditoria do Marketing (`marketing/2026-09-auditoria-contexto.md`). Uso interno; o que pode ser publicado está indicado.
+
+**Objeções mais comuns (WhatsApp de reservas)**
+1. **"Está caro."** Posição do dono: somos um hotel **bem completo, com diversas atividades inclusas, e com um custo-benefício muito bom**; nossas tarifas estão **mais baixas que as dos concorrentes diretos** (uso interno: não citar concorrentes nem comparar preços em público; comunicar pelo que está incluído na diária + "valores com desconto para quem reserva direto").
+2. **"Fica longe da cidade."** Resposta com fatos: 6 km do centro, acesso totalmente asfaltado, ciclovia, 8 km do aeroporto (`hotel-operacional.md`); a natureza e as atividades estão dentro do hotel.
+3. **"Não há vaga quando eu procuro."** Sinal de demanda alta nas datas de pico: estimular **reserva antecipada** (antecedência média de 45 a 50 dias) e divulgar a **janela de ouro** e a baixa temporada.
+
+**Provas sociais (notas informadas pelo dono em set/2026)** — podem ser publicadas **com a fonte e o mês**: **Google 4,7** · **Booking 9,3** · **TripAdvisor 4,5**. *(número de avaliações e prêmios: [a confirmar com o dono]; trechos de avaliações: só com autorização/sem identificar o hóspede, até o dono definir)*
+
+**Concorrentes diretos (uso interno)**: Arte da Natureza · "X Água Resort" [confirmar o nome exato] · Hotel Santa Esmeralda · Boyra [confirmar o nome exato]. Comparação de atributos: ver a curva de valor (seção 6). **Nunca citar concorrentes em conteúdo público.**
+
+**Metas**: ocupação **20% maior que 2025**, cuja média mensal foi **50%** → meta de **~60% de média mensal** [confirmar se são 20% sobre 2025 (≈60%) ou 20 pontos percentuais (70%)]. Métricas mensais e **tarifário de alta e baixa temporada**: o dono vai compartilhar.
+
+**Outros**
+- **Colaboradores** que podem aparecer no conteúdo: **sim, existem** (nomes e autorização de imagem a combinar caso a caso).
+- **Sustentabilidade**: ações **em desenvolvimento, sem dados ainda**. Comunicar só as práticas confirmadas (coleta seletiva, compostagem, sem copos descartáveis, proprietário biólogo), **sem números**.
+- **Ioga**: aos sábados, à margem do rio (confirmado; horário e detalhes em `hotel-operacional.md`).
+- Bicicletas: **o hotel não empresta nem aluga**.

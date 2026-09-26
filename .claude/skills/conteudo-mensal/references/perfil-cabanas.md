@@ -42,6 +42,11 @@
 - Frases aprovadas pelo dono: "O único hotel de Bonito cercado por dois rios"; "melhor custo-benefício de Bonito"; slogan "O seu lugar de conexão com a natureza".
 - Em posts de inspiração, o CTA pode ser suave: "Salva para a sua próxima viagem" / "Manda para quem vai com você" (estimula **envios**, o sinal mais forte do Instagram).
 
+## Provas sociais e objeções
+- Notas que **podem** ser publicadas, sempre com fonte e mês: **Google 4,7 · Booking 9,3 · TripAdvisor 4,5** (set/2026). Ver `contexto/hotel-cabanas.md`, seção 9.
+- Objeções mais comuns: **"está caro"** (responder com o que está incluído + reserva direta; nunca comparar com concorrentes), **"fica longe"** (6 km, asfalto, atividades dentro do hotel), **"não há vaga quando procuro"** (reservar com antecedência; janela de ouro e baixa temporada). Use-as como pauta de posts, stories e anúncios.
+- **Nunca** citar concorrentes em conteúdo público.
+
 ## Estrutura dos formatos
 Ver `formatos.md`. Resumo: carrossel de 5 a 7 telas (capa imersiva → experiência → CTA); imagem única (frase imersiva + legenda informativa); Reels gravados pela **produtora do dono** a partir de um briefing; stories semanais.
 

@@ -59,3 +59,6 @@
 
 ## Próximos passos propostos pelo Marketing (aguardando o dono)
 Rascunhar, para aprovação, em `marketing/`: banco de objeções, manual de voz e calendário 2026/2027 com hashtags.
+
+## Respostas do dono (2026-09-26)
+Registradas em `contexto/hotel-cabanas.md`, seção 9: objeções (caro, longe, sem vaga), notas (Google 4,7; Booking 9,3; TripAdvisor 4,5), concorrentes (uso interno), meta de ocupação (+20% sobre 2025, média 50%), colaboradores podem aparecer, sustentabilidade sem dados ainda, bicicletas não são emprestadas (inconsistência 2 resolvida), projetos da ERIC marcados como "não comunicar" (inconsistência 11 resolvida). Pendentes com o dono: nº de avaliações/prêmios, nomes exatos de 2 concorrentes, se a meta é 60% ou 70%, métricas mensais e tarifário.
