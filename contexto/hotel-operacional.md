@@ -25,6 +25,7 @@
 | **Apartamento Standard** | 20 a 25 m² | 2 a 4 pessoas | O mais econômico; em blocos; estacionamento em frente |
 
 **Itens em todas as acomodações:** Smart TV a cabo, ar-condicionado split inverter **quente e frio**, aquecimento **solar e a gás** nas duchas, secador, frigobar, amenities (shampoo, condicionador, sabonete), Wi-Fi, armário, bancada de trabalho, roupa de cama e toalhas.
+- **Toalhas dobradas em forma de bichos** (ex.: cisnes) sobre a cama: **arrumação padrão** do hotel (confirmado pelo dono em 2026-09-26). Pétalas, rosa e plaquinha "LOVE" que aparecem em algumas fotos: [a confirmar com o dono se fazem parte da decoração especial].
 **Não há:** ferro de passar, camas extras, quartos para fumantes. Há **cofre central** gratuito e **berços** mediante agendamento.
 
 ## 3. O que está incluído na diária
