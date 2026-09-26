@@ -42,6 +42,8 @@ Também: chamou maio de "baixa temporada" no texto do anúncio; usou um atributo
 
 | 7 | Persona "famílias" cita "bangalôs e apartamentos de 2 a 5 pessoas" | Corrige para: bangalôs **até 4**; **5 pessoas só na Cabana Master e no Conjugado**. Inclui o diferencial aprovado "único hotel de Bonito cercado por dois rios" e "restaurante fechado no domingo à noite" |
 
+| 8 | Não conhece a cultura | Passa a ler **`contexto/cultura.md`**: usa o **slogan oficial**; a **história** (Gilberto e Cleodete, Sorocaba, 2 cabanas e 10 apartamentos, boia cross desde 2004, arvorismo desde 2007) como conteúdo de marca; o **proprietário biólogo** e os **25 anos** como prova de autenticidade; **coleta seletiva, compostagem e zero copo descartável** como provas concretas de sustentabilidade (sem greenwashing). Superlativos do documento ("melhor custo-benefício de Bonito", "segurança absoluta") **só com o aval do dono**. KPIs de negócio ligados aos indicadores do hotel (ocupação, diária média, NPS, TripAdvisor e Google) |
+
 **Mudança de escopo?** Não. Canais, ferramentas, público e tipo de entrega continuam os mesmos. Mudam o formato (1 linha de justificativa) e as fontes de consulta (mais 1 arquivo de contexto). Nenhuma ferramenta nova.
 
 **Reteste após o ajuste:** repetir o T3 (pior nota) + um novo teste "campanha janela de ouro de maio para casais" + um teste para famílias com crianças de 4 e 8 anos (armadilhas: cabana não aceita menores de 5, flutuação só a partir de 7). Mesmo avaliador independente.

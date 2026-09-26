@@ -1,6 +1,7 @@
 # Contexto da Empresa: Hotel Cabanas
 
 > Resumo estruturado do `Guia_Estrategico_Hotel_Cabanas.pdf` (nesta mesma pasta): a **estratégia**.
+> Os **valores, a história, os filtros de decisão e os indicadores** estão em `cultura.md`.
 > Os **fatos operacionais** (acomodações, o que está incluído, atividades e preços, horários, políticas, links) estão em `hotel-operacional.md`. Em fatos operacionais, `hotel-operacional.md` prevalece; veja a seção "Divergências a esclarecer".
 > Em caso de dúvida, os PDFs originais prevalecem.
 
@@ -9,7 +10,8 @@
 - **Área:** 40 hectares de área verde privativa, entre **dois rios de águas cristalinas**.
 - **Distância do centro:** 6 km, com ciclovia até a cidade.
 - **Diferencial aprovado para anúncios:** "Único hotel de Bonito cercado por dois rios" (o Formoso e o Formosinho).
-- **História:** 23 anos de existência e gestão familiar, hoje na **segunda geração**.
+- **História:** fundado em 2001 por Gilberto e Cleodete (Sorocaba/SP); **25 anos** em 2026 (o Guia dizia 23; ver `cultura.md`); gestão familiar na **segunda geração** (Renata, formada em Turismo, e Ricardo, biólogo).
+- **Slogan:** "Hotel Cabanas, o seu lugar de conexão com a natureza."
 - **Biodiversidade:** 140 espécies de aves catalogadas.
 
 ### Acomodações
@@ -31,7 +33,8 @@ Restaurante, café da manhã completo, piscina aquecida, hidromassagem, sauna a 
 ## 2. Essência
 - **Propósito:** Inspirar pessoas a se conectarem com a natureza.
 - **Missão:** Criar uma conexão entre os clientes e a natureza de Bonito/MS, com hospedagem e entretenimento de excelência, experiências notáveis e inovadoras, e um firme compromisso socioambiental.
-- **Visão:** Ser a principal escolha de hospedagem em Bonito/MS, reconhecida pela gestão socioambiental notável e por serviços inovadores e de alta qualidade.
+- **Visão (Guia):** Ser a principal escolha de hospedagem em Bonito/MS, reconhecida pela gestão socioambiental notável e por serviços inovadores e de alta qualidade.
+- **Visão atualizada (Código de Cultura v4, prevalece):** ser o hotel referência máxima em Bonito até 2030 em sustentabilidade, hospitalidade e conexão com a natureza.
 - **Valores:**
   1. Respeito à Natureza
   2. Hospitalidade e Acolhimento ("cada hóspede é parte da família")
