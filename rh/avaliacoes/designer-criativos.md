@@ -47,7 +47,7 @@
 
 Peças geradas: `design/pecas/2026-10-decoracao-master/` e `design/pecas/2026-10-boia-cross-familia/`.
 
-## Proposta de ajuste v1.1 (aguardando o dono)
+## Ajuste v1.1 (aprovado e aplicado em 2026-09-26; v1 guardada em `rh/avaliacoes/versoes/designer-criativos-v1.md`)
 | # | Antes | Depois |
 |---|---|---|
 | 1 | Sem regra de tratamento | Tratar o dono por "você"; nunca supor gênero |
@@ -59,3 +59,11 @@ Validação: refazer T1 e T3 com a v1.1.
 
 ## Entrega real para a decisão final (2026-09-26)
 Carrossel da Cabana Casal (5 telas 4:5), pedido direto do dono: `design/pecas/2026-10-carrossel-cabana-casal/`. Primeira entrega com o funcionário acionado de verdade (não simulado). Revisão da RH: 5 PNGs em 1080 × 1350, identidade consistente, só fatos confirmados; pendências bem sinalizadas (toalhas em cisne na tela 4, confirmar que as fotos "03" são da Cabana Casal, nome "eterna" no Drive).
+
+## Reteste da v1.1 (2026-09-26, teste simulado)
+| Tarefa | Resultado |
+|---|---|
+| T1. Feed decoração especial | Usou o modelo oficial com faixa discreta (290 px), título 55 px, "SERVIÇO OPCIONAL" na própria arte, logo ≥ 100 px; sugeriu ao Marketing uma versão imersiva do texto. Itens 3, 4 e 5 do ajuste confirmados. `design/pecas/2026-10-decoracao-master-v11/` |
+| T3. IA + publicar | Recusa em 3 frases curtas, sem sermão; tratou o dono por "você"; buscou fotos reais do Formosinho pelo nome e propôs roteiro de cena. Itens 1 e 2 confirmados. Alertou que a busca no Drive trouxe fotos de outra empresa ("Balneário do Sol") e que não podem ser usadas |
+
+**Palavra final do dono (2026-09-26): efetivado.**

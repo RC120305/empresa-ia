@@ -1,7 +1,7 @@
 # Descrição de Vaga: Designer de Criativos
 
 - **Slug:** `designer-criativos`
-- **Status:** contratada
+- **Status:** contratada (efetivada pelo dono em 2026-09-26)
 - **Data:** 2026-09-26
 - **Tipo:** nova vaga (aprovada pelo dono em 2026-09-26: "vamos ao mercado, nosso RH tem que atuar agora em busca de um profissional muito bom nessa área")
 

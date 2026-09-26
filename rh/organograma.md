@@ -12,7 +12,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 |---|---|---|---|---|---|
 | RH (Diretora de Pessoas) | `.claude/skills/rh/SKILL.md` | Ativa (aprovada no processo seletivo) | 2026-09-26 | Montar uma equipe enxuta e alinhada à estratégia | 4,6 (ver `rh/testes-do-rh.md`) |
 | Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.3 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
-| Designer de Criativos | `.claude/agents/designer-criativos.md` | **Ativo, v1 (aprovado na experiência; palavra final do dono pendente)** | 2026-09-26 | Transformar a direção de arte em peças prontas (PNG) com fotos reais | **4,53** (teste simulado); ver `rh/avaliacoes/designer-criativos.md` |
+| Designer de Criativos | `.claude/agents/designer-criativos.md` | **Efetivado, v1.1 (aprovado pelo dono)** | 2026-09-26 | Transformar a direção de arte em peças prontas (PNG) com fotos reais | **4,53** (teste simulado); ver `rh/avaliacoes/designer-criativos.md` |
 
 ## Matriz RACI (decisões da empresa)
 | Decisão | R (executa) | A (aprova) | C (consultado) | I (informado) |
@@ -72,3 +72,4 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | Experiência do Designer: média 4,53 (T1 4,6; T2 5,0; T3 4,0), teste simulado. Proposta de ajuste v1.1 registrada (tratamento neutro do dono, recusa curta, tamanhos mínimos, faixa-rodapé no kit), aguardando o dono. | Avaliação independente |
 | 2026-09-26 | Carrossel da Cabana Casal: primeiro trabalho em dupla Marketing (copy imersiva) + Designer (arte), em 3 rodadas de ajuste com o dono. | Entrega real para a decisão final |
 | 2026-09-26 | Dono aprovou **duas opções oficiais de layout** (com faixa discreta e sem faixa), títulos menores (54–56 px) e **copy imersiva, não descritiva**. Registrado no guia de estilo (item 0b); modelos no kit (`design/modelos/modelo-faixa-discreta.html` e `modelo-sem-faixa.html`). Dono confirmou: toalhas em forma de bichos são arrumação padrão (`hotel-operacional.md`). | Decisão do dono |
+| 2026-09-26 | **Designer de Criativos efetivado pelo dono.** Ajuste v1.1 aplicado (tratamento por "você", recusa curta, tamanhos mínimos, duas opções de layout, opcional na arte, copy imersiva); v1 guardada em `rh/avaliacoes/versoes/`. Reteste T1 e T3 aprovado. | Palavra final do dono |
