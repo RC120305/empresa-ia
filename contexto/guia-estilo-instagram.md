@@ -16,7 +16,7 @@
 |---|---|---|
 | **Fotografia** | Cinematográfica, com luz de **golden hour** (pôr/nascer do sol) ou **blue hour** (anoitecer), tons profundos e levemente escurecidos, contraste alto | Casal diante de um mar de nuvens ao pôr do sol; cabana na mata iluminada à noite |
 | **Pessoas** | Aparecem **de costas, em silhueta ou olhando a paisagem**, nunca posando para a câmera. A pessoa representa o hóspede: "poderia ser você" | Casal enrolado numa manta; duas cadeiras em volta de uma fogueira |
-| **Pontos de luz quente** | Fogo, lanternas, velas e luzes no deck contra o escuro criam aconchego | Fogueira, lanterna de ferro, luzes no deck |
+| **Pontos de luz quente** | Luzes contra o escuro criam aconchego. **No Cabanas: só luzes que existem de verdade** (ex.: luz acesa na varanda); não encenar fogueira, velas ou lanternas | Luzes no deck |
 | **Natureza como protagonista** | A paisagem ocupa a maior parte do quadro; a construção aparece **integrada** à mata | Deck entre troncos de árvores; cabana envolta em folhagem |
 | **Tipografia** | **Serifada, elegante, clara (branco ou creme) sobre a foto.** Mistura na mesma frase: **negrito**, *itálico* e letras **espaçadas** | "O fim de tarde **mais** *bonito* d o  s e u  a n o" |
 | **Acabamentos** | **Linha fina** sob o título; às vezes uma **moldura fina** na borda; **logo discreto** no rodapé | Moldura dourada com o logo embaixo |
@@ -27,7 +27,7 @@
 | Fórmula | Na referência | Versão Cabanas (fatos confirmados) |
 |---|---|---|
 | **Momento sensorial** | "O fim de tarde mais bonito do seu ano" | "O fim de tarde **entre** *dois rios*" (pôr do sol no deck do Formosinho, piquenique opcional) |
-| **Contagem regressiva** (urgência real) | "Faltam duas semanas para o próximo feriado na Serra" | "Faltam **duas** *semanas* para o feriado em Bonito". Só com data real de feriado; feriado é alta temporada e pede reserva antecipada |
+| **Urgência de feriado** (real) | "Faltam duas semanas para o próximo feriado na Serra" | "O **feriado** chega. *Os rios já estão esperando.*" ou "**Feriado** *entre dois rios*". Só com data real de feriado; feriado é alta temporada e pede reserva antecipada. Não copiar a estrutura "Faltam X…" |
 | **Nostalgia e retorno** | "Quem passa por aqui... sempre quer voltar" | "Há **25 anos** dormindo na *altura das árvores*" (história confirmada). Não afirme "todos voltam" sem dados |
 | **Benefício direto + CTA** | "Privacidade absoluta. Garanta já a sua experiência!" | "Varanda **privativa**. *Reserve direto.*" Evite "absoluta": nossa regra proíbe promessas absolutas |
 | **Rótulo de experiência** | "Contato com a natureza" | "O seu lugar de *conexão* com a natureza" (slogan oficial) |
@@ -46,7 +46,7 @@
 - **Famílias e aventureiros:** **mesma tipografia e acabamento**, mas com luz de dia, água cristalina e movimento (boia cross, arvorismo, tirolesa aquática). Crianças sempre dentro das idades permitidas e com equipamento de segurança visível. A identidade continua, com mais energia.
 
 ## 4b. Referências do lote 2: dois novos pilares de conteúdo
-As novas contas acrescentam **dois estilos** que complementam a linha contemplativa do lote 1. Juntos, formam **3 pilares** para o feed do Cabanas:
+As novas contas acrescentam **dois estilos** que complementam a linha contemplativa do lote 1. Juntos, formam os pilares 1 a 3 do feed do Cabanas (o pilar 4, "Aventura de dia", está mais abaixo):
 
 | Pilar | Referência | Como é | Uso no Cabanas |
 |---|---|---|---|
@@ -57,7 +57,7 @@ As novas contas acrescentam **dois estilos** que complementam a linha contemplat
 ### Pilar 2: manifesto (inspirado na Reserva Rio de Contas)
 | Fórmula da referência | Versão Cabanas (fatos confirmados) |
 |---|---|
-| "Tudo começa na terra: plantio e colheita" | "**Aqui, nada vira lixo à toa**": compostagem e coleta seletiva, **sem copos descartáveis** (Código de Cultura) |
+| "Tudo começa na terra: plantio e colheita" | "Aqui, o que sobra *vira adubo*" **[validar com o dono]**: compostagem e coleta seletiva, **sem copos descartáveis** (Código de Cultura). Evitar absolutos como "nada vira lixo" |
 | "O verde transforma" | "**A natureza é a nossa casa**" (frase-guia do valor Cuidado com a Natureza) |
 | "Viver cercado de natureza... é o novo critério de quem escolhe com propósito" | "**Um biólogo à frente do hotel.** Aqui vivemos o que vendemos" (Código de Cultura) |
 
@@ -66,7 +66,7 @@ As novas contas acrescentam **dois estilos** que complementam a linha contemplat
 ### Pilar 3: editorial sensorial (inspirado na Pousada do Engenho)
 | Fórmula da referência | Versão Cabanas |
 |---|---|
-| "Seu descanso de 7 de setembro começa aqui" | "**Seu feriado de [nome] começa aqui**", só com a data real; feriado é alta temporada |
+| "Seu descanso de 7 de setembro começa aqui" | "**[Nome do feriado]** *na altura das árvores*" ou "**[Nome do feriado]** *entre dois rios*", só com a data real; feriado é alta temporada. Não copiar "… começa aqui" |
 | "O inverno está acabando... mas os momentos ficam para sempre" | "**Inverno em Bonito:** *rios mais cristalinos*" (fato do hotel e do destino, de maio a setembro) |
 | Banho em ofurô com pétalas | **Banheira de hidromassagem da Cabana Master** (real). Pétalas e decoração **só se forem o serviço de decoração especial** (opcional) |
 | Comida fumegante em panela de barro | **Café da manhã incluso** (real). ⚠️ A gastronomia é uma lacuna do hotel (1 vs. 1,9): mostre só o que existe de verdade, sem vender "experiência gastronômica" |
@@ -75,25 +75,51 @@ As novas contas acrescentam **dois estilos** que complementam a linha contemplat
 
 **Pessoas:** no pilar 3, é permitido mostrar o rosto (olhos fechados, expressão de relaxamento), sempre com autorização de imagem.
 
-### Mix sugerido para o feed *(proposta, a validar com o dono)*
-- **~50% Pilar 1** (contemplação), **~25% Pilar 3** (sensorial e feriados) e **~25% Pilar 2** (manifesto e sustentabilidade).
-- Aventura e família entram nos três pilares com a mesma tipografia, mas com luz de dia e movimento.
+### Pilar 4: Aventura de dia (acrescentado com a aprovação do dono, 2026-09-26)
+O ponto mais forte do hotel (atividades internas: 5 vs. 0,3) e as personas **Famílias** e **Aventureiros** precisam de um pilar próprio. As referências não cobrem essa linha.
+- **Foto:** de dia, **água cristalina sem escurecer**, movimento (boia cross, arvorismo, tirolesa aquática, caiaque, SUP, flutuação).
+- **Pessoas:** crianças **sempre dentro das idades permitidas** e com **equipamento de segurança visível**; autorização de imagem assinada pelos responsáveis.
+- **Texto:** mesma tipografia dos outros pilares. Ex.: "**18** obstáculos e uma *tirolesa aquática*"; "Caiaque e SUP *já inclusos* na **diária**".
+- **Nunca prometer** recreação ou monitoria infantil (o hotel não tem).
+
+### Mix para o feed *(proposta, a validar com o dono)*
+| Pilar | Participação |
+|---|---|
+| 1. Contemplação | ~35% |
+| 4. Aventura de dia | ~30% |
+| 2. Manifesto / sustentabilidade | ~20% |
+| 3. Editorial sensorial | ~15% |
 
 ### Identidade própria
 As referências usam uma **cor de marca** nas faixas e nos detalhes (a terracota da Rio de Contas). O Cabanas usa **as cores do próprio logo** (ver `contexto/marca/identidade.md`):
-- **Faixa atrás do título (pilar 2):** marrom madeira `#847059`, ou verde folha `#90AB49` nos posts de sustentabilidade.
-- **Linhas finas e CTA:** laranja janela `#F58634`, com moderação.
-- **Texto sobre foto:** creme ou branco quente.
+**Regras de cor conforme a luz da foto:**
+| Situação | Texto | Detalhes |
+|---|---|---|
+| Foto escura (fim de tarde, noite) | Creme ou branco quente | Linha fina **laranja** `#F58634` |
+| Foto clara (dia) | Creme ou branco sobre **faixa marrom** `#847059` | Linha fina laranja |
+| Sustentabilidade | Faixa marrom `#847059` com texto creme, **ou** verde `#90AB49` **só como detalhe** | ⚠️ **Nunca texto branco sobre o verde** (contraste de cerca de 2,6:1, ilegível) |
+- **Linha fina: sempre laranja** `#F58634`, com moderação.
 - **Tipografia:** título serifado (como nas referências) + apoio em **sem serifa geométrica, caixa alta espaçada** (como no logo).
 
 ## 5. Especificações práticas (para quem faz a arte, no Canva ou por designer)
 - **Fontes sugeridas** (serifadas, disponíveis no Canva/Google Fonts): *Playfair Display* ou *Cormorant Garamond* para o título, com uma palavra em **bold** e outra em *itálico*; letras espaçadas para a linha de apoio.
-- **Cores do texto:** branco quente ou creme; linha fina em creme ou dourado suave.
+- **Cores do texto:** branco quente ou creme; **linha fina sempre laranja** `#F58634` (ver as regras de cor acima).
 - **Posição do texto:** no terço inferior ou superior, sobre a área mais escura da foto; nunca sobre rostos ou sobre o ponto focal.
-- **Logo:** pequeno, centralizado no rodapé, apenas em peças de campanha.
+- **Logo:** **versão branca monocromática, pequena e discreta, em todas as peças** (canto inferior ou rodapé central). A versão colorida só em fundo claro (site, documentos). **Assinatura única:** linha fina laranja + "B O N I T O · M S" + logo branco.
 - **Carrossel:** 1ª foto com o gancho de 3 a 8 palavras → de 3 a 5 fotos de experiência → última com o CTA ("Reserve direto" + canal).
 - **Reels:** de 15 a 30 s, cortes lentos, som ambiente do rio + música instrumental suave, texto na tela no mesmo padrão tipográfico.
 - **Legenda:** complementa a imagem com os fatos (o que é, o que está incluído, como reservar). A imagem emociona; a legenda informa.
+
+## 5b. Kit de produção
+| Item | Padrão |
+|---|---|
+| **Feed/carrossel** | **4:5** (1080 × 1350 px) |
+| **Reels/Stories** | **9:16** (1080 × 1920 px); texto e logo **fora** dos 250 px de cima e de baixo (área coberta pela interface) |
+| **Margem segura** | Pelo menos 60 px das bordas para texto e logo |
+| **Nome das fotos no Drive** | `local_estacao_horario.jpg` (ex.: `cabana-master_inverno_por-do-sol.jpg`) |
+| **Lista de cenas** | Toda entrega indica **qual foto do banco** usar, ou a cena a fotografar, se faltar |
+| **Texto alternativo** | 1 frase descrevendo a imagem, para acessibilidade (Instagram → Configurações avançadas → Texto alternativo) |
+| **Autorização de imagem** | Termo assinado por toda pessoa reconhecível; **menores: assinado pelos responsáveis** |
 
 ## 6. Cuidados obrigatórios
 1. **Fotos reais do Hotel Cabanas, sempre.** Duas das referências trazem o selo **"Conteúdo de IA"** do Instagram, e algumas imagens do lote 2 parecem fotos de banco de imagens ou geradas por computador (paisagens que não são do próprio hotel). No Cabanas, **não usamos imagens geradas por IA** para mostrar acomodações, paisagens ou experiências, porque isso contraria o valor da **Honestidade** ("prometer algo que não será entregue"). Tratamento de cor e luz em fotos reais é permitido.

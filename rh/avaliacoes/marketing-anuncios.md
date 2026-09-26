@@ -100,3 +100,10 @@ Também: chamou maio de "baixa temporada" no texto do anúncio; usou um atributo
 - **Versão anterior:** `rh/avaliacoes/versoes/marketing-anuncios-v2.1.md`.
 - **Teste:** não executado (o dono optou por finalizar). Validar na primeira entrega real.
 
+## Ajuste v2.3: acesso ao banco de imagens (2026-09-26)
+- **Aprovação do dono:** "Pode conectar o novo agente ao Drive."
+- **Mudança de escopo (ferramentas):** + leitura do Google Drive (search, list, metadata, read, download). **Sem** ferramentas de escrita, compartilhamento ou exclusão. Uso restrito à pasta "Imagens do hotel cabanas".
+- Também passa a seguir o guia revisado (4 pilares, regras de cor, logo branco, kit de produção).
+- **Versão anterior:** `rh/avaliacoes/versoes/marketing-anuncios-v2.2.md`.
+- **Teste:** pendente. A pasta do Drive ainda está vazia; validar na primeira entrega com fotos.
+

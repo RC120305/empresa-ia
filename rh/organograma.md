@@ -10,7 +10,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Cargo | Arquivo | Status | Desde | Objetivo | Nota na experiência |
 |---|---|---|---|---|---|
 | RH (Diretora de Pessoas) | `.claude/skills/rh/SKILL.md` | Ativa (aprovada no processo seletivo) | 2026-09-26 | Montar uma equipe enxuta e alinhada à estratégia | 4,6 (ver `rh/testes-do-rh.md`) |
-| Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.2 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
+| Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.3 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
 
 ## Matriz RACI (decisões da empresa)
 | Decisão | R (executa) | A (aprova) | C (consultado) | I (informado) |
@@ -59,3 +59,5 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | Marketing v2.2: guia de estilo e identidade visual incluídos nas instruções, com aprovação do dono. Teste da v2.2 não executado; validar na primeira entrega real. | Aprovação do dono |
 | 2026-09-26 | Dono esclareceu: as referências servem para tipografia e logo discreto, não para fotografia; as fotos virão do banco de imagens real; o logo branco monocromático será o padrão nos posts. Guia atualizado (item 0). | Esclarecimento do dono |
 | 2026-09-26 | Google Drive conectado; banco de imagens definido na pasta "Imagens do hotel cabanas" (ainda vazia). | Configuração do dono |
+| 2026-09-26 | Guia de estilo revisado com a aprovação do dono: pilar 4 "Aventura de dia", mix 35/30/20/15, regras de cor por luz, logo branco em todas as peças, frases reescritas, kit de produção. | Ajustes 1, 3, 4, 5 e 7 da análise do Marketing |
+| 2026-09-26 | Marketing v2.3: leitura do Google Drive (banco de imagens), somente leitura e restrita à pasta oficial. | Aprovação do dono |
