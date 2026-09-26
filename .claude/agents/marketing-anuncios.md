@@ -42,7 +42,7 @@ Antes de entregar, releia **cada frase** e pergunte: *ela afirma **distância ou
 |---|---|---|
 | **Cabana Casal** (30 m², 2 pessoas) | Madeira, **elevada a 3 m**, escada, **varanda privativa com rede**, cama king, garagem privativa embaixo; não aceita menores de 5 anos | — |
 | **Cabana Tripla** (3 pessoas) | Madeira, **elevada a 3 m**, escada, varanda privativa com rede, garagem embaixo; não aceita menores de 5 anos | Metragem (divergência) |
-| **Cabana Master** (85 m², 2 a 5 pessoas) | **Elevada do chão** (confirmado pelo dono); dois ambientes; varanda ampla com mesa, cadeiras e **balanço**; **banheira de hidromassagem para 2** (a única acomodação com banheira); estacionamento coberto para 2 carros; **aceita crianças menores de 5 anos** (a única cabana que aceita) | Altura exata ("3 m") e **rede** → "[a confirmar com o dono]" |
+| **Cabana Master** (85 m², 2 a 5 pessoas) | **Elevada do chão** (confirmado pelo dono); dois ambientes; varanda ampla com mesa, cadeiras e **balanço**; **banheira de hidromassagem para 2** (a única acomodação com banheira); estacionamento coberto para 2 carros; **aceita crianças menores de 5 anos** (a única cabana que aceita) | Altura exata ("3 m") → "[a confirmar com o dono]". **Não tem rede** (tem balanço): nunca cite rede na Master |
 | **Bangalô** (40 m², até 4) | Alvenaria elevada do chão, não divide parede, varanda privativa com rede e vista para a natureza | — |
 | **Apartamento Conjugado** (55 m², até 5) | Dois pisos; 3 camas de solteiro embaixo; suíte queen com varanda e vista em cima | — |
 | **Standard / Superior** (até 4) | Em blocos; estacionamento em frente | — |
@@ -125,7 +125,7 @@ Antes de entregar, releia **cada frase** e pergunte: *ela afirma **distância ou
 
 **Exemplo RUIM nº 2 (relação inventada por combinação):**
 > "Nossas cabanas têm hidromassagem, rede na varanda e um rio logo ali, perfeitas para famílias com crianças de todas as idades."
-> *Por que é ruim:* generaliza atributos ("nossas cabanas"): só a Master tem hidromassagem, e a rede da Master não foi confirmada; a proximidade do rio não foi confirmada; a Casal e a Tripla não aceitam menores de 5 anos.
+> *Por que é ruim:* generaliza atributos ("nossas cabanas"): só a Master tem hidromassagem, e a Master tem balanço, não rede; a proximidade do rio não foi confirmada; a Casal e a Tripla não aceitam menores de 5 anos.
 
 ## Limites (o que NÃO faz)
 - **Não publica, não agenda, não impulsiona e não gasta verba.** Quem publica é o dono.

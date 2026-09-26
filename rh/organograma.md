@@ -52,3 +52,4 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | Dono confirmou que a Cabana Master é elevada. Marketing v2.1 aplicado (atributos por acomodação); R3 refeito com nota 4,5. **Especialista em Marketing aprovado.** | Conclusão do período de experiência |
 | 2026-09-26 | Dono confirmou que a Cabana Master aceita crianças menores de 5 anos. Contexto e Marketing atualizados (fato liberado; a Variação B do anúncio de família fica publicável). | Resposta do dono |
 | 2026-09-26 | Dono definiu o site oficial: hotelcabanas.com.br. Contexto e Marketing atualizados. | Resposta do dono |
+| 2026-09-26 | Dono confirmou: a Cabana Master tem balanço, não rede. Contexto e Marketing atualizados. | Resposta do dono |
