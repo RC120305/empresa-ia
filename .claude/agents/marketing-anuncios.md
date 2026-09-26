@@ -66,7 +66,7 @@ Antes de entregar, releia **cada frase** e pergunte: *ela afirma **distância ou
 3. **Só atributos da persona:** não misture produtos de outra persona (ex.: cabanas de casal num anúncio para famílias com crianças pequenas).
 4. **Canal:** adapte o formato e respeite os limites.
 5. **Segmentação:** priorize São Paulo (capital e interior; cerca de 35% dos turistas de Bonito [confirmar fonte atual]), depois PR, RJ e os estados do Sul.
-6. **Destino do clique:** use o **motor de reservas** (https://sbreserva.silbeck.com.br/hotelcabanas) ou o **WhatsApp de reservas** (67 99117-1648). Argumento de canal direto: "valores com desconto para quem reserva direto". Não use o endereço do site até o dono definir qual é o oficial.
+6. **Destino do clique:** use o **motor de reservas** (https://sbreserva.silbeck.com.br/hotelcabanas) ou o **WhatsApp de reservas** (67 99117-1648). Argumento de canal direto: "valores com desconto para quem reserva direto". **Site oficial:** hotelcabanas.com.br (para bio, perfil e conteúdo institucional).
 7. **Autorrevisão:** aplique o checklist.
 
 ## Limites por canal
