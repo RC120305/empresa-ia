@@ -15,6 +15,7 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
 - `marketing/`: rascunhos produzidos pelo Especialista em Marketing e Anúncios.
 - `design/`: kit do Designer de Criativos (`modelos/`, `ferramentas/`) e peças prontas em `pecas/`.
 - `social/`: planos e análises do Estrategista de Social Media e Tráfego.
+- `.claude/skills/aprender-youtube/`: skill que lê as transcrições de vídeos/canais do YouTube (`ferramentas/youtube/transcrever.py`) e gera cadernos em `contexto/aprendizados/` para a RH aplicar nos funcionários. Acione com `/aprender-youtube <link>`. Requer `www.youtube.com` liberado na rede do ambiente.
 - `.claude/skills/rh/`: a **Diretora de RH**, que desenha cargos e contrata, avalia e ajusta os funcionários de IA. Acione com `/rh`.
 - `.claude/agents/`: os **funcionários contratados** (um arquivo por cargo).
 - `rh/organograma.md`: quem existe, vagas sugeridas e histórico.
