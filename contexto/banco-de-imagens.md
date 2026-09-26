@@ -21,7 +21,7 @@
 | **Arvorismo** | `1MGgW90nv3vRj_wBz4eWhFCn_ELzenarz` | |
 | **Infraestrutura** ("Insfraestrutura") | `1EH5gCO1UUt1sLLOKFOl03XD6cBIi-uOq` | |
 | **Lanchonete e Café da manhã** | `18esJNehu2_dkbgIodJrgYr9JUsGL39TO` | |
-| **Novos Prints 16x9** | `1HQ0Nao_bsGyzKRqjKV1ZIiA9E0HT2JC2` | Formato **16:9** (horizontal). Vários arquivos repetem os das outras pastas. Para o feed 4:5, é preciso recortar; confira se o recorte não corta o essencial |
+| **Novos Prints 16x9** | `1HQ0Nao_bsGyzKRqjKV1ZIiA9E0HT2JC2` | Formato **16:9** (horizontal). Vários arquivos repetem os das outras pastas. Para o feed 3:4 (padrão desde 2026-09-26), é preciso recortar; confira se o recorte não corta o essencial |
 
 ## Lacunas do banco (sugestões para o dono)
 - Sem pasta para **Flutuação**, **Caiaque/SUP**, **Tirolesa**, **Arco e flecha** (podem estar em "Atividades e balneário": verificar).

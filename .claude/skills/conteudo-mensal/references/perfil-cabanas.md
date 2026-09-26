@@ -4,7 +4,7 @@
 > Os **fatos** do hotel não ficam aqui: vêm sempre de `contexto/hotel-operacional.md`, `contexto/hotel-cabanas.md` e `contexto/cultura.md`. Em caso de conflito, o contexto manda.
 
 ## Identidade
-- @perfil: **[confirmar o @ oficial com o dono e registrar aqui]**
+- @perfil: **@hotelcabanasbonito** (https://www.instagram.com/hotelcabanasbonito/, conforme `hotel-operacional.md`)
 - Idioma: **português do Brasil**, tratando o leitor por **"você"**.
 - Nicho: hotel de lazer e turismo de natureza em Bonito/MS; "o seu lugar de conexão com a natureza".
 - Público: as personas de `contexto/hotel-cabanas.md` (Casais, Famílias, Aventureiros, 55+, Ciclista/Ornitólogo, Eco-conscientes). Prioridade de origem: SP, depois PR, RJ e Sul.

@@ -24,8 +24,7 @@ recomendações, página 3 opcional com o **Top 5 conteúdos do mês**.
    seguidores, alcance, interações por formato e o "Conteúdo principal" (Top 5).
    Os prints chegam anexados na conversa (ficam em `/root/.claude/uploads/...`).
 2. **Mês de referência** (ex.: "agosto 2026").
-3. O @ do perfil está em `perfil` do JSON: **[confirmar o @ oficial com o dono na
-   primeira vez e registrar aqui]**.
+3. O @ do perfil vai em `perfil` no JSON: **@hotelcabanasbonito**.
 
 Se faltar o mês ou prints essenciais, pergunte em 1 linha. **Nunca invente
 números**: sem print, sem número.
