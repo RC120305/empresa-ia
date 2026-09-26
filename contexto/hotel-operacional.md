@@ -80,6 +80,7 @@
 - **Cancelamento:** reembolso integral com 30 dias de antecedência; 50% do sinal com 15 dias; sem reembolso dentro de 15 dias. Reservas feitas por agência ou canal online seguem a política deles.
 - **Não há:** day use, espaço para eventos, transfer próprio (a equipe indica quem faça), desconto para terceira idade, oferta para aniversariantes, tarifa para longa estadia nem convênio com Bancorbrás.
 - **Reserva direta:** "nossos valores já possuem desconto para você que reserva direto em nosso site". **Argumento de canal direto.**
+- **Antecedência média de reserva:** de **45 a 50 dias** antes do check-in (informado pelo dono em 2026-09-26). Use para calcular quando cada campanha começa: o **período de venda** termina cerca de 45 dias antes do **período da estadia**, e a divulgação começa antes disso.
 
 ## 10. Como chegar
 - Pelo **Aeroporto de Bonito** (8 km), de táxi ou carro alugado (a Localiza tem loja na cidade e no aeroporto). Pelo **Aeroporto de Campo Grande** (280 km), há vans, carros privativos, ônibus e locação.

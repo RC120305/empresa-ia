@@ -30,6 +30,7 @@
 
 ## 4. Turismo de hotelaria e de natureza (o que o viajante faz)
 - Decisão longa: inspiração (Instagram, YouTube, Pinterest) → pesquisa (Google, avaliações) → comparação (OTAs) → reserva. O **orgânico inspira**; o **pago captura e relembra** (remarketing de quem viu Reels ou visitou o motor).
+- **Antecedência de reserva do Cabanas: 45 a 50 dias em média** (dono, 2026-09-26). Regra prática: para hóspedes em uma data X, o anúncio de conversão precisa estar forte de ~60 a ~45 dias antes de X; o orgânico e o aquecimento começam antes. Sempre escreva as duas datas: **período da estadia** × **período de venda**.
 - **Duas réguas de sazonalidade** (ver `destino-bonito.md`, seção 3): a verba vale mais na **janela de ouro** (maio, junho, agosto e setembro) e em campanhas antecipadas para feriados; na alta (julho, dezembro e janeiro) o foco é converter quem já pesquisou.
 - **Canal direto × OTA:** reserva direta é mais rentável; o argumento aprovado é "valores com desconto para quem reserva direto".
 - **Público local para atividades:** boia cross e arvorismo também atendem não hóspedes (`hotel-operacional.md`); o indicador "ticket médio de visitantes não hóspedes" (`cultura.md`) abre espaço para campanhas regionais pequenas.
