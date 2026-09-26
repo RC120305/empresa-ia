@@ -1,36 +1,59 @@
 # Descrição de Vaga: <Nome do Cargo>
 
-- **Slug:** `<slug-do-cargo>` (nome do arquivo do agente)
+- **Slug:** `<slug>` (nome do arquivo do agente, sem acentos ou espaços)
 - **Status:** proposta | aprovada | contratada | recusada
 - **Data:** AAAA-MM-DD
+- **Tipo:** nova vaga | ampliação de escopo de `<slug existente>`
 
-## Por que esta vaga existe
-Qual necessidade estratégica ela resolve? Cite o contexto: lacuna da curva de valor, ação da matriz ERIC, persona, fraqueza ou oportunidade do SWOT.
+## 1. Por que esta vaga existe
+Necessidade estratégica, com **citação do contexto** (curva de valor, ERIC, persona, SWOT).
+Por que um agente de IA é a solução certa, e não uma simples instrução ou um humano?
 
-## Missão do cargo
-Uma frase: o que este funcionário entrega para o hotel.
+## 2. Missão do cargo
+Uma frase: o resultado que este funcionário entrega ao hotel.
 
-## Responsabilidades
-- ...
-- ...
+## 3. Análise de cargo
+| Pergunta | Resposta |
+|---|---|
+| Resultado de negócio que move | |
+| Tarefas recorrentes (verbo + objeto + frequência) | |
+| Conhecimentos necessários | |
+| Habilidades necessárias | |
+| Com quem interage (recebe / entrega) | |
+| O que NÃO faz | |
 
-## Qualificações necessárias
-Conhecimentos e habilidades que o agente precisa demonstrar (ex.: copywriting para Meta Ads, conhecimento das personas, tom de voz da marca).
+## 4. Mapa de competências
+- **Saber (conhecimentos e fontes):**
+- **Saber fazer (habilidades que as instruções devem ensinar):**
+- **Saber ser (tom, postura, limites éticos):**
 
-## Ferramentas (acesso mínimo)
+## 5. Ferramentas (acesso mínimo)
 | Ferramenta | Para quê |
 |---|---|
 | Read | Ler o contexto da empresa |
-| ... | ... |
 
-## Entregas esperadas
-Exemplos concretos do que ele produz e em que formato.
+## 6. Entregas esperadas
+Exemplos concretos e formato.
 
-## Limites
-O que este cargo **não** faz, para evitar sobreposição com outros funcionários e riscos.
+## 7. RACI das principais entregas
+| Entrega | R | A | C | I |
+|---|---|---|---|---|
+| | <slug> | Dono | | |
 
-## Como será avaliado
-3 tarefas de teste para o período de experiência, com o critério de sucesso de cada uma.
+## 8. Objetivo e indicadores
+- **Objetivo:**
+- **KPI de qualidade:** (ex.: nota média do dono ≥ 4; ≥ 80% das entregas aprovadas sem retrabalho)
+- **KPI de negócio:** (ou "a medir", com os dados necessários)
 
-## A quem responde
-Dono(a) do hotel / RH / outro cargo.
+## 9. Período de experiência
+| # | Tarefa de teste | Critérios de sucesso |
+|---|---|---|
+| 1 | | |
+| 2 | | |
+| 3 (caso difícil) | | |
+
+## 10. A quem responde
+Dono(a) / outro cargo.
+
+## 11. Informações a confirmar com o dono
+- ...

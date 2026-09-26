@@ -9,7 +9,9 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
 - `.claude/agents/`: os **funcionários contratados** (um arquivo por cargo).
 - `rh/organograma.md`: quem existe, vagas sugeridas e histórico.
 - `rh/vagas/`: descrições de vaga.
-- `rh/avaliacoes/`: testes do período de experiência.
+- `rh/avaliacoes/`: testes do período de experiência dos funcionários.
+- `rh/base-de-conhecimento.md`: métodos de RH, boas práticas de agentes e cargos de hotelaria (a "formação" da RH).
+- `rh/testes-do-rh.md`: cenários de validação da própria RH.
 
 ## Regras gerais
 - Responder sempre em **português do Brasil**.
