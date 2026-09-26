@@ -5,6 +5,8 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
 ## Estrutura
 - `contexto/hotel-cabanas.md`: **fonte de verdade** sobre o hotel (estratégia, personas, SWOT, curva de valor). Todo agente deve lê-lo antes de trabalhar.
 - `contexto/Guia_Estrategico_Hotel_Cabanas.pdf`: documento original.
+- `contexto/destino-bonito.md`: conhecimento sobre o destino Bonito/MS e o turismo de natureza (fatos do destino, não do hotel).
+- `marketing/`: rascunhos produzidos pelo Especialista em Marketing e Anúncios.
 - `.claude/skills/rh/`: a **Diretora de RH**, que desenha cargos e contrata, avalia e ajusta os funcionários de IA. Acione com `/rh`.
 - `.claude/agents/`: os **funcionários contratados** (um arquivo por cargo).
 - `rh/organograma.md`: quem existe, vagas sugeridas e histórico.
