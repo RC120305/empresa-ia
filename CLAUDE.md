@@ -7,6 +7,7 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
 - `contexto/cultura.md`: **Código de Cultura**: propósito, slogan, história, valores, vantagens, indicadores e os **6 filtros de decisão**. Todos os agentes seguem esses valores.
 - `contexto/hotel-operacional.md`: **fatos operacionais** do hotel (acomodações, o que está incluído, atividades e preços, horários, políticas, links e contatos).
 - `contexto/*.pdf` e `contexto/*.docx`: documentos originais do dono.
+- `contexto/guia-estilo-instagram.md`: **guia de estilo visual e de texto** do Instagram, a partir das referências do dono (prints em `contexto/referencias-instagram/`).
 - `contexto/destino-bonito.md`: conhecimento sobre o destino Bonito/MS e o turismo de natureza (fatos do destino, não do hotel).
 - `marketing/`: rascunhos produzidos pelo Especialista em Marketing e Anúncios.
 - `.claude/skills/rh/`: a **Diretora de RH**, que desenha cargos e contrata, avalia e ajusta os funcionários de IA. Acione com `/rh`.
