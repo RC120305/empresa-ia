@@ -63,3 +63,4 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | Marketing v2.3: leitura do Google Drive (banco de imagens), somente leitura e restrita à pasta oficial. | Aprovação do dono |
 | 2026-09-26 | Logo branco monocromático recebido (`contexto/marca/logo-hotel-cabanas-branco.png`, PNG transparente). | Material do dono |
 | 2026-09-26 | Banco de imagens preenchido pelo dono; mapa das pastas criado em `contexto/banco-de-imagens.md` e referenciado nas instruções do Marketing. | Material do dono |
+| 2026-09-26 | Dono descreveu o Bangalô Especial (45 m², até 4 pessoas, 2 camas king, para famílias). Contexto, mapa do banco de imagens e Marketing atualizados. | Resposta do dono |

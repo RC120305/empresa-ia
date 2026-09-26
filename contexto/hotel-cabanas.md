@@ -20,6 +20,7 @@
 | Cabanas de madeira suspensas na altura das árvores | Privacidade e romance | Casais |
 | Apartamentos (standard, superior, conjugado) | Standard e superior para 2 a 4 pessoas; conjugado para até 5 | Famílias |
 | Bangalôs (alvenaria) | Privativos, **até 4 pessoas** | Famílias e casais |
+| Bangalô Especial | 45 m², até 4 pessoas em 2 camas king, varanda com rede | Famílias com filhos |
 | Cabana Master | 85 m², 2 a 5 pessoas, banheira de hidromassagem | Famílias e casais |
 
 > **Capacidade para 5 pessoas: somente a Cabana Master e o Apartamento Conjugado** (confirmado pelo dono).
