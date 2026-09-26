@@ -3,8 +3,9 @@
 ```
 Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
    └── RH (Diretora de Pessoas)
-         ├── Especialista em Marketing e Anúncios (marketing-anuncios)
-         └── Designer de Criativos (designer-criativos)   ← recebe a direção de arte do Marketing
+         ├── Estrategista de Social Media e Tráfego (social-media-trafego)   ← planeja: o que, quando, para quem, com quanto
+         ├── Especialista em Marketing e Anúncios (marketing-anuncios)   ← escreve
+         └── Designer de Criativos (designer-criativos)   ← monta as artes
 ```
 
 ## Equipe ativa
@@ -12,6 +13,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 |---|---|---|---|---|---|
 | RH (Diretora de Pessoas) | `.claude/skills/rh/SKILL.md` | Ativa (aprovada no processo seletivo) | 2026-09-26 | Montar uma equipe enxuta e alinhada à estratégia | 4,6 (ver `rh/testes-do-rh.md`) |
 | Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.3 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
+| Estrategista de Social Media e Tráfego | `.claude/agents/social-media-trafego.md` | **Ativo, v1 (aprovado na experiência)** | 2026-09-26 | Transformar Instagram e tráfego em reservas diretas | **4,81** (teste simulado); ver `rh/avaliacoes/social-media-trafego.md` |
 | Designer de Criativos | `.claude/agents/designer-criativos.md` | **Efetivado, v1.1 (aprovado pelo dono)** | 2026-09-26 | Transformar a direção de arte em peças prontas (PNG) com fotos reais | **4,53** (teste simulado); ver `rh/avaliacoes/designer-criativos.md` |
 
 ## Matriz RACI (decisões da empresa)
@@ -22,6 +24,8 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Preparar conteúdo externo (rascunho) | Funcionário responsável | Dono | RH (se envolver tom e valores) | — |
 | Publicar conteúdo externo | Dono (funcionários de IA nunca publicam) | Dono | Funcionário responsável | — |
 | Arte final das peças (PNG) | designer-criativos | Dono | marketing-anuncios | — |
+| Calendário, pauta e plano de tráfego (verba em cenários) | social-media-trafego | Dono | marketing-anuncios, designer-criativos | — |
+| Executar campanhas e publicar | Dono | Dono | social-media-trafego | Equipe |
 | Atualizar o contexto do hotel | Dono | Dono | RH | Equipe |
 
 ## Vagas sugeridas (aguardando o diagnóstico do RH e a aprovação do dono)
@@ -37,6 +41,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Funcionário | Objetivo | KPIs |
 |---|---|---|
 | marketing-anuncios | Reduzir o marketing genérico; comunicar os 4 diferenciais e o custo-benefício | Nota do dono ≥ 4; ≥ 80% sem retrabalho; zero fatos inventados *(meta proposta, a validar)*; reservas e engajamento a medir |
+| social-media-trafego | Reservas diretas via Instagram e tráfego | Nota do dono ≥ 4; zero fatos ou resultados inventados *(meta proposta, a validar)*; reservas diretas, custo por reserva direta e envios por alcance a medir |
 | designer-criativos | Peças prontas, bonitas e verdadeiras, sem etapa manual | Nota do dono ≥ 4; ≥ 80% sem retrabalho; zero fatos não confirmados e zero imagens de IA *(meta proposta, a validar)*; engajamento por pilar a medir |
 
 ## Histórico
@@ -73,3 +78,5 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | Carrossel da Cabana Casal: primeiro trabalho em dupla Marketing (copy imersiva) + Designer (arte), em 3 rodadas de ajuste com o dono. | Entrega real para a decisão final |
 | 2026-09-26 | Dono aprovou **duas opções oficiais de layout** (com faixa discreta e sem faixa), títulos menores (54–56 px) e **copy imersiva, não descritiva**. Registrado no guia de estilo (item 0b); modelos no kit (`design/modelos/modelo-faixa-discreta.html` e `modelo-sem-faixa.html`). Dono confirmou: toalhas em forma de bichos são arrumação padrão (`hotel-operacional.md`). | Decisão do dono |
 | 2026-09-26 | **Designer de Criativos efetivado pelo dono.** Ajuste v1.1 aplicado (tratamento por "você", recusa curta, tamanhos mínimos, duas opções de layout, opcional na arte, copy imersiva); v1 guardada em `rh/avaliacoes/versoes/`. Reteste T1 e T3 aprovado. | Palavra final do dono |
+| 2026-09-26 | **Contratado o Estrategista de Social Media e Tráfego** (`social-media-trafego`), a pedido do dono (tráfego pago e orgânico, hotelaria e turismo de natureza, atualizado; referência: Bárbara Bruna). Base técnica criada com fontes e data: `contexto/social-e-trafego.md` (revisão a cada 3 meses). WebSearch oferecido como opção, fora até o "sim" do dono. | Taxa de ocupação levemente abaixo da concorrência; ninguém planejava e media o caminho até a reserva direta |
+| 2026-09-26 | Experiência do Estrategista: média 4,81 (T1 4,75; T2 5,0; T3 4,67), teste simulado. Proposta v1.1 (priorizar 3 decisões, checagem antes de publicar, estadia × venda) e proposta de ajuste do Marketing (calendário e segmentação passam ao Estrategista), aguardando o dono. | Avaliação independente; evitar sobreposição |

@@ -11,7 +11,10 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
 - `contexto/marca/`: logo e **identidade visual** (paleta e tipografia).
 - `contexto/destino-bonito.md`: conhecimento sobre o destino Bonito/MS e o turismo de natureza (fatos do destino, não do hotel).
 - **Banco de imagens (Google Drive):** pasta "Imagens do hotel cabanas" (dentro de "Hotel Cabanas"), https://drive.google.com/drive/folders/1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5 (ID `1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5`). Só fotos reais do hotel. Mapa das subpastas: `contexto/banco-de-imagens.md`.
+- `contexto/social-e-trafego.md`: base técnica de Instagram, Meta Ads e Google para hotéis (com fontes e data; revisar a cada 3 meses).
 - `marketing/`: rascunhos produzidos pelo Especialista em Marketing e Anúncios.
+- `design/`: kit do Designer de Criativos (`modelos/`, `ferramentas/`) e peças prontas em `pecas/`.
+- `social/`: planos e análises do Estrategista de Social Media e Tráfego.
 - `.claude/skills/rh/`: a **Diretora de RH**, que desenha cargos e contrata, avalia e ajusta os funcionários de IA. Acione com `/rh`.
 - `.claude/agents/`: os **funcionários contratados** (um arquivo por cargo).
 - `rh/organograma.md`: quem existe, vagas sugeridas e histórico.
