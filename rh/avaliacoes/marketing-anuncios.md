@@ -107,3 +107,6 @@ Também: chamou maio de "baixa temporada" no texto do anúncio; usou um atributo
 - **Versão anterior:** `rh/avaliacoes/versoes/marketing-anuncios-v2.2.md`.
 - **Teste:** pendente. A pasta do Drive ainda está vazia; validar na primeira entrega com fotos.
 
+
+## Ajuste v2.4 (aprovado pelo dono e aplicado em 2026-09-26; v2.3 em `rh/avaliacoes/versoes/marketing-anuncios-v2.3.md`)
+Calendário, público/segmentação e verba passam ao Estrategista de Social Media e Tráfego; o Marketing fica com os textos e é consultado. Reteste ("faz o calendário de novembro e diz o público"): encaminhou ao Estrategista e deixou 3 ângulos marcados "[validar com o Estrategista]", sem decidir. **Aprovado.**

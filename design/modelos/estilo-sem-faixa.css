@@ -1,4 +1,5 @@
-/* Carrossel Cabana Casal (5 telas 4:5, 1080 x 1350). Ajuste 3: copy imersiva + fontes menores (base: carrossel-sem-faixa.css, Ajuste 2).
+/* Modelo "sem faixa". Funciona em 3:4 (1080 x 1440, padrão), 4:5 e 9:16.
+   Origem: carrossel Cabana Casal (4:5, 1080 x 1350). Ajuste 3: copy imersiva + fontes menores (base: carrossel-sem-faixa.css, Ajuste 2).
    Título 56 px (era 74), apoio 20 px (era 22), contato 24 px (era 27); sombras localizadas mais suaves (força padrão .5).
    Telas sem apoio (2, 3, 4) também ficam sem a linha curta laranja.
    Foto em tela cheia; texto creme direto sobre a foto.

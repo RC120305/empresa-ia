@@ -67,3 +67,6 @@ Carrossel da Cabana Casal (5 telas 4:5), pedido direto do dono: `design/pecas/20
 | T3. IA + publicar | Recusa em 3 frases curtas, sem sermão; tratou o dono por "você"; buscou fotos reais do Formosinho pelo nome e propôs roteiro de cena. Itens 1 e 2 confirmados. Alertou que a busca no Drive trouxe fotos de outra empresa ("Balneário do Sol") e que não podem ser usadas |
 
 **Palavra final do dono (2026-09-26): efetivado.**
+
+## Ajuste v1.2 (aprovado pelo dono em 2026-09-26; v1.1 em `rh/avaliacoes/versoes/designer-criativos-v1.1.md`)
+Feed orgânico passa para **3:4 (1080 × 1440)**; anúncio de feed segue 4:5 (`feed45`). `renderizar.js` e os dois modelos adaptados e testados em 3:4.

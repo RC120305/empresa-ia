@@ -12,9 +12,9 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Cargo | Arquivo | Status | Desde | Objetivo | Nota na experiência |
 |---|---|---|---|---|---|
 | RH (Diretora de Pessoas) | `.claude/skills/rh/SKILL.md` | Ativa (aprovada no processo seletivo) | 2026-09-26 | Montar uma equipe enxuta e alinhada à estratégia | 4,6 (ver `rh/testes-do-rh.md`) |
-| Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.3 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
-| Estrategista de Social Media e Tráfego | `.claude/agents/social-media-trafego.md` | **Ativo, v1 (aprovado na experiência)** | 2026-09-26 | Transformar Instagram e tráfego em reservas diretas | **4,81** (teste simulado); ver `rh/avaliacoes/social-media-trafego.md` |
-| Designer de Criativos | `.claude/agents/designer-criativos.md` | **Efetivado, v1.1 (aprovado pelo dono)** | 2026-09-26 | Transformar a direção de arte em peças prontas (PNG) com fotos reais | **4,53** (teste simulado); ver `rh/avaliacoes/designer-criativos.md` |
+| Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.4 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
+| Estrategista de Social Media e Tráfego | `.claude/agents/social-media-trafego.md` | **Ativo, v1.1 (aprovado)** | 2026-09-26 | Transformar Instagram e tráfego em reservas diretas | **4,81** (teste simulado); ver `rh/avaliacoes/social-media-trafego.md` |
+| Designer de Criativos | `.claude/agents/designer-criativos.md` | **Efetivado, v1.2 (aprovado pelo dono)** | 2026-09-26 | Transformar a direção de arte em peças prontas (PNG) com fotos reais | **4,53** (teste simulado); ver `rh/avaliacoes/designer-criativos.md` |
 
 ## Matriz RACI (decisões da empresa)
 | Decisão | R (executa) | A (aprova) | C (consultado) | I (informado) |
@@ -81,3 +81,4 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | **Contratado o Estrategista de Social Media e Tráfego** (`social-media-trafego`), a pedido do dono (tráfego pago e orgânico, hotelaria e turismo de natureza, atualizado; referência: Bárbara Bruna). Base técnica criada com fontes e data: `contexto/social-e-trafego.md` (revisão a cada 3 meses). WebSearch oferecido como opção, fora até o "sim" do dono. | Taxa de ocupação levemente abaixo da concorrência; ninguém planejava e media o caminho até a reserva direta |
 | 2026-09-26 | Experiência do Estrategista: média 4,81 (T1 4,75; T2 5,0; T3 4,67), teste simulado. Proposta v1.1 (priorizar 3 decisões, checagem antes de publicar, estadia × venda) e proposta de ajuste do Marketing (calendário e segmentação passam ao Estrategista), aguardando o dono. | Avaliação independente; evitar sobreposição |
 | 2026-09-26 | Dono informou a antecedência média de reserva: 45 a 50 dias. Registrado em `hotel-operacional.md` e `social-e-trafego.md`. | Resposta do dono |
+| 2026-09-26 | Dono aprovou: Estrategista v1.1 (3 decisões no topo, checagem antes de publicar, estadia × venda com 45 a 50 dias); Marketing v2.4 (calendário, público e verba passam ao Estrategista); feed orgânico em **3:4** (Designer v1.2, kit e guia atualizados). Retestes aprovados. | Aprovação do dono |

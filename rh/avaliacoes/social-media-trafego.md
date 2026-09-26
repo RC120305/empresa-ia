@@ -47,3 +47,6 @@
 | 1 | Lista longa de perguntas | Abrir com **"as 3 decisões que preciso de você agora"**; o resto vai para um anexo |
 | 2 | Sem checagem de publicação | Checklist antes de subir: pixel/UTM, link de destino, texto conferido, autorização de imagem, verba e datas |
 | 3 | — | Separar sempre **período da estadia** × **período de venda**; confirmar de qual campanha o dono fala antes de mudar o plano |
+
+## Ajuste v1.1 (aprovado e aplicado em 2026-09-26; v1 em `rh/avaliacoes/versoes/social-media-trafego-v1.md`)
+Aplicados os 3 itens + antecedência de 45 a 50 dias + formatos (feed 3:4, anúncio 4:5). **Reteste** ("lotar o feriado de 15/11 e subir com R$ 40/dia"): abriu com as 3 decisões; separou estadia × venda e calculou o atraso (14/11 − 45 dias = 30/09); percebeu que 15/11/2026 é domingo e que o feriadão real é 20 a 22/11; recusou subir a campanha e incluiu a checagem antes de publicar. Ponto de atenção: chamou o Piquenique Sunset de "pago à parte" (o contexto diz só "opcional"). **Aprovado.**

@@ -15,10 +15,10 @@
 **Duas opções de layout, ambas oficiais.** O Designer escolhe pela luz da foto e mantém **a mesma opção em todas as telas** de um carrossel.
 | Opção | Como é | Quando usar | Modelo no kit |
 |---|---|---|---|
-| **Com faixa discreta** | Foto no alto; faixa marrom `#847059` de largura total com **no máximo ~22% da altura** (≈290 px no 4:5); texto à esquerda; à direita, numeração + logo branco + "BONITO · MS", separados por fio laranja vertical | Fotos **claras** (dia, céu, paredes claras); quando a leitura precisa ser garantida | `design/modelos/modelo-faixa-discreta.html` |
+| **Com faixa discreta** | Foto no alto; faixa marrom `#847059` de largura total com **no máximo ~22% da altura** (≈290 px); texto à esquerda; à direita, numeração + logo branco + "BONITO · MS", separados por fio laranja vertical | Fotos **claras** (dia, céu, paredes claras); quando a leitura precisa ser garantida | `design/modelos/modelo-faixa-discreta.html` |
 | **Sem faixa** | Foto em tela cheia; texto direto sobre a foto com **sombra suave e localizada** só atrás do bloco de texto (nunca escurecer a foto inteira nem a água) | Fotos com área **escura ou calma** para o texto (madeira, fim de tarde, varanda iluminada) | `design/modelos/modelo-sem-faixa.html` |
 - **Faixa grande (≈1/3 da altura) não é mais usada:** o dono prefere algo discreto.
-- **Tamanho do título:** **54 a 56 px** no feed 4:5 (o dono pediu fontes menores). Apoio de 19 a 20 px; a linha de apoio e a linha curta laranja só aparecem quando há apoio.
+- **Tamanho do título:** **54 a 56 px** no feed (3:4 ou 4:5) (o dono pediu fontes menores). Apoio de 19 a 20 px; a linha de apoio e a linha curta laranja só aparecem quando há apoio.
 - **Copy da arte: imersiva, não descritiva.** O texto da arte fala do que a pessoa **sente** (conexão com a natureza, desacelerar); a foto e a legenda mostram o que é. Ex. aprovado: "Aqui, a *pressa* **fica** no chão"; "Na **rede**, o tempo *balança* devagar". Evite legendar a foto ("Cama king sob o teto de madeira"). A regra de verdade continua: poesia sim, fato inventado não (nada de vista, silêncio absoluto, exclusividade ou fauna garantida).
 
 ## 1. O que as referências têm em comum
@@ -123,7 +123,8 @@ As referências usam uma **cor de marca** nas faixas e nos detalhes (a terracota
 ## 5b. Kit de produção
 | Item | Padrão |
 |---|---|
-| **Feed/carrossel** | **4:5** (1080 × 1350 px) |
+| **Feed/carrossel orgânico** | **3:4 (1080 × 1440 px)**, padrão desde 2026-09-26 (decisão do dono): casa com a grade do perfil, sem corte. Posts antigos em 4:5 continuam válidos |
+| **Anúncios no feed (Meta)** | **4:5 (1080 × 1350 px)** |
 | **Reels/Stories** | **9:16** (1080 × 1920 px); texto e logo **fora** dos 250 px de cima e de baixo (área coberta pela interface) |
 | **Margem segura** | Pelo menos 60 px das bordas para texto e logo |
 | **Nome das fotos no Drive** | Padrão em uso pelo dono: `local_nº_cena` (ex.: `cabana_casal_01_interna`, `cabana_master_interna_ambiente_casal_detalhe_cama`). Busque primeiro pelo nome |

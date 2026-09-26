@@ -9,7 +9,7 @@
 | Sinais mais fortes: **tempo de exibição** (total e replay), **envios por alcance** (compartilhamento por DM, cerca de 3 a 5 vezes o peso de uma curtida) e curtidas por alcance. Feed, Reels, Stories e Explorar têm rankings separados | Pensar em conteúdo **que a pessoa manda para alguém** ("olha onde a gente podia ir"): casal marca o parceiro, família manda no grupo. Gancho nos 2 primeiros segundos do Reels |
 | **Trial Reels:** testar um Reels só com quem não segue | Testar ganchos e ângulos novos sem "gastar" o feed |
 | Memorando de Adam Mosseri (31/12/2025): a estética "polida e perfeita" perdeu força; conteúdo **real e humano** e sinais de **autenticidade/procedência** ganham peso; conteúdo gerado por IA perde prioridade | Casa com a regra do hotel (**nunca imagem de IA**). Misturar peças editoriais (Designer) com bastidores reais: equipe, rio de manhã, preparação do café, monitor na trilha |
-| **Grade do perfil em 3:4** (1080 × 1440) desde jan/2025; posts 4:5 aparecem cortados nas laterais na grade | **Decisão pendente do dono:** manter 4:5 (1080 × 1350) ou migrar o feed para 3:4. Até decidir, deixar o texto e o logo longe das laterais |
+| **Grade do perfil em 3:4** (1080 × 1440) desde jan/2025; posts 4:5 aparecem cortados nas laterais na grade | **Decidido pelo dono (2026-09-26):** feed orgânico em **3:4 (1080 × 1440)**; anúncios de feed continuam em **4:5 (1080 × 1350)** |
 
 ## 2. Meta Ads (Facebook + Instagram)
 | Regra atual | Como usar no Cabanas |

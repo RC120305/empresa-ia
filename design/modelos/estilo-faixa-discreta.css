@@ -1,4 +1,5 @@
-/* Carrossel Cabana Casal (5 telas 4:5, 1080 x 1350). Ajuste 3: copy imersiva + fontes menores (base: carrossel.css, Ajuste 1).
+/* Modelo "com faixa discreta". Funciona em 3:4 (1080 x 1440, padrão), 4:5 e 9:16: a foto ocupa tudo acima da faixa.
+   Origem: carrossel Cabana Casal (4:5, 1080 x 1350). Ajuste 3: copy imersiva + fontes menores (base: carrossel.css, Ajuste 1).
    Título 54 px (era 64), apoio 19 px (era 21), contato 22 px (era 24).
    Telas sem apoio (2, 3, 4) também ficam sem a linha curta laranja.
    Mesmo layout nas 5 telas: foto real no alto (1080 x 1060, nada escondido atrás do texto)
@@ -8,7 +9,7 @@
    Fotos claras de dia: texto creme só dentro da faixa marrom, nunca direto sobre a foto.
    Versão anterior (faixa de 450 px): v1-carrossel.css. */
 
-.foto { height: 1060px; bottom: auto; }
+.foto { height: calc(100% - 290px); bottom: auto; }
 
 .rodape.faixa {
   position: absolute; left: 0; right: 0; bottom: 0; height: 290px;
