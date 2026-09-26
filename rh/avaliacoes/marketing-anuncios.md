@@ -93,3 +93,10 @@ Também: chamou maio de "baixa temporada" no texto do anúncio; usou um atributo
 
 ## Parecer final da RH
 **APROVADO.** Médias: 1ª rodada 4,0 → reteste 4,33 → R3 final 4,5. Funcionário **ativo (v2.1)**. Próxima avaliação: revisão mensal, com as notas reais do dono sobre as peças usadas.
+
+## Ajuste v2.2: direção de arte (2026-09-26)
+- **Aprovação do dono:** "Pode incluir o guia de estilo e a identidade visual nas instruções do especialista em marketing."
+- **Mudanças:** passa a ler `contexto/guia-estilo-instagram.md` e `contexto/marca/identidade.md`; toda peça de Instagram traz a direção de arte (pilar, foto real, texto de 3 a 8 palavras, tipografia e cores da marca, assinatura); proibição de imagens de IA ou de banco de imagens para mostrar o hotel.
+- **Versão anterior:** `rh/avaliacoes/versoes/marketing-anuncios-v2.1.md`.
+- **Teste:** não executado (o dono optou por finalizar). Validar na primeira entrega real.
+

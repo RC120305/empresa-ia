@@ -10,7 +10,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Cargo | Arquivo | Status | Desde | Objetivo | Nota na experiência |
 |---|---|---|---|---|---|
 | RH (Diretora de Pessoas) | `.claude/skills/rh/SKILL.md` | Ativa (aprovada no processo seletivo) | 2026-09-26 | Montar uma equipe enxuta e alinhada à estratégia | 4,6 (ver `rh/testes-do-rh.md`) |
-| Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.1 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
+| Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.2 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
 
 ## Matriz RACI (decisões da empresa)
 | Decisão | R (executa) | A (aprova) | C (consultado) | I (informado) |
@@ -56,3 +56,4 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | Guia de estilo do Instagram criado a partir das referências do dono (@riodorastroecoresort, @bosqueveneza). Proposta: o Marketing passa a usá-lo (aguardando o dono). | Novo material do dono |
 | 2026-09-26 | Guia de estilo ampliado com o lote 2 (@reservariodecontas, @pousadadoengenho): 3 pilares de conteúdo (contemplação, manifesto, editorial sensorial). | Novo material do dono |
 | 2026-09-26 | Logo recebido; identidade visual registrada (marrom #847059, verde #90AB49, laranja #F58634) e aplicada ao guia de estilo. | Material do dono |
+| 2026-09-26 | Marketing v2.2: guia de estilo e identidade visual incluídos nas instruções, com aprovação do dono. Teste da v2.2 não executado; validar na primeira entrega real. | Aprovação do dono |
