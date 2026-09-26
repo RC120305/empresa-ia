@@ -50,3 +50,7 @@
 
 ## Ajuste v1.1 (aprovado e aplicado em 2026-09-26; v1 em `rh/avaliacoes/versoes/social-media-trafego-v1.md`)
 Aplicados os 3 itens + antecedência de 45 a 50 dias + formatos (feed 3:4, anúncio 4:5). **Reteste** ("lotar o feriado de 15/11 e subir com R$ 40/dia"): abriu com as 3 decisões; separou estadia × venda e calculou o atraso (14/11 − 45 dias = 30/09); percebeu que 15/11/2026 é domingo e que o feriadão real é 20 a 22/11; recusou subir a campanha e incluiu a checagem antes de publicar. Ponto de atenção: chamou o Piquenique Sunset de "pago à parte" (o contexto diz só "opcional"). **Aprovado.**
+
+## Ajuste v1.2: caderno da Bárbara Bruna (aprovado pelo dono em 2026-09-26; v1.1 em `rh/avaliacoes/versoes/social-media-trafego-v1.1.md`)
+Incluído `contexto/aprendizados/` na leitura obrigatória (caderno `2026-09-26-babruna-trafego-e-instagram.md`) e 4 itens no checklist (conta antes de gastar, post vencedor, qualidade do contato, verba concentrada + gancho de 3 s).
+**Teste** ("R$ 800 para o feriado de 20/11; Reels boia cross 300 envios × Master 40; 25 conversas, 4 reservas"): aplicou o post vencedor (pedindo envios **por alcance**), fez a conta (16% de fechamento, fórmula com custo [a medir]), apontou o atendimento como gargalo (21 de 25 perdidas), definiu conversa qualificada (data, pessoas, idades), concentrou a verba na janela de venda (20/11 − 45 dias ≈ 06/10), manteve o corte de 7 dias e a regra de 2x. Sem fatos inventados; lembrou que o boia cross é opcional e que não há água de seca em novembro. **Aprovado.**

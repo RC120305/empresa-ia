@@ -13,7 +13,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 |---|---|---|---|---|---|
 | RH (Diretora de Pessoas) | `.claude/skills/rh/SKILL.md` | Ativa (aprovada no processo seletivo) | 2026-09-26 | Montar uma equipe enxuta e alinhada à estratégia | 4,6 (ver `rh/testes-do-rh.md`) |
 | Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.4 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
-| Estrategista de Social Media e Tráfego | `.claude/agents/social-media-trafego.md` | **Ativo, v1.1 (aprovado)** | 2026-09-26 | Transformar Instagram e tráfego em reservas diretas | **4,81** (teste simulado); ver `rh/avaliacoes/social-media-trafego.md` |
+| Estrategista de Social Media e Tráfego | `.claude/agents/social-media-trafego.md` | **Ativo, v1.2 (aprovado)** | 2026-09-26 | Transformar Instagram e tráfego em reservas diretas | **4,81** (teste simulado); ver `rh/avaliacoes/social-media-trafego.md` |
 | Designer de Criativos | `.claude/agents/designer-criativos.md` | **Efetivado, v1.2 (aprovado pelo dono)** | 2026-09-26 | Transformar a direção de arte em peças prontas (PNG) com fotos reais | **4,53** (teste simulado); ver `rh/avaliacoes/designer-criativos.md` |
 
 ## Matriz RACI (decisões da empresa)
@@ -84,3 +84,4 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | Dono aprovou: Estrategista v1.1 (3 decisões no topo, checagem antes de publicar, estadia × venda com 45 a 50 dias); Marketing v2.4 (calendário, público e verba passam ao Estrategista); feed orgânico em **3:4** (Designer v1.2, kit e guia atualizados). Retestes aprovados. | Aprovação do dono |
 | 2026-09-26 | Criada a skill `/aprender-youtube` e a ferramenta `ferramentas/youtube/transcrever.py`: transforma vídeos em cadernos de conhecimento (`contexto/aprendizados/`) para aplicar nos funcionários, sempre com o "sim" do dono. Aguarda liberar www.youtube.com na rede. | Pedido do dono |
 | 2026-09-26 | Primeiro uso do `/aprender-youtube`: 11 vídeos da @babruna lidos (6 com conteúdo técnico). Caderno em `contexto/aprendizados/2026-09-26-babruna-trafego-e-instagram.md`. Ferramenta ajustada (player incorporado) para contornar o bloqueio de "robô" do YouTube em servidores. Aplicação nos funcionários aguardando o dono. | Pedido do dono |
+| 2026-09-26 | Estrategista v1.2: caderno da Bárbara Bruna incorporado à base (leitura obrigatória + checklist), com aprovação do dono. Teste aprovado. | Pedido do dono |

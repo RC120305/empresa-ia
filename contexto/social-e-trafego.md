@@ -1,6 +1,7 @@
 # Social Media e Tráfego: base de conhecimento (atualizada em 2026-09-26)
 
 > Pesquisa da RH para o cargo de Estrategista de Social Media e Tráfego. **Plataformas mudam rápido:** tudo aqui tem data e fonte. Antes de uma decisão cara (verba, estrutura de campanha), confirme se a regra continua valendo. Revisão sugerida: **a cada 3 meses**.
+> **Cadernos de aprendizado** (vídeos estudados com `/aprender-youtube`): `contexto/aprendizados/`. O primeiro é o da Bárbara Bruna (2026-09-26).
 > Referência de estilo indicada pelo dono: **Bárbara Bruna** (@babruna), especialista em tráfego pago, criadora do Método Áureo e do "Tráfego de Plataforma®", com conteúdo sobre campanhas no Facebook, Instagram e Google Ads. Usamos a **postura** (tráfego como sistema de vendas, foco em resultado, criativo que prende nos primeiros segundos), nunca cópia de material pago dela.
 
 ## 1. Instagram orgânico (2026)
