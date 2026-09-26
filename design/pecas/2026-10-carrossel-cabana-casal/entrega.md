@@ -68,3 +68,24 @@ Não usei vista, rio, proximidade do rio, "romântico", ar-condicionado, TV, fri
 ## Para quem
 - **Você (dono):** pendências 1 a 4 e aprovação das 5 telas.
 - **Marketing (`marketing-anuncios`):** legenda do carrossel. Ela deve trazer os fatos (30 m², cama king, varanda privativa com rede, garagem privativa, não acomoda menores de 5 anos) e, conforme a pendência 1, a ressalva sobre a decoração.
+
+## Ajuste 1 (faixa discreta)
+**Seu pedido:** "gostei, mas achei a faixa marrom um pouco grande; gosto de algo mais discreto".
+
+**O que mudou (igual nas 5 telas):**
+| Item | Antes (v1) | Agora |
+|---|---|---|
+| Faixa marrom | 1080 × 450 px (33% da altura) | **1080 × 290 px (21,5% da altura)** |
+| Foto | 1080 × 900 px | **1080 × 1060 px** (+160 px de foto, 78,5% da tela) |
+| Título | Playfair 66 px | **Playfair 64 px** |
+| Apoio | 24 px | **21 px** |
+| Assinatura | fio laranja horizontal na largura toda + BONITO · MS + logo 110 px | **coluna à direita de 200 px**: fio laranja vertical (1 px) + numeração no alto + logo branco **104 px** + BONITO · MS (17 px) embaixo |
+| Numeração | 22 px, canto direito | 20 px, alto da coluna da assinatura |
+
+- **Escolha: faixa baixa de largura toda, não bloco compacto sobre a foto.** As fotos são 4:3 (paisagem). Para pôr um bloco sobre a foto, ela teria de ocupar a tela inteira (1350 px de altura), o que cortaria cerca de 40% das laterais: a cabana da tela 1 e as duas cabanas da tela 5 ficariam cortadas. Com a faixa de 290 px abaixo da foto, a foto ganha 160 px de altura e nada do essencial fica escondido.
+- **Marrom sólido, sem transparência:** a faixa não se sobrepõe à foto, então a transparência não mostraria nada além de preto. Nenhuma foto foi escurecida.
+- **Tela 5:** para caber o título em duas linhas mais o site e o WhatsApp (24 px, legíveis no celular), **tirei o apoio "GARAGEM PRIVATIVA EMBAIXO"** e a linha curta dessa tela. A garagem continua visível na foto; vale citá-la na legenda.
+- Margens: 72 px nas laterais, 38 px no alto e 40 px na base da faixa.
+- Arquivos: os PNGs `-1` a `-5` foram sobrescritos. A versão anterior da tela 1 está em `v1-2026-10-carrossel-cabana-casal-1.png` e o CSS anterior em `v1-carrossel.css` (para comparar ou voltar).
+- Os 5 PNGs novos foram abertos e conferidos (1080 × 1350, acentos, logo, margens, legibilidade).
+- As pendências 1 a 5 acima continuam valendo (em especial as toalhas em cisne da tela 4).

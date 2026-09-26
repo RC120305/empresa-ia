@@ -1,25 +1,34 @@
-/* Carrossel Cabana Casal (5 telas 4:5, 1080 x 1350).
-   Mesmo layout nas 5 telas: foto real no alto (1080 x 900, nada escondido atrás do texto)
-   + rodapé editorial marrom de largura total (450 px) com apoio, linha laranja, título e assinatura.
-   Fotos claras de dia: texto creme só dentro da faixa marrom, nunca direto sobre a foto. */
+/* Carrossel Cabana Casal (5 telas 4:5, 1080 x 1350). Ajuste 1: faixa discreta.
+   Mesmo layout nas 5 telas: foto real no alto (1080 x 1060, nada escondido atrás do texto)
+   + faixa marrom de largura total com 290 px (21,5% da altura).
+   Faixa em duas colunas: à esquerda apoio, linha laranja curta e título;
+   à direita numeração, logo branco e B O N I T O · M S, separados por um fio laranja vertical.
+   Fotos claras de dia: texto creme só dentro da faixa marrom, nunca direto sobre a foto.
+   Versão anterior (faixa de 450 px): v1-carrossel.css. */
 
-.foto { height: 900px; bottom: auto; }
+.foto { height: 1060px; bottom: auto; }
 
 .rodape.faixa {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 450px; display: flex; flex-direction: column;
-  padding: 38px var(--margem) 60px;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 290px;
+  display: flex; align-items: stretch; gap: 44px;
+  padding: 38px var(--margem) 40px;
 }
-.rodape .apoio { font-size: 24px; }
-.rodape .linha { margin: 16px 0 20px; }
-.rodape .titulo { font-size: 66px; line-height: 1.06; text-shadow: none; }
+
+/* Coluna do texto */
+.rodape .texto { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.rodape .apoio { font-size: 21px; letter-spacing: .38em; line-height: 1.2; }
+.rodape .linha { width: 90px; margin: 14px 0 16px; }
+.rodape .titulo { font-size: 64px; line-height: 1.04; text-shadow: none; }
 
 /* Linhas de contato da tela 5 (creme: laranja sobre marrom não tem contraste) */
-.rodape .contato { font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 27px; letter-spacing: .05em; line-height: 1.5; margin-top: 12px; }
-.rodape .contato b { font-weight: 600; letter-spacing: .2em; text-transform: uppercase; font-size: 21px; margin-right: 14px; }
+.rodape .contato { font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 24px; letter-spacing: .04em; line-height: 1.4; margin-top: 14px; }
+.rodape .contato b { font-weight: 600; letter-spacing: .2em; text-transform: uppercase; font-size: 19px; margin-right: 12px; }
 
-/* Assinatura sempre encostada na base do rodapé; logo branco com 110 px de altura */
-.rodape .assinatura { position: static; margin-top: auto; }
-.rodape .assinatura img { height: 110px; }
-
-/* Numeração discreta da tela, dentro da faixa (canto direito, alinhada ao apoio) */
-.rodape .num { position: absolute; top: 40px; right: var(--margem); font-family: "Josefin Sans", sans-serif; font-weight: 300; font-size: 22px; letter-spacing: .3em; opacity: .85; }
+/* Coluna da assinatura: fio laranja vertical + numeração + logo branco (104 px) + BONITO · MS */
+.rodape .marca {
+  flex: none; width: 200px; border-left: 1px solid var(--laranja);
+  display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;
+}
+.rodape .num { font-family: "Josefin Sans", sans-serif; font-weight: 300; font-size: 20px; letter-spacing: .3em; margin-right: -.3em; opacity: .85; }
+.rodape .marca img { height: 104px; width: auto; display: block; }
+.rodape .marca .local { font-family: "Josefin Sans", sans-serif; font-weight: 300; font-size: 17px; letter-spacing: .45em; margin-right: -.45em; text-transform: uppercase; white-space: nowrap; }

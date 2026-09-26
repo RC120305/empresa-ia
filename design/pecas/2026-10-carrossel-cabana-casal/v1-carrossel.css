@@ -1,0 +1,25 @@
+/* Carrossel Cabana Casal (5 telas 4:5, 1080 x 1350).
+   Mesmo layout nas 5 telas: foto real no alto (1080 x 900, nada escondido atrás do texto)
+   + rodapé editorial marrom de largura total (450 px) com apoio, linha laranja, título e assinatura.
+   Fotos claras de dia: texto creme só dentro da faixa marrom, nunca direto sobre a foto. */
+
+.foto { height: 900px; bottom: auto; }
+
+.rodape.faixa {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 450px; display: flex; flex-direction: column;
+  padding: 38px var(--margem) 60px;
+}
+.rodape .apoio { font-size: 24px; }
+.rodape .linha { margin: 16px 0 20px; }
+.rodape .titulo { font-size: 66px; line-height: 1.06; text-shadow: none; }
+
+/* Linhas de contato da tela 5 (creme: laranja sobre marrom não tem contraste) */
+.rodape .contato { font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 27px; letter-spacing: .05em; line-height: 1.5; margin-top: 12px; }
+.rodape .contato b { font-weight: 600; letter-spacing: .2em; text-transform: uppercase; font-size: 21px; margin-right: 14px; }
+
+/* Assinatura sempre encostada na base do rodapé; logo branco com 110 px de altura */
+.rodape .assinatura { position: static; margin-top: auto; }
+.rodape .assinatura img { height: 110px; }
+
+/* Numeração discreta da tela, dentro da faixa (canto direito, alinhada ao apoio) */
+.rodape .num { position: absolute; top: 40px; right: var(--margem); font-family: "Josefin Sans", sans-serif; font-weight: 300; font-size: 22px; letter-spacing: .3em; opacity: .85; }
