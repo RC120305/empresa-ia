@@ -1,0 +1,48 @@
+/* Carrossel Cabana Casal (5 telas 4:5, 1080 x 1350). Ajuste 3: copy imersiva + fontes menores (base: carrossel-sem-faixa.css, Ajuste 2).
+   Título 56 px (era 74), apoio 20 px (era 22), contato 24 px (era 27); sombras localizadas mais suaves (força padrão .5).
+   Telas sem apoio (2, 3, 4) também ficam sem a linha curta laranja.
+   Foto em tela cheia; texto creme direto sobre a foto.
+   Legibilidade: sombra radial suave, escura e localizada SÓ atrás do bloco de texto
+   (se desfaz nas bordas) + text-shadow leve. Nenhuma foto é escurecida por inteiro.
+   Mesma lógica nas 5 telas: bloco de texto à esquerda, na área mais calma da foto (cima ou baixo);
+   assinatura sempre na base (fio laranja + B O N I T O · M S + logo branco 100 px);
+   numeração no canto superior direito. Margem lateral 72 px; nada a menos de 60 px da borda. */
+
+/* Foto em tela cheia: o recorte de cada tela vem do object-position no HTML */
+.foto { inset: 0; height: 100%; }
+
+/* Sombra localizada: um elemento com gradiente radial, atrás do texto */
+.sombra { position: absolute; pointer-events: none;
+  background: radial-gradient(ellipse closest-side at 50% 50%,
+    rgba(18,12,6,var(--forca,.5)) 0%,
+    rgba(18,12,6,calc(var(--forca,.5) * .78)) 45%,
+    rgba(18,12,6,calc(var(--forca,.5) * .35)) 75%,
+    rgba(18,12,6,0) 100%); }
+
+/* Bloco de texto */
+.bloco-sf { position: absolute; left: var(--margem); max-width: 760px; z-index: 2; }
+.bloco-sf.baixo { bottom: 250px; }
+.bloco-sf.cima  { top: 96px; }
+.bloco-sf .apoio { font-size: 20px; letter-spacing: .38em; font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0,0,0,.6), 0 0 14px rgba(0,0,0,.45); }
+.bloco-sf .linha { width: 80px; margin: 16px 0 18px; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.bloco-sf .titulo { font-size: 56px; line-height: 1.08;
+  text-shadow: 0 1px 3px rgba(0,0,0,.5), 0 0 20px rgba(0,0,0,.4); }
+
+/* Contatos da tela 5 */
+.bloco-sf .contato { font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 24px; letter-spacing: .03em; line-height: 1.45; margin-top: 18px;
+  text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 14px rgba(0,0,0,.5); }
+.bloco-sf .contato b { font-weight: 600; letter-spacing: .2em; text-transform: uppercase; font-size: 19px; margin-right: 12px; opacity: .9; }
+
+/* Assinatura na base: fio laranja + BONITO · MS + logo branco 100 px */
+.assin-sf { position: absolute; left: var(--margem); right: var(--margem); bottom: 60px;
+  display: flex; align-items: center; gap: 26px; z-index: 2; }
+.assin-sf .fio { flex: 1; height: 1px; background: var(--laranja); box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.assin-sf .local { font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 19px; letter-spacing: .45em; text-transform: uppercase; white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0,0,0,.65), 0 0 12px rgba(0,0,0,.45); }
+.assin-sf img { height: 100px; width: auto; display: block; filter: drop-shadow(0 1px 6px rgba(0,0,0,.45)); }
+
+/* Numeração discreta */
+.num-sf { position: absolute; top: 64px; right: var(--margem); z-index: 2;
+  font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 21px; letter-spacing: .3em; margin-right: -.3em;
+  text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 12px rgba(0,0,0,.5); }

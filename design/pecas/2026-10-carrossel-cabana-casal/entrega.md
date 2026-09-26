@@ -120,3 +120,50 @@ Não usei vista, rio, proximidade do rio, "romântico", ar-condicionado, TV, fri
 A versão sem faixa brilha nas **telas 3 e 4**, que têm madeira escura em cima. Ela funcionaria bem em todo o carrossel com fotos de fim de tarde ou com a luz da varanda acesa (a cena sugerida na pendência 5), que é a regra do véu no guia.
 
 **Checklist (Ajuste 2):** tamanho 1080 × 1350 nas 5 telas [x]; assinatura com logo branco de 100 px [x]; margem ≥ 60 px [x]; nenhuma foto escurecida por inteiro nem alterada [x]; os 5 PNGs abertos e conferidos [x]; texto claro sobre foto clara, contra a regra do guia (por isso esta versão é só para comparação) [!].
+
+## Ajuste 3 (copy imersiva + fontes menores)
+**Seu pedido:** diminuir um pouco os títulos e aplicar a nova copy imersiva do Marketing, nas duas versões (com faixa discreta e sem faixa). As versões anteriores continuam intactas; nada foi sobrescrito.
+
+**Arquivos novos:**
+- Faixa discreta: `v3-faixa-2026-10-carrossel-cabana-casal-1.png` a `-5.png`, `peca-v3f-1.html` a `peca-v3f-5.html`, `carrossel-v3-faixa.css`.
+- Sem faixa: `v3-sem-faixa-2026-10-carrossel-cabana-casal-1.png` a `-5.png`, `peca-v3sf-1.html` a `peca-v3sf-5.html`, `carrossel-v3-sem-faixa.css`.
+
+**Copy aplicada (exatamente como o Marketing enviou):**
+| Tela | Apoio | Título (negrito / itálico) | Quebra de linha |
+|---|---|---|---|
+| 1 | CABANA CASAL | Aqui, a *pressa* **fica** no chão | "Aqui, a *pressa*" / "**fica** no chão" |
+| 2 | (sem) | Cada **degrau** deixa a *cidade* mais longe | "Cada **degrau** deixa" / "a *cidade* mais longe" |
+| 3 | (sem) | Na **rede**, o tempo *balança* devagar | "Na **rede**, o tempo" / "*balança* devagar" |
+| 4 | (sem) | **Adormecer** na madeira, *acordar* entre árvores | "**Adormecer** na madeira," / "*acordar* entre árvores" |
+| 5 | RESERVE DIRETO | Seu **lugar** de *conexão* espera por você | "Seu **lugar** de *conexão*" / "espera por você" + sbreserva.silbeck.com.br/hotelcabanas + WHATSAPP (67) 99117-1648 |
+
+Conferi a copy contra os fatos: a escada (tela 2) e a rede na varanda (tela 3) existem na Cabana Casal; nenhuma tela fala de preço, idade, distância ou opcional.
+
+**Linha curta laranja:** fica **só nas telas que têm apoio (1 e 5)**. Nas telas 2, 3 e 4 tirei o apoio e a linha, e o título fica centralizado na altura da faixa (ou sozinho no alto, na versão sem faixa). Assim, a regra é a mesma nas duas versões. A linha laranja da assinatura continua em todas as telas.
+
+**Tamanhos novos:**
+| Item | Faixa (antes → agora) | Sem faixa (antes → agora) |
+|---|---|---|
+| Título (Playfair) | 64 → **54 px** | 74 → **56 px** |
+| Apoio (Josefin, caixa alta) | 21 → **19 px** | 22 → **20 px** |
+| Linha curta laranja | 90 → **80 px** | 90 → **80 px** |
+| Site e WhatsApp (tela 5) | 24 → **22 px** (rótulo WHATSAPP 17 px) | 27 → **24 px** |
+| Assinatura, logo, numeração | sem mudança (logo 104 px; BONITO · MS 17 px) | sem mudança (logo 100 px; BONITO · MS 19 px) |
+| Faixa marrom | continua com 290 px; o espaço interno passou para 34 px em cima e 36 px embaixo, para caber o apoio, o título e os contatos na tela 5 | não tem |
+
+**Sombras da versão sem faixa (mais suaves):** a força padrão caiu de 0,62 para 0,50, e as sombras ficaram do tamanho do bloco de texto, que agora é menor. O text-shadow do título também ficou mais leve.
+- **Tela 2 (a mancha que incomodava):** antes, uma sombra de 1120 × 560 px com força 0,78. Agora, 1120 × 460 px com força **0,48**, mais espalhada e com a borda mais suave. A mancha quase não aparece e o título continua legível sobre as folhas e o céu, também porque a frase não tem mais a linha de apoio fina, que era o ponto fraco.
+- Tela 1: 0,58; tela 3: 0,50; tela 4: 0,45; tela 5: 0,60 (é a tela com mais texto); atrás da assinatura: 0,45; atrás da numeração: 0,55.
+
+**Conferência dos 10 PNGs (1080 × 1350, todos abertos):** os acentos (chão, balança, árvores, conexão, você) estão certos, o logo aparece, as margens têm 72 px e o texto fica fora do ponto focal. Na faixa, tudo se lê bem no celular. A tela 5 é a mais cheia, mas cabe com folga. Na versão sem faixa, as telas 3 e 4 continuam as melhores; as telas 1, 2 e 5 ficaram legíveis com sombras mais leves que as do Ajuste 2. **Minha recomendação continua sendo a versão com faixa** para estas fotos claras de dia (os motivos estão no Ajuste 2).
+
+**Texto alternativo atualizado (1 frase por tela, vale para as duas versões):**
+1. Cabana Casal de madeira suspensa sobre pilares no meio da mata, com a frase "Aqui, a pressa fica no chão".
+2. Escada de madeira que sobe até a varanda de uma cabana elevada entre as árvores, com a frase "Cada degrau deixa a cidade mais longe".
+3. Varanda de madeira com rede armada e duas poltronas, aberta para a mata, com a frase "Na rede, o tempo balança devagar".
+4. Quarto com cama king e teto de madeira aparente, com a frase "Adormecer na madeira, acordar entre árvores".
+5. Cabanas de madeira elevadas vistas por entre folhas de palmeira, com a frase "Seu lugar de conexão espera por você" e os contatos para reservar direto pelo site e pelo WhatsApp.
+
+**Checklist (Ajuste 3):** fotos reais, as mesmas de antes [x]; copy de 6 a 7 palavras por tela, sem fato não confirmado [x]; faixa marrom em foto clara, na versão principal [x]; nenhum texto sobre verde sem sombra, e nenhuma foto escurecida por inteiro [x]; margem ≥ 60 px [x]; assinatura em todas as telas [x]; 1080 × 1350 [x]; os 10 PNGs abertos e conferidos [x]; pessoas: nenhuma [x]; texto alternativo [x].
+
+**Continuam valendo:** as pendências 1 a 5, em especial as **toalhas em cisne com pétalas na tela 4**. A frase "Adormecer na madeira…" não promete decoração, mas a foto mostra a decoração. Se ela for o serviço opcional, a legenda precisa dizer isso.

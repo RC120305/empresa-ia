@@ -1,0 +1,36 @@
+/* Carrossel Cabana Casal (5 telas 4:5, 1080 x 1350). Ajuste 3: copy imersiva + fontes menores (base: carrossel.css, Ajuste 1).
+   Título 54 px (era 64), apoio 19 px (era 21), contato 22 px (era 24).
+   Telas sem apoio (2, 3, 4) também ficam sem a linha curta laranja.
+   Mesmo layout nas 5 telas: foto real no alto (1080 x 1060, nada escondido atrás do texto)
+   + faixa marrom de largura total com 290 px (21,5% da altura).
+   Faixa em duas colunas: à esquerda apoio, linha laranja curta e título;
+   à direita numeração, logo branco e B O N I T O · M S, separados por um fio laranja vertical.
+   Fotos claras de dia: texto creme só dentro da faixa marrom, nunca direto sobre a foto.
+   Versão anterior (faixa de 450 px): v1-carrossel.css. */
+
+.foto { height: 1060px; bottom: auto; }
+
+.rodape.faixa {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 290px;
+  display: flex; align-items: stretch; gap: 44px;
+  padding: 34px var(--margem) 36px;
+}
+
+/* Coluna do texto */
+.rodape .texto { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.rodape .apoio { font-size: 19px; letter-spacing: .38em; line-height: 1.2; }
+.rodape .linha { width: 80px; margin: 12px 0 14px; }
+.rodape .titulo { font-size: 54px; line-height: 1.06; text-shadow: none; }
+
+/* Linhas de contato da tela 5 (creme: laranja sobre marrom não tem contraste) */
+.rodape .contato { font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 22px; letter-spacing: .04em; line-height: 1.35; margin-top: 12px; }
+.rodape .contato b { font-weight: 600; letter-spacing: .2em; text-transform: uppercase; font-size: 17px; margin-right: 12px; }
+
+/* Coluna da assinatura: fio laranja vertical + numeração + logo branco (104 px) + BONITO · MS */
+.rodape .marca {
+  flex: none; width: 200px; border-left: 1px solid var(--laranja);
+  display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;
+}
+.rodape .num { font-family: "Josefin Sans", sans-serif; font-weight: 300; font-size: 20px; letter-spacing: .3em; margin-right: -.3em; opacity: .85; }
+.rodape .marca img { height: 104px; width: auto; display: block; }
+.rodape .marca .local { font-family: "Josefin Sans", sans-serif; font-weight: 300; font-size: 17px; letter-spacing: .45em; margin-right: -.45em; text-transform: uppercase; white-space: nowrap; }
