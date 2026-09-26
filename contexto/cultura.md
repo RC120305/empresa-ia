@@ -68,7 +68,7 @@ Entre sócios, **vence a opção que melhor atende aos 6 filtros**. Assuntos dif
 |---|---|
 | Slogan, história, fundadores, marcos, 25 anos, 21 unidades, proprietário biólogo | ✅ Pode usar |
 | Coleta seletiva, compostagem, sem copos descartáveis | ✅ Pode usar como **prova concreta** de sustentabilidade (responde à lacuna de percepção de 1 vs. 1,7) |
-| "Melhor custo-benefício de Bonito" | ⚠️ Superlativo competitivo: **só com aval explícito do dono** (como foi feito com "único hotel cercado por dois rios") |
+| "Melhor custo-benefício de Bonito" | ✅ **Aprovado pelo dono para anúncios** (2026-09-26). Sustente com o que está incluído na diária |
 | "Segurança absoluta" | ⚠️ Promessa absoluta: prefira "segurança em primeiro lugar", "guias treinados", "equipamentos conferidos" |
 | "Você não precisa sair do hotel para fazer nada" | ⚠️ Exagero: Bonito tem atrativos externos que o hóspede vai querer ver. Prefira "atividades de aventura sem sair do hotel" |
 | "Recebemos turistas do mundo todo" | ⚠️ Sem dado; não use como número |
