@@ -75,6 +75,9 @@ Leia `contexto/hotel-cabanas.md`. Nunca invente fatos sobre o hotel; o que não 
 
 Regras de qualidade do arquivo:
 - **Exemplos:** 1 exemplo BOM por canal ou entrega principal, e o exemplo RUIM é o **erro mais provável do cargo** (ex.: um texto plausível, mas genérico, que serviria a qualquer hotel), não uma caricatura.
+- **Limites de cada canal:** os exemplos BOM respeitam os formatos reais (ex.: Google Ads, título até 30 caracteres e descrição até 90). Um exemplo que fura o limite ensina o erro.
+- **Adjetivos que viram fato** ("incluso", "preservada", "privativo", "só de vocês") contam como fato e precisam estar no contexto.
+- **Pastas:** cada cargo grava numa única pasta com o nome da área (ex.: `marketing/`), a mesma em todos os documentos.
 - **Lacunas por persona:** para cada persona relevante, liste o desejo que o hotel ainda não atende ou que não está confirmado (ex.: 55+ → gastronomia é lacuna, acessibilidade "a confirmar"; famílias → não há recreação infantil).
 - **Memória:** use `memory: project` só se o cargo precisar aprender com feedback. Ela habilita leitura e escrita automaticamente, então explique no corpo o que o funcionário grava.
 - **Restrições de pasta** ("só grava em `marketing/`") são apenas instruções: registre-as em Limites e teste-as na experiência.
@@ -88,7 +91,7 @@ Confirme que o funcionário referencia o contexto e o tom de voz. Liste o que o 
 ### 6. Período de experiência (avaliação independente)
 1. Em `rh/avaliacoes/<slug>.md`, escreva **3 tarefas realistas com os critérios de sucesso definidos antes de rodar**, incluindo **1 caso difícil** (informação faltando ou armadilha de fato) e **1 pedido fora do escopo** (ex.: "publique isto"). Se couber, um deles deve testar o erro "genérico mas plausível".
 2. Rode cada tarefa com o funcionário (ferramenta Agent com `subagent_type` = slug). **Se o funcionário recém-criado ainda não puder ser acionado**, rode com um agente `general-purpose` que recebe **o corpo do arquivo do funcionário como instrução** + a tarefa, e registre como "teste simulado".
-3. Um **avaliador separado** (outro agente `general-purpose`, que recebe só a tarefa, a rubrica e a resposta) dá as notas de 1 a 5 por critério.
+3. Um **avaliador separado** (outro agente `general-purpose`, que recebe só a tarefa, a rubrica e a resposta) dá as notas de 1 a 5 por critério. Se você encontrar falhas que o avaliador não viu (fato não confirmado, limite de caracteres), **recalcule a nota** e explique. Qualquer fato não confirmado limita a nota de rigor a no máximo 3. O exemplo de entrega mostrado ao dono não pode conter relações que o contexto não afirma.
 4. Se a média for menor que 4, proponha ajustes ao dono (regra 1) e reteste (no máximo 2 rodadas).
 5. Apresente ao dono as notas, 1 exemplo de entrega e o seu parecer. **O dono dá a palavra final.**
 
@@ -108,7 +111,10 @@ Atualize `rh/organograma.md`: diagrama, equipe, RACI, indicadores e histórico (
 1. Diagnostique a causa: falta de conhecimento, instrução vaga, falta de exemplos ou ferramenta errada.
 2. Grave a proposta em `rh/avaliacoes/<slug>.md` com o antes → depois e os testes de validação.
 3. Mostre ao dono um resumo de até 5 linhas e pergunte: **"Posso aplicar o ajuste?"**. **Não edite `.claude/agents/<slug>.md` antes do "sim".**
-4. Mudar canais, ferramentas, `memory`, tipo de entrega ou público **é alteração de escopo**: diga isso ao dono explicitamente.
+4. Mudar canais, ferramentas, `memory`, tipo de entrega ou público **é alteração de escopo**: diga isso ao dono explicitamente. Mudanças no **formato** de entrega ou na pasta de gravação também devem ser ditas, ainda que não sejam de escopo.
+   - Antes de pedir o "sim", rode uma **linha de base simulada** (versão atual × versão proposta) em 1 ou 2 tarefas, para o dono decidir com evidência.
+   - Registre a proposta no histórico do organograma como "proposta de ajuste".
+   - Não proíba termos que o próprio contexto usa (ex.: "sustentável"); exija que venham acompanhados de fato concreto.
 5. Depois do "sim": aplique, guarde a versão anterior para reverter, reteste e registre no histórico.
 
 ### Desligar

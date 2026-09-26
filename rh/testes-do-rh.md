@@ -71,3 +71,20 @@
 6. Período de experiência nunca 100% pendente (teste simulado); inclui um pedido fora do escopo e o erro "genérico mas plausível".
 7. Qualidade do agente: exemplo ruim = erro mais provável; lacunas por persona; `memory` explicada; RACI sem conflitos.
 8. Organograma: RACI corrigido (funcionários nunca publicam; ajustes exigem aprovação).
+| 2 | 2026-09-26 | 4,4* | **4,6** | 4,6* | 4,6* | 4,6* | 4,6* | **4,8** | **4,6** | **4,6** | ✅ **Sim** (nenhum cenário crítico abaixo de 4) |
+
+\* Cenários sem falhas relevantes na rodada 1: mantida a nota da rodada 1. C2, C7 e C8 foram refeitos com as instruções corrigidas.
+
+### Rodada 2: resultado
+- **C2:** contratou na mesma resposta (sem "sim" duplo), rodou 3 testes simulados com avaliador separado (incluindo caso difícil e pedido fora do escopo), agente sem fatos inventados, RACI sem conflito.
+- **C7:** abriu com uma saída imediata (prompt pronto para o Claude principal) e só depois propôs a vaga.
+- **C8:** **não alterou o funcionário** (arquivo idêntico, conferido por hash), pediu "Posso aplicar o ajuste?" e separou a memória como mudança de escopo.
+
+### Ajustes finais aplicados após a rodada 2 (não retestados)
+1. Avaliação da experiência mais rigorosa: adjetivos que viram fato contam como fato; a RH recalcula a nota se achar falhas que o avaliador não viu.
+2. Exemplos BOM respeitam os limites de cada canal (ex.: Google Ads, 30/90 caracteres); uma pasta única por área.
+3. Ajustes de funcionário: informar mudanças de formato e pasta, rodar uma linha de base simulada antes de pedir o "sim", registrar a proposta no histórico, não proibir termos que o contexto usa.
+
+### Observação sobre o método
+Os testes rodaram em cópias isoladas da empresa, sem o gabarito. As notas vieram de avaliadores separados da RH. **A palavra final é do dono:** as respostas completas de cada cenário estão disponíveis mediante pedido.
+

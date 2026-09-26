@@ -9,7 +9,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 ## Equipe ativa
 | Cargo | Arquivo | Status | Desde | Objetivo | Nota na experiência |
 |---|---|---|---|---|---|
-| RH (Diretora de Pessoas) | `.claude/skills/rh/SKILL.md` | Ativa (em validação) | 2026-09-26 | Montar uma equipe enxuta e alinhada à estratégia | Ver `rh/testes-do-rh.md` |
+| RH (Diretora de Pessoas) | `.claude/skills/rh/SKILL.md` | Ativa (aprovada no processo seletivo) | 2026-09-26 | Montar uma equipe enxuta e alinhada à estratégia | 4,6 (ver `rh/testes-do-rh.md`) |
 
 ## Matriz RACI (decisões da empresa)
 | Decisão | R (executa) | A (aprova) | C (consultado) | I (informado) |
@@ -34,3 +34,4 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 |---|---|---|
 | 2026-09-26 | Empresa criada. RH estruturado a partir do Guia Estratégico. | Início do projeto |
 | 2026-09-26 | RH recebe base de conhecimento (SHRM, CIPD, Galbraith, RACI, OKR, boas práticas de agentes, hotelaria) e instruções revisadas. | Elevar a RH ao nível sênior antes da primeira contratação |
+| 2026-09-26 | Processo seletivo da RH: rodada 1 com média 4,4 (falha de governança no C8); instruções corrigidas; rodada 2 com média 4,6. Aprovada, aguardando a palavra final do dono. | Validar a RH antes da primeira contratação real |
