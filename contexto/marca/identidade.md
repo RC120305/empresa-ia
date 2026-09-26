@@ -22,3 +22,8 @@
 
 ## Assinatura padrão das peças (rodapé editorial)
 Linha fina **laranja** → "BONITO / MS" (caixa alta espaçada) → logo pequeno ou o slogan **"O seu lugar de conexão com a natureza"**.
+
+## Versões do logo (decisão do dono, 2026-09-26)
+- **Colorido:** fundos claros, site, documentos.
+- **Monocromático branco:** **padrão nos posts do Instagram**, discreto sobre a foto, no canto ou no rodapé. *(Arquivo a ser enviado pelo dono.)*
+

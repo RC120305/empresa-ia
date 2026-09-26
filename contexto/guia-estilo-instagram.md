@@ -4,6 +4,13 @@
 > **@riodorastroecoresort** (3 posts), **@bosqueveneza** (2), **@reservariodecontas** (3) e **@pousadadoengenho** (2).
 > **Regra de ouro:** nos **inspiramos no estilo**, nunca copiamos frases, fotos ou ideias específicas de outras marcas. Tudo é adaptado à voz e aos fatos do Cabanas.
 
+## 0. Esclarecimento do dono (2026-09-26): leia primeiro
+- As referências servem **para tipografia e para o uso de um logo discreto que valoriza o cenário**. **Não** são referência de fotografia, cenas, tons ou objetos (fogueira, velas, casais de luxo etc.).
+- **As fotos virão do banco de imagens real do hotel.** O tratamento de imagem segue a própria foto: nunca escurecer rios nem a água cristalina.
+- **Logo:** será usada uma **versão monocromática branca**, discreta, aplicada sobre as fotos (a ser enviada pelo dono).
+- **Posts atuais do hotel** (`referencias-instagram/posts-atuais-cabanas/`) já seguem essa linha: título serifado ("Cabana Master") ou manuscrito ("Café da manhã") sobre foto real, com o logo branco no canto. O objetivo é **refinar** esse padrão, não trocá-lo.
+- As seções abaixo sobre fotografia e cenas das referências valem apenas como inspiração de **clima**; em caso de conflito, **este item 0 prevalece**.
+
 ## 1. O que as referências têm em comum
 | Elemento | O que vimos | Exemplo da referência |
 |---|---|---|
