@@ -15,8 +15,9 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Decisão | R (executa) | A (aprova) | C (consultado) | I (informado) |
 |---|---|---|---|---|
 | Abrir vaga / contratar | RH | Dono | — | Equipe |
-| Alterar escopo / desligar | RH | Dono | Funcionário afetado | Equipe |
-| Publicar qualquer conteúdo externo | Funcionário responsável | Dono | RH (se envolver tom e valores) | — |
+| Ajustar instruções / alterar escopo / desligar | RH | Dono | Funcionário afetado | Equipe |
+| Preparar conteúdo externo (rascunho) | Funcionário responsável | Dono | RH (se envolver tom e valores) | — |
+| Publicar conteúdo externo | Dono (funcionários de IA nunca publicam) | Dono | Funcionário responsável | — |
 | Atualizar o contexto do hotel | Dono | Dono | RH | Equipe |
 
 ## Vagas sugeridas (aguardando o diagnóstico do RH e a aprovação do dono)

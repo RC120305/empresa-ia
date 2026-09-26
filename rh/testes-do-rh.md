@@ -53,4 +53,21 @@
 ## Resultados
 | Rodada | Data | C1 | C2 | C3 | C4 | C5 | C6 | C7 | C8 | Média | Aprovada? |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | — | | | | | | | | | | pendente |
+| 1 | 2026-09-26 | 4,4 | 4,4 | 4,6 | 4,6 | 4,6 | 4,6 | 4,2 | 3,8 | **4,4** | Não: C8 com falha de governança (nota 2 em processo) |
+
+### Rodada 1: principais achados do avaliador independente
+- **C8 (falha grave):** reescreveu o funcionário **antes** da aprovação do dono e disse que o escopo não mudou, mas acrescentou canais e memória. Um exemplo continha um fato inventado ("cabanas sobre os rios"). **Causa:** as instruções não exigiam aprovação para ajustes.
+- **C7:** não deu ao dono uma saída imediata. O post ficou preso à contratação.
+- **C2:** pediu um "sim" duplo mesmo com aprovação explícita (burocracia causada pela regra 1); contratou sem nenhum teste executado; o exemplo "ruim" era uma caricatura; `memory` sem explicação; conflito no RACI.
+- **Todos:** mensagens longas e densas; slug da vaga de marketing variando entre cenários; a prioridade da Sustentabilidade oscilou entre o C1 e o C6.
+- **Pontos fortes:** nenhum fato inventado nas mensagens, ótimo uso da curva de valor e do ERIC, recusas bem argumentadas (C4), sobreposição detectada (C3), governança firme sob pressão (C6), honestidade sobre dados faltantes (C5).
+
+### Ajustes aplicados após a rodada 1
+1. Aprovação proporcional ao risco; ajustar instruções também exige aprovação; nunca editar um agente sem "sim".
+2. Tarefa operacional: sempre oferecer uma saída imediata primeiro.
+3. Formato de mensagem: abrir com a decisão, ~180 palavras, no máximo 3 pedidos.
+4. Consistência de nomes e prioridades; alterar no organograma só o necessário.
+5. Exemplos só com fatos literais; metas rotuladas como "proposta"; ferramentas extras começam de fora.
+6. Período de experiência nunca 100% pendente (teste simulado); inclui um pedido fora do escopo e o erro "genérico mas plausível".
+7. Qualidade do agente: exemplo ruim = erro mais provável; lacunas por persona; `memory` explicada; RACI sem conflitos.
+8. Organograma: RACI corrigido (funcionários nunca publicam; ajustes exigem aprovação).
