@@ -1,0 +1,140 @@
+{
+  "cliente": "Hotel Cabanas",
+  "mes_ref": "Agosto",
+  "ano": "2026",
+  "periodo_dias": 30,
+  "periodo_views": "1 Ago → 31 Ago 2026",
+  "periodo_views_curto": "1 Ago → 31 Ago",
+  "periodo_seguidores": "1 Ago → 31 Ago 2026",
+  "conta_verificada": false,
+  "views_total": 184320,
+  "interacoes_total": 9120,
+  "contas_alcancadas": 61240,
+  "total_seguidores": 38450,
+  "novos_seguidores": 820,
+  "novos_seguidores_var": "+2.2% vs jul",
+  "publicacoes": 12,
+  "follows": 1010,
+  "unfollows": 190,
+  "net": 820,
+  "views_seg_pct": 55.8,
+  "views_nonseg_pct": 44.2,
+  "inter_seg_pct": 59.0,
+  "inter_nonseg_pct": 41.0,
+  "views_formato": {
+    "Posts": 41.3,
+    "Reels": "~35",
+    "Stories": "~23.7"
+  },
+  "inter_formato": {
+    "Reels": 53.6,
+    "Posts": 38.1,
+    "Stories": "~8.3"
+  },
+  "contas_alcancadas_var": "-14.6%",
+  "top5": [
+    {
+      "formato": "Reels",
+      "titulo": "Aqui, a pressa fica no chão",
+      "obs": "Uma linha explicando por que se destacou.",
+      "metricas": [
+        {
+          "label": "views",
+          "valor": "412K"
+        },
+        {
+          "label": "interações",
+          "valor": "28,4K"
+        },
+        {
+          "label": "alcance",
+          "valor": "380K"
+        }
+      ],
+      "link": "https://www.instagram.com/<handle>/reel/XXXX/"
+    },
+    {
+      "formato": "Reels",
+      "titulo": "Boia cross em família",
+      "obs": "Uma linha explicando por que se destacou.",
+      "metricas": [
+        {
+          "label": "views",
+          "valor": "356K"
+        },
+        {
+          "label": "interações",
+          "valor": "22,1K"
+        },
+        {
+          "label": "alcance",
+          "valor": "311K"
+        }
+      ],
+      "link": "https://www.instagram.com/<handle>/reel/XXXX/"
+    },
+    {
+      "formato": "Posts",
+      "titulo": "Cabana Master: banheira para dois",
+      "obs": "Uma linha explicando por que se destacou.",
+      "metricas": [
+        {
+          "label": "views",
+          "valor": "289K"
+        },
+        {
+          "label": "salvamentos",
+          "valor": "9,8K"
+        },
+        {
+          "label": "comentários",
+          "valor": "1.234"
+        }
+      ],
+      "link": "https://www.instagram.com/<handle>/reel/XXXX/"
+    },
+    {
+      "formato": "Reels",
+      "titulo": "Café da manhã entre as árvores",
+      "obs": "Uma linha explicando por que se destacou.",
+      "metricas": [
+        {
+          "label": "views",
+          "valor": "241K"
+        },
+        {
+          "label": "partilhas",
+          "valor": "6,2K"
+        },
+        {
+          "label": "alcance",
+          "valor": "210K"
+        }
+      ],
+      "link": "https://www.instagram.com/<handle>/reel/XXXX/"
+    },
+    {
+      "formato": "Posts",
+      "titulo": "Dois rios, um só lugar",
+      "obs": "Uma linha explicando por que se destacou.",
+      "metricas": [
+        {
+          "label": "views",
+          "valor": "198K"
+        },
+        {
+          "label": "comentários",
+          "valor": "1,9K"
+        },
+        {
+          "label": "alcance",
+          "valor": "165K"
+        }
+      ],
+      "link": "https://www.instagram.com/<handle>/reel/XXXX/"
+    }
+  ],
+  "perfil": "@hotelcabanas",
+  "variante": "pt-BR",
+  "obs_exemplo": "EXEMPLO FICTÍCIO: substitua todos os valores pelos dos prints reais."
+}
