@@ -82,3 +82,14 @@ Também: chamou maio de "baixa temporada" no texto do anúncio; usou um atributo
 ### Itens do ajuste
 1. Regra "atributos por acomodação": elevada a 3 m, escada, rede e garagem embaixo são **só da Cabana Casal e da Tripla**; na Master, a elevação e a rede ficam "[a confirmar]" até a resposta do dono. Proibido "nossas cabanas" para generalizar atributos. Corrigir a linha de casais e o exemplo BOM.
 2. Motor de reservas sempre explícito; variações condicionais listam **todas** as premissas pendentes; serviços opcionais sempre com "(opcional)".
+
+## Reteste final do R3 com a v2.1 (avaliador independente)
+| Critérios | Fatos | Destino/nicho | Público e qualidade | Média |
+|---|---|---|---|---|
+| 5 | 4 | 5 | 4 | **4,5** (antes: 4,0) |
+
+- ✅ Nenhum fato inventado; os atributos ficaram corretamente ligados a cada acomodação (Bangalô: elevado, sem paredes compartilhadas, com rede; Master: "elevada do chão", conforme o dono confirmou).
+- Pontos leves: "programação com monitor inclusa" perto da criança de 4 anos pode sugerir monitoria infantil (atenuado pelo aviso explícito); contagens de caracteres da 1ª linha com erro de cerca de 2 (dentro do limite).
+
+## Parecer final da RH
+**APROVADO.** Médias: 1ª rodada 4,0 → reteste 4,33 → R3 final 4,5. Funcionário **ativo (v2.1)**. Próxima avaliação: revisão mensal, com as notas reais do dono sobre as peças usadas.
