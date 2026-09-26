@@ -8,6 +8,7 @@
 - **Hotel de lazer e aventura em Bonito, MS**, integrado à natureza.
 - **Área:** 40 hectares de área verde privativa, entre **dois rios de águas cristalinas**.
 - **Distância do centro:** 6 km, com ciclovia até a cidade.
+- **Diferencial aprovado para anúncios:** "Único hotel de Bonito cercado por dois rios" (o Formoso e o Formosinho).
 - **História:** 23 anos de existência e gestão familiar, hoje na **segunda geração**.
 - **Biodiversidade:** 140 espécies de aves catalogadas.
 
@@ -15,8 +16,11 @@
 | Tipo | Destaque | Público ideal |
 |---|---|---|
 | Cabanas de madeira suspensas na altura das árvores | Privacidade e romance | Casais |
-| Apartamentos standard | Conforto, 2 a 5 pessoas | Famílias |
-| Bangalôs (alvenaria) | Privativos, 2 a 4 pessoas (ver `hotel-operacional.md`) | Famílias e casais |
+| Apartamentos (standard, superior, conjugado) | Standard e superior para 2 a 4 pessoas; conjugado para até 5 | Famílias |
+| Bangalôs (alvenaria) | Privativos, **até 4 pessoas** | Famílias e casais |
+| Cabana Master | 85 m², 2 a 5 pessoas, banheira de hidromassagem | Famílias e casais |
+
+> **Capacidade para 5 pessoas: somente a Cabana Master e o Apartamento Conjugado** (confirmado pelo dono).
 
 ### Atividades internas (sem deslocamento)
 Balneário próprio (banho de rio), boia cross, arvorismo, flutuação, caiaque, tirolesa, stand up paddle, arco e flecha, trilhas de contemplação, mountain bike e observação de aves.

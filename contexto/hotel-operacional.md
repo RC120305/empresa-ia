@@ -8,7 +8,7 @@
 - **Fundação:** 2001, por um casal paulista de **Sorocaba**, com o sonho de integrar-se à natureza de MS. Hoje sob a gestão da **segunda geração** da família.
 - **Localização:** Rodovia Bonito/Balneário Municipal, km 06, Zona Rural, Bonito/MS, CEP 79290-000. A **6 km do centro, todo o acesso em asfalto**.
 - **Área:** 40 hectares (400.000 m²) de área verde, entre os rios **Formoso e Formosinho**, com águas cristalinas. O documento descreve "área preservada de floresta nativa".
-- **Afirmação do próprio hotel:** "Único hotel de Bonito cercado por dois rios". *(Superlativo: ver a seção 12.)*
+- **"Único hotel de Bonito cercado por dois rios"**: afirmação **aprovada pelo dono para anúncios** em 2026-09-26.
 - **Fauna presente:** macacos, araras, cotias, quatis, tatus, entre outros.
 - **Distâncias:** 8 km do Aeroporto de Bonito; 280 km do Aeroporto de Campo Grande.
 
@@ -54,7 +54,7 @@
 
 ## 6. Alimentação
 - **Café da manhã** incluso, das 6h30 às 9h30. Se precisar tomar mais cedo, é só avisar a recepção.
-- **Restaurante:** jantar à la carte, **de segunda a sábado, das 19h às 21h**. *(Ver a seção 12.)*
+- **Restaurante:** jantar à la carte, **de segunda a sábado, das 19h às 21h**. **Fechado no domingo à noite** (confirmado pelo dono); aos domingos, durante o dia, funciona a lanchonete.
 - **Lanchonete e bar:** lanches e porções, **de segunda a sábado das 11h às 21h e aos domingos das 11h às 17h**. **Não há almoço**, só lanchonete. O bar serve bebidas o dia todo, incluindo vinhos e drinks.
 - A lanchonete entrega no quarto, na piscina e nos **decks 11 e 12 do Rio Formosinho**.
 - **Dietas restritivas:** há opções sem glúten e sem lactose, desde que solicitadas na reserva.
@@ -94,13 +94,13 @@
 ## 12. Divergências a esclarecer com o dono (até lá, use a forma segura)
 | # | Divergência | Forma segura até confirmar |
 |---|---|---|
-| 1 | O Guia diz "bangalôs para 2 a 5 pessoas"; esta base diz **2 a 4** | Use **2 a 4** para bangalôs e **até 5** só para a Cabana Master e o Conjugado |
-| 2 | Restaurante: "segunda a domingo… aos domingos não funciona" × "segunda a sábado" | "Jantar à la carte de segunda a sábado" |
-| 3 | Lanchonete: "11h às 21h" × "domingo até 17h" | Não cite horário de domingo |
+| 1 | ✅ **Resolvida (dono, 2026-09-26):** bangalô para **até 4** pessoas. **Só a Cabana Master e o Conjugado acomodam 5** | — |
+| 2 | ✅ **Resolvida (dono):** o restaurante **não abre no domingo à noite**; jantar de segunda a sábado | — |
+| 3 | ✅ **Resolvida em parte (dono):** aos domingos funciona a lanchonete durante o dia. O horário de domingo no documento é das 11h às 17h | Se citar o domingo, use "lanchonete durante o dia" |
 | 4 | Guia: "piscina aquecida"; base: "piscina climatizada" e "hidromassagem aquecida" | "Piscina climatizada e hidromassagem aquecida" |
 | 5 | Bebidas: "não é permitida a entrada" × "permitidas apenas as que não temos no cardápio" | Não mencione em anúncios |
 | 6 | Aeroporto de Bonito "com voos vindos de Campinas"; hoje também há voos de Congonhas e Guarulhos (fato do destino) | Não liste companhias ou origens sem "[confirmar fonte atual]" |
-| 7 | "Único hotel de Bonito cercado por dois rios": é um superlativo competitivo | Use "entre dois rios, o Formoso e o Formosinho". O "único" só com o aval explícito do dono |
+| 7 | ✅ **Resolvida (dono):** "Único hotel de Bonito cercado por dois rios" **pode ser anunciado** | Use com os nomes dos rios: Formoso e Formosinho |
 | 8 | Cabana Tripla: 35 m² no texto e 30 m² na lista | Não cite a metragem da Tripla |
 | 9 | Tirolesa: aparece na programação inclusa **e** dentro do arvorismo pago | "Tirolesa na programação inclusa; arvorismo com tirolesa aquática (opcional)" |
 | 10 | Site oficial: o dono informou **hotelcabanasbonito.ai.studio**; o PDF cita **hotelcabanas.com.br** | Em anúncios, use o **motor de reservas** (sbreserva.silbeck.com.br/hotelcabanas) ou o WhatsApp de reservas como destino do clique, até o dono dizer qual site usar. O conteúdo do novo site ainda não foi lido (acesso bloqueado na rede deste ambiente) |
