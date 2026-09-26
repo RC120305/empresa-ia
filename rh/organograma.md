@@ -10,7 +10,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Cargo | Arquivo | Status | Desde | Objetivo | Nota na experiência |
 |---|---|---|---|---|---|
 | RH (Diretora de Pessoas) | `.claude/skills/rh/SKILL.md` | Ativa (aprovada no processo seletivo) | 2026-09-26 | Montar uma equipe enxuta e alinhada à estratégia | 4,6 (ver `rh/testes-do-rh.md`) |
-| Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | Em experiência | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | ver `rh/avaliacoes/marketing-anuncios.md` |
+| Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | Ativo (aprovado com ressalvas; ajuste proposto) | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 (teste simulado; ver `rh/avaliacoes/marketing-anuncios.md`) |
 
 ## Matriz RACI (decisões da empresa)
 | Decisão | R (executa) | A (aprova) | C (consultado) | I (informado) |
@@ -42,3 +42,4 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | RH recebe base de conhecimento (SHRM, CIPD, Galbraith, RACI, OKR, boas práticas de agentes, hotelaria) e instruções revisadas. | Elevar a RH ao nível sênior antes da primeira contratação |
 | 2026-09-26 | Processo seletivo da RH: rodada 1 com média 4,4 (falha de governança no C8); instruções corrigidas; rodada 2 com média 4,6. Aprovada, aguardando a palavra final do dono. | Validar a RH antes da primeira contratação real |
 | 2026-09-26 | Contratado o Especialista em Marketing e Anúncios, com os requisitos do dono: turismo de natureza, hotelaria, conhecimento de Bonito e leitura do público. Criada a base `contexto/destino-bonito.md`. | Prioridade 1 aprovada pelo dono |
+| 2026-09-26 | Experiência do Marketing: média 4,0 (T1 4,0; T2 4,2; T3 3,8), aprovado com ressalvas. Proposta de ajuste registrada (relações implícitas, sazonalidade, justificativa de persona), aguardando o dono. | Fatos não confirmados de proximidade, horário, exclusividade e autoria |
