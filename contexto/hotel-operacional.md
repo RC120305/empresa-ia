@@ -85,7 +85,7 @@
 
 ## 11. Links e contatos oficiais
 - **Reservas (motor):** https://sbreserva.silbeck.com.br/hotelcabanas
-- **Site:** https://hotelcabanas.com.br/
+- **Site:** https://hotelcabanasbonito.ai.studio (informado pelo dono em 2026-09-26) · O PDF operacional cita https://hotelcabanas.com.br/ (ver a divergência 10)
 - **WhatsApp de reservas:** +55 67 99117-1648 · **Telefone:** +55 67 99110-7635 · **E-mail:** contato@hotelcabanas.com.br
 - **Instagram:** https://www.instagram.com/hotelcabanasbonito/ · **Facebook:** https://www.facebook.com/hotelcabanasms · **YouTube:** https://www.youtube.com/@hotelcabanasbonitoms
 - **Tour virtual:** https://tourmkr.com/F1pLPbag9x/44517615p&357.7h&29.11t · **Google Maps:** http://bit.ly/2PfI7Am
@@ -103,3 +103,4 @@
 | 7 | "Único hotel de Bonito cercado por dois rios": é um superlativo competitivo | Use "entre dois rios, o Formoso e o Formosinho". O "único" só com o aval explícito do dono |
 | 8 | Cabana Tripla: 35 m² no texto e 30 m² na lista | Não cite a metragem da Tripla |
 | 9 | Tirolesa: aparece na programação inclusa **e** dentro do arvorismo pago | "Tirolesa na programação inclusa; arvorismo com tirolesa aquática (opcional)" |
+| 10 | Site oficial: o dono informou **hotelcabanasbonito.ai.studio**; o PDF cita **hotelcabanas.com.br** | Em anúncios, use o **motor de reservas** (sbreserva.silbeck.com.br/hotelcabanas) ou o WhatsApp de reservas como destino do clique, até o dono dizer qual site usar. O conteúdo do novo site ainda não foi lido (acesso bloqueado na rede deste ambiente) |
