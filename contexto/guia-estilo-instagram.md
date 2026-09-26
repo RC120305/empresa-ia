@@ -1,7 +1,7 @@
 # Guia de Estilo do Instagram: Hotel Cabanas
 
 > Criado pela RH em 2026-09-26 a partir das referências escolhidas pelo dono (prints em `contexto/referencias-instagram/`):
-> **@riodorastroecoresort** (3 posts) e **@bosqueveneza** (2 posts).
+> **@riodorastroecoresort** (3 posts), **@bosqueveneza** (2), **@reservariodecontas** (3) e **@pousadadoengenho** (2).
 > **Regra de ouro:** nos **inspiramos no estilo**, nunca copiamos frases, fotos ou ideias específicas de outras marcas. Tudo é adaptado à voz e aos fatos do Cabanas.
 
 ## 1. O que as referências têm em comum
@@ -38,6 +38,43 @@
 - **Casais, 55+ e eco-conscientes:** o estilo das referências em estado puro. Luz baixa, silêncio, contemplação, texto curto e serifado.
 - **Famílias e aventureiros:** **mesma tipografia e acabamento**, mas com luz de dia, água cristalina e movimento (boia cross, arvorismo, tirolesa aquática). Crianças sempre dentro das idades permitidas e com equipamento de segurança visível. A identidade continua, com mais energia.
 
+## 4b. Referências do lote 2: dois novos pilares de conteúdo
+As novas contas acrescentam **dois estilos** que complementam a linha contemplativa do lote 1. Juntos, formam **3 pilares** para o feed do Cabanas:
+
+| Pilar | Referência | Como é | Uso no Cabanas |
+|---|---|---|---|
+| **1. Contemplação cinematográfica** | Rio do Rastro, Bosque Veneza | Pôr do sol e anoitecer, silhuetas, luz quente, texto de 3 a 8 palavras | Casais, 55+; cabanas elevadas, decks, pôr do sol |
+| **2. Manifesto de natureza e consciência** | **Reserva Rio de Contas** | Verdes **vivos e saturados**; título em **serifa itálica dentro de uma faixa de cor terrosa** (terracota); subtítulo em itálico; logo branco centralizado; textos que são **ideias** sobre a natureza e o consumo consciente | **Sustentabilidade com prova** (eco-conscientes): compostagem, coleta seletiva, nenhum copo descartável, proprietário biólogo |
+| **3. Editorial sensorial** | **Pousada do Engenho** | Close de **momentos sensoriais** (banho relaxante, comida fumegante), pessoa **de olhos fechados** curtindo o momento; tipografia misturando **caixa alta espaçada + serifa grande + manuscrita**; **rodapé de revista** com linhas finas, localização e posicionamento | Cabana Master (banheira de hidromassagem para 2), café da manhã, sauna e hidromassagem, feriados |
+
+### Pilar 2: manifesto (inspirado na Reserva Rio de Contas)
+| Fórmula da referência | Versão Cabanas (fatos confirmados) |
+|---|---|
+| "Tudo começa na terra: plantio e colheita" | "**Aqui, nada vira lixo à toa**": compostagem e coleta seletiva, **sem copos descartáveis** (Código de Cultura) |
+| "O verde transforma" | "**A natureza é a nossa casa**" (frase-guia do valor Cuidado com a Natureza) |
+| "Viver cercado de natureza... é o novo critério de quem escolhe com propósito" | "**Um biólogo à frente do hotel.** Aqui vivemos o que vendemos" (Código de Cultura) |
+
+**Cuidado:** a referência faz **afirmações de saúde** ("regula o corpo"). No Cabanas, evite promessas de saúde ou terapêuticas. Fale de sensação ("desacelerar", "respirar"), não de efeito no corpo.
+
+### Pilar 3: editorial sensorial (inspirado na Pousada do Engenho)
+| Fórmula da referência | Versão Cabanas |
+|---|---|
+| "Seu descanso de 7 de setembro começa aqui" | "**Seu feriado de [nome] começa aqui**", só com a data real; feriado é alta temporada |
+| "O inverno está acabando... mas os momentos ficam para sempre" | "**Inverno em Bonito:** *rios mais cristalinos*" (fato do hotel e do destino, de maio a setembro) |
+| Banho em ofurô com pétalas | **Banheira de hidromassagem da Cabana Master** (real). Pétalas e decoração **só se forem o serviço de decoração especial** (opcional) |
+| Comida fumegante em panela de barro | **Café da manhã incluso** (real). ⚠️ A gastronomia é uma lacuna do hotel (1 vs. 1,9): mostre só o que existe de verdade, sem vender "experiência gastronômica" |
+
+**Rodapé editorial (ótimo para o Cabanas):** linha fina + **"Bonito / MS"** + **"BR | MS"** + o posicionamento aprovado **"Único hotel de Bonito cercado por dois rios"** ou o slogan **"O seu lugar de conexão com a natureza"**. ⚠️ A referência diz "Pet friendly": **o Cabanas não aceita pets**, então nunca adapte esse item.
+
+**Pessoas:** no pilar 3, é permitido mostrar o rosto (olhos fechados, expressão de relaxamento), sempre com autorização de imagem.
+
+### Mix sugerido para o feed *(proposta, a validar com o dono)*
+- **~50% Pilar 1** (contemplação), **~25% Pilar 3** (sensorial e feriados) e **~25% Pilar 2** (manifesto e sustentabilidade).
+- Aventura e família entram nos três pilares com a mesma tipografia, mas com luz de dia e movimento.
+
+### Identidade própria
+As referências usam uma **cor de marca** nas faixas e nos detalhes (a terracota da Rio de Contas). O Cabanas deve usar **as cores do próprio logo**: **[a confirmar com o dono: logo e cores oficiais da marca]**.
+
 ## 5. Especificações práticas (para quem faz a arte, no Canva ou por designer)
 - **Fontes sugeridas** (serifadas, disponíveis no Canva/Google Fonts): *Playfair Display* ou *Cormorant Garamond* para o título, com uma palavra em **bold** e outra em *itálico*; letras espaçadas para a linha de apoio.
 - **Cores do texto:** branco quente ou creme; linha fina em creme ou dourado suave.
@@ -48,7 +85,7 @@
 - **Legenda:** complementa a imagem com os fatos (o que é, o que está incluído, como reservar). A imagem emociona; a legenda informa.
 
 ## 6. Cuidados obrigatórios
-1. **Fotos reais do Hotel Cabanas, sempre.** Duas das referências trazem o selo **"Conteúdo de IA"** do Instagram. No Cabanas, **não usamos imagens geradas por IA** para mostrar acomodações, paisagens ou experiências, porque isso contraria o valor da **Honestidade** ("prometer algo que não será entregue"). Tratamento de cor e luz em fotos reais é permitido.
+1. **Fotos reais do Hotel Cabanas, sempre.** Duas das referências trazem o selo **"Conteúdo de IA"** do Instagram, e algumas imagens do lote 2 parecem fotos de banco de imagens ou geradas por computador (paisagens que não são do próprio hotel). No Cabanas, **não usamos imagens geradas por IA** para mostrar acomodações, paisagens ou experiências, porque isso contraria o valor da **Honestidade** ("prometer algo que não será entregue"). Tratamento de cor e luz em fotos reais é permitido.
 2. **Sem promessas absolutas:** "absoluta", "mais bonito do ano", "garantido". Use a forma verdadeira e sensorial.
 3. **Estação correta:** cenas de frio e manta combinam com o **inverno** (maio a setembro, que também é a janela de ouro). Não use estética de inverno em campanhas de janeiro.
 4. **Autorização de imagem** de todas as pessoas reconhecíveis.

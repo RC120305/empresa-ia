@@ -54,3 +54,4 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | Dono definiu o site oficial: hotelcabanas.com.br. Contexto e Marketing atualizados. | Resposta do dono |
 | 2026-09-26 | Dono confirmou: a Cabana Master tem balanço, não rede. Contexto e Marketing atualizados. | Resposta do dono |
 | 2026-09-26 | Guia de estilo do Instagram criado a partir das referências do dono (@riodorastroecoresort, @bosqueveneza). Proposta: o Marketing passa a usá-lo (aguardando o dono). | Novo material do dono |
+| 2026-09-26 | Guia de estilo ampliado com o lote 2 (@reservariodecontas, @pousadadoengenho): 3 pilares de conteúdo (contemplação, manifesto, editorial sensorial). | Novo material do dono |
