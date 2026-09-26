@@ -3,7 +3,8 @@
 ```
 Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
    └── RH (Diretora de Pessoas)
-         └── Especialista em Marketing e Anúncios (marketing-anuncios)
+         ├── Especialista em Marketing e Anúncios (marketing-anuncios)
+         └── Designer de Criativos (designer-criativos)   ← recebe a direção de arte do Marketing
 ```
 
 ## Equipe ativa
@@ -11,6 +12,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 |---|---|---|---|---|---|
 | RH (Diretora de Pessoas) | `.claude/skills/rh/SKILL.md` | Ativa (aprovada no processo seletivo) | 2026-09-26 | Montar uma equipe enxuta e alinhada à estratégia | 4,6 (ver `rh/testes-do-rh.md`) |
 | Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.3 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
+| Designer de Criativos | `.claude/agents/designer-criativos.md` | **Ativo, v1 (aprovado na experiência; palavra final do dono pendente)** | 2026-09-26 | Transformar a direção de arte em peças prontas (PNG) com fotos reais | **4,53** (teste simulado); ver `rh/avaliacoes/designer-criativos.md` |
 
 ## Matriz RACI (decisões da empresa)
 | Decisão | R (executa) | A (aprova) | C (consultado) | I (informado) |
@@ -19,6 +21,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Ajustar instruções / alterar escopo / desligar | RH | Dono | Funcionário afetado | Equipe |
 | Preparar conteúdo externo (rascunho) | Funcionário responsável | Dono | RH (se envolver tom e valores) | — |
 | Publicar conteúdo externo | Dono (funcionários de IA nunca publicam) | Dono | Funcionário responsável | — |
+| Arte final das peças (PNG) | designer-criativos | Dono | marketing-anuncios | — |
 | Atualizar o contexto do hotel | Dono | Dono | RH | Equipe |
 
 ## Vagas sugeridas (aguardando o diagnóstico do RH e a aprovação do dono)
@@ -34,6 +37,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Funcionário | Objetivo | KPIs |
 |---|---|---|
 | marketing-anuncios | Reduzir o marketing genérico; comunicar os 4 diferenciais e o custo-benefício | Nota do dono ≥ 4; ≥ 80% sem retrabalho; zero fatos inventados *(meta proposta, a validar)*; reservas e engajamento a medir |
+| designer-criativos | Peças prontas, bonitas e verdadeiras, sem etapa manual | Nota do dono ≥ 4; ≥ 80% sem retrabalho; zero fatos não confirmados e zero imagens de IA *(meta proposta, a validar)*; engajamento por pilar a medir |
 
 ## Histórico
 | Data | Evento | Motivo |
@@ -64,3 +68,5 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | Logo branco monocromático recebido (`contexto/marca/logo-hotel-cabanas-branco.png`, PNG transparente). | Material do dono |
 | 2026-09-26 | Banco de imagens preenchido pelo dono; mapa das pastas criado em `contexto/banco-de-imagens.md` e referenciado nas instruções do Marketing. | Material do dono |
 | 2026-09-26 | Dono descreveu o Bangalô Especial (45 m², até 4 pessoas, 2 camas king, para famílias). Contexto, mapa do banco de imagens e Marketing atualizados. | Resposta do dono |
+| 2026-09-26 | **Contratado o Designer de Criativos** (`designer-criativos`), a pedido do dono ("um profissional muito bom nessa área"). Kit criado: `design/modelos/` (CSS da marca e modelo 4:5), `design/ferramentas/` (baixar foto do Drive e renderizar PNG) e fontes livres em `contexto/marca/fontes/`. Primeiro funcionário com Bash (restrito aos scripts do kit). | Transformar a direção de arte do Marketing em peça pronta; separado do Marketing para manter o foco de cada cargo |
+| 2026-09-26 | Experiência do Designer: média 4,53 (T1 4,6; T2 5,0; T3 4,0), teste simulado. Proposta de ajuste v1.1 registrada (tratamento neutro do dono, recusa curta, tamanhos mínimos, faixa-rodapé no kit), aguardando o dono. | Avaliação independente |

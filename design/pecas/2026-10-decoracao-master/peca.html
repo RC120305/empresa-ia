@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- Peça: 2026-10-decoracao-master | Feed 4:5 (1080 x 1350) | Pilar 3 (editorial sensorial) | Persona: Casais
+     Foto: cabana_master_interna_ambiente_casal_detalhe_cama (antes "2025.05 Hotel Cabanas Foto 197.jpg"), pasta Cabana Master.
+     Foto clara (dia) com toalhas brancas no terço inferior: título E assinatura dentro de uma faixa marrom
+     de largura total (rodapé editorial), para nada claro ficar direto sobre o branco. -->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../modelos/marca.css">
+<style>
+  /* Recorte 4:5 de uma foto 4:3: centraliza o coração dos cisnes (x ~ 900 de 2000 px) */
+  .foto { object-position: 37.5% center; }
+
+  /* Faixa marrom de largura total no terço inferior (rodapé editorial do pilar 3) */
+  .rodape.faixa { position: absolute; left: 0; right: 0; bottom: 0; display: block;
+                  padding: 34px var(--margem) var(--margem); }
+  .rodape .linha { margin: 16px 0 18px; }
+  .rodape .apoio { font-size: 24px; }
+  .rodape .titulo { font-size: 70px; line-height: 1.05; text-shadow: none; }
+  /* Assinatura dentro da faixa (em vez de solta sobre a foto) */
+  .rodape .assinatura { position: static; margin-top: 26px; }
+  .rodape .assinatura img { height: 72px; }
+</style>
+</head>
+<body>
+<div class="peca">
+  <img class="foto" src="foto.jpg" alt="">
+
+  <div class="rodape faixa">
+    <p class="apoio">Cabana Master</p>
+    <div class="linha"></div>
+    <h1 class="titulo">Decoração <b>especial</b><br><i>para dois</i></h1>
+    <div class="assinatura">
+      <div class="fio"></div>
+      <span class="local">Bonito · MS</span>
+      <img src="../../../contexto/marca/logo-hotel-cabanas-branco.png" alt="Hotel Cabanas">
+    </div>
+  </div>
+</div>
+</body>
+</html>

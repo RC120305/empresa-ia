@@ -1,0 +1,64 @@
+/* Identidade visual do Hotel Cabanas para peças do Instagram.
+   Fonte da verdade: contexto/marca/identidade.md e contexto/guia-estilo-instagram.md.
+   As fontes ficam no repositório (contexto/marca/fontes/), então nada depende da internet. */
+
+@font-face { font-family: "Playfair Display"; font-weight: 400; font-style: normal; src: url("../../contexto/marca/fontes/playfair-display-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Playfair Display"; font-weight: 400; font-style: italic; src: url("../../contexto/marca/fontes/playfair-display-latin-400-italic.woff2") format("woff2"); }
+@font-face { font-family: "Playfair Display"; font-weight: 700; font-style: normal; src: url("../../contexto/marca/fontes/playfair-display-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Playfair Display"; font-weight: 700; font-style: italic; src: url("../../contexto/marca/fontes/playfair-display-latin-700-italic.woff2") format("woff2"); }
+@font-face { font-family: "Cormorant Garamond"; font-weight: 400; font-style: normal; src: url("../../contexto/marca/fontes/cormorant-garamond-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Cormorant Garamond"; font-weight: 400; font-style: italic; src: url("../../contexto/marca/fontes/cormorant-garamond-latin-400-italic.woff2") format("woff2"); }
+@font-face { font-family: "Cormorant Garamond"; font-weight: 600; font-style: normal; src: url("../../contexto/marca/fontes/cormorant-garamond-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Cormorant Garamond"; font-weight: 600; font-style: italic; src: url("../../contexto/marca/fontes/cormorant-garamond-latin-600-italic.woff2") format("woff2"); }
+@font-face { font-family: "Josefin Sans"; font-weight: 300; src: url("../../contexto/marca/fontes/josefin-sans-latin-300-normal.woff2") format("woff2"); }
+@font-face { font-family: "Josefin Sans"; font-weight: 400; src: url("../../contexto/marca/fontes/josefin-sans-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Josefin Sans"; font-weight: 600; src: url("../../contexto/marca/fontes/josefin-sans-latin-600-normal.woff2") format("woff2"); }
+
+:root {
+  --marrom: #847059;   /* faixas atrás de títulos, rodapé */
+  --verde: #90AB49;    /* só como detalhe; nunca texto branco sobre verde */
+  --laranja: #F58634;  /* linhas finas e CTA, com moderação */
+  --creme: #F7F1E6;    /* texto sobre foto */
+  --margem: 72px;      /* margem segura: mínimo de 60 px */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+
+.peca { position: relative; width: 100%; height: 100%; overflow: hidden; color: var(--creme); }
+.peca.story { --topo-seguro: 250px; }  /* 9:16: nada nos 250 px de cima e de baixo */
+
+/* Foto real do banco de imagens. Ajuste object-position para o recorte não cortar o essencial. */
+.foto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+
+/* Véu suave só onde o texto fica, para legibilidade. Nunca escureça a foto inteira nem a água. */
+.veu-baixo { position: absolute; inset: auto 0 0 0; height: 55%; background: linear-gradient(to top, rgba(20,14,8,.72), rgba(20,14,8,0)); }
+.veu-cima  { position: absolute; inset: 0 0 auto 0; height: 45%; background: linear-gradient(to bottom, rgba(20,14,8,.6), rgba(20,14,8,0)); }
+
+.bloco { position: absolute; left: var(--margem); right: var(--margem); }
+.bloco.baixo { bottom: calc(var(--margem) + 150px); }
+.bloco.cima  { top: calc(var(--margem) + var(--topo-seguro, 0px)); }
+.story .bloco.baixo { bottom: calc(var(--topo-seguro) + 150px); }
+.centro { text-align: center; }
+
+.apoio { font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 26px; letter-spacing: .42em; text-transform: uppercase; }
+.titulo { font-family: "Playfair Display", serif; font-weight: 400; font-size: 84px; line-height: 1.08; text-shadow: 0 2px 18px rgba(0,0,0,.25); }
+.titulo b { font-weight: 700; }
+.titulo i { font-style: italic; }
+.titulo .espacado { font-family: "Josefin Sans", sans-serif; font-size: .42em; letter-spacing: .5em; text-transform: uppercase; }
+.linha { width: 120px; height: 2px; background: var(--laranja); margin: 28px 0; }
+.centro .linha { margin-left: auto; margin-right: auto; }
+
+/* Faixa marrom (fotos claras de dia e pilar 2) */
+.faixa { display: inline-block; background: var(--marrom); padding: 22px 36px 26px; }
+.faixa.verde-detalhe { border-left: 6px solid var(--verde); }
+
+/* CTA */
+.cta { font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 28px; letter-spacing: .28em; text-transform: uppercase; color: var(--laranja); }
+
+/* Assinatura padrão: linha fina laranja + B O N I T O · M S + logo branco pequeno */
+.assinatura { position: absolute; left: var(--margem); right: var(--margem); bottom: var(--margem); display: flex; align-items: center; gap: 28px; }
+.story .assinatura { bottom: var(--topo-seguro); }
+.assinatura .fio { flex: 1; height: 1px; background: var(--laranja); }
+.assinatura .local { font-family: "Josefin Sans", sans-serif; font-weight: 300; font-size: 22px; letter-spacing: .5em; text-transform: uppercase; white-space: nowrap; }
+.assinatura img { height: 84px; width: auto; }
