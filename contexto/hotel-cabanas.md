@@ -1,8 +1,8 @@
 # Contexto da Empresa: Hotel Cabanas
 
-> Resumo estruturado do `Guia_Estrategico_Hotel_Cabanas.pdf` (nesta mesma pasta).
-> Esta é a fonte de verdade que todos os agentes devem consultar.
-> Em caso de dúvida ou divergência, o PDF original prevalece.
+> Resumo estruturado do `Guia_Estrategico_Hotel_Cabanas.pdf` (nesta mesma pasta): a **estratégia**.
+> Os **fatos operacionais** (acomodações, o que está incluído, atividades e preços, horários, políticas, links) estão em `hotel-operacional.md`. Em fatos operacionais, `hotel-operacional.md` prevalece; veja a seção "Divergências a esclarecer".
+> Em caso de dúvida, os PDFs originais prevalecem.
 
 ## 1. Quem somos
 - **Hotel de lazer e aventura em Bonito, MS**, integrado à natureza.
@@ -16,7 +16,7 @@
 |---|---|---|
 | Cabanas de madeira suspensas na altura das árvores | Privacidade e romance | Casais |
 | Apartamentos standard | Conforto, 2 a 5 pessoas | Famílias |
-| Bangalôs (alvenaria) | Espaçosos, 2 a 5 pessoas | Famílias |
+| Bangalôs (alvenaria) | Privativos, 2 a 4 pessoas (ver `hotel-operacional.md`) | Famílias e casais |
 
 ### Atividades internas (sem deslocamento)
 Balneário próprio (banho de rio), boia cross, arvorismo, flutuação, caiaque, tirolesa, stand up paddle, arco e flecha, trilhas de contemplação, mountain bike e observação de aves.
