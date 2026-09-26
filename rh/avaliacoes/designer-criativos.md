@@ -56,3 +56,6 @@ Peças geradas: `design/pecas/2026-10-decoracao-master/` e `design/pecas/2026-10
 | 4 | Assinatura solta sobre a foto no modelo | Kit ganha a variação "faixa-rodapé" (título + assinatura na faixa marrom) para fotos claras |
 | 5 | — | Serviço opcional como tema da arte: considerar "(opcional)" ou apoio não ambíguo na própria arte |
 Validação: refazer T1 e T3 com a v1.1.
+
+## Entrega real para a decisão final (2026-09-26)
+Carrossel da Cabana Casal (5 telas 4:5), pedido direto do dono: `design/pecas/2026-10-carrossel-cabana-casal/`. Primeira entrega com o funcionário acionado de verdade (não simulado). Revisão da RH: 5 PNGs em 1080 × 1350, identidade consistente, só fatos confirmados; pendências bem sinalizadas (toalhas em cisne na tela 4, confirmar que as fotos "03" são da Cabana Casal, nome "eterna" no Drive).
