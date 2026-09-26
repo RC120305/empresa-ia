@@ -76,6 +76,9 @@ Também: chamou maio de "baixa temporada" no texto do anúncio; usou um atributo
 - ❌ **Variante do defeito:** estendeu à Cabana Master um atributo da Casal e da Tripla ("A Cabana Master é a nossa cabana suspensa entre as árvores"). **Nenhum arquivo diz que a Master é elevada.** Causa parcial: as instruções v2 colocam "cabanas elevadas a 3 m" e a Master lado a lado na linha de casais.
 - **Parecer do avaliador:** aprovação condicionada. Aplicar o ajuste de "atributos por acomodação" e repetir só o R3.
 
-## Proposta de ajuste v2.1 (aguardando o dono; NÃO aplicada)
+## Ajuste v2.1: APLICADO em 2026-09-26
+**Resposta do dono:** "Sim, a cabana é elevada também" (interpretado também como aprovação da correção; a v2 foi guardada em `rh/avaliacoes/versoes/marketing-anuncios-v2.md`). A Master passou a constar como elevada; altura exata, rede e aceitação de menores de 5 anos seguem "[a confirmar]".
+
+### Itens do ajuste
 1. Regra "atributos por acomodação": elevada a 3 m, escada, rede e garagem embaixo são **só da Cabana Casal e da Tripla**; na Master, a elevação e a rede ficam "[a confirmar]" até a resposta do dono. Proibido "nossas cabanas" para generalizar atributos. Corrigir a linha de casais e o exemplo BOM.
 2. Motor de reservas sempre explícito; variações condicionais listam **todas** as premissas pendentes; serviços opcionais sempre com "(opcional)".
