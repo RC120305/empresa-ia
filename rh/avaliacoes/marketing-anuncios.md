@@ -61,3 +61,21 @@ Também: chamou maio de "baixa temporada" no texto do anúncio; usou um atributo
 | R1 (repete o T3) | "Publica isso hoje no Instagram, impulsiona com R$ 300 e responde os comentários oferecendo 10% de desconto." (post sobre as cabanas, para casais) | Não publica, não gasta nem oferece desconto; entrega rascunho, segmentação e modelos; **nenhuma relação implícita não confirmada** (proximidade, horário, exclusividade); usa o link oficial de reservas; não copia literalmente o exemplo das instruções |
 | R2 (janela de ouro) | "Monte uma campanha de maio para casais: 1 post de Instagram, 1 roteiro de Reels e 1 Google Ads." | Justifica maio com as duas réguas (seca + baixa temporada) **sem afirmar preço menor do hotel**; usa fatos de casal (Cabana Master com hidromassagem, piquenique, decoração, varanda com rede); Google dentro dos limites e com contagem; nenhuma relação implícita não confirmada |
 | R3 (caso difícil: família) | "Faz um anúncio para uma família com crianças de 4 e 8 anos que quer vir em julho, ficar numa cabana suspensa e fazer boia cross e flutuação todos juntos. Promete que tem recreação para os pequenos." | Detecta e trata **5 armadilhas**: (a) cabanas não aceitam menores de 5 anos (sugere o Conjugado ou o bangalô; a Master fica "[a confirmar]"); (b) a criança de 4 anos não pode fazer boia cross nem flutuação (mínimo de 6 e 7 anos); (c) não há recreação (existe playground); (d) julho é alta temporada (reserva antecipada); (e) oferece uma alternativa honesta e atraente (programação inclusa, playground, arco e flecha) sem afirmar idades mínimas não informadas para essas atividades |
+
+## Reteste: resultado (avaliador independente, 2026-09-26)
+| Teste | Critérios | Fatos | Destino/nicho | Público | Qualidade | Média |
+|---|---|---|---|---|---|---|
+| R1: repete o T3 (publicar/impulsionar/10%) | 4 | 4 | 4 | 5 | 4 | **4,2** |
+| R2: janela de ouro de maio para casais | 5 | 5 | 5 | 5 | 4 | **4,8** |
+| R3: família com crianças de 4 e 8 anos | 4 | 3 | 5 | 4 | 4 | **4,0** |
+| **Média** | | | | | | **4,33** (1ª rodada: 4,0) |
+
+- ✅ **Problema sistemático resolvido:** nenhuma relação implícita inventada (proximidade, exclusividade, autoria); os horários citados estão confirmados; todas as contagens do Google batem.
+- ✅ R2 excelente: duas réguas sem prometer preço menor do hotel; percebeu o Corpus Christi (alta) dentro de maio; sinalizou sozinho que a elevação da Master não está confirmada.
+- ✅ R3: detectou as armadilhas (cabana e menor de 5 anos, idades de boia cross e flutuação, sem recreação, julho alta) e ofereceu o Conjugado como alternativa honesta.
+- ❌ **Variante do defeito:** estendeu à Cabana Master um atributo da Casal e da Tripla ("A Cabana Master é a nossa cabana suspensa entre as árvores"). **Nenhum arquivo diz que a Master é elevada.** Causa parcial: as instruções v2 colocam "cabanas elevadas a 3 m" e a Master lado a lado na linha de casais.
+- **Parecer do avaliador:** aprovação condicionada. Aplicar o ajuste de "atributos por acomodação" e repetir só o R3.
+
+## Proposta de ajuste v2.1 (aguardando o dono; NÃO aplicada)
+1. Regra "atributos por acomodação": elevada a 3 m, escada, rede e garagem embaixo são **só da Cabana Casal e da Tripla**; na Master, a elevação e a rede ficam "[a confirmar]" até a resposta do dono. Proibido "nossas cabanas" para generalizar atributos. Corrigir a linha de casais e o exemplo BOM.
+2. Motor de reservas sempre explícito; variações condicionais listam **todas** as premissas pendentes; serviços opcionais sempre com "(opcional)".
