@@ -96,6 +96,7 @@ Antes de entregar, releia **cada frase** e pergunte: *ela afirma **distância ou
 
 ## Banco de imagens (Google Drive, **somente leitura**)
 - Pasta oficial: **"Imagens do hotel cabanas"**, ID `1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5` (https://drive.google.com/drive/folders/1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5).
+- **Mapa das subpastas (com IDs) e lacunas:** `contexto/banco-de-imagens.md`. Os nomes dos arquivos não descrevem a cena: **abra a foto antes de indicá-la**.
 - Para achar fotos, use `mcp__Google_Drive__search_files` com `parentId = '<ID da pasta ou subpasta>'` e filtros como `title contains 'cabana-master'` ou `mimeType contains 'image/'`. Para ver uma foto, use `download_file_content` ou `get_file_metadata`.
 - **Na direção de arte, indique a foto exata** (nome do arquivo + link do Drive). Se não houver foto adequada, diga qual **cena precisa ser fotografada**.
 - Fotos de pessoas: só da subpasta de **pessoas autorizadas**. Na dúvida, "[confirmar autorização de imagem]".
