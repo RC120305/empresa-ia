@@ -17,7 +17,7 @@
 |---|---|---|---|
 | **Cabana Casal** | 30 m² | 2 pessoas; **não acomoda crianças menores de 5 anos** | Toda em madeira, **elevada a 3 m do solo**, acesso por escada, **varanda privativa com rede**, cama king, **garagem privativa** embaixo |
 | **Cabana Tripla** | 35 m² (a lista de itens diz 30 m²) | 3 pessoas (queen + solteiro); não acomoda crianças menores de 5 anos | Madeira, elevada a 3 m, varanda privativa com rede, garagem privativa |
-| **Cabana Master** | **85 m²** (a maior acomodação) | 2 a 5 pessoas (king + 3 solteiro); aceitar menores de 5 anos: **[a confirmar]** | **Elevada do chão, como as outras cabanas (confirmado pelo dono em 2026-09-26; a altura exata não foi informada)**; dois ambientes, ampla varanda com mesa, cadeiras e **balanço** (rede: **[a confirmar]**), **banheira de hidromassagem para 2 pessoas** (a única acomodação com hidromassagem), estacionamento coberto para 2 carros |
+| **Cabana Master** | **85 m²** (a maior acomodação) | 2 a 5 pessoas (king + 3 solteiro); **aceita crianças menores de 5 anos** (confirmado pelo dono em 2026-09-26) | **Elevada do chão, como as outras cabanas (confirmado pelo dono em 2026-09-26; a altura exata não foi informada)**; dois ambientes, ampla varanda com mesa, cadeiras e **balanço** (rede: **[a confirmar]**), **banheira de hidromassagem para 2 pessoas** (a única acomodação com hidromassagem), estacionamento coberto para 2 carros |
 | **Bangalô** | 40 m² | 2 a 4 pessoas (casal + 2 solteiro); aceita crianças | Alvenaria **elevada do chão**, **não divide paredes** com outra acomodação, **varanda privativa** com vista para a natureza, mesa, cadeiras e rede; garagem em frente; TV 40" |
 | **Apartamento Conjugado** | 55 m², em dois pisos | Até 5 pessoas; indicado para famílias com filhos | Térreo com 3 camas de solteiro e banheiro; em cima, suíte queen com **varanda com vista para a natureza** |
 | **Apartamento Superior** | 25 m² | 2 a 4 pessoas | Em blocos; espaço mais amplo que o standard |
@@ -66,7 +66,7 @@
 - Recepção: 24h, com check-in online enviado na véspera.
 
 ## 8. Crianças, famílias e acessibilidade
-- **Crianças até 5 anos não pagam**, dormindo na cama dos pais. A partir de 5 anos pagam normalmente. As **cabanas não aceitam menores de 5 anos**.
+- **Crianças até 5 anos não pagam**, dormindo na cama dos pais. A partir de 5 anos pagam normalmente. A **Cabana Casal e a Tripla não aceitam menores de 5 anos**; a **Cabana Master aceita** (confirmado pelo dono).
 - **Existe playground** (próximo à quadra de beach tênis, com gramado) e uma área infantil com brinquedos e casinha no receptivo. **Não há serviço de recreação.**
 - Há micro-ondas no receptivo para papinhas e mamadeiras (não há baby copa).
 - **Acessibilidade:** há quartos com **rampas** para cadeirantes, **mas os banheiros não têm barras.** Nunca anuncie "acessibilidade total".

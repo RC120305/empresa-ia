@@ -50,3 +50,4 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-26 | Dono aprovou os ajustes do Marketing (v2) e liberou "melhor custo-benefício de Bonito" para anúncios. v1 guardada em `rh/avaliacoes/versoes/`. Reteste em andamento. | Aprovação do dono |
 | 2026-09-26 | Reteste do Marketing v2: média 4,33 (R1 4,2; R2 4,8; R3 4,0). Relações implícitas resolvidas; ficou pendente atribuir a elevação à Cabana Master. Ajuste v2.1 proposto. | Aprovação condicionada do avaliador |
 | 2026-09-26 | Dono confirmou que a Cabana Master é elevada. Marketing v2.1 aplicado (atributos por acomodação); R3 refeito com nota 4,5. **Especialista em Marketing aprovado.** | Conclusão do período de experiência |
+| 2026-09-26 | Dono confirmou que a Cabana Master aceita crianças menores de 5 anos. Contexto e Marketing atualizados (fato liberado; a Variação B do anúncio de família fica publicável). | Resposta do dono |
