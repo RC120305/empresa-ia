@@ -89,3 +89,34 @@ Não usei vista, rio, proximidade do rio, "romântico", ar-condicionado, TV, fri
 - Arquivos: os PNGs `-1` a `-5` foram sobrescritos. A versão anterior da tela 1 está em `v1-2026-10-carrossel-cabana-casal-1.png` e o CSS anterior em `v1-carrossel.css` (para comparar ou voltar).
 - Os 5 PNGs novos foram abertos e conferidos (1080 × 1350, acentos, logo, margens, legibilidade).
 - As pendências 1 a 5 acima continuam valendo (em especial as toalhas em cisne da tela 4).
+
+## Ajuste 2 (versão sem faixa)
+**Seu pedido:** ver uma versão sem faixa nenhuma, com o texto direto sobre a foto e uma sombra suave só atrás dele. É uma **versão alternativa, para comparar**: a versão com faixa discreta (Ajuste 1) continua intacta.
+
+**Arquivos novos:** `sem-faixa-2026-10-carrossel-cabana-casal-1.png` a `-5.png`, `peca-sf-1.html` a `peca-sf-5.html` e `carrossel-sem-faixa.css`. Os textos, a numeração e as fotos são os mesmos.
+
+**Decisões de design:**
+- **Foto em tela cheia 4:5.** As fotos são 4:3 (deitadas). Para encher a tela 4:5 é preciso cortar cerca de 40% da largura. Recortes: tela 1 `46%` (a cabana fica quase inteira, só as pontas do beiral somem); tela 2 `46%` (a escada, os pilares e a varanda ficam inteiros); tela 3 `20%` (as poltronas e a rede aparecem, e a luminária fica fora do título); tela 4 `55%` (a cama e o teto inteiros; o sofá vermelho e o closet ficam cortados); tela 5 `4%`.
+- **Tela 5: não dá para manter as duas cabanas.** Juntas, elas ocupam 85% da largura da foto, e a tela cheia só mostra 60%. Mantive a **cabana da esquerda inteira**, com a rede na varanda, e a da direita aparece só em parte, à direita. Se as duas cabanas forem importantes, esta tela funciona melhor na versão com faixa.
+- **Legibilidade sem faixa:** uma sombra radial escura (opacidade de 0,55 a 0,78 no centro) que se desfaz até zero nas bordas, **só atrás do bloco de texto**. Há também uma sombra bem leve atrás da assinatura e da numeração, e um text-shadow leve em todo o texto. Nenhuma foto foi escurecida por inteiro.
+- **Posição do texto (mesma lógica: bloco à esquerda, na área mais calma da foto):** tela 1 embaixo, sobre a sombra das folhas e dos pilares; telas 2, 3 e 4 em cima (na 3 e na 4 fica sobre o telhado e o teto de madeira, que são escuros); tela 5 embaixo, sobre a sombra da garagem. A assinatura fica sempre na base (fio laranja + B O N I T O · M S + logo branco de 100 px), e a numeração no canto de cima, à direita. Margem de 72 px nas laterais; nada fica a menos de 60 px da borda.
+- **Tela 5:** o site e o WhatsApp estão em Josefin 27 px seminegrito, com sombra. Ficam legíveis porque estão sobre a área sombreada debaixo da cabana.
+
+**Leitura no celular (conferi os 5 PNGs):**
+| Tela | Legibilidade | Observação |
+|---|---|---|
+| 1 | Boa | O título fica sobre folhas e pilares. O "HOTEL" pequeno do logo quase some no cascalho claro, mas "CABANAS" se lê |
+| 2 | **A mais fraca** | O alto da foto é céu e folhas claras. Para o título aparecer, a sombra teve de ser mais forte (0,78) e vira uma mancha escura visível. A linha "MADEIRA · ACESSO POR ESCADA" fica no limite |
+| 3 | Boa | Sobre o telhado de madeira |
+| 4 | Muito boa | Sobre o teto de madeira escuro. As toalhas em cisne continuam visíveis (ver pendência 1) |
+| 5 | Boa | O site e o WhatsApp se leem; o custo é perder a segunda cabana |
+| Todas | Numeração fraca | O "1/5" e o "2/5" ficam sobre céu claro. É um detalhe pequeno, mas no celular quase some |
+
+**Minha recomendação honesta: fique com a faixa discreta (Ajuste 1) para estas fotos.** A versão sem faixa é mais "revista" e mostra mais foto na altura, mas:
+1. as fotos são claras, de dia, e o guia pede faixa marrom em foto clara justamente por isso. Sem faixa, a leitura depende de sombras que, na tela 2, já aparecem como mancha;
+2. o recorte de tela cheia corta 40% da largura: perde-se a segunda cabana da tela 5 e parte do quarto na tela 4. A faixa deixa as fotos 4:3 quase inteiras;
+3. na faixa, a assinatura e os contatos ficam 100% legíveis em qualquer celular.
+
+A versão sem faixa brilha nas **telas 3 e 4**, que têm madeira escura em cima. Ela funcionaria bem em todo o carrossel com fotos de fim de tarde ou com a luz da varanda acesa (a cena sugerida na pendência 5), que é a regra do véu no guia.
+
+**Checklist (Ajuste 2):** tamanho 1080 × 1350 nas 5 telas [x]; assinatura com logo branco de 100 px [x]; margem ≥ 60 px [x]; nenhuma foto escurecida por inteiro nem alterada [x]; os 5 PNGs abertos e conferidos [x]; texto claro sobre foto clara, contra a regra do guia (por isso esta versão é só para comparação) [!].
