@@ -1,0 +1,33 @@
+/* POST-01 (out/2026): Carrossel Cabana Casal v3, faixa discreta, adaptado para feed 3:4 (1080 x 1440).
+   Base: ../../2026-10-carrossel-cabana-casal/carrossel-v3-faixa.css (aprovado pelo dono, 4:5).
+   Única mudança de layout: a foto passou de 1060 para 1150 px de altura (os 90 px a mais do 3:4 vão para a foto).
+   A faixa continua com 290 px (20,1% de 1440, abaixo do limite de ~22%); tipografia, assinatura e margens iguais à v3. */
+
+.foto { height: 1150px; bottom: auto; }
+
+.rodape.faixa {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 290px;
+  display: flex; align-items: stretch; gap: 44px;
+  padding: 34px var(--margem) 36px;
+}
+
+/* Coluna do texto */
+.rodape .texto { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.rodape .apoio { font-size: 19px; letter-spacing: .38em; line-height: 1.2; }
+.rodape .linha { width: 80px; margin: 12px 0 14px; }
+.rodape .titulo { font-size: 54px; line-height: 1.06; text-shadow: none; }
+
+/* Linhas de contato da tela 5 (creme: laranja sobre marrom não tem contraste) */
+.rodape .contato { font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 22px; letter-spacing: .04em; line-height: 1.35; margin-top: 12px; }
+.rodape .contato b { font-weight: 600; letter-spacing: .2em; text-transform: uppercase; font-size: 17px; margin-right: 12px; }
+
+/* Coluna da assinatura: fio laranja vertical + numeração + logo branco (104 px) + BONITO · MS */
+.rodape .marca {
+  flex: none; width: 200px; border-left: 1px solid var(--laranja);
+  display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between;
+}
+.rodape .num { font-family: "Josefin Sans", sans-serif; font-weight: 300; font-size: 20px; letter-spacing: .3em; margin-right: -.3em; opacity: .85; }
+.rodape .marca img { height: 104px; width: auto; display: block; }
+.rodape .marca .local { font-family: "Josefin Sans", sans-serif; font-weight: 300; font-size: 17px; letter-spacing: .45em; margin-right: -.45em; text-transform: uppercase; white-space: nowrap; }
+
+/* Imagem única: sem numeração; o espaço vazio mantém o logo na mesma posição do carrossel. */
