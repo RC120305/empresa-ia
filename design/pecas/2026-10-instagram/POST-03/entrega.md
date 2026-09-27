@@ -25,3 +25,6 @@ Links: `https://drive.google.com/file/d/<ID>/view`.
 
 ## Checklist
 - [x] Fotos reais do banco · [x] texto do briefing, opcional marcado · [x] faixa marrom em foto clara · [x] texto fora de rostos · [x] margem 72 px · [x] assinatura com logo 104 px · [x] 1080 × 1440 · [x] PNGs abertos e conferidos · [x] autorização sinalizada · [x] alt text
+
+## Versão sem faixa (2026-09-27)
+- `POST-03-sem-faixa-1.png` a `-5.png` (`peca-sem-faixa-1.html` a `-5.html` + `carrossel-sem-faixa.css`, cópia do POST-01): mesmos textos e fotos, foto em tela cheia, sombra só atrás do texto, logo 100 px. Texto em cima nas telas 1, 2 e 4 (copas/mata; piscina sem véu) e embaixo nas 3 e 5 (abaixo dos rostos; tela 3 com recorte 25%, a pessoa à direita). **Mais fracas:** tela 3 (folhas de palmeira muito claras atrás do título) e tela 5 (contatos sobre pratos claros). **Recomendação: com faixa.**

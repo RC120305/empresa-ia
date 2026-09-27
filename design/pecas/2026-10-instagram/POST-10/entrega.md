@@ -26,3 +26,6 @@
 
 ## Checklist
 - [x] Fotos reais · [x] texto do briefing, opcional marcado · [x] faixa marrom · [x] texto fora de rostos · [x] água sem escurecer · [x] margem · [x] assinatura, logo 104 px · [x] 1080 × 1440 · [x] PNGs conferidos · [x] autorização sinalizada · [x] alt text
+
+## Versão sem faixa (2026-09-27)
+- `POST-10-sem-faixa-1.png` a `-6.png` (`peca-sem-faixa-1.html` a `-6.html` + `carrossel-sem-faixa.css`): mesmos textos e fotos, logo 100 px. Texto em cima nas telas 1, 4 e 5 (céu/copas; rio sem véu) e embaixo nas 2, 3 e 6 (abaixo dos rostos; tela 3 com recorte 25%, a pessoa à direita). **Mais fracas:** tela 3 (samambaias muito claras atrás do título) e tela 6 (contatos sobre copos de suco e o pote de mel, fundo movimentado). **Recomendação: com faixa.**

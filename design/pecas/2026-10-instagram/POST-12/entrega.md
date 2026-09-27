@@ -15,3 +15,6 @@ Mulher de óculos escuros sorri ao lado de um arco no campo de arco e flecha, en
 
 ## Checklist
 - [x] Foto real · [x] texto do briefing · [x] faixa marrom · [x] texto fora do rosto · [x] margem · [x] assinatura, logo 104 px · [x] 1080 × 1440 · [x] PNG conferido · [x] autorização sinalizada · [x] alt text
+
+## Versão sem faixa (2026-09-27)
+- `POST-12-sem-faixa-1.png` (`peca-sem-faixa-1.html` + `carrossel-sem-faixa.css`): mesmos texto e foto, recorte 62% mantido (rapazes ao fundo fora do quadro). Texto embaixo, sobre a camiseta azul, bem abaixo do rosto; logo 100 px sobre o cascalho escuro. Boa leitura. **Recomendação: sem faixa.**

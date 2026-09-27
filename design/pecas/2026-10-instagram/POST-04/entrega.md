@@ -16,3 +16,6 @@
 
 ## Checklist
 - [x] Foto real · [x] 3 palavras do briefing · [x] faixa marrom · [x] texto fora do rosto · [x] margem · [x] assinatura, logo 104 px · [x] 1080 × 1440 · [x] PNGs conferidos · [x] autorização sinalizada · [x] alt text
+
+## Versão sem faixa (2026-09-27)
+- `POST-04-sem-faixa-1.png` (`peca-sem-faixa-1.html`) e `POST-04-alternativa-sem-faixa.png` (`peca-alternativa-sem-faixa.html`) + `carrossel-sem-faixa.css`: mesmos textos e fotos, logo 100 px. Principal: texto em cima, sobre a mata escura, longe do rosto; o rio e a rede ficam sem véu (leitura boa). Alternativa: recorte 55%, texto sobre as copas, leitura média (folhas claras e salpicadas). **Recomendação: principal sem faixa; alternativa com faixa.**

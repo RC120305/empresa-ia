@@ -15,3 +15,6 @@ Vista aérea do Rio Formoso, de água azul-turquesa, com dois caiaques amarelos 
 
 ## Checklist
 - [x] Foto real · [x] texto do briefing · [x] faixa marrom, verde só como detalhe, nada branco sobre verde · [x] água sem escurecer · [x] margem · [x] assinatura, logo 104 px · [x] 1080 × 1440 · [x] PNG conferido · [x] sem pessoas reconhecíveis · [x] alt text
+
+## Versão sem faixa (2026-09-27)
+- `POST-09-sem-faixa-1.png` (`peca-sem-faixa-1.html` + `carrossel-sem-faixa.css`): mesmos texto e foto; recorte 28% (os dois caiaques, a passarela e o encontro das águas seguem no quadro) para o texto ficar sobre a mata da margem esquerda, com sombra só ali; o rio fica sem véu. Pilar 2: o verde `#90AB49` só como detalhe, na linha curta abaixo do apoio (4 px); nenhum texto sobre verde da marca. Logo 100 px. Boa leitura. **Recomendação: sem faixa.**

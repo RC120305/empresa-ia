@@ -25,3 +25,6 @@
 
 ## Checklist
 - [x] Fotos reais · [x] texto do briefing · [x] faixa marrom · [x] texto fora de rostos · [x] margem · [x] assinatura, logo 104 px · [x] 1080 × 1440 · [x] PNGs conferidos · [x] autorização sinalizada · [x] alt text
+
+## Versão sem faixa (2026-09-27)
+- `POST-06-sem-faixa-1.png` a `-6.png` (`peca-sem-faixa-1.html` a `-6.html` + `carrossel-sem-faixa.css`): mesmos textos e fotos, logo 100 px. Texto em cima em todas as telas, exceto a 4 (sauna: bloco descido para a parede de madeira, porque o teto é branco). Tela 5: texto acima da cabeça. Água sem véu. **Mais fraca:** tela 3 (folhas de palmeira contra a luz atrás do título; lê, mas com menos contraste). **Recomendação: sem faixa** (pilar sensorial, as fotos ganham em tela cheia).

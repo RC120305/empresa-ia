@@ -25,3 +25,6 @@
 
 ## Checklist
 - [x] Fotos reais (1 troca registrada) · [x] texto do briefing · [x] faixa marrom · [x] texto fora de rostos · [x] margem · [x] assinatura, logo 104 px · [x] 1080 × 1440 · [x] PNGs conferidos · [x] autorização sinalizada · [x] alt text
+
+## Versão sem faixa (2026-09-27)
+- `POST-07-sem-faixa-1.png` a `-6.png` (`peca-sem-faixa-1.html` a `-6.html` + `carrossel-sem-faixa.css`): mesmos textos e fotos, logo 100 px. Texto em cima (céu, pergolado, mata, telhado da varanda), exceto a tela 3 (sauna: bloco sobre a parede de madeira, o teto é branco). Tela 4: texto acima das cabeças do casal. Piscina sem véu. Todas as telas com boa leitura; a 5 é a menos firme (folhagem clara ao redor), mas legível. **Recomendação: sem faixa.**
