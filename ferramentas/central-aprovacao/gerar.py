@@ -57,5 +57,7 @@ if os.path.exists(pj):
             p["pecas"] = pecas[p["n"]]
 tpl = open(os.path.join(os.path.dirname(__file__), "modelo.html")).read()
 data = json.dumps(posts, ensure_ascii=False).replace("</", "<\\/")
-open(f"{out}/index.html", "w").write(tpl.replace("__DATA__", data).replace("__MES__", mes))
+ads = sorted(glob.glob(f"social/anuncios/{mes}-*/central.json"))
+anuncios = json.dumps(json.load(open(ads[-1])), ensure_ascii=False).replace("</", "<\\/") if ads else "null"
+open(f"{out}/index.html", "w").write(tpl.replace("__DATA__", data).replace("__MES__", mes).replace("__ANUNCIOS__", anuncios))
 print(f"{len(posts)} posts -> {out}/index.html")

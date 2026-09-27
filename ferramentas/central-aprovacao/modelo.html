@@ -88,6 +88,39 @@ h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;m
 .live{flex:0 0 100%;width:100%;height:100%;position:relative;overflow:hidden;scroll-snap-align:start}
 .live iframe{position:absolute;top:0;left:0;width:1080px;height:1440px;border:0;transform-origin:0 0;pointer-events:none}
 .live .tag{position:absolute;left:8px;bottom:8px;background:var(--wait);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:3px;z-index:2}
+.tabsbar{display:flex;gap:4px;border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding-top:6px}
+.tabsbar button{font:inherit;font-size:15px;font-weight:600;background:none;border:none;border-bottom:3px solid transparent;padding:10px 14px;color:var(--muted);cursor:pointer}
+.tabsbar button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brown)}
+.tabsbar button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.ads{display:flex;flex-direction:column;gap:28px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.steps{display:flex;flex-wrap:wrap;gap:6px;counter-reset:s}
+.steps span{font-size:12px;padding:4px 10px;border-radius:12px;background:var(--chip);color:var(--muted)}
+.steps span.on{background:var(--brown);color:var(--brown-ink)}
+.steps span.ok{background:var(--green-soft);color:var(--green)}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px}
+.tbl th,.tbl td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-family:"Josefin Sans",sans-serif;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tbl td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl tr.total td{font-weight:700}
+.pill{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--chip);color:var(--muted);white-space:nowrap}
+.pill.perm{background:var(--green-soft);color:var(--green)}.pill.pont{background:var(--wait-soft);color:var(--wait)}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:6px;padding:10px;cursor:pointer;background:var(--surface)}
+.opt input{margin-top:3px;accent-color:var(--brown)}
+.opt b{display:block;font-size:14px}.opt span{font-size:13px;color:var(--muted)}
+.opt.sel{border-color:var(--brown)}
+.adgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.ad{border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--surface)}
+.ad.cut{opacity:.55;border-style:dashed}
+.ad .code{font-family:"Josefin Sans",sans-serif;font-size:12px;letter-spacing:.12em;color:var(--muted)}
+.ad .hook{font-family:"Playfair Display",serif;font-size:17px;margin:0;text-wrap:balance}
+.ad .ang{font-size:13px;color:var(--muted);margin:0}
+.ad .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.lock{display:flex;gap:10px;flex-wrap:wrap}
+.lock .btn{flex:1 1 220px}
+.muted{color:var(--muted);font-size:13px;margin:0}
 .topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .stage{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;background:var(--chip);border-radius:4px}
 .stage iframe{position:absolute;top:0;left:0;width:1080px;height:1440px;border:0;transform-origin:0 0;pointer-events:none}
@@ -143,8 +176,13 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
     </div>
     <div class="topbar" style="margin-top:12px"><button class="btn ghost" type="button" id="recarregar">Atualizar a central</button><span class="note">As artes corrigidas aparecem aqui sozinhas; se não aparecerem, toque em atualizar.</span></div>
   </header>
+  <nav class="tabsbar" role="tablist" aria-label="Seções">
+    <button type="button" role="tab" id="tab-org" aria-selected="true">Posts orgânicos</button>
+    <button type="button" role="tab" id="tab-ads" aria-selected="false">Anúncios (Meta Ads)</button>
+  </nav>
   <p class="banner" id="offline" hidden>Os botões de aprovação não estão disponíveis nesta visualização. Abra a página pelo claude.ai com a sua conta para aprovar e pedir correções.</p>
 
+  <div id="sec-org" style="display:flex;flex-direction:column;gap:32px">
   <section style="display:flex;flex-direction:column;gap:12px" aria-labelledby="g">
     <h2 id="g">A grade do perfil</h2>
     <p class="note">Do post mais recente (31/10) para o primeiro (06/10), como o Instagram mostra. Toque numa miniatura para ir ao post.</p>
@@ -152,12 +190,15 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   </section>
 
   <div id="weeks" style="display:flex;flex-direction:column;gap:36px"></div>
+  </div>
+  <div id="sec-ads" class="ads" hidden></div>
 
   <footer>Artes em <code>design/pecas/2026-10-instagram/POST-NN/final/</code> e textos em <code>social/conteudo/2026-10/conteudo.md</code> e na planilha "Calendário Outubro v2" do Drive. Horários no fuso de Mato Grosso do Sul. O pedido de correção é enviado ao Claude automaticamente quando a sua conta permite; se aparecer "Pedido salvo", avise na conversa.</footer>
 </div>
 
 <script>
 const MES = "__MES__";
+const ANUNCIOS = __ANUNCIOS__;
 const POSTS = __DATA__;
 const WEEKS = [
   {t:"Semana 1", s:"06 a 10/10 · o meio de semana + apoio de 20/11", ids:["01","02","03"]},
@@ -559,9 +600,119 @@ function paint(n){
   sent.innerHTML = txHtml + peds.map(x => `<div class="sent"><b>${esc(x.onde)} · ${x.situacao === "feito" ? "corrigido · confira a arte acima" : x.situacao === "em_andamento" ? "em andamento" : "enviado"}</b><span>${esc(x.pedido)}</span>${(x.imagens||[]).length ? `<div class="thumbs">${x.imagens.map(i=>`<img src="/_blob/${esc(i.id)}" alt="${esc(i.nome||"foto enviada")}">`).join("")}</div>` : ""}${x.resposta ? `<span class="reply">${esc(x.resposta)}</span>` : ""}</div>`).join("");
 }
 
+// ---------- aba Anúncios ----------
+const tabOrg = document.getElementById("tab-org"), tabAds = document.getElementById("tab-ads");
+function showTab(ads){
+  document.getElementById("sec-org").hidden = ads; document.getElementById("sec-ads").hidden = !ads;
+  tabOrg.setAttribute("aria-selected", String(!ads)); tabAds.setAttribute("aria-selected", String(ads));
+  try { localStorage.setItem("central-aba", ads ? "ads" : "org"); } catch {}
+}
+tabOrg.addEventListener("click", () => showTab(false));
+tabAds.addEventListener("click", () => showTab(true));
+try { if (localStorage.getItem("central-aba") === "ads") showTab(true); } catch {}
+if (location.hash === "#anuncios") showTab(true);
+
+let adsState = {};
+const brl = v => "R$ " + Number(v).toLocaleString("pt-BR");
+function renderAds(){
+  const A = ANUNCIOS, box = document.getElementById("sec-ads");
+  if (!A) { box.innerHTML = `<div class="panel"><h2>Anúncios</h2><p class="muted">Ainda não há plano de anúncios para este mês.</p></div>`; return; }
+  const st = adsState, dec = st.decisoes || {}, keep = st.ads || {};
+  const aprovado = st.status === "aprovado";
+  const etapa = aprovado ? 1 : 0;
+  const meses = {};
+  A.sessenta.forEach(r => { (meses[r[0]] = meses[r[0]] || []).push(r); });
+  box.innerHTML = `
+  <div class="panel">
+    <span class="label">${esc(A.titulo)} · verba de ${brl(A.verba)} por mês</span>
+    <h2>Campanhas permanentes + pontuais</h2>
+    <p class="muted">As permanentes ficam sempre ligadas para atrair público (foco em domingo a quinta e baixa temporada). As pontuais entram nos períodos-chave, 45 a 50 dias antes da estadia. Nenhum real é gasto sem os seus dois OKs no fim desta página.</p>
+    <div class="steps">${A.etapas.map((e,i)=>`<span class="${i<etapa?"ok":i===etapa?"on":""}">${i+1}. ${esc(e)}</span>`).join("")}</div>
+    ${aprovado ? `<p class="msg">Plano aprovado. Próxima etapa: a equipe escreve os textos dos anúncios mantidos, que aparecem aqui para você aprovar e editar.</p>` : ""}
+  </div>
+
+  <div class="panel"><h2>Arquitetura do ano</h2>
+    <div class="tbl"><table><thead><tr><th>Camada</th><th>Campanha</th><th>Quando roda</th><th>Formato</th></tr></thead><tbody>
+    ${A.arquitetura.map(r=>`<tr><td><span class="pill ${r[0]==="Permanente"?"perm":r[0]==="Pontual"?"pont":""}">${esc(r[0])}</span></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join("")}
+    </tbody></table></div>
+    <ul class="muted" style="margin:0;padding-left:18px">${A.regras.map(r=>`<li>${esc(r)}</li>`).join("")}</ul>
+  </div>
+
+  <div class="panel"><h2>Próximos 60 dias (cenário A)</h2>
+    <div class="tbl"><table><thead><tr><th>Mês</th><th>Campanha</th><th>Período</th><th style="text-align:right">Por dia</th><th style="text-align:right">Total</th></tr></thead><tbody>
+    ${Object.entries(meses).map(([m,rs])=>rs.map(r=>`<tr><td>${esc(m)}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td class="num">${brl(r[3])}</td><td class="num">${brl(r[4])}</td></tr>`).join("")+`<tr class="total"><td colspan="4">Total de ${esc(m.toLowerCase())}</td><td class="num">${brl(rs.reduce((s,r)=>s+r[4],0))}</td></tr>`).join("")}
+    </tbody></table></div>
+  </div>
+
+  <div class="panel"><h2>Suas decisões</h2>
+    ${A.decisoes.map(d => d.tipo === "escolha"
+      ? `<fieldset style="border:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px"><legend style="font-weight:600;margin-bottom:6px">${esc(d.q)}</legend><div class="opts">${d.opcoes.map(o=>`<label class="opt ${dec[d.k]===o.v?"sel":""}"><input type="radio" name="dec-${d.k}" value="${esc(o.v)}" ${dec[d.k]===o.v?"checked":""} ${aprovado?"disabled":""}><span><b>${esc(o.t)}</b><span>${esc(o.d)}</span></span></label>`).join("")}</div></fieldset>`
+      : `<label style="font-weight:600;display:flex;flex-direction:column;gap:6px" for="dec-${d.k}">${esc(d.q)}<textarea id="dec-${d.k}" data-dec="${d.k}" placeholder="${esc(d.ph||"")}" ${aprovado?"disabled":""} style="font:inherit;font-weight:400;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);min-height:70px">${esc(dec[d.k]||"")}</textarea></label>`).join("")}
+  </div>
+
+  ${A.grupos.map(g=>`<div class="panel"><h2>${esc(g.nome)}</h2><p class="muted">Marque "cortar" nos que você não quer. Os textos e as artes vêm na próxima etapa.</p><div class="adgrid">
+    ${g.ads.map(a=>{ const cut = keep[a[0]] === "cortar"; return `<div class="ad ${cut?"cut":""}"><span class="code">${esc(a[0])} · ${esc(a[3])} · ${esc(a[1])}</span><p class="hook">“${esc(a[4])}”</p><p class="ang">${esc(a[2])}</p><div class="row"><button type="button" class="sbtn" data-adkeep="${esc(a[0])}" aria-pressed="${!cut}" ${aprovado?"disabled":""}>${cut?"Cortado · toque para manter":"Mantido · toque para cortar"}</button></div></div>`; }).join("")}
+  </div></div>`).join("")}
+
+  <div class="panel"><h2>Aprovar o plano</h2>
+    <label style="font-weight:600;display:flex;flex-direction:column;gap:6px" for="ads-obs">Observações para a equipe (opcional)<textarea id="ads-obs" ${aprovado?"disabled":""} style="font:inherit;font-weight:400;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);min-height:70px">${esc(st.obs||"")}</textarea></label>
+    <div class="actions" style="border:none;padding:0">
+      ${aprovado ? `<button class="btn ghost" type="button" id="ads-reabrir">Reabrir para ajustes</button>` : `<button class="btn ok" type="button" id="ads-aprovar">Aprovar plano e seguir para os textos</button>`}
+    </div>
+    <p class="msg" id="ads-msg"></p>
+  </div>
+
+  <div class="panel"><h2>Travas do dinheiro</h2>
+    <p class="muted">Estes botões só ficam disponíveis quando os anúncios estiverem prontos e aprovados. Nada é gasto antes do segundo OK.</p>
+    <div class="lock"><button class="btn fix" type="button" disabled>1. Autorizar subir pausada (sem gastar)</button><button class="btn ok" type="button" disabled>2. Ativar campanha</button></div>
+  </div>`;
+  if (!db) box.querySelectorAll("input,textarea,button[data-adkeep],#ads-aprovar,#ads-reabrir").forEach(el => el.disabled = true);
+  // eventos
+  box.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener("change", async () => {
+    const k = r.name.replace("dec-",""); await saveAds({decisoes: {...(adsState.decisoes||{}), [k]: r.value}});
+  }));
+  box.querySelectorAll('textarea[data-dec]').forEach(ta => ta.addEventListener("change", async () => {
+    await saveAds({decisoes: {...(adsState.decisoes||{}), [ta.dataset.dec]: ta.value.trim()}});
+  }));
+  box.querySelectorAll('[data-adkeep]').forEach(b => b.addEventListener("click", async () => {
+    const id = b.dataset.adkeep, cur = (adsState.ads||{})[id] === "cortar" ? "manter" : "cortar";
+    await saveAds({ads: {...(adsState.ads||{}), [id]: cur}});
+  }));
+  const obs = box.querySelector("#ads-obs"); if (obs) obs.addEventListener("change", () => saveAds({obs: obs.value.trim()}));
+  const ap = box.querySelector("#ads-aprovar");
+  if (ap) ap.addEventListener("click", async () => {
+    const msg = box.querySelector("#ads-msg");
+    if (!(adsState.decisoes||{}).cenario) { msg.className = "msg err"; msg.textContent = "Escolha a distribuição da verba antes de aprovar."; return; }
+    ap.disabled = true;
+    let aviso = false;
+    if (comments) {
+      try {
+        if (await comments.canSendToClaude() === "available") {
+          const d = adsState.decisoes||{}, cortados = Object.entries(adsState.ads||{}).filter(([,v])=>v==="cortar").map(([k])=>k);
+          const txt = `Plano de anúncios APROVADO na Central (${A.id}). Cenário ${d.cenario}. Réveillon: ${d.reveillon||"sem dados ainda"}. Medição: ${d.medicao||"-"}. Limite da conta: ${d.limite||"-"}. Cortados: ${cortados.join(", ")||"nenhum"}. Obs.: ${(obs&&obs.value.trim())||"-"}. Seguir para a Fase 2 (textos).`;
+          await comments.sendToClaude({anchor: await comments.anchorFor(ap), text: txt.slice(0,3900)});
+          aviso = true;
+        }
+      } catch {}
+    }
+    try { await saveAds({status: "aprovado", aprovadoEm: new Date().toISOString(), obs: (obs&&obs.value.trim())||""});
+      box.querySelector("#ads-msg").textContent = aviso ? "Plano aprovado e enviado ao Claude." : "Plano aprovado. Avise o Claude na conversa para seguir.";
+    } catch { box.querySelector("#ads-msg").className = "msg err"; box.querySelector("#ads-msg").textContent = "Não foi possível salvar agora."; ap.disabled = false; }
+  });
+  const re = box.querySelector("#ads-reabrir");
+  if (re) re.addEventListener("click", () => saveAds({status: "pendente"}));
+}
+async function saveAds(patch){
+  if (!db || !ANUNCIOS) return;
+  const body = {...adsState, ...patch, campanha: ANUNCIOS.id, atualizadoEm: new Date().toISOString()};
+  adsState = body; renderAds();
+  await db.collection("anuncios").doc(ANUNCIOS.id).set(body);
+}
+
 document.getElementById("recarregar").addEventListener("click", () => location.reload());
 buildCards();
 POSTS.forEach(p => { if (p.padrao) applyStyle(p.n, p.padrao); });
+renderAds();
 renderGrade();
 tally();
 
@@ -577,6 +728,8 @@ tally();
   if (!assets) document.querySelectorAll("[data-up]").forEach(u => u.hidden = true);
   document.querySelectorAll("[data-edit]").forEach(b => b.hidden = false);
   POSTS.forEach(p => { if (p.pecas) document.querySelector("#post-" + p.n + " [data-art]").hidden = false; });
+  if (ANUNCIOS) db.collection("anuncios").doc(ANUNCIOS.id).onSnapshot(s => { adsState = s.exists ? {...s.data()} : {}; renderAds(); }, () => {});
+  renderAds();
   db.collection("decisoes").where("mes","==",MES).onSnapshot(snap => {
     snap.docs.forEach(d => { const b = d.data(); if (b && b.post) state[b.post] = b; });
     POSTS.forEach(p => paint(p.n));

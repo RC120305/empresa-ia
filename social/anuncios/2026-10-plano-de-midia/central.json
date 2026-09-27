@@ -1,0 +1,63 @@
+{
+  "id": "2026-10-plano-de-midia",
+  "titulo": "Plano de mídia paga · Meta Ads",
+  "verba": 1500,
+  "decisoes": [
+    {"k": "cenario", "q": "Qual distribuição da verba?", "tipo": "escolha", "opcoes": [
+      {"v": "A", "t": "A · Equilibrado (recomendado)", "d": "Out: prospecção R$ 45/dia + remarketing R$ 12/dia = R$ 1.482. Nov: prospecção R$ 20 + remarketing R$ 10 + Réveillon R$ 20/dia = R$ 1.500."},
+      {"v": "B", "t": "B · Conservador", "d": "Gasta menos: R$ 1.170 em outubro e R$ 1.290 em novembro. Réveillon a R$ 15/dia."},
+      {"v": "C", "t": "C · Concentrado no Réveillon", "d": "Réveillon a R$ 30/dia em novembro; prospecção roda só de 16 a 30/11."}]},
+    {"k": "reveillon", "q": "Pacote de Réveillon (4 noites): valor, datas, o que inclui e vagas", "tipo": "texto", "ph": "Ex.: 29/12 a 02/01, R$ ..., inclui café e ..., vagas em ..."},
+    {"k": "medicao", "q": "A equipe de reservas pode perguntar \"como nos conheceu?\" e anotar o código do anúncio, se a data é de domingo a quinta e se virou reserva?", "tipo": "escolha", "opcoes": [
+      {"v": "sim", "t": "Sim, vamos anotar", "d": "Assim sabemos quanto custa cada reserva vinda do anúncio."},
+      {"v": "nao", "t": "Ainda não", "d": "Medimos só o custo por conversa no WhatsApp."}]},
+    {"k": "limite", "q": "Você vai definir o limite de gastos da conta em R$ 1.500 por mês (trava de segurança no Gerenciador de Anúncios)?", "tipo": "escolha", "opcoes": [
+      {"v": "sim", "t": "Sim", "d": "A conta nunca passa desse valor."},
+      {"v": "depois", "t": "Depois", "d": "Fica pendente; nada é ativado sem o seu OK de qualquer forma."}]}
+  ],
+  "arquitetura": [
+    ["Permanente", "Prospecção \"domingo a quinta / baixa temporada\"", "o ano todo", "Conversas no WhatsApp · 12 anúncios"],
+    ["Permanente", "Remarketing (quem já interagiu com o hotel)", "o ano todo", "Conversas no WhatsApp · 4 anúncios"],
+    ["Pontual", "Réveillon (4 noites)", "01/11 a 10/12/2026", "6 anúncios"],
+    ["Pontual", "Carnaval 2027 (4 noites)", "11/12/2026 a 20/01/2027", "a planejar"],
+    ["Pontual", "Janela de ouro 1 (estadias em maio e junho)", "15/03 a 15/05/2027", "a planejar"],
+    ["Pontual", "Janela de ouro 2 (estadias em agosto e setembro)", "15/06 a 15/08/2027", "a planejar"],
+    ["Gatilho", "Feriado com vaga 50 dias antes (ex.: 20/11)", "quando houver vaga", "vira 1 anúncio no remarketing"]
+  ],
+  "regras": ["Sem pontual no mês: prospecção R$ 1.200 + remarketing R$ 300.", "Com pontual o mês todo: prospecção R$ 600 + remarketing R$ 300 + pontual R$ 600.", "Nunca dois pontuais ao mesmo tempo; a verba do pontual sai da prospecção.", "Piso de R$ 20/dia por campanha; o que sobra no mês não passa para o seguinte sem o seu OK.", "Finados: sem campanha paga (a janela de venda já passou)."],
+  "sessenta": [
+    ["Outubro", "Prospecção", "06 a 31/10", 45, 1170],
+    ["Outubro", "Remarketing", "06 a 31/10", 12, 312],
+    ["Novembro", "Prospecção", "01 a 30/11", 20, 600],
+    ["Novembro", "Remarketing", "01 a 30/11", 10, 300],
+    ["Novembro", "Réveillon", "01 a 30/11 (segue até 10/12)", 20, 600]
+  ],
+  "grupos": [
+    {"nome": "Prospecção permanente · domingo a quinta", "ads": [
+      ["P01", "Casais", "Cabana elevada a 3 m", "carrossel", "Aqui, a pressa fica no chão"],
+      ["P02", "Casais", "Cabana Master, 85 m², banheira para 2", "imagem", "Uma quarta a dois, sem pressa"],
+      ["P03", "Casais e aventureiros", "Programação inclusa com monitor (custo-benefício)", "vídeo", "Terça-feira, 8h30, na mira"],
+      ["P04", "55+", "Mais tranquilo de domingo a quinta; piscina climatizada, hidromassagem e sauna", "carrossel", "Domingo a quinta, no ritmo seu"],
+      ["P05", "Todas", "Único hotel de Bonito cercado por dois rios", "imagem", "Entre dois rios"],
+      ["P06", "Eco-conscientes", "Coleta seletiva, compostagem, biólogo; fauna", "imagem", "Aqui, os primeiros moradores são eles"],
+      ["P07", "Famílias", "Aventura sem sair do hotel (opcionais a partir de 6 anos e 1,15 m)", "carrossel", "A aventura mora aqui dentro"],
+      ["P08", "Aventureiros", "Arvorismo: 18 obstáculos e tirolesa aquática (opcional)", "imagem", "18 obstáculos e o Formoso lá embaixo"],
+      ["P09", "Aventureiros", "Boia cross: 1.200 m, guias treinados (opcional)", "vídeo ou imagem", "1.200 metros de corredeira"],
+      ["P10", "55+ e casais", "Objeção \"fica longe\": 6 km do centro, todo em asfalto", "imagem", "Longe da pressa, a 6 km do centro"],
+      ["P11", "Casais", "Uma quarta em cinco sentidos", "carrossel", "Uma quarta em cinco sentidos"],
+      ["P12", "Casais e 55+", "Uma quarta-feira qualquer entre dois rios", "vídeo", "Uma quarta-feira qualquer"]]},
+    {"nome": "Remarketing permanente", "ads": [
+      ["R1", "Quem já interagiu", "Notas: Google 4,7 · Booking 9,3 · TripAdvisor 4,5 (set/2026)", "imagem", "Quem vem, conta"],
+      ["R2", "Quem já interagiu", "O que vem na diária + desconto para quem reserva direto", "carrossel", "Está tudo na diária"],
+      ["R3", "Quem já interagiu", "E se a viagem fosse numa terça?", "imagem", "E se fosse numa terça?"],
+      ["R4", "Quem já interagiu", "Feriado de 20/11 esticado até segunda (06/10 a 13/11, só com vaga)", "imagem", "E se a volta for na segunda?"]]},
+    {"nome": "Pontual · Réveillon (01/11 a 10/12)", "ads": [
+      ["RV1", "Casais", "Virar o ano entre dois rios", "imagem", "O ano novo começa entre dois rios"],
+      ["RV2", "Famílias", "4 noites, um dia por tela (restaurante aberto, sem prometer ceia)", "carrossel", "4 noites, um rio por dia"],
+      ["RV3", "Casais", "Cabana Master a dois, banheira", "imagem", "O primeiro banho do ano, a dois"],
+      ["RV4", "Todas", "Pacote a partir de R$ [confirmar valor] + o que inclui", "imagem", "Réveillon em 4 noites"],
+      ["RV5", "Famílias", "Até 5 na Master ou no Conjugado; Bangalô Especial até 4", "imagem", "A família toda, no mesmo lugar"],
+      ["RV6", "Aventureiros", "Começar 2027 na boia cross (opcional)", "vídeo ou imagem", "Comece 2027 na correnteza"]]}
+  ],
+  "etapas": ["Plano e verba", "Textos dos anúncios", "Artes 4:5 e 9:16", "Subir pausada na conta", "Ativar campanha", "Resultados"]
+}
