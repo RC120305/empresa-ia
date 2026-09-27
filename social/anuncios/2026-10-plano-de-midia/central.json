@@ -5,7 +5,7 @@
  "decisoes": [
   {
    "k": "excecao2026",
-   "q": "Em 2026, Finados e Consciência Negra ainda têm vagas. A campanha de MS roda direto de 06/10 a 28/11 (sem pausar nesses feriados)?",
+   "q": "Em 2026, a campanha de MS roda direto nos feriados ou para em todos? (respondido: para em todos)",
    "tipo": "escolha",
    "opcoes": [
     {
@@ -15,14 +15,14 @@
     },
     {
      "v": "nao",
-     "t": "Não, seguir a regra de pausa",
-     "d": "MS começa em 19/10 e pausa de 31/10 a 07/11. Outubro R$ 954, novembro R$ 1.293."
+     "t": "Não, parar em todos os feriados",
+     "d": "Pausas: 11 a 18/10 (Finados) e 25/10 a 07/11 (15/11 e Consciência Negra). A MS estreia em 08/11. Outubro R$ 702, novembro R$ 1.293."
     }
    ]
   },
   {
    "k": "ferias",
-   "q": "O calendário de férias usado é: 19/12/2026 a 31/01/2027 e 01 a 31/07/2027. Está certo para o público de MS? (Carnaval, Páscoa, Corpus Christi, 7 de Setembro e 11–12/10 também pausam MS.)",
+   "q": "O calendário de férias usado é: 19/12/2026 a 31/01/2027 e 01 a 31/07/2027. Está certo para o público de MS? (Carnaval, Páscoa, Corpus Christi, 7 de Setembro e 11–12/10 também pausam MS; e, por decisão sua, também Tiradentes, 1º de maio, 15/11 e o aniversário de Campo Grande.)",
    "tipo": "texto",
    "ph": "Ex.: sim; ou as férias em MS vão de ... a ..."
   },
@@ -98,9 +98,9 @@
   [
    "Outubro",
    "MS",
-   "19 a 30/10",
-   21,
-   252
+   "pausada (feriados); estreia em 08/11",
+   0,
+   0
   ],
   [
    "Outubro",
@@ -450,7 +450,7 @@
   "Ativar campanha",
   "Resultados"
  ],
- "titulo60": "Próximos 90 dias (seguindo a regra de pausa)",
+ "titulo60": "Próximos 90 dias (MS para em todos os feriados)",
  "publico": {
   "fonte": "Base: 40% a 60% dos hóspedes do Cabanas são de MS (dado seu) + origem dos turistas de Bonito (OTEB, ago/2026) para o público de fora. Personas: separadas pelos anúncios dentro de cada campanha (o Meta entrega cada anúncio a quem tem o perfil). Ajustamos com os números depois de 30 dias.",
   "idade": "25 a 65+ anos, público amplo (o anúncio escolhe a pessoa); famílias só nas férias de janeiro.",

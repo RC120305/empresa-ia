@@ -1,6 +1,6 @@
-# Plano de mídia paga (Meta Ads): Hotel Cabanas, out/2026 a set/2027 (v2.3)
+# Plano de mídia paga (Meta Ads): Hotel Cabanas, out/2026 a set/2027 (v2.4)
 
-> **Autor:** Estrategista de Social Media e Tráfego · **Data:** 27/09/2026 · **Skill:** `campanha-anuncios`, Fase 1 · **Status:** PROPOSTA v2.3, aguardando o seu OK (nada foi subido nem ativado).
+> **Autor:** Estrategista de Social Media e Tráfego · **Data:** 27/09/2026 · **Skill:** `campanha-anuncios`, Fase 1 · **Status:** PROPOSTA v2.4, decisões respondidas; aguardando só o botão "Aprovar plano" (nada foi subido nem ativado).
 > **Decisões suas já aplicadas (27/09/2026):** teto de **R$ 1.500 por mês**; gargalo = **domingo a quinta e baixa temporada**; chave da Meta ainda não configurada (subida manual, pelo kit, ou pela API depois); sem pixel nem UTM no motor; **sem campanha de feriado, Réveillon ou Carnaval**; 40% a 60% dos hóspedes são de MS (Campo Grande, Dourados e entorno), que fica no máximo 2 noites, geralmente no fim de semana, e aproveita muito o próprio hotel; em janeiro e julho cai MS e sobe o público de fora; piores meses: maio e junho (frio).
 > **Novo nesta v2.3 (decisões suas de 27/09/2026, registradas em `hotel-cabanas.md` §9 e `social/anuncios/README.md`):**
 > - **O hóspede de MS decide com 15 a 20 dias de antecedência** (o de fora: 45 a 50).
@@ -11,10 +11,14 @@
 
 ---
 
-## 0. As 2 decisões que preciso de você agora
+## 0. Decisões respondidas (27/09/2026, na Central e no chat)
 
-1. **Finados e Consciência Negra de 2026 entram na pausa da MS?** A regra aplicada neste plano pausa a MS de 11 a 18/10 (vende Finados, 31/10 a 02/11) e de 31/10 a 07/11 (vende 20 a 22/11). Na prática, a MS só começaria em **19/10** e pararia 8 dias depois de 12 dias no ar. Só que, em 27/09, você disse que **esses dois feriados ainda têm vagas**. *Alternativa (a que eu recomendo):* só em 2026, MS rodando direto de **06/10 a 28/11**, sem falar de feriado (+R$ 294 em outubro e +R$ 147 em novembro, ainda abaixo do teto). A regra completa vale a partir de 2027.
-2. **Confirma o que conta como "feriado e férias" para pausar a MS?** Usei: **férias de 19/12/2026 a 31/01/2027 e de 01 a 31/07/2027** [confirmar o calendário escolar de MS 2027]; feriados nacionais que formam **fim de semana prolongado**; **Corpus Christi (27 a 30/05) entra**, mesmo sendo ponto facultativo e maio sendo o pior mês. **Não entram:** Tiradentes (quarta-feira, 21/04), 1º de maio (sábado), 15/11/2026 (domingo) e o aniversário de Campo Grande (26/08/2027, quinta-feira, feriado municipal [confirmar]).
+1. **A MS para em todos os feriados** (você: "as campanhas no MS param em todos os feriados"). Não vale a exceção de 2026: Finados, Consciência Negra e também os feriados de um dia só (15/11, Tiradentes, 1º de maio, aniversário de Campo Grande) entram na pausa. Tabela em §2.2.
+2. **Calendário de férias confirmado:** 19/12/2026 a 31/01/2027 e 01 a 31/07/2027.
+3. **Medição:** por enquanto a recepção **não** anota código, cidade e noites de cada conversa; medimos o custo por conversa no WhatsApp e a leitura por anúncio fica mais limitada.
+4. **Limite de gastos da conta:** você vai definir R$ 1.500 por mês no Gerenciador (a equipe não mexe nisso).
+
+**Consequência que ajustei (pode desfazer):** com Finados (pausa 11 a 18/10) e 15/11 + Consciência Negra (pausa 25/10 a 07/11), a MS só teria **6 dias no ar em outubro (19 a 24/10)**, pouco para a Meta sair do aprendizado. Por isso a **MS estreia em 08/11/2026**, e outubro fica só com Fora do estado e Remarketing (**R$ 702**). Se preferir aproveitar esses 6 dias mesmo assim, são +R$ 126.
 
 ---
 
@@ -51,17 +55,20 @@
 | Estadia que não se vende para MS | Datas da estadia | **MS pausada (veiculação)** | Observação |
 |---|---|---|---|
 | Nossa Senhora Aparecida 2026 | 10 a 12/10 | — | Já lotado; a janela de venda (20 a 27/09) é anterior à estreia |
-| Finados | sáb 31/10 a seg 02/11/2026 | **11 a 18/10/2026** | Ainda com vagas em 27/09 (decisão 1) |
-| Consciência Negra | sex 20/11 a dom 22/11/2026 | **31/10 a 07/11/2026** | Ainda com vagas em 27/09 (decisão 1) |
+| Finados | sáb 31/10 a seg 02/11/2026 | **11 a 18/10/2026** | Pausa confirmada (decisão 1) |
+| Consciência Negra | sex 20/11 a dom 22/11/2026 | **31/10 a 07/11/2026** | Pausa confirmada (decisão 1) |
 | Férias de fim de dezembro e janeiro + Carnaval | 19/12/2026 a 31/01/2027 [confirmar calendário escolar] + sáb 06/02 a qua 10/02/2027 | **29/11/2026 a 26/01/2027** (contínua: a janela de venda das férias termina em 16/01 e a do Carnaval começa em 17/01) | Inclui Natal e o pacote de Réveillon (29/12 a 02/01) |
 | Semana Santa / Páscoa | sex 26/03 a dom 28/03/2027 | **06 a 13/03/2027** | |
-| Corpus Christi | qui 27/05 a dom 30/05/2027 | **07 a 15/05/2027** | Ponto facultativo nacional; entra (decisão 2) |
+| Corpus Christi | qui 27/05 a dom 30/05/2027 | **07 a 15/05/2027** | Ponto facultativo nacional; entra (decisão 1) |
 | Férias de julho | 01 a 31/07/2027 [confirmar calendário escolar] | **11/06 a 16/07/2027** | |
 | Independência | sáb 04/09 a ter 07/09/2027 (com a emenda de segunda) | **15 a 23/08/2027** | |
 | Criação de MS (11/10, estadual) + Aparecida (12/10) | sáb 09/10 a ter 12/10/2027 | **19 a 27/09/2027** | Feriado estadual: pesa justamente em MS |
-| *Não pausam:* Tiradentes (qua 21/04/2027), 1º de maio (sáb), 15/11/2026 (dom), aniversário de Campo Grande (qui 26/08/2027 [confirmar]) | | | Decisão 2 |
+| Proclamação da República | dom 15/11/2026 (fim de semana 14 e 15/11) | **25 a 31/10/2026** (emenda com a da Consciência Negra: **25/10 a 07/11**) | Todos os feriados pausam (decisão 1) |
+| Tiradentes | qua 21/04/2027 | **01 a 06/04/2027** | Idem |
+| Dia do Trabalho | sáb 01/05/2027 | **11 a 16/04/2027** | Idem |
+| Aniversário de Campo Grande (municipal) | qui 26/08/2027 [confirmar] | **06 a 11/08/2027** | Idem; o de Dourados (20/12) já cai nas férias |
 
-**Com a alternativa da decisão 1 (recomendada para 2026):** a MS roda de **06/10 a 28/11/2026** sem interrupção e as pausas começam em 29/11.
+**Em 2026, na prática:** a MS estreia em **08/11** (ver §0) e roda até 28/11; a pausa das férias começa em 29/11.
 
 **Pausas de mais de 7 dias podem fazer a campanha voltar ao aprendizado** [confirmar se a regra continua valendo]: na volta (27/01 e 17/07), os primeiros 7 dias não servem para cortar anúncio.
 
@@ -94,15 +101,15 @@
 
 ## 3. Os próximos 90 dias (outubro, novembro e dezembro de 2026) [verba a definir pelo dono]
 
-**Produção:** plano aprovado até 29/09 → textos 30/09 a 01/10 → artes 02 a 04/10 → subida **pausada** em 05/10 → **ativação da Fora e do Remarketing em 06/10 com o seu OK** → MS em 19/10 (ou 06/10, se aprovar a alternativa da decisão 1). J1 a J5 e D1 a D5: textos até 20/10, artes até 25/10, entram em 01/11 (J) e 11/11 (D). Conjunto 2: sobe pausado em 25/11, liga em 29/11 com o seu OK.
+**Produção:** plano aprovado até 29/09 → textos 30/09 a 01/10 → artes 02 a 04/10 → subida **pausada** em 05/10 → **ativação da Fora e do Remarketing em 06/10 com o seu OK** → MS em 08/11 (ver §0). J1 a J5 e D1 a D5: textos até 20/10, artes até 25/10, entram em 01/11 (J) e 11/11 (D). Conjunto 2: sobe pausado em 25/11, liga em 29/11 com o seu OK.
 
 ### Plano (regra de pausa aplicada)
 | Campanha / conjunto | Período | R$/dia | Dias | Total | Estadia que vende |
 |---|---|---|---|---|---|
 | Fora · conj. 1 (P + V) | 06 a 31/10 | 21 | 26 | **R$ 546** | Domingo a quinta, fim de nov. a meados de dez. |
-| MS (M1 a M4) | 19 a 30/10 | 21 | 12 | **R$ 252** | Domingo a terça, fim de out. a meados de nov. |
+| MS | pausada (Finados; 15/11 e Consciência Negra) | — | — | R$ 0 | — |
 | Remarketing | 06 a 31/10 | 6 | 26 | **R$ 156** | Todas |
-| **Total de outubro** | | | | **R$ 954** | |
+| **Total de outubro** | | | | **R$ 702** | |
 | Fora · conj. 1 (J1 a J5) | 01 a 30/11 | 21 | 30 | **R$ 630** | Férias (19/12 a 31/01) |
 | MS (M1 a M4 até 10/11; D1 a D5 + M4 de 11 a 28/11) | 08 a 28/11 | 21 | 21 | **R$ 441** | Fim de nov. e **01 a 15/12** |
 | Fora · conj. 2 SP/Campinas (J1, J3, J5, V2, V3) | 29 a 30/11 | 21 | 2 | **R$ 42** | Janeiro |
@@ -114,11 +121,9 @@
 | Remarketing (R4 pausado) | 01 a 31/12 | 6 | 31 | **R$ 186** | Todas |
 | **Total de dezembro** | | | | **R$ 1.488** | |
 
-**Com a alternativa da decisão 1 (MS direto de 06/10 a 28/11):** MS = R$ 546 em outubro e R$ 588 em novembro → **outubro R$ 1.248; novembro R$ 1.440**; dezembro igual (R$ 1.488).
+**Cenário conservador (mesmas datas):** MS R$ 20, Fora R$ 20 por conjunto, Remarketing R$ 5 → **outubro R$ 650; novembro R$ 1.210; dezembro R$ 1.395**.
 
-**Cenário conservador (mesmas datas):** MS R$ 20, Fora R$ 20 por conjunto, Remarketing R$ 5 → **outubro R$ 890; novembro R$ 1.210; dezembro R$ 1.395**.
-
-**Leitura honesta:** outubro fica ~R$ 550 abaixo do teto por causa da regra de pausa; não proponho gastar a diferença só para chegar ao teto. Com ~R$ 21/dia e 6 a 8 criativos ligados, a Meta concentra a entrega em 2 a 3 anúncios; o que não recebeu verba em 7 dias volta no rodízio seguinte. **Nenhum resultado está prometido:** custo por conversa, % qualificada e taxa de fechamento são **[a medir]**.
+**Leitura honesta:** outubro fica ~R$ 800 abaixo do teto por causa da regra de pausa (a MS só estreia em 08/11); não proponho gastar a diferença só para chegar ao teto. Com ~R$ 21/dia e 6 a 8 criativos ligados, a Meta concentra a entrega em 2 a 3 anúncios; o que não recebeu verba em 7 dias volta no rodízio seguinte. **Nenhum resultado está prometido:** custo por conversa, % qualificada e taxa de fechamento são **[a medir]**.
 
 **A conta antes de gastar (fechar com números reais em 13/10):** conversas = verba ÷ custo por conversa [a medir] → qualificadas = conversas × % qualificada [a medir] → reservas = qualificadas × taxa de fechamento [a medir]. Se não fechar, o problema pode ser a **oferta** (hoje não há condição para quem estica até terça nem para a 1ª quinzena de dezembro [a confirmar com o dono]; eu não defino preço) ou o **tempo de resposta** no WhatsApp, e não o anúncio. Se janeiro estiver com ocupação alta em 30/11, os J saem e a verba do conjunto 2 não é gasta sem o seu OK.
 
@@ -131,17 +136,17 @@ Cada mês é reaprovado com os números do anterior. Em cada campanha, no máxim
 
 | Mês | MS | Fora · conj. 1 (Brasil sem MS) | Fora · conj. 2 (SP/Campinas) | Remarketing | Total [verba a definir pelo dono] |
 |---|---|---|---|---|---|
-| **out/26** | M1 a M4 (19 a 30/10) | P01, P02, P04, P05, P10 + V1, V3, V4 | — | R1 a R4 | R$ 954 |
+| **out/26** | — (MS estreia em 08/11) | P01, P02, P04, P05, P10 + V1, V3, V4 | — | R1 a R4 | R$ 702 |
 | **nov/26** | pausa 01 a 07/11; M1 a M4 (08 a 10/11); **D1 a D5 + M4** (11 a 28/11); pausa a partir de 29/11 | **J1 a J5** | J1, J3, J5, V2, V3 (a partir de 29/11) | R1 a R4 | R$ 1.293 |
 | **dez/26** | pausada | J1 a J5 até 16/12; **P01, P02, P05, P06, P11, P12** a partir de 17/12 | J1, J3, J5, V2, V3 até 16/12; **V1 a V5** a partir de 17/12 | R1 a R3 | R$ 1.488 |
 | **jan/27** | pausada até 26/01; M1 a M4 a partir de 27/01 | P01, P02, P05, P06, P11, P12 | V1 a V5 até 26/01 | R1 a R3; R4 volta em 27/01 | R$ 1.488 |
 | **fev/27** | M1 a M4 (+ M7, post vencedor, com o seu OK) | P03, P04, P08, P09, P10, P11 + V1, V4, V5 | — | R1 a R4 | R$ 1.344 |
 | **mar/27** | M1 a M4; pausa 06 a 13/03 | até 14/03 como em fev.; a partir de 15/03 **janela de ouro 1**: P03, P05, P08, P09 (versões "seca") + P04 + V1, V4 | — | R1 a R4 | R$ 1.320 |
-| **abr/27** | M1 a M4 | janela de ouro 1 | — | R1 a R4 | R$ 1.440 |
+| **abr/27** | M1 a M4; pausas 01 a 06/04 (Tiradentes) e 11 a 16/04 (1º de maio) | janela de ouro 1 | — | R1 a R4 | R$ 1.188 |
 | **mai/27** | M1 a M4 (01 a 06/05); pausa 07 a 15/05; **M1, M2, M5, M6** a R$ 25 (16 a 31/05) | janela de ouro 1 até 15/05; **J1, J3, J4, J5 + P07** (férias de julho) a partir de 16/05 | — | R1 a R4 | R$ 1.363 |
 | **jun/27** | M1, M2, M5, M6 (01 a 10/06); pausa a partir de 11/06 | J (julho) até 15/06; **janela de ouro 2** a partir de 16/06: P03, P05, P08, P09 (seca) + P06, P11 | **V1 a V5** a partir de 16/06 | R1 a R3 (R4 pausa em 11/06) | R$ 1.375 |
 | **jul/27** | pausada até 16/07; M1 a M4 a partir de 17/07 | janela de ouro 2 | V1 a V5 até 16/07 | R1 a R3; R4 volta em 17/07 | R$ 1.488 |
-| **ago/27** | M1 a M4; pausa 15 a 23/08 | janela de ouro 2 até 15/08; **P01, P02, P04, P10, P11 + V1, V3, V4** a partir de 16/08 | — | R1 a R4 | R$ 1.299 |
+| **ago/27** | M1 a M4; pausas 06 a 11/08 (aniversário de Campo Grande) e 15 a 23/08 | janela de ouro 2 até 15/08; **P01, P02, P04, P10, P11 + V1, V3, V4** a partir de 16/08 | — | R1 a R4 | R$ 1.173 |
 | **set/27** | M1 a M4; pausa 19 a 27/09 | P01, P02, P04, P10, P11 + V1, V3, V4 | — | R1 a R4 | R$ 1.251 |
 
 *Verba mês a mês:* MS R$ 21/dia nos dias ligados (R$ 25 de 16/05 a 10/06); Fora conj. 1 R$ 21/dia o ano todo; conj. 2 R$ 21/dia nas pausas longas; Remarketing R$ 6/dia. Todos os meses ≤ R$ 1.500.
