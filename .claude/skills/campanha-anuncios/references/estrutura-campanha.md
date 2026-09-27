@@ -10,8 +10,9 @@ social/anuncios/
     ├── plano.md                       # Fase 1 (aprovado)
     ├── textos.md                      # Fase 2: um bloco por anúncio
     ├── briefing-produtora.md          # vídeos, se houver
-    ├── kit-subida.md                  # Fase 3: passo a passo ou briefing da agência
-    └── resultados.md                  # Fase 4
+    ├── conta.md                       # Fase 4: IDs da campanha na conta (pausada/ativa)
+    ├── kit-subida.md                  # Fase 4, plano B: passo a passo para subir manualmente
+    └── resultados.md                  # Fase 5
 design/pecas/anuncios/AAAA-MM-<campanha>/AD-NN/   # AD-NN-45.png, AD-NN-916.png, peca.html, entrega.md
 ```
 

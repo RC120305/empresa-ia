@@ -29,7 +29,7 @@ Cada anúncio de imagem sobe com **os dois tamanhos** (4:5 e 9:16) para a Meta u
 - **1 campanha → 1 conjunto amplo** (Advantage+ de público e posicionamentos) → **10 a 15 criativos realmente diferentes** (persona, ângulo, formato e foto diferentes; trocar só a cor ou uma palavra não conta).
 - Localização: Brasil com prioridade para SP, depois PR, RJ e Sul (sugestão como sinal, não como trava). Conjunto separado só para mensagem incompatível (ex.: região de Bonito para boia cross e arvorismo, que atendem não hóspedes).
 - **Objetivo:** mensagens (WhatsApp de reservas) ou tráfego/vendas para o motor de reservas. Com pouca verba, preferir **conversas no WhatsApp** (a equipe fecha a venda e mede a qualidade do contato).
-- **Antes de gastar:** conta de anúncios, página e Instagram conectados; pixel/conversões configurados se o objetivo for o site; WhatsApp Business ligado; forma de pagamento — checklist do Estrategista.
+- **Antes de gastar:** limite de gastos da conta definido pelo dono (trava de segurança); conta de anúncios, página e Instagram conectados; pixel/conversões configurados se o objetivo for o site; WhatsApp Business ligado; forma de pagamento — checklist do Estrategista.
 
 ## 4. Links com UTM
 Padrão (minúsculas, sem acento, com hífen):

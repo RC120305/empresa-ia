@@ -20,8 +20,8 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
   - `.claude/skills/conteudo-mensal/`: `/conteudo-mensal <mês>`: pauta (Estrategista) → OK do dono → textos (Marketing) → artes (Designer) → publicação no Drive (pasta "Conteúdo Instagram"). Perfil de voz e plano de postagem em `references/perfil-cabanas.md`.
   - `.claude/skills/alterar-conteudo/`: `/alterar-conteudo`: refaz posts existentes, com proposta + OK antes de reescrever.
   - `.claude/skills/relatorio-metricas/`: `/relatorio-metricas <mês>`: prints do Insights → PDF na identidade do Cabanas, com a leitura do Estrategista.
-  - `.claude/skills/campanha-anuncios/`: `/campanha-anuncios <campanha>`: anúncios pagos no Meta Ads: plano com 10 a 15 criativos e cenários de verba (Estrategista) → OK → textos (Marketing) → OK → artes 4:5 e 9:16 (Designer) → kit de subida (Drive, pasta "Anúncios") → leitura dos números. Ninguém mexe na conta nem gasta verba.
-  - `.claude/skills/publicar-instagram/`: publica no Instagram **só os posts que o dono marcou "Aprovado"** na planilha `Calendário` (API da Meta; em implantação, ver `social/publicacao/`). Anúncio pago e verba: só o dono.
+  - `.claude/skills/campanha-anuncios/`: `/campanha-anuncios <campanha>`: anúncios pagos no Meta Ads: plano com 10 a 15 criativos e cenários de verba (Estrategista) → OK → textos (Marketing) → OK → artes 4:5 e 9:16 (Designer) → OK do dono → sobe **pausada** na conta (API da Meta) → **ativa só com o OK do dono** → leitura dos números. Verba só a aprovada.
+  - `.claude/skills/publicar-instagram/`: publica no Instagram **só os posts que o dono marcou "Aprovado"** na planilha `Calendário` (API da Meta; em implantação, ver `social/publicacao/`).
   - Conteúdo do mês em `social/conteudo/AAAA-MM/`; relatórios em `social/relatorios/`; campanhas pagas em `social/anuncios/`.
 - `.claude/skills/rh/`: a **Diretora de RH**, que desenha cargos e contrata, avalia e ajusta os funcionários de IA. Acione com `/rh`.
 - `.claude/agents/`: os **funcionários contratados** (um arquivo por cargo).
@@ -35,6 +35,6 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
 - Todo agente age de acordo com os valores do Código de Cultura (natureza, honestidade, comprometimento, proatividade, segurança) e usa os **6 filtros de decisão** em decisões difíceis.
 - Responder sempre em **português do Brasil**.
 - Nenhum funcionário é criado sem a aprovação do dono.
-- **Publicação:** só sai no Instagram o que o dono aprovou (status "Aprovado"). **Anúncio pago e verba: só o dono.** Nunca pedir nem guardar senhas ou chaves no chat.
+- **Publicação:** só sai no Instagram o que o dono aprovou (status "Aprovado"). **Anúncios pagos:** a equipe monta e sobe as campanhas **pausadas**; só são ativadas com o OK do dono e dentro da verba aprovada. Nunca aumentar verba sem aprovação. Nunca pedir nem guardar senhas ou chaves no chat.
 - Quando o usuário pedir uma tarefa operacional (ex.: "crie um anúncio"), verifique no organograma se há um funcionário para isso e delegue a ele. Se não houver, sugira acionar o RH.
 - Mudanças relevantes na equipe devem ser registradas no histórico do organograma.
