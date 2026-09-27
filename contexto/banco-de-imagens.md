@@ -27,3 +27,14 @@
 - Sem pasta para **Flutuação**, **Caiaque/SUP**, **Tirolesa**, **Arco e flecha** (podem estar em "Atividades e balneário": verificar).
 - Sem pasta para **Sustentabilidade** (compostagem, coleta seletiva), **Fauna**, **Pessoas autorizadas** e **Marca** (logos).
 - Fotos com pessoas: **autorização de imagem não identificada**. Até o dono confirmar, trate como "[confirmar autorização de imagem]".
+
+## Acervo de vídeos (Google Drive)
+Pasta **"Vídeos do hotel cabanas"** (dentro de "Hotel Cabanas"), criada em 2026-09-27: https://drive.google.com/drive/folders/1n6gPXQ1_dBkvIizIyWsPFsrTnH4k2QZw (ID `1n6gPXQ1_dBkvIizIyWsPFsrTnH4k2QZw`). Os vídeos estão com a produtora; o dono sobe aos poucos. Só vídeos reais do hotel.
+| Subpasta | ID |
+|---|---|
+| Atividades (arco e flecha, tirolesa, caiaque, SUP, arvorismo) | `1RknauTZaERal9tyiNp2kb6bPyDMLcDy9` |
+| Cabana Master e acomodações | `1-o4gc8-ZLAt1tUMDn_PM8xY3whPaQb-R` |
+| Aves, fauna e trilhas | `1EW_DaWKTHApsByjawJ9wKBmfRa6P1quV` |
+| Rio, amanhecer, café e decks | `1MbWp9LeM-sfwSKj9Aig-wjrO2gVOfWBy` |
+| Outros | `1QVId-zrPIejlgnyoDqKqkafmclGyfc-7` |
+Vídeos grandes não são lidos direto: para ver as cenas, extrair 3 a 5 quadros com ffmpeg (arquivos pequenos) ou pedir ao dono a descrição das cenas.

@@ -10,6 +10,7 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
 - `contexto/guia-estilo-instagram.md`: **guia de estilo visual e de texto** do Instagram, a partir das referências do dono (prints em `contexto/referencias-instagram/`).
 - `contexto/marca/`: logo e **identidade visual** (paleta e tipografia).
 - `contexto/destino-bonito.md`: conhecimento sobre o destino Bonito/MS e o turismo de natureza (fatos do destino, não do hotel).
+- **Acervo de vídeos (Google Drive):** pasta "Vídeos do hotel cabanas", ID `1n6gPXQ1_dBkvIizIyWsPFsrTnH4k2QZw` (subpastas em `contexto/banco-de-imagens.md`).
 - **Banco de imagens (Google Drive):** pasta "Imagens do hotel cabanas" (dentro de "Hotel Cabanas"), https://drive.google.com/drive/folders/1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5 (ID `1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5`). Só fotos reais do hotel. Mapa das subpastas: `contexto/banco-de-imagens.md`.
 - `contexto/social-e-trafego.md`: base técnica de Instagram, Meta Ads e Google para hotéis (com fontes e data; revisar a cada 3 meses).
 - `marketing/`: rascunhos produzidos pelo Especialista em Marketing e Anúncios.
