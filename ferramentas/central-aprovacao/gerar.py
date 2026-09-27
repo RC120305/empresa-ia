@@ -35,7 +35,8 @@ for r in csv.DictReader(open(cal)):
             continue
         estilos[k] = []
         for i, f in enumerate(files, 1):
-            name = f"POST-{nn}-e{k}-{i}.jpg"; jpg(f, f"{out}/img/{name}"); estilos[k].append(f"img/{name}")
+            name = f"POST-{nn}-e{k}-{i}.jpg"; jpg(f, f"{out}/img/{name}")
+            estilos[k].append(f"img/{name}?v={md5(f)[:8]}")  # ?v= evita imagem antiga em cache
         if finals and padrao is None and md5(files[0]) == md5(finals[0]):
             padrao = k
     imgs = []

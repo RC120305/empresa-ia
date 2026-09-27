@@ -85,6 +85,10 @@ h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;m
 .tab{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:4px;padding:4px 10px;cursor:pointer}
 .tab[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .tab.mod::after{content:" •";color:var(--wait)}
+.live{flex:0 0 100%;width:100%;height:100%;position:relative;overflow:hidden;scroll-snap-align:start}
+.live iframe{position:absolute;top:0;left:0;width:1080px;height:1440px;border:0;transform-origin:0 0;pointer-events:none}
+.live .tag{position:absolute;left:8px;bottom:8px;background:var(--wait);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:3px;z-index:2}
+.topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .stage{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;background:var(--chip);border-radius:4px}
 .stage iframe{position:absolute;top:0;left:0;width:1080px;height:1440px;border:0;transform-origin:0 0;pointer-events:none}
 .artbox label{font-size:13px;font-weight:600;display:flex;flex-direction:column;gap:5px}
@@ -137,6 +141,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
       <div><b id="t-pend">8</b><span>para revisar</span></div>
       <div><b>4</b><span>Reels aguardando vídeo</span></div>
     </div>
+    <div class="topbar" style="margin-top:12px"><button class="btn ghost" type="button" id="recarregar">Atualizar a central</button><span class="note">As artes corrigidas aparecem aqui sozinhas; se não aparecerem, toque em atualizar.</span></div>
   </header>
   <p class="banner" id="offline" hidden>Os botões de aprovação não estão disponíveis nesta visualização. Abra a página pelo claude.ai com a sua conta para aprovar e pedir correções.</p>
 
@@ -476,11 +481,47 @@ function md2html(m, soItalico){
 }
 function legAtual(n){ return state[n]?.legenda || byId[n].leg; }
 
+// prévia ao vivo das telas com texto editado que ainda não viraram arte final
+function livePreviews(n){
+  const p = byId[n], card = document.getElementById("post-" + n);
+  if (!p.pecas || !card) return;
+  const track = card.querySelector(".track"); if (!track) return;
+  const tx = state[n]?.textos || {}, est = p.atual || p.padrao || "1";
+  const slides = [...track.children];
+  slides.forEach((el, i) => {
+    const t = tx[i+1], pend = t && t.situacao !== "feito";
+    const isLive = el.classList.contains("live");
+    if (pend) {
+      const src = p.pecas[est]?.[i]; if (!src) return;
+      let box = el;
+      if (!isLive) {
+        box = document.createElement("div"); box.className = "live";
+        box.innerHTML = `<iframe title="Prévia da tela ${i+1}" loading="lazy"></iframe><span class="tag">prévia da sua edição · arte final em preparo</span>`;
+        el.replaceWith(box);
+        const fr = box.querySelector("iframe");
+        new ResizeObserver(() => { fr.style.transform = "scale(" + (box.clientWidth / 1080) + ")"; }).observe(box);
+      }
+      const fr = box.querySelector("iframe");
+      fr.dataset.titulo = md2html(t.titulo, est === "2"); fr.dataset.apoio = t.apoio || "";
+      if (fr.dataset.src !== src) { fr.dataset.src = src; fr.src = src; }
+      else fr.contentWindow?.postMessage({tipo:"peca-set", titulo: fr.dataset.titulo, apoio: fr.dataset.apoio}, "*");
+    } else if (isLive) {
+      const im = document.createElement("img"); im.src = p.imgs[i]; im.alt = `Post ${n}, tela ${i+1}`; el.replaceWith(im);
+    }
+  });
+}
+window.addEventListener("message", (e) => {
+  const d = e.data || {}; if (d.tipo !== "peca-textos") return;
+  document.querySelectorAll(".live iframe").forEach(fr => { if (fr.contentWindow === e.source) fr.contentWindow.postMessage({tipo:"peca-set", titulo: fr.dataset.titulo, apoio: fr.dataset.apoio}, "*"); });
+});
+
 function applyStyle(n, e){
   const p = byId[n]; if (!p.estilos || !p.estilos[e]) return;
   p.imgs = p.estilos[e]; p.atual = e;
   const card = document.getElementById("post-" + n);
-  card.querySelectorAll(".track img").forEach((im,i) => { if (p.imgs[i]) im.src = p.imgs[i]; });
+  const track = card.querySelector(".track");
+  if (track) [...track.children].forEach((el,i) => { if (el.tagName === "IMG" && p.imgs[i]) el.src = p.imgs[i]; });
+  livePreviews(n);
   card.querySelectorAll("[data-estilo]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.estilo === e)));
   renderGrade();
 }
@@ -510,6 +551,7 @@ function paint(n){
   const ap = card.querySelector("[data-approve]");
   ap.textContent = st === "aprovado" ? "Desfazer aprovação" : "Aprovar";
   ap.className = st === "aprovado" ? "btn ghost" : "btn ok";
+  livePreviews(n);
   const sent = card.querySelector("[data-sent]");
   const tx = d?.textos ? Object.entries(d.textos) : [];
   const peds = d?.pedidos || [];
@@ -517,6 +559,7 @@ function paint(n){
   sent.innerHTML = txHtml + peds.map(x => `<div class="sent"><b>${esc(x.onde)} · ${x.situacao === "feito" ? "corrigido · confira a arte acima" : x.situacao === "em_andamento" ? "em andamento" : "enviado"}</b><span>${esc(x.pedido)}</span>${(x.imagens||[]).length ? `<div class="thumbs">${x.imagens.map(i=>`<img src="/_blob/${esc(i.id)}" alt="${esc(i.nome||"foto enviada")}">`).join("")}</div>` : ""}${x.resposta ? `<span class="reply">${esc(x.resposta)}</span>` : ""}</div>`).join("");
 }
 
+document.getElementById("recarregar").addEventListener("click", () => location.reload());
 buildCards();
 POSTS.forEach(p => { if (p.padrao) applyStyle(p.n, p.padrao); });
 renderGrade();
