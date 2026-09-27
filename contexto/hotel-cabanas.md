@@ -124,6 +124,7 @@ Acolhedor, familiar, inspirador e autêntico. Fala de natureza com encantamento,
 - **40% a 60% dos hóspedes são de Mato Grosso do Sul**, com destaque para **Campo Grande, Dourados e entorno**.
 - **Sazonal:** nas férias escolares (**janeiro e julho**) cai a participação de MS e sobe a de fora do estado, ficando parecida com a do destino (SP ~30%, PR, RJ, RS, SC, MG; ver `destino-bonito.md`, perfil OTEB).
 - **Comportamento do hóspede de MS:** fica **no máximo 2 noites, geralmente no fim de semana**, e **aproveita muito o próprio hotel** (rios, trilhas, atividades, piscina); sai pouco para os passeios da cidade.
+- **Antecedência do hóspede de MS (dono, 2026-09-27):** decide com **bem menos tempo, 15 a 20 dias** antes (o de fora do estado: 45 a 50 dias).
 - **Fins de semana (dono, 2026-09-27):** com tempo bom, **sempre têm movimento: raramente abaixo de 70%** de ocupação. Os piores meses são **maio e junho**, por causa do **frio** (que varia bastante: nem todo ano/semana é frio).
 - Consequência para anúncios e conteúdo: MS é público central e merece atenção especial, com mensagem de "o hotel é o passeio" e estadia curta; o público de fora (SP e demais) é o que mais tende a ficar mais noites e a vir de avião.
 
