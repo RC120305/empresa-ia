@@ -106,11 +106,11 @@ Acolhedor, familiar, inspirador e autêntico. Fala de natureza com encantamento,
 2. **"Fica longe da cidade."** Resposta com fatos: 6 km do centro, acesso totalmente asfaltado, ciclovia, 8 km do aeroporto (`hotel-operacional.md`); a natureza e as atividades estão dentro do hotel.
 3. **"Não há vaga quando eu procuro."** Sinal de demanda alta nas datas de pico: estimular **reserva antecipada** (antecedência média de 45 a 50 dias) e divulgar a **janela de ouro** e a baixa temporada.
 
-**Provas sociais (notas informadas pelo dono em set/2026)** — podem ser publicadas **com a fonte e o mês**: **Google 4,7** · **Booking 9,3** · **TripAdvisor 4,5**. *(número de avaliações e prêmios: [a confirmar com o dono]; trechos de avaliações: só com autorização/sem identificar o hóspede, até o dono definir)*
+**Provas sociais (notas informadas pelo dono em set/2026)** — podem ser publicadas **com a fonte e o mês**: **Google 4,7 (1.015 avaliações)** · **Booking 9,3 (318 avaliações)** · **TripAdvisor 4,5 (349 avaliações)** (dono, set/2026). *(prêmios: [a confirmar com o dono]; trechos de avaliações: só com autorização/sem identificar o hóspede, até o dono definir)*
 
-**Concorrentes diretos (uso interno)**: Arte da Natureza · "X Água Resort" [confirmar o nome exato] · Hotel Santa Esmeralda · Boyra [confirmar o nome exato]. Comparação de atributos: ver a curva de valor (seção 6). **Nunca citar concorrentes em conteúdo público.**
+**Concorrentes diretos (uso interno)**: Arte da Natureza · Zagaia Eco Resort · Hotel Santa Esmeralda · Hotel Boyra. Comparação de atributos: ver a curva de valor (seção 6). **Nunca citar concorrentes em conteúdo público.**
 
-**Metas**: ocupação **20% maior que 2025**, cuja média mensal foi **50%** → meta de **~60% de média mensal** [confirmar se são 20% sobre 2025 (≈60%) ou 20 pontos percentuais (70%)]. Métricas mensais e **tarifário de alta e baixa temporada**: o dono vai compartilhar.
+**Metas**: ocupação **20% maior que 2025**, cuja média mensal foi **50%** → meta de **60% de ocupação média mensal** (confirmado pelo dono). Métricas mensais e **tarifário de alta e baixa temporada**: o dono vai compartilhar.
 
 **Outros**
 - **Colaboradores** que podem aparecer no conteúdo: **sim, existem** (nomes e autorização de imagem a combinar caso a caso).
