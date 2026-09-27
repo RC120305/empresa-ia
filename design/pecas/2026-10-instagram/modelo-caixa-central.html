@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- MODELO EM TESTE "caixa central" (2026-09-27), proposta para design/modelos/modelo-caixa-central.html.
+     Uso: copie para design/pecas/<pasta>/<POST-NN>/, troque foto, textos, --topo e as sombras.
+     Duas posições do selo: A) selo na base (ref. 1), como abaixo; B) selo em cima da caixa (ref. 2):
+     mova o <div class="cc-selo"> para dentro do .cc, antes da caixa, e tire a classe "base".
+     Caminhos pressupõem a peça em design/pecas/<AAAA-MM-tema>/<POST-NN>/. -->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../../modelos/marca.css">
+<link rel="stylesheet" href="../estilo-caixa-central.css">
+<style>.foto { object-position: center; }</style>
+</head>
+<body>
+<div class="peca">
+  <img class="foto" src="foto-1.jpg" alt="">
+  <!-- sombra só atrás do apoio e do selo -->
+  <div class="sombra" style="left: 190px; top: 250px; width: 700px; height: 130px; --forca: .45"></div>
+  <div class="sombra" style="left: 290px; top: 1200px; width: 500px; height: 260px; --forca: .45"></div>
+  <div class="cc" style="--topo: 160px">
+    <div class="cc-caixa"><h1 class="titulo">Título em uma linha</h1></div>
+    <p class="cc-apoio">Linha de apoio em itálico, caixa normal</p>
+  </div>
+  <div class="cc-selo base">
+    <img src="../../../../contexto/marca/logo-hotel-cabanas-branco.png" alt="Hotel Cabanas">
+    <div class="local"><i class="fio"></i><span>Bonito · MS</span><i class="fio"></i></div>
+  </div>
+</div>
+</body>
+</html>

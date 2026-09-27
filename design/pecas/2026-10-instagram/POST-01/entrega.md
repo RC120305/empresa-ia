@@ -49,3 +49,12 @@ Um HTML por tela (o carrossel tem 5 telas diferentes); `foto-1.jpg` a `foto-5.jp
 1. **Qual variante vai ao ar** (faixa discreta ou sem faixa). Na mesma variante nas 5 telas.
 2. **Tela 4 (toalhas em cisne com pétalas):** a arte não traz texto novo. Confira se a legenda do POST-01 diz "decoração especial (opcional)", contratada à parte (Marketing).
 3. Continua valendo a pendência da v3: confirmar que as fotos "03" (telas 2 e 3) são mesmo da Cabana Casal.
+
+
+## TESTE de estilo "caixa central" (2026-09-27), não substitui a versão sem faixa
+- **Arquivos:** `POST-01-caixa-1.png` + `peca-caixa-1.html`; estilo em `../estilo-caixa-central.css` e modelo em `../modelo-caixa-central.html` (proposta para `design/modelos/`, a copiar se você aprovar).
+- **Estilo:** inspirado nas referências da Reserva Rio de Contas: caixa sólida marrom #847059 (a paleta não tem terracota; é a cor oficial das faixas), título em Playfair itálico 56 px numa linha, apoio em Playfair itálico 28 px abaixo da caixa, logo branco 104 px centralizado com fio laranja · BONITO · MS.
+- **Decisões:** selo na base (ref. 1); caixa sobre a copa das árvores, acima do telhado; a cabana inteira fica livre.
+- **Negrito do título:** saiu (estilo todo em itálico); a ênfase da palavra-chave se perde.
+- **Texto alternativo:** Cabana Casal de madeira sobre palafitas, na mata, com o título numa caixa marrom no alto.
+- **Checklist:** [x] mesma foto real · [x] mesmo texto (sem fato novo) · [x] caixa marrom, nada branco sobre verde · [x] fora de rostos e do ponto principal · [x] margem 60 px · [x] logo ≥ 100 px + BONITO · MS + fio laranja · [x] 1080 × 1440 · [x] PNG conferido

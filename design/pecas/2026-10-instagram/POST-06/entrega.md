@@ -28,3 +28,12 @@
 
 ## Versão sem faixa (2026-09-27)
 - `POST-06-sem-faixa-1.png` a `-6.png` (`peca-sem-faixa-1.html` a `-6.html` + `carrossel-sem-faixa.css`): mesmos textos e fotos, logo 100 px. Texto em cima em todas as telas, exceto a 4 (sauna: bloco descido para a parede de madeira, porque o teto é branco). Tela 5: texto acima da cabeça. Água sem véu. **Mais fraca:** tela 3 (folhas de palmeira contra a luz atrás do título; lê, mas com menos contraste). **Recomendação: sem faixa** (pilar sensorial, as fotos ganham em tela cheia).
+
+
+## TESTE de estilo "caixa central" (2026-09-27), não substitui a versão sem faixa
+- **Arquivos:** `POST-06-caixa-1.png` + `peca-caixa-1.html`; estilo em `../estilo-caixa-central.css` e modelo em `../modelo-caixa-central.html` (proposta para `design/modelos/`, a copiar se você aprovar).
+- **Estilo:** inspirado nas referências da Reserva Rio de Contas: caixa sólida marrom #847059 (a paleta não tem terracota; é a cor oficial das faixas), título em Playfair itálico 56 px numa linha, apoio em Playfair itálico 28 px abaixo da caixa, logo branco 104 px centralizado com fio laranja · BONITO · MS.
+- **Decisões:** selo em cima sobre a janela; caixa cobre só as folhas do abacaxi; as frutas ficam livres.
+- **Negrito do título:** saiu (estilo todo em itálico); a ênfase da palavra-chave se perde.
+- **Texto alternativo:** Cesta de frutas frescas diante da janela de madeira, com o título numa caixa marrom no alto.
+- **Checklist:** [x] mesma foto real · [x] mesmo texto (sem fato novo) · [x] caixa marrom, nada branco sobre verde · [x] fora de rostos e do ponto principal · [x] margem 60 px · [x] logo ≥ 100 px + BONITO · MS + fio laranja · [x] 1080 × 1440 · [x] PNG conferido
