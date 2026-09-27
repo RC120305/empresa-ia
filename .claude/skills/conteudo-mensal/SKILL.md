@@ -54,8 +54,9 @@ Passe a cada funcionário **só o necessário** (mês, posts, decisões do dono)
 2. **Revisão rápida (sua):** confira que nada inventa fato (compare com `hotel-operacional.md`), que cada post tem CTA e que opcionais estão marcados. Corrija com o Marketing se preciso.
 3. **PAUSA 2 (textos):** mostre ao dono o resumo dos textos (títulos das telas + 1ª linha das legendas) e publique `Conteúdo <Mês> v1` no Drive para ele ler completo. Avance com o OK. Se o dono disser "pode seguir direto para as artes", pule esta pausa.
 4. **Artes:** acione o **Designer** com o **briefing de arte** de cada carrossel e imagem única (só o texto da arte + foto desejada + formato 3:4). Ele escolhe as fotos reais no Drive, escolhe o layout (com ou sem faixa, pela luz da foto) e salva em `design/pecas/AAAA-MM-instagram/POST-NN/`. Reels não têm arte nesta fase.
-5. **Entrega ao dono:** envie os PNGs com `SendUserFile` (um card por post ou agrupado por semana), publique `Briefing produtora <Mês> v1` no Drive e atualize o `Calendário` (status). Diga o que falta: fotos a produzir, autorizações de imagem, confirmações de fatos.
-6. **Commit e push** no repositório. Criar e publicar em massa é ação com efeito: **confirme com o dono antes** da publicação no Drive se ela não tiver sido combinada.
+5. **Pacote de publicação:** para cada post, a planilha `Calendário` traz **data, horário, formato, arquivo(s) da arte, legenda final com hashtags e Status**. O dono aprova marcando **"Aprovado"** na coluna Status (ou escreve o ajuste). Sem "Aprovado", o post não sai.
+6. **Entrega ao dono:** envie os PNGs com `SendUserFile` (um card por post ou agrupado por semana), publique `Briefing produtora <Mês> v1` no Drive e atualize o `Calendário` (status). Diga o que falta: fotos a produzir, autorizações de imagem, confirmações de fatos.
+7. **Commit e push** no repositório. Criar e publicar em massa é ação com efeito: **confirme com o dono antes** da publicação no Drive se ela não tiver sido combinada.
 
 ## Fase 3 — Reativa (Reels da produtora)
 Quando a produtora entrega um vídeo:
@@ -69,6 +70,6 @@ Peça única (um carrossel extra, uma sequência de stories, uma legenda): leia 
 
 ## Regras transversais
 - Voz, CTA e tabus: `perfil-cabanas.md`. Fatos: só do `contexto/`. O que faltar: "[a confirmar com o dono]".
-- **Ninguém publica no Instagram nem gasta verba**: a skill entrega tudo pronto para o dono postar.
+- **Publicação:** só os posts que o dono marcar **"Aprovado"** na planilha `Calendário`, pela skill `publicar-instagram` (automática, quando configurada) ou pelo agendador do Meta Business Suite (Etapa 1). **Ninguém gasta verba.**
 - Só fotos e vídeos reais; nada de imagem de IA.
 - Português do Brasil.

@@ -41,7 +41,7 @@ Nome do post: `POST NN I [formato] tema` (NN com zero à esquerda). Formatos: `[
 - Arquivos de cada rodada (sempre com a versão no nome):
   | Arquivo | Como criar | Conteúdo |
   |---|---|---|
-  | `Calendário <Mês> vN` | `create_file` com `textContent` em CSV e `contentMimeType: text/csv` → vira **Planilha** | colunas: Post, Data, Dia, Formato, Pilar, Persona, Tema, Status |
+  | `Calendário <Mês> vN` | `create_file` com `textContent` em CSV e `contentMimeType: text/csv` → vira **Planilha** | colunas: Post, Data, Dia, **Horário**, Formato, Pilar, Persona, Tema, **Arquivos da arte**, **Legenda final** (com hashtags), **Status** (o dono escreve **Aprovado** ou o ajuste; o "Publicado" + link fica em `social/conteudo/AAAA-MM/publicacoes.md` e entra na versão seguinte da planilha) |
   | `Conteúdo <Mês> vN` | `create_file` com `textContent` em markdown e `contentMimeType: text/markdown` → vira **Documento** formatado | cópia de `conteudo.md` (+ stories) |
   | `Briefing produtora <Mês> vN` | idem (markdown) | cópia de `briefing-produtora.md`, pronto para encaminhar |
 - Ao publicar a versão N+1: mover a versão N para `antigas` com `update_file` (`parentId` = ID de `antigas`). **Nunca apague** versões (no máximo, lixeira por pedido do dono).

@@ -84,7 +84,7 @@ releia o print); números no JSON com ponto decimal e sem separador de milhar; o
 - **Honestidade com números:** o relatório mostra o que o Instagram mediu. Não
   afirme "o Instagram trouxe X reservas" sem medição (UTM, pergunta "como nos
   conheceu?"); diga "[a medir]".
-- Recomendações seguem os limites da equipe: ninguém publica nem gasta verba; a
+- Recomendações seguem os limites da equipe: só se publica o que o dono aprovou e ninguém gasta verba; a
   verba sai em cenários para o dono decidir.
 - Compare com o mesmo mês do ano anterior só se o dono enviar esses prints.
 
