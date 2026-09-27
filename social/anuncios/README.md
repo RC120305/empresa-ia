@@ -10,6 +10,7 @@ A equipe sobe as campanhas pela API da Meta, **pausadas**, e só ativa com o OK 
 - **Duas camadas:** campanhas **permanentes** (sempre ligadas, para atrair público o ano todo, com foco no gargalo: meio de semana e baixa temporada) + campanhas **pontuais** para períodos-chave (feriados, Réveillon, Carnaval, férias), com início 45 a 50 dias antes da estadia.
 - **Decisão do dono (2026-09-27, 2):** campanhas em **MS o ano todo, exceto em feriados e férias**; a campanha do **resto do Brasil (fora do estado) caminha junto com a de MS o ano todo**. Sem campanhas de feriado. Hóspede de MS decide com 15 a 20 dias de antecedência.
 - **Decisão do dono (2026-09-27, 3):** a MS **para em todos os feriados** (inclusive os de um dia só e o aniversário de Campo Grande) e o calendário de férias está confirmado (19/12 a 31/01 e julho). Em 2026 a MS estreia em 08/11. Recepção ainda não anota o código de cada conversa; limite de gastos da conta em R$ 1.500 (o dono define).
+- **Plano v2.4 APROVADO pelo dono na Central (2026-09-27).** Regiões: MS + SP, PR, RJ, RS, SC e MG (sem DF/GO/ES, Norte/Nordeste e exterior). Nenhum criativo cortado. Segue para a Fase 2 (textos).
 - Aprovação, edição e travas de dinheiro pela **aba Anúncios da Central de Aprovação**.
 
 ## Aprendizados por campanha

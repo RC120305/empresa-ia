@@ -1,6 +1,6 @@
 # Plano de mídia paga (Meta Ads): Hotel Cabanas, out/2026 a set/2027 (v2.4)
 
-> **Autor:** Estrategista de Social Media e Tráfego · **Data:** 27/09/2026 · **Skill:** `campanha-anuncios`, Fase 1 · **Status:** PROPOSTA v2.4, decisões respondidas; aguardando só o botão "Aprovar plano" (nada foi subido nem ativado).
+> **Autor:** Estrategista de Social Media e Tráfego · **Data:** 27/09/2026 · **Skill:** `campanha-anuncios`, Fase 1 · **Status:** **APROVADO pelo dono na Central em 27/09/2026** (v2.4). Fase 2 (textos) em andamento. Nada foi subido nem ativado. (nada foi subido nem ativado).
 > **Decisões suas já aplicadas (27/09/2026):** teto de **R$ 1.500 por mês**; gargalo = **domingo a quinta e baixa temporada**; chave da Meta ainda não configurada (subida manual, pelo kit, ou pela API depois); sem pixel nem UTM no motor; **sem campanha de feriado, Réveillon ou Carnaval**; 40% a 60% dos hóspedes são de MS (Campo Grande, Dourados e entorno), que fica no máximo 2 noites, geralmente no fim de semana, e aproveita muito o próprio hotel; em janeiro e julho cai MS e sobe o público de fora; piores meses: maio e junho (frio).
 > **Novo nesta v2.3 (decisões suas de 27/09/2026, registradas em `hotel-cabanas.md` §9 e `social/anuncios/README.md`):**
 > - **O hóspede de MS decide com 15 a 20 dias de antecedência** (o de fora: 45 a 50).
@@ -16,7 +16,8 @@
 1. **A MS para em todos os feriados** (você: "as campanhas no MS param em todos os feriados"). Não vale a exceção de 2026: Finados, Consciência Negra e também os feriados de um dia só (15/11, Tiradentes, 1º de maio, aniversário de Campo Grande) entram na pausa. Tabela em §2.2.
 2. **Calendário de férias confirmado:** 19/12/2026 a 31/01/2027 e 01 a 31/07/2027.
 3. **Medição:** por enquanto a recepção **não** anota código, cidade e noites de cada conversa; medimos o custo por conversa no WhatsApp e a leitura por anúncio fica mais limitada.
-4. **Limite de gastos da conta:** você vai definir R$ 1.500 por mês no Gerenciador (a equipe não mexe nisso).
+4. **Regiões aprovadas (Central, 27/09/2026):** MS; Fora do estado = **SP (Grande SP/Campinas e interior), PR, RJ, RS, SC e MG**. **Fora:** DF, GO e ES; Nordeste e Norte; estrangeiros.
+5. **Limite de gastos da conta:** você vai definir R$ 1.500 por mês no Gerenciador (a equipe não mexe nisso).
 
 **Consequência que ajustei (pode desfazer):** com Finados (pausa 11 a 18/10) e 15/11 + Consciência Negra (pausa 25/10 a 07/11), a MS só teria **6 dias no ar em outubro (19 a 24/10)**, pouco para a Meta sair do aprendizado. Por isso a **MS estreia em 08/11/2026**, e outubro fica só com Fora do estado e Remarketing (**R$ 702**). Se preferir aproveitar esses 6 dias mesmo assim, são +R$ 126.
 
@@ -40,7 +41,7 @@
 
 **Saem da conta (não serão criadas):** `perm-voo-direto-sp-campinas`, `perm-prospeccao-meio-de-semana`, `2026-12-primeira-quinzena`, `2027-01-ferias-de-janeiro`, `2027-03-janela-de-ouro-1` e `2027-06-janela-de-ouro-2`. Os criativos delas continuam todos, redistribuídos.
 
-**Por que o voo direto fica como criativo e não como conjunto próprio (decisão pelo teto):** com R$ 1.500/mês (~R$ 48 a 50/dia), a Fora do estado recebe ~R$ 21/dia no mês normal. Dividida em dois conjuntos, cada um ficaria com ~R$ 10, abaixo do **piso de R$ 20/dia** (concentrar verba, caderno Bárbara Bruna, 26/09/2026). Por isso, **no mês normal, V1 a V5 rodam dentro do conjunto 1** (Brasil sem MS): no Andromeda a segmentação está no criativo, e "sai de Campinas, Congonhas ou Guarulhos" tende a ser entregue a quem é de SP (26/09/2026 [confirmar se a regra continua valendo]). **O conjunto 2 (raio SP/Campinas) só liga quando a MS pausa por 14 dias ou mais**: aí a verba da MS (R$ 21/dia) vira o piso dele, e os V saem do conjunto 1 nesse período. A localização se justifica porque "voo direto" só é verdade para quem sai desses aeroportos ("segmentar só quando a mensagem for incompatível", `social-e-trafego.md`, 26/09/2026).
+**Por que o voo direto fica como criativo e não como conjunto próprio (decisão pelo teto):** com R$ 1.500/mês (~R$ 48 a 50/dia), a Fora do estado recebe ~R$ 21/dia no mês normal. Dividida em dois conjuntos, cada um ficaria com ~R$ 10, abaixo do **piso de R$ 20/dia** (concentrar verba, caderno Bárbara Bruna, 26/09/2026). Por isso, **no mês normal, V1 a V5 rodam dentro do conjunto 1** (SP, PR, RJ, RS, SC e MG): no Andromeda a segmentação está no criativo, e "sai de Campinas, Congonhas ou Guarulhos" tende a ser entregue a quem é de SP (26/09/2026 [confirmar se a regra continua valendo]). **O conjunto 2 (raio SP/Campinas) só liga quando a MS pausa por 14 dias ou mais**: aí a verba da MS (R$ 21/dia) vira o piso dele, e os V saem do conjunto 1 nesse período. A localização se justifica porque "voo direto" só é verdade para quem sai desses aeroportos ("segmentar só quando a mensagem for incompatível", `social-e-trafego.md`, 26/09/2026).
 
 **Público e região:**
 - **MS e Fora não se sobrepõem:** a Fora exclui o estado inteiro de MS; a MS exclui Bonito e vizinhas (quem mora ali não se hospeda; o teste de boia cross e arvorismo para não hóspedes segue fora do teto, só com a sua decisão).
@@ -134,7 +135,7 @@
 ## 4. Calendário de rotação de criativos (out/2026 a set/2027) e verba do ano
 Cada mês é reaprovado com os números do anterior. Em cada campanha, no máximo ~8 criativos ligados ao mesmo tempo.
 
-| Mês | MS | Fora · conj. 1 (Brasil sem MS) | Fora · conj. 2 (SP/Campinas) | Remarketing | Total [verba a definir pelo dono] |
+| Mês | MS | Fora · conj. 1 (SP, PR, RJ, RS, SC e MG) | Fora · conj. 2 (SP/Campinas) | Remarketing | Total [verba a definir pelo dono] |
 |---|---|---|---|---|---|
 | **out/26** | — (MS estreia em 08/11) | P01, P02, P04, P05, P10 + V1, V3, V4 | — | R1 a R4 | R$ 702 |
 | **nov/26** | pausa 01 a 07/11; M1 a M4 (08 a 10/11); **D1 a D5 + M4** (11 a 28/11); pausa a partir de 29/11 | **J1 a J5** | J1, J3, J5, V2, V3 (a partir de 29/11) | R1 a R4 | R$ 1.293 |
