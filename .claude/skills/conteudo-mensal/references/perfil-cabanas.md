@@ -7,7 +7,7 @@
 - @perfil: **@hotelcabanasbonito** (https://www.instagram.com/hotelcabanasbonito/, conforme `hotel-operacional.md`)
 - Idioma: **português do Brasil**, tratando o leitor por **"você"**. A marca fala na primeira pessoa do plural: **"nós"** ("conosco", "nossa equipe"), **nunca "a gente"** (decisão do dono em 2026-09-27).
 - Nicho: hotel de lazer e turismo de natureza em Bonito/MS; "o seu lugar de conexão com a natureza".
-- Público: as personas de `contexto/hotel-cabanas.md` (Casais, Famílias, Aventureiros, 55+, Ciclista/Ornitólogo, Eco-conscientes). **Origem: 40–60% dos hóspedes são de MS (Campo Grande, Dourados e entorno), que vêm no fim de semana, ficam até 2 noites e aproveitam o hotel;** fora do estado, SP lidera, depois PR, RJ, Sul e MG (e crescem em janeiro e julho).
+- Público: as personas de `contexto/hotel-cabanas.md` (Casais, Famílias, Aventureiros, 55+, Ciclista/Ornitólogo, Eco-conscientes). **Origem: 40–60% dos hóspedes são de MS (Campo Grande, Dourados e entorno), que vêm no fim de semana, ficam até 2 noites e aproveitam o hotel.** **Expressões regionais aprovadas pelo dono para falar com MS:** "Bonito fica logo ali, 260 km de Campo Grande", "Leva a garrafa de tereré", "Partiu Hotel Cabanas", "Bora pro Cabanas" e "Sai sexta depois do trabalho e chega para o jantar" (só em conteúdo voltado a MS; nunca em anúncio para fora do estado). Fora do estado, SP lidera, depois PR, RJ, Sul e MG (e crescem em janeiro e julho).
 - Quem fala: a **equipe Cabanas**, uma família que cuida do lugar há 25 anos (Gilberto e Cleodete; segunda geração Renata e Ricardo, biólogo). Tom de anfitrião, nunca de vendedor.
 
 ## Voz e tom

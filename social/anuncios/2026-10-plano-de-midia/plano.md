@@ -157,10 +157,10 @@ Cada mês é reaprovado com os números do anterior. Em cada campanha, no máxim
 ## 5. Criativos da MS (`perm-ms-o-hotel-e-o-passeio`)
 
 ### 5.1 M1 a M6 (o ano todo; M5 e M6 só em maio e junho)
-**Como falar com quem é de MS:** de igual para igual, como quem conhece Bonito e já veio ("você que é daqui", "Bonito fica logo ali", "sem pegar avião"); o argumento é **o hotel é o passeio**: 40 hectares entre o Formoso e o Formosinho, com a programação inclusa com monitor, sem precisar sair. Marcas regionais (expressões, hábitos) a Marketing sugere e **você valida**. Voz "nós". Regras:
+**Como falar com quem é de MS:** de igual para igual, como quem conhece Bonito e já veio ("você que é daqui", "Bonito fica logo ali"); o argumento é **o hotel é o passeio**: 40 hectares entre o Formoso e o Formosinho, com a programação inclusa com monitor, sem precisar sair. **Expressões regionais aprovadas pelo dono (27/09/2026):** "Bonito fica logo ali, 260 km de Campo Grande", "Leva a garrafa de tereré", "Partiu Hotel Cabanas", "Bora pro Cabanas" e "Sai sexta depois do trabalho e chega para o jantar". A equipe pode criar outras no mesmo tom (ex.: "Final de semana é pouco: bora até terça?", "Pega a estrada que o rio espera"); as novas passam pela aprovação normal dos textos. "Sai sexta…" vende a chegada; no MS, sempre puxar a estadia para domingo a quinta ("…e volta na terça"). Voz "nós". Regras:
 - **Sem preço, sem prometer vaga, sem "últimas vagas".** "O hotel fica mais tranquilo de domingo a quinta" é a frase aprovada.
 - **Opcionais marcados:** boia cross, arvorismo e decoração especial sempre com "(opcional)".
-- **Distâncias:** de Campo Grande (cidade) ou de Dourados até o hotel: **[confirmar distância]**; na dúvida, "Bonito fica logo ali", sem número.
+- **Distâncias (dono, 27/09/2026):** Campo Grande e Dourados ficam **a cerca de 260 km** de Bonito. Usar "cerca de 260 km" ou "260 km"; não prometer tempo de viagem.
 - **Frio sem prometer calor:** piscina **climatizada**, hidromassagem **aquecida**, sauna a vapor, ar-condicionado **quente e frio** em todas as acomodações, das 7h às 22h; nunca "quentinho garantido". Não há foto de frio no banco: a estação vai no texto.
 - **M5 e M6 só de 16/05 a 10/06.** M1 a M4 nunca falam de mês.
 - Não mostrar Cabana Casal nem Tripla em peça com criança (não acomodam menores de 5 anos).
@@ -288,7 +288,7 @@ Todos com CTA "Enviar mensagem" (WhatsApp de reservas (67) 99117-1648) e "valore
 ---
 
 ## 9. Pedidos à equipe (depois do seu OK)
-- **Marketing (`marketing-anuncios`):** **até 01/10:** M1 a M4 (linguagem de quem é do estado, "nós", "Bonito fica logo ali"; distâncias de cidades com "[confirmar distância]"; sem preço, sem prometer vaga; opcionais marcados) + roteiro de M3 (0 a 3 s, 15 a 30 s, 9:16) + V1 a V5 + P01, P02, P04, P05, P10 + R1 a R4. **Até 20/10:** D1 a D5 (MS) + J1 a J5 (fora do estado). **Até 01/12:** P06, P11, P12. **Até 10/02/2027:** P03, P08, P09 + versões "seca" de P03, P05, P08 e P09 (janela 1). **Até 30/04/2027:** M5, M6 + J1, J3, J4, J5 e P07 revisados para julho. Formato: texto principal até ~125, título até ~40, descrição até ~30, com a contagem + mensagem pronta com código. Obrigatório: nada de feriado, Natal, Réveillon, concorrente ou urgência; nada de água cristalina de dezembro a março; janeiro e julho nunca como "baixa"; nada de recreação infantil.
+- **Marketing (`marketing-anuncios`):** **até 01/10:** M1 a M4 (linguagem de quem é do estado, "nós", "Bonito fica logo ali"; "260 km de Campo Grande" e as expressões regionais aprovadas (§5.1); sem preço, sem prometer vaga; opcionais marcados) + roteiro de M3 (0 a 3 s, 15 a 30 s, 9:16) + V1 a V5 + P01, P02, P04, P05, P10 + R1 a R4. **Até 20/10:** D1 a D5 (MS) + J1 a J5 (fora do estado). **Até 01/12:** P06, P11, P12. **Até 10/02/2027:** P03, P08, P09 + versões "seca" de P03, P05, P08 e P09 (janela 1). **Até 30/04/2027:** M5, M6 + J1, J3, J4, J5 e P07 revisados para julho. Formato: texto principal até ~125, título até ~40, descrição até ~30, com a contagem + mensagem pronta com código. Obrigatório: nada de feriado, Natal, Réveillon, concorrente ou urgência; nada de água cristalina de dezembro a março; janeiro e julho nunca como "baixa"; nada de recreação infantil.
 - **Designer (`designer-criativos`):** cada peça em `feed45` (1080 × 1350) e `story` (1080 × 1920). **Até 04/10:** MS: 1 imagem (M2) + 2 carrosséis (M1, M4) + 1 vídeo de fotos 9:16 (M3, com carrossel 4:5 de reserva); Fora: V (2 imagens + 2 carrosséis + 1 vídeo de fotos) + P (3 imagens: P02, P05, P10; 2 carrosséis: P01, P04); remarketing: 3 imagens + 1 carrossel. **Até 25/10:** D (3 imagens + 2 carrosséis) e J (2 imagens + 3 carrosséis). **Até 08/12:** P06 (imagem), P11 (carrossel), P12 (plano B). **Até 25/02/2027:** P03 (plano B), P08, P09 + ganchos das versões "seca". **Até 05/05/2027:** M5, M6 (carrosséis) e P07. Gancho legível no 1º quadro (0 a 3 s); só fotos reais; em M5 e M6, a estação vai no texto.
 - **Você → produtora:** vídeo da boia cross (P09, D3) e Reels 1 e 4 de outubro (P03, P12). Se houver gravação em maio ou junho: hidromassagem e sauna em uso num dia frio (1º quadro de M5 e M6).
 
@@ -296,8 +296,8 @@ Todos com CTA "Enviar mensagem" (WhatsApp de reservas (67) 99117-1648) e "valore
 1. **Há condição para quem estica até terça** ou para a 1ª quinzena de dezembro? Sem isso, nenhum anúncio fala de preço (e eu não defino preço).
 2. A equipe de reservas pode anotar **cidade de origem, noites, dias da semana e antecedência** de cada conversa?
 3. Raio do entorno de Campo Grande e Dourados e a lista de municípios vizinhos de Bonito a excluir.
-4. Distâncias de Campo Grande (cidade) e de Dourados até o hotel, se quiser usá-las nos anúncios.
-5. Marcas regionais que você gosta de ver na comunicação para MS (expressões, hábitos).
+4. ~~Distâncias~~ **Respondido:** cerca de 260 km de Campo Grande e de Dourados.
+5. ~~Expressões regionais~~ **Respondido:** ver §5.1.
 6. Ocupação atual da 1ª quinzena de dezembro, de janeiro e de domingo a quinta em novembro.
 7. Idade mínima das atividades inclusas (J1); política de cancelamento e parcelamento (R4); o Silbeck aceita pixel e UTM?
 8. Tarifário de alta e baixa, para ajustar as janelas de 2027.
