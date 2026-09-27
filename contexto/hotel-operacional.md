@@ -47,7 +47,7 @@
 
 \* Valores do documento: em anúncios, use "[confirmar valor vigente]". Boia cross e arvorismo também atendem não hóspedes (não há day use).
 
-**Rio cheio (confirmado pelo dono em 2026-09-27):** as atividades de rio **não funcionam com o rio cheio**. Em peças de meses de chuva (out/dez a mar) com boia cross, flutuação, caiaque ou SUP, escrever "sujeito às condições do rio" e nunca prometer a atividade na data; o ângulo desses meses é o lazer que não depende do rio (piscina climatizada, hidromassagem, sauna, trilhas, arvorismo).
+**Rio cheio (dono, 2026-09-27, revisado):** os rios do hotel **raramente enchem** a ponto de parar as atividades; cancelamento é **muito raro**. **Não é preciso** colocar "sujeito às condições do rio" nas peças. Continua proibido prometer "água cristalina garantida" nos meses de chuva (fato do destino).
 
 ## 5. Serviços opcionais
 - **Piquenique Sunset:** num deck à margem do Rio Formosinho, ao pôr do sol. Reserva pelo WhatsApp de reservas.
@@ -58,7 +58,7 @@
 
 ## 6. Alimentação
 - **Café da manhã** incluso, das 6h30 às 9h30. Se precisar tomar mais cedo, é só avisar a recepção.
-- **Restaurante:** jantar à la carte, **de segunda a sábado, das 19h às 21h**. **Fechado no domingo à noite** (confirmado pelo dono); aos domingos, durante o dia, funciona a lanchonete.
+- **Restaurante:** jantar à la carte, **de segunda a sábado, das 19h às 21h**. **Fechado no domingo à noite** (confirmado pelo dono); aos domingos, durante o dia, funciona a lanchonete. **Não é preciso avisar nas peças** que o restaurante não abre no domingo à noite: o hotel fica a 6 km do centro, com opções na cidade (dono, 2026-09-27).
 - **Natal e Réveillon:** o restaurante **funciona normalmente** (confirmado pelo dono em 2026-09-27). Ceia ou programação especial não consta: não prometer.
 - **Lanchonete e bar:** lanches e porções, **de segunda a sábado das 11h às 21h e aos domingos das 11h às 17h**. **Não há almoço**, só lanchonete. O bar serve bebidas o dia todo, incluindo vinhos e drinks.
 - A lanchonete entrega no quarto, na piscina e nos **decks 11 e 12 do Rio Formosinho**.
@@ -74,7 +74,7 @@
 - **Crianças até 5 anos não pagam**, dormindo na cama dos pais. A partir de 5 anos pagam normalmente. A **Cabana Casal e a Tripla não aceitam menores de 5 anos**; a **Cabana Master aceita** (confirmado pelo dono).
 - **Existe playground** (próximo à quadra de beach tênis, com gramado) e uma área infantil com brinquedos e casinha no receptivo. **Não há serviço de recreação.**
 - Há micro-ondas no receptivo para papinhas e mamadeiras (não há baby copa).
-- **Acessibilidade:** há quartos com **rampas** para cadeirantes, **mas os banheiros não têm barras.** Nunca anuncie "acessibilidade total".
+- **Acessibilidade (dono, 2026-09-27):** o hotel **não tem apartamentos adaptados** para pessoas com deficiência. **Não fazer posts nem anúncios sobre acessibilidade**; se alguém perguntar, a equipe de reservas orienta com honestidade.
 
 ## 9. Políticas
 - **Pets:** não são permitidos, por causa dos animais silvestres.

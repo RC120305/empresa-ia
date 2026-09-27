@@ -165,7 +165,7 @@ O Hotel Cabanas fala como **um anfitrião que recebe em casa**: uma família que
 
 ### 6.5 Hashtags
 - **Onde:** só no **fim da legenda** do feed e dos Reels, depois do CTA.
-- **Quantas:** de **3 a 8** no feed/Reels; **0 ou 1** nos stories; **nenhuma** no texto da arte, em anúncios, comentários, respostas a avaliações e WhatsApp.
+- **Quantas:** **até 5** no feed/Reels (limite do Instagram desde dez/2025; lista oficial em `perfil-cabanas.md`); **0 ou 1** nos stories; **nenhuma** no texto da arte, em anúncios, comentários, respostas a avaliações e WhatsApp.
 - **Composição sugerida** *(proposta, a validar com o Estrategista e o dono)*: 1 a 2 de marca (#hotelcabanas, #hotelcabanasbonito), 2 a 3 de destino (#bonitoms, #bonitomatogrossodosul; #rioformoso ou #rioformosinho só quando o post for desse rio) e 1 a 3 de nicho ou persona (#ecoturismo, #turismodenatureza, #observacaodeaves, #viagememfamilia).
 - Nada de hashtags genéricas gigantes (#travel, #love) nem de concorrentes.
 

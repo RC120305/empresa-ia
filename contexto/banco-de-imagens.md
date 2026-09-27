@@ -26,7 +26,7 @@
 ## Lacunas do banco (sugestões para o dono)
 - Sem pasta para **Flutuação**, **Caiaque/SUP**, **Tirolesa**, **Arco e flecha** (podem estar em "Atividades e balneário": verificar).
 - Sem pasta para **Sustentabilidade** (compostagem, coleta seletiva), **Fauna**, **Pessoas autorizadas** e **Marca** (logos).
-- Fotos com pessoas: **autorização de imagem não identificada**. Até o dono confirmar, trate como "[confirmar autorização de imagem]".
+- Fotos com pessoas: **todas as imagens do banco são autorizadas** (confirmado pelo dono em 2026-09-27).
 
 ## Acervo de vídeos (Google Drive)
 Pasta **"Vídeos do hotel cabanas"** (dentro de "Hotel Cabanas"), criada em 2026-09-27: https://drive.google.com/drive/folders/1n6gPXQ1_dBkvIizIyWsPFsrTnH4k2QZw (ID `1n6gPXQ1_dBkvIizIyWsPFsrTnH4k2QZw`). Os vídeos estão com a produtora; o dono sobe aos poucos. Só vídeos reais do hotel.

@@ -30,7 +30,8 @@
 - **Fato inventado** ou **relação implícita** sem base: distância/vista do rio de uma acomodação, "exclusivo", "só vocês dois", horários, autoria, o que está incluído (ver a tabela de atributos por acomodação em `.claude/agents/marketing-anuncios.md`).
 - **Promessas absolutas** ("garantido", "o mais bonito", "segurança absoluta") e **de saúde** ("regula o corpo", terapêutico).
 - **"Pet friendly"** (o hotel não aceita pets). **Recreação infantil** (não existe). **"Acessível"** sem ressalva (banheiros sem barras).
-- **Água cristalina garantida** em meses de chuva (out/dez a mar). Atividades de rio **não funcionam com o rio cheio**: nesses meses, "sujeito às condições do rio" e nunca prometer a atividade na data.
+- **Água cristalina garantida** em meses de chuva (out/dez a mar). (Rio cheio é raro e o cancelamento de atividades é muito raro: não usar "sujeito às condições do rio".)
+- **Acessibilidade:** o hotel não tem apartamentos adaptados; não fazer conteúdo sobre isso.
 - Pétalas, rosa e plaquinha "LOVE" das fotos são a **decoração especial (opcional)**.
 - Serviço **opcional** (piquenique, decoração especial, massagem, ioga, atividades pagas) como se fosse incluso: sempre "(opcional)".
 - **Preço** sem "[confirmar valor vigente]".
@@ -45,7 +46,20 @@
 
 ## Prioridade comercial (dono, 2026-09-27)
 - **O gargalo é o meio de semana e a baixa temporada, não os feriados** (feriados lotam sozinhos). A pauta e os anúncios priorizam estadias de **domingo a quinta** e os meses de baixa; feriado só como apoio e só com vaga confirmada.
+- Pode dizer que o hotel fica **mais tranquilo de domingo a quinta**. Não é preciso avisar que o restaurante fecha no domingo à noite (6 km do centro).
 - O hotel tem **bastante material em vídeo**: Reels partem primeiro do acervo existente; a produtora grava o que faltar.
+
+## Hashtags (lista oficial, 2026-09-27)
+Regra do Instagram desde dez/2025: **no máximo 5 hashtags por post ou Reels** (mais que isso reduz a distribuição). Hashtag hoje ajuda a **busca** (diz ao Instagram do que o post trata), não multiplica o alcance: as **palavras-chave na legenda** ("hotel em Bonito MS", "Rio Formoso", "ecoturismo") pesam tanto quanto.
+**Fórmula dos 5:** 1 marca + 2 destino + 1 segmento + 1 tema do post.
+| Tipo | Hashtags |
+|---|---|
+| Marca (sempre) | #hotelcabanasbonito |
+| Destino (escolher 2) | #bonitoms (a mais usada do destino) · #bonitomatogrossodosul · #matogrossodosul · #serradabodoquena |
+| Segmento (escolher 1) | #ecoturismo · #turismodenatureza · #turismobrasil · #viagembrasil |
+| Tema do post (escolher 1) | Casais: #viagemadois · Famílias: #viagememfamilia · Aventura: #turismodeaventura · Rios: #rioformoso · Natureza/fauna: #natureza · Trilhas: #trilhas · Aves: #observacaodeaves · Feriado: #feriadoembonito |
+Nunca: hashtags genéricas gigantes (#travel, #love), de concorrentes ou sem relação com o post. Stories: 0 ou 1. Anúncios: nenhuma.
+Fontes (set/2026): limite de 5 hashtags — [Digital Applied](https://www.digitalapplied.com/blog/instagram-limits-hashtags-5-organic-reach-strategy-2026), [RecurPost](https://recurpost.com/instagram-scheduler/instagram-hashtag-limits-and-placement-rules/); uso de #bonitoms/#matogrossodosul por perfis do destino (busca na web). Volumes exatos não foram medidos (sites de estatística bloqueados na rede): **revisar em 3 meses** com a busca do próprio Instagram e o Insights.
 
 ## Provas sociais e objeções
 - Notas que **podem** ser publicadas, sempre com fonte e mês: **Google 4,7 (1.015 avaliações) · Booking 9,3 (318) · TripAdvisor 4,5 (349)** (set/2026). Ex.: "4,7 no Google, com mais de mil avaliações". Ver `contexto/hotel-cabanas.md`, seção 9.

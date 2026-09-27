@@ -9,7 +9,7 @@ A voz, o CTA e os tabus vêm de `perfil-cabanas.md`; os fatos, do `contexto/`. A
 - Última tela = **CTA** ("Reserve direto" + motor/WhatsApp) ou "Salva / manda para quem vai com você".
 - Fluxo sugerido: desejo → cena → sensação → prova real → convite.
 - Para cada tela, indicar a **foto** desejada (cena, luz) para o Designer buscar no banco.
-- **Legenda:** gancho na 1ª linha (até ~125 caracteres antes do "ver mais") → 2 a 4 linhas com os **fatos** (o que é, o que está incluído, opcionais marcados) → CTA → 3 a 8 hashtags.
+- **Legenda:** gancho na 1ª linha (até ~125 caracteres antes do "ver mais") → 2 a 4 linhas com os **fatos** (o que é, o que está incluído, opcionais marcados) → CTA → **até 5 hashtags** da lista oficial (`perfil-cabanas.md`, seção Hashtags).
 
 ## [imagem] (imagem única)
 - Uma foto real + **frase imersiva** de 3 a 8 palavras na arte (layout com ou sem faixa).

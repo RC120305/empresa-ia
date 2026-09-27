@@ -118,10 +118,15 @@ Acolhedor, familiar, inspirador e autêntico. Fala de natureza com encantamento,
 - **Ioga**: aos sábados, à margem do rio (confirmado; horário e detalhes em `hotel-operacional.md`).
 - Bicicletas: **o hotel não empresta nem aluga**.
 
-**Gargalo de ocupação (dono, 2026-09-27): o problema NÃO são os feriados, que lotam. O gargalo é o MEIO DE SEMANA e a BAIXA TEMPORADA.** Conteúdo e anúncios devem priorizar estadias de domingo a quinta e os meses de baixa; feriados entram só como apoio. (Ex.: 10 a 12/10/2026 já lotado; Finados e 20 a 22/11 ainda com vagas.) Atenção: o restaurante fecha no domingo à noite, o que pesa em estadias que começam no domingo.
+**Gargalo de ocupação (dono, 2026-09-27): o problema NÃO são os feriados, que lotam. O gargalo é o MEIO DE SEMANA e a BAIXA TEMPORADA.** Conteúdo e anúncios devem priorizar estadias de domingo a quinta e os meses de baixa; feriados entram só como apoio. (Ex.: 10 a 12/10/2026 já lotado; Finados e 20 a 22/11 ainda com vagas.) Pode-se dizer que o hotel fica **mais tranquilo de domingo a quinta**.
 
 **Complemento (2026-09-27)**
-- Atividades de rio **não funcionam com o rio cheio** (detalhe em `hotel-operacional.md`, seção 4).
+- Rio cheio é **raro** e o cancelamento de atividades é **muito raro**: não usar "sujeito às condições do rio" (revisado em 2026-09-27).
+- **Pode dizer** que o hotel fica **mais tranquilo de domingo a quinta** (dono, 2026-09-27).
+- Domingo à noite: **não precisa avisar** que o restaurante fecha (6 km do centro).
+- **Sustentabilidade confirmada:** coleta seletiva, compostagem e nenhum copo descartável (sem números).
+- **Acessibilidade:** não há apartamentos adaptados; não fazer conteúdo sobre isso.
+- **Autorização de imagem:** todas as fotos do banco de imagens são autorizadas (dono, 2026-09-27).
 - **Pacotes de 4 noites** (estadia mínima) só no **Réveillon** e no **Carnaval**.
 - Restaurante **funciona normalmente** no Natal e no Réveillon.
 - Voz da marca: **"nós"** (não "a gente").

@@ -60,6 +60,7 @@ Ex.: `https://sbreserva.silbeck.com.br/hotelcabanas?utm_source=meta&utm_medium=p
 ## 6. Cuidados do Cabanas em anúncios
 - `contexto/cultura.md` §8: sem "segurança absoluta", sem promessa absoluta ou de saúde.
 - Preço só com confirmação do dono; pacotes de 4 noites só no Réveillon e no Carnaval.
-- Out/dez a mar: atividades de rio "sujeitas às condições do rio" (não funcionam com o rio cheio); nunca "água cristalina garantida".
+- Out/dez a mar: nunca "água cristalina garantida" (rio cheio é raro; não é preciso "sujeito às condições do rio").
+- Nada de anúncio sobre acessibilidade (não há apartamentos adaptados).
 - Opcionais marcados "(opcional)"; decoração especial (pétalas, LOVE) é opcional.
 - Nunca citar concorrentes; notas públicas com fonte e mês.
