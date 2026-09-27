@@ -23,6 +23,9 @@ Não duplicar regras aqui. Leia sempre:
 - `../conteudo-mensal/references/formatos.md` (mecânica dos formatos)
 - `../conteudo-mensal/references/estrutura-drive.md` (onde está cada coisa e como versionar no Drive)
 
+## Pedidos vindos da Central de Aprovação
+Se o dono disser "tem correções na central" (ou similar), leia os pedidos na página do mês (`../conteudo-mensal/references/central-de-aprovacao.md`): cada pedido `novo` já traz o post, a tela/legenda e, às vezes, uma foto nova. Um pedido claro é a própria aprovação daquela mudança: aplique sem nova pausa; se for vago ou mudar o tema, proponha e espere o OK. Ao terminar, republique a central e marque o pedido como `feito` com uma resposta curta.
+
 ## O que o dono fornece
 - **Mês** (ex.: "novembro") e **quais posts** (por número "post 3", intervalo "do 3 ao 8", formato "todos os carrosséis", ou "todos"). Se não disser quais, **pergunte**.
 - **O que mudar** (opcional): tema, formato, só legenda, só arte, data. Sem indicação = trocar o **tema** (e, por consequência, textos e arte).

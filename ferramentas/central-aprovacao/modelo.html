@@ -1,0 +1,348 @@
+<title>Central de Aprovação Cabanas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Josefin+Sans:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#F7F1E6; --surface:#FFFDF8; --ink:#33291F; --muted:#76685A; --line:#E4D9C7;
+  --brown:#847059; --brown-ink:#FFFFFF; --green:#5F7A22; --green-soft:#E8EFD6; --tag:#5E6F2A; --chip:#EFE6D6;
+  --wait:#A55E22; --wait-soft:#F6E6D4; --fix:#9A3F2B; --fix-soft:#F6DFD8;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1C1814; --surface:#26211B; --ink:#EFE6D8; --muted:#B3A391; --line:#3A3129;
+    --brown:#BFA68A; --brown-ink:#1C1814; --green:#A9C266; --green-soft:#2C3320; --tag:#B7CC7A; --chip:#2F2821;
+    --wait:#E0A067; --wait-soft:#3A2B1E; --fix:#E58B74; --fix-soft:#3B241F; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1C1814; --surface:#26211B; --ink:#EFE6D8; --muted:#B3A391; --line:#3A3129;
+  --brown:#BFA68A; --brown-ink:#1C1814; --green:#A9C266; --green-soft:#2C3320; --tag:#B7CC7A; --chip:#2F2821;
+  --wait:#E0A067; --wait-soft:#3A2B1E; --fix:#E58B74; --fix-soft:#3B241F; color-scheme: dark;
+}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-inline:16px;padding-block:24px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:32px}
+.label{font-family:"Josefin Sans",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.16em;font-size:12px;color:var(--muted)}
+h1{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:clamp(30px,5vw,44px);line-height:1.1;margin:6px 0 10px;text-wrap:balance}
+h1 em{color:var(--brown)}
+h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;margin:0;text-wrap:balance}
+.intro{max-width:68ch;color:var(--muted);margin:0}
+.intro b{color:var(--ink)}
+.tally{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.tally div{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 14px;display:flex;flex-direction:column;min-width:120px}
+.tally b{font-family:"Playfair Display",serif;font-size:26px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.1}
+.tally span{font-size:12px;color:var(--muted)}
+.banner{font-size:13px;padding:10px 12px;border-radius:6px;background:var(--wait-soft);color:var(--ink);max-width:80ch}
+.grade{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;max-width:540px;width:100%}
+.grade a{position:relative;aspect-ratio:3/4;background:var(--chip);display:block;overflow:hidden;color:inherit;text-decoration:none}
+.grade img{width:100%;height:100%;object-fit:cover;display:block}
+.grade .ico{position:absolute;top:6px;right:7px;font-size:11px;background:rgba(0,0,0,.5);color:#fff;padding:2px 6px;border-radius:3px}
+.grade .mk{position:absolute;left:6px;bottom:6px;font-size:11px;padding:2px 7px;border-radius:3px;font-weight:600}
+.mk.aprovado{background:var(--green);color:var(--surface)}
+.mk.corrigir{background:var(--fix);color:var(--surface)}
+.grade .reel{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;text-align:center;padding:8px;border:1px dashed var(--line);font-size:12px;color:var(--muted)}
+.grade .reel strong{font-family:"Playfair Display",serif;font-weight:500;font-size:14px;color:var(--ink)}
+.note{font-size:13px;color:var(--muted);margin:0}
+.week{display:flex;flex-direction:column;gap:16px}
+.week-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:8px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:22px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;scroll-margin-top:16px}
+.card.aprovado{border-color:var(--green)}
+.card.corrigir{border-color:var(--fix)}
+.card-top{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--brown);color:var(--brown-ink);display:grid;place-items:center;font-family:"Playfair Display",serif;font-size:15px;flex:none}
+.who{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.who b{font-size:13px}.who span{font-size:12px;color:var(--muted)}
+.num{margin-left:auto;font-family:"Josefin Sans",sans-serif;font-size:12px;letter-spacing:.12em;color:var(--muted);white-space:nowrap}
+.car{position:relative;background:var(--chip)}
+.track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;aspect-ratio:3/4}
+.track::-webkit-scrollbar{display:none}
+.track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start}
+.count{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:2px 8px;border-radius:10px;font-variant-numeric:tabular-nums}
+.nav{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.88);color:#33291F;font-size:18px;cursor:pointer;display:grid;place-items:center}
+.nav.prev{left:8px}.nav.next{right:8px}.nav[disabled]{opacity:0;pointer-events:none}
+.dots{display:flex;justify-content:center;gap:5px;padding:8px 0 0}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--green)}
+.reelbox{aspect-ratio:3/4;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:24px;border-bottom:1px solid var(--line);background:repeating-linear-gradient(135deg,var(--chip) 0 14px,var(--surface) 14px 28px)}
+.reelbox h3{font-family:"Playfair Display",serif;font-weight:500;font-size:22px;margin:0;text-wrap:balance}
+.reelbox p{margin:0;color:var(--muted);font-size:14px;max-width:34ch}
+.body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{font-family:"Josefin Sans",sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;background:var(--chip);color:var(--muted);padding:3px 8px;border-radius:3px}
+.st{font-size:12px;font-weight:600;padding:3px 9px;border-radius:12px}
+.st.pendente{background:var(--chip);color:var(--muted)}
+.st.aprovado{background:var(--green-soft);color:var(--green)}
+.st.corrigir{background:var(--fix-soft);color:var(--fix)}
+.st.video{background:var(--wait-soft);color:var(--wait)}
+.theme{font-family:"Playfair Display",serif;font-size:17px;margin:0;text-wrap:balance}
+.cap{white-space:pre-line;font-size:14px;margin:0;overflow-wrap:anywhere}
+.cap .h{color:var(--tag)}
+.cap.clip{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.links{display:flex;gap:14px;flex-wrap:wrap}
+.linkbtn{background:none;border:none;padding:0;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px}
+.btn{font:inherit;font-size:14px;font-weight:600;border-radius:5px;padding:9px 14px;cursor:pointer;border:1px solid transparent;flex:1 1 auto}
+.btn.ok{background:var(--green);color:var(--surface)}
+.btn.fix{background:transparent;color:var(--fix);border-color:var(--fix)}
+.btn.ghost{background:transparent;color:var(--muted);border-color:var(--line);flex:0 0 auto}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn:focus-visible,.nav:focus-visible,.linkbtn:focus-visible,.grade a:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.fixbox{display:flex;flex-direction:column;gap:10px;background:var(--fix-soft);border-radius:6px;padding:12px}
+.fixbox label{font-size:13px;font-weight:600;display:flex;flex-direction:column;gap:5px}
+.fixbox select,.fixbox textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:8px}
+.fixbox textarea{min-height:90px;resize:vertical}
+.up{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.up input{font-size:13px;max-width:100%}
+.thumbs{display:flex;gap:6px;flex-wrap:wrap}
+.thumbs img{width:64px;height:84px;object-fit:cover;border-radius:4px;border:1px solid var(--line)}
+.sent{font-size:13px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.sent b{font-size:12px;color:var(--fix);text-transform:uppercase;letter-spacing:.06em}
+.reply{border-left:3px solid var(--green);padding-left:8px;color:var(--ink)}
+.msg{font-size:13px;color:var(--muted);margin:0}
+.msg.err{color:var(--fix)}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px;max-width:72ch}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="label">@hotelcabanasbonito · outubro/2026 · feed 3:4</div>
+    <h1>Central de aprovação, <em>outubro</em></h1>
+    <p class="intro">Veja cada post como vai ao ar. Toque em <b>Aprovar</b> quando estiver pronto, ou em <b>Pedir correção</b> para dizer o que mudar e, se quiser, enviar a foto nova. A equipe lê os pedidos aqui e devolve a versão corrigida nesta mesma página.</p>
+    <div class="tally" aria-live="polite">
+      <div><b id="t-ok">0</b><span>aprovados</span></div>
+      <div><b id="t-fix">0</b><span>com correção pedida</span></div>
+      <div><b id="t-pend">8</b><span>para revisar</span></div>
+      <div><b>4</b><span>Reels aguardando vídeo</span></div>
+    </div>
+  </header>
+  <p class="banner" id="offline" hidden>Os botões de aprovação não estão disponíveis nesta visualização. Abra a página pelo claude.ai com a sua conta para aprovar e pedir correções.</p>
+
+  <section style="display:flex;flex-direction:column;gap:12px" aria-labelledby="g">
+    <h2 id="g">A grade do perfil</h2>
+    <p class="note">Do post mais recente (31/10) para o primeiro (06/10), como o Instagram mostra. Toque numa miniatura para ir ao post.</p>
+    <div class="grade" id="grade"></div>
+  </section>
+
+  <div id="weeks" style="display:flex;flex-direction:column;gap:36px"></div>
+
+  <footer>Artes em <code>design/pecas/2026-10-instagram/POST-NN/final/</code> e textos em <code>social/conteudo/2026-10/conteudo.md</code> e na planilha "Calendário Outubro v2" do Drive. Horários no fuso de Mato Grosso do Sul. Depois de enviar correções, avise o Claude na conversa ("tem correções na central") para ele começar na hora.</footer>
+</div>
+
+<script>
+const MES = "__MES__";
+const POSTS = __DATA__;
+const WEEKS = [
+  {t:"Semana 1", s:"06 a 10/10 · o meio de semana + apoio de 20/11", ids:["01","02","03"]},
+  {t:"Semana 2", s:"13 a 17/10 · Bonito sem pressa", ids:["04","05","06"]},
+  {t:"Semana 3", s:"20 a 24/10 · 55+ e a natureza de todos os dias", ids:["07","08","09"]},
+  {t:"Semana 4", s:"27 a 31/10 · o roteiro de domingo a quinta", ids:["10","11","12"]}
+];
+const FMT = {carrossel:"Carrossel", reels:"Reels", imagem:"Imagem"};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const byId = Object.fromEntries(POSTS.map(p => [p.n, p]));
+const state = {};           // n -> decision doc
+let db = null, assets = null;
+const pendingImgs = {};     // n -> [{id,url,nome}]
+
+function caption(t){ return esc(t).replace(/(#[\wÀ-ÿ]+)/g,'<span class="h">$1</span>'); }
+const docId = n => MES + "_POST-" + n;
+
+// ---------- grade ----------
+function renderGrade(){
+  const g = document.getElementById("grade"); g.innerHTML = "";
+  [...POSTS].reverse().forEach(p => {
+    const a = document.createElement("a"); a.href = "#post-" + p.n;
+    a.setAttribute("aria-label","Post " + p.n + ": " + p.tema);
+    const st = state[p.n]?.status;
+    const mk = st === "aprovado" ? '<span class="mk aprovado">aprovado</span>' : st === "corrigir" ? '<span class="mk corrigir">correção</span>' : "";
+    if (p.imgs.length) a.innerHTML = `<img src="${p.imgs[0]}" alt="" loading="lazy">` + (p.imgs.length>1?`<span class="ico">1/${p.imgs.length}</span>`:"") + mk;
+    else { a.className = "reel"; a.innerHTML = `<span class="label" style="font-size:10px">Reels · ${p.data}</span><strong>${esc(p.tema)}</strong><span>aguardando vídeo</span>`; }
+    g.appendChild(a);
+  });
+}
+
+function tally(){
+  const ready = POSTS.filter(p => p.imgs.length);
+  const ok = ready.filter(p => state[p.n]?.status === "aprovado").length;
+  const fix = ready.filter(p => state[p.n]?.status === "corrigir").length;
+  document.getElementById("t-ok").textContent = ok;
+  document.getElementById("t-fix").textContent = fix;
+  document.getElementById("t-pend").textContent = ready.length - ok - fix;
+}
+
+// ---------- cards ----------
+function buildCards(){
+  const weeks = document.getElementById("weeks");
+  WEEKS.forEach(w => {
+    const sec = document.createElement("section"); sec.className = "week";
+    sec.innerHTML = `<div class="week-head"><h2>${w.t}</h2><span class="label">${w.s}</span></div><div class="cards"></div>`;
+    const cards = sec.querySelector(".cards");
+    w.ids.forEach(id => cards.appendChild(buildCard(byId[id])));
+    weeks.appendChild(sec);
+  });
+}
+
+function buildCard(p){
+  const ready = p.imgs.length > 0;
+  const card = document.createElement("article"); card.className = "card"; card.id = "post-" + p.n;
+  const media = ready
+    ? `<div class="car"><div class="track" tabindex="0" aria-label="Imagens do post ${p.n}">` +
+      p.imgs.map((s,i)=>`<img src="${s}" alt="Post ${p.n}, tela ${i+1}" loading="lazy">`).join("") + `</div>` +
+      (p.imgs.length>1?`<span class="count">1/${p.imgs.length}</span><button class="nav prev" aria-label="Tela anterior" disabled>‹</button><button class="nav next" aria-label="Próxima tela">›</button>`:"") +
+      `</div>` + (p.imgs.length>1?`<div class="dots">${p.imgs.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:"")
+    : `<div class="reelbox"><span class="label">Reels · 9:16</span><h3>${esc(p.tema)}</h3><p>Aguardando o vídeo da produtora. Se não chegar a tempo, sai a versão com fotos do banco de imagens.</p></div>`;
+  const telas = ready ? p.imgs.map((_,i)=>`<option value="Tela ${i+1}">Tela ${i+1}</option>`).join("") : "";
+  card.innerHTML = `
+    <div class="card-top"><div class="avatar" aria-hidden="true">C</div>
+      <div class="who"><b>hotelcabanasbonito</b><span>${p.dia}, ${p.data} · ${p.hora}</span></div>
+      <span class="num">POST ${p.n}</span></div>
+    ${media}
+    <div class="body">
+      <div class="meta"><span class="chip">${FMT[p.fmt]||p.fmt}</span><span class="st ${ready?"pendente":"video"}" data-st>${ready?"para revisar":"aguardando vídeo"}</span></div>
+      <p class="theme">${esc(p.tema)}</p>
+      <p class="cap clip">${caption(p.leg)}</p>
+      <div class="links"><button class="linkbtn" data-more type="button" aria-expanded="false">ver legenda completa</button><button class="linkbtn" data-copy type="button">copiar legenda</button></div>
+      <div data-sent></div>
+      <div class="actions" data-actions>
+        <button class="btn ok" data-approve type="button">Aprovar</button>
+        <button class="btn fix" data-fix type="button">Pedir correção</button>
+      </div>
+      <form class="fixbox" data-form hidden>
+        <label for="onde-${p.n}">O que mudar
+          <select id="onde-${p.n}" name="onde">
+            <option value="Post inteiro">Post inteiro</option>${telas}
+            <option value="Legenda">Legenda</option><option value="Hashtags">Hashtags</option><option value="Data ou horário">Data ou horário</option>
+          </select></label>
+        <label for="pedido-${p.n}">Seu pedido
+          <textarea id="pedido-${p.n}" name="pedido" placeholder="Ex.: troca a foto da tela 3 por uma da piscina; deixa a legenda mais curta" required></textarea></label>
+        <div class="up" data-up><label for="foto-${p.n}" style="font-weight:600;font-size:13px">Foto nova (opcional)</label>
+          <input id="foto-${p.n}" type="file" accept="image/jpeg,image/png,image/webp" multiple></div>
+        <div class="thumbs" data-thumbs></div>
+        <p class="msg" data-msg></p>
+        <div class="actions" style="border:none;padding:0">
+          <button class="btn fix" type="submit" style="background:var(--fix);color:var(--surface)">Enviar correção</button>
+          <button class="btn ghost" type="button" data-cancel>Cancelar</button>
+        </div>
+      </form>
+      <p class="msg" data-status-msg></p>
+    </div>`;
+  if (!ready) card.querySelector("[data-actions]").hidden = true;
+
+  // legenda
+  const more = card.querySelector("[data-more]"), cap = card.querySelector(".cap");
+  more.addEventListener("click", () => { const open = cap.classList.toggle("clip") === false; more.textContent = open ? "recolher legenda" : "ver legenda completa"; more.setAttribute("aria-expanded", open); });
+  const copyBtn = card.querySelector("[data-copy]");
+  copyBtn.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(p.leg); copyBtn.textContent = "legenda copiada"; }
+    catch { cap.classList.remove("clip"); const r = document.createRange(); r.selectNodeContents(cap); const s = getSelection(); s.removeAllRanges(); s.addRange(r); copyBtn.textContent = "texto selecionado: copie"; }
+    setTimeout(() => copyBtn.textContent = "copiar legenda", 2500);
+  });
+
+  // carrossel
+  const track = card.querySelector(".track");
+  if (track && p.imgs.length > 1) {
+    const count = card.querySelector(".count"), dots = card.querySelectorAll(".dots i"), prev = card.querySelector(".prev"), next = card.querySelector(".next");
+    const update = () => { const i = Math.round(track.scrollLeft / track.clientWidth); count.textContent = (i+1)+"/"+p.imgs.length; dots.forEach((d,k)=>d.classList.toggle("on",k===i)); prev.disabled = i===0; next.disabled = i===p.imgs.length-1; };
+    track.addEventListener("scroll", () => requestAnimationFrame(update), {passive:true});
+    prev.addEventListener("click", () => track.scrollBy({left:-track.clientWidth, behavior:"smooth"}));
+    next.addEventListener("click", () => track.scrollBy({left:track.clientWidth, behavior:"smooth"}));
+  }
+
+  // ações
+  const form = card.querySelector("[data-form]"), msg = card.querySelector("[data-msg]"), smsg = card.querySelector("[data-status-msg]");
+  card.querySelector("[data-approve]").addEventListener("click", async (e) => {
+    if (!db) return;
+    const cur = state[p.n]?.status === "aprovado";
+    e.target.disabled = true;
+    try {
+      const body = cur ? {status:"pendente"} : {status:"aprovado", aprovadoEm:new Date().toISOString()};
+      await save(p.n, body);
+      smsg.textContent = cur ? "Aprovação desfeita." : "Aprovado. Obrigado!";
+    } catch (err) { smsg.textContent = "Não foi possível salvar agora. Tente de novo em instantes."; smsg.className = "msg err"; }
+    e.target.disabled = false;
+  });
+  card.querySelector("[data-fix]").addEventListener("click", () => { form.hidden = false; form.querySelector("textarea").focus(); });
+  card.querySelector("[data-cancel]").addEventListener("click", () => { form.hidden = true; msg.textContent = ""; });
+
+  const fileIn = form.querySelector('input[type="file"]'), thumbs = form.querySelector("[data-thumbs]");
+  fileIn.addEventListener("change", async () => {
+    if (!assets) return;
+    pendingImgs[p.n] = pendingImgs[p.n] || [];
+    for (const f of fileIn.files) {
+      msg.className = "msg"; msg.textContent = "Enviando " + f.name + "…";
+      try {
+        const r = await assets.upload(f, f.type ? undefined : {type:"image/jpeg"});
+        pendingImgs[p.n].push({id:r.id, nome:f.name});
+        const im = document.createElement("img"); im.src = r.url; im.alt = f.name; thumbs.appendChild(im);
+        msg.textContent = "Foto anexada.";
+      } catch (err) {
+        msg.className = "msg err";
+        msg.textContent = err?.code === "too_large" ? "Foto grande demais (máximo 20 MB)." : err?.code === "unsupported_type" ? "Use JPG, PNG ou WEBP." : "Não foi possível enviar a foto agora.";
+      }
+    }
+    fileIn.value = "";
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!db) return;
+    const pedido = form.pedido.value.trim();
+    if (!pedido) { msg.className = "msg err"; msg.textContent = "Escreva o que você quer mudar."; return; }
+    const btn = form.querySelector('button[type="submit"]'); btn.disabled = true;
+    try {
+      const prev = state[p.n]?.pedidos || [];
+      const novo = {onde: form.onde.value, pedido, imagens: pendingImgs[p.n] || [], enviadoEm: new Date().toISOString(), situacao: "novo"};
+      await save(p.n, {status:"corrigir", pedidos:[...prev, novo]});
+      pendingImgs[p.n] = []; thumbs.innerHTML = ""; form.reset(); form.hidden = true;
+      smsg.className = "msg"; smsg.textContent = "Pedido enviado. Avise o Claude na conversa para ele começar agora.";
+    } catch (err) { msg.className = "msg err"; msg.textContent = "Não foi possível enviar agora. Tente de novo em instantes."; }
+    btn.disabled = false;
+  });
+  return card;
+}
+
+async function save(n, patch){
+  const ref = db.collection("decisoes").doc(docId(n));
+  const base = state[n] ? {...state[n]} : {mes: MES, post: n, tema: byId[n].tema, data: byId[n].data};
+  const body = {...base, ...patch, atualizadoEm: new Date().toISOString()};
+  await ref.set(body);
+}
+
+function paint(n){
+  const card = document.getElementById("post-" + n); if (!card) return;
+  const d = state[n], p = byId[n];
+  if (!p.imgs.length) return;
+  const st = d?.status || "pendente";
+  card.classList.toggle("aprovado", st === "aprovado");
+  card.classList.toggle("corrigir", st === "corrigir");
+  const pill = card.querySelector("[data-st]");
+  pill.className = "st " + st;
+  pill.textContent = st === "aprovado" ? "aprovado" : st === "corrigir" ? "correção pedida" : "para revisar";
+  const ap = card.querySelector("[data-approve]");
+  ap.textContent = st === "aprovado" ? "Desfazer aprovação" : "Aprovar";
+  ap.className = st === "aprovado" ? "btn ghost" : "btn ok";
+  const sent = card.querySelector("[data-sent]");
+  const peds = d?.pedidos || [];
+  sent.innerHTML = peds.map(x => `<div class="sent"><b>${esc(x.onde)} · ${x.situacao === "feito" ? "corrigido" : x.situacao === "em_andamento" ? "em andamento" : "enviado"}</b><span>${esc(x.pedido)}</span>${(x.imagens||[]).length ? `<div class="thumbs">${x.imagens.map(i=>`<img src="/_blob/${esc(i.id)}" alt="${esc(i.nome||"foto enviada")}">`).join("")}</div>` : ""}${x.resposta ? `<span class="reply">${esc(x.resposta)}</span>` : ""}</div>`).join("");
+}
+
+buildCards();
+renderGrade();
+tally();
+
+(async () => {
+  try { db = await claude.use("db"); } catch { db = null; }
+  try { assets = await claude.use("assets"); } catch { assets = null; }
+  if (!db) {
+    document.getElementById("offline").hidden = false;
+    document.querySelectorAll("[data-actions]").forEach(a => a.hidden = true);
+    return;
+  }
+  if (!assets) document.querySelectorAll("[data-up]").forEach(u => u.hidden = true);
+  db.collection("decisoes").where("mes","==",MES).onSnapshot(snap => {
+    snap.docs.forEach(d => { const b = d.data(); if (b && b.post) state[b.post] = b; });
+    POSTS.forEach(p => paint(p.n));
+    renderGrade(); tally();
+  }, () => { document.getElementById("offline").hidden = false; });
+})();
+</script>

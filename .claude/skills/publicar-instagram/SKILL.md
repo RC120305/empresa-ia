@@ -15,7 +15,7 @@ description: >-
 > **Status: em implantação (Etapa 2).** Enquanto a chave e a rede não estiverem prontas, a publicação é feita pelo dono no agendador do Meta Business Suite (Etapa 1) a partir do pacote da `conteudo-mensal`. Configuração: `social/publicacao/passo-a-passo-meta.md`.
 
 ## Regra de ouro
-**Só sai o que o dono aprovou.** Um post é publicado apenas se, na planilha `Calendário <Mês>` mais recente do Drive, a coluna **Status** diz **"Aprovado"** (sem ressalva) e a data e o horário já chegaram. Qualquer dúvida (texto de ajuste na coluna, arte faltando, legenda diferente do repositório, "[a confirmar]" ou "[confirmar valor vigente]" no texto) → **não publica** e avisa o dono.
+**Só sai o que o dono aprovou.** Um post é publicado apenas se estiver **aprovado na Central de Aprovação** do mês (`../conteudo-mensal/references/central-de-aprovacao.md`, coleção `decisoes`, `status: "aprovado"`) **ou**, na planilha `Calendário <Mês>` mais recente do Drive, a coluna **Status** diz **"Aprovado"** (sem ressalva) e a data e o horário já chegaram. Qualquer dúvida (texto de ajuste na coluna, arte faltando, legenda diferente do repositório, "[a confirmar]" ou "[confirmar valor vigente]" no texto) → **não publica** e avisa o dono.
 
 ## Requisitos (checar no início; se faltar, parar e avisar)
 - Variável de ambiente `META_IG_TOKEN` (chave de publicação criada pelo dono; **nunca** pedir no chat nem gravar em arquivo ou log).

@@ -54,9 +54,10 @@ Passe a cada funcionário **só o necessário** (mês, posts, decisões do dono)
 2. **Revisão rápida (sua):** confira que nada inventa fato (compare com `hotel-operacional.md`), que cada post tem CTA e que opcionais estão marcados. Corrija com o Marketing se preciso.
 3. **PAUSA 2 (textos):** mostre ao dono o resumo dos textos (títulos das telas + 1ª linha das legendas) e publique `Conteúdo <Mês> v1` no Drive para ele ler completo. Avance com o OK. Se o dono disser "pode seguir direto para as artes", pule esta pausa.
 4. **Artes:** acione o **Designer** com o **briefing de arte** de cada carrossel e imagem única (só o texto da arte + foto desejada + formato 3:4). Ele escolhe as fotos reais no Drive, escolhe o layout (com ou sem faixa, pela luz da foto) e salva em `design/pecas/AAAA-MM-instagram/POST-NN/`. Reels não têm arte nesta fase.
-5. **Pacote de publicação:** para cada post, a planilha `Calendário` traz **data, horário, formato, arquivo(s) da arte, legenda final com hashtags e Status**. O dono aprova marcando **"Aprovado"** na coluna Status (ou escreve o ajuste). Sem "Aprovado", o post não sai.
-6. **Entrega ao dono:** envie os PNGs com `SendUserFile` (um card por post ou agrupado por semana), publique `Briefing produtora <Mês> v1` no Drive e atualize o `Calendário` (status). Diga o que falta: fotos a produzir, autorizações de imagem, confirmações de fatos.
-7. **Commit e push** no repositório. Criar e publicar em massa é ação com efeito: **confirme com o dono antes** da publicação no Drive se ela não tiver sido combinada.
+5. **Central de Aprovação:** gere e publique a página do mês (`references/central-de-aprovacao.md`) com as artes finais e legendas; é onde o dono aprova ou pede correções (com upload de foto).
+6. **Pacote de publicação:** para cada post, a planilha `Calendário` traz **data, horário, formato, arquivo(s) da arte, legenda final com hashtags e Status**. O dono aprova marcando **"Aprovado"** na coluna Status (ou escreve o ajuste). Sem "Aprovado", o post não sai.
+7. **Entrega ao dono:** envie os PNGs com `SendUserFile` (um card por post ou agrupado por semana), publique `Briefing produtora <Mês> v1` no Drive e atualize o `Calendário` (status). Diga o que falta: fotos a produzir, autorizações de imagem, confirmações de fatos.
+8. **Commit e push** no repositório. Criar e publicar em massa é ação com efeito: **confirme com o dono antes** da publicação no Drive se ela não tiver sido combinada.
 
 ## Fase 3 — Reativa (Reels da produtora)
 Quando a produtora entrega um vídeo:
