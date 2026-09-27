@@ -120,6 +120,12 @@ Acolhedor, familiar, inspirador e autêntico. Fala de natureza com encantamento,
 
 **Gargalo de ocupação (dono, 2026-09-27): o problema NÃO são os feriados, que lotam. O gargalo é o MEIO DE SEMANA e a BAIXA TEMPORADA.** Conteúdo e anúncios devem priorizar estadias de domingo a quinta e os meses de baixa; feriados entram só como apoio. (Ex.: 10 a 12/10/2026 já lotado; Finados e 20 a 22/11 ainda com vagas.) Pode-se dizer que o hotel fica **mais tranquilo de domingo a quinta**.
 
+**Origem dos hóspedes do Cabanas (dono, 2026-09-27)**
+- **40% a 60% dos hóspedes são de Mato Grosso do Sul**, com destaque para **Campo Grande, Dourados e entorno**.
+- **Sazonal:** nas férias escolares (**janeiro e julho**) cai a participação de MS e sobe a de fora do estado, ficando parecida com a do destino (SP ~30%, PR, RJ, RS, SC, MG; ver `destino-bonito.md`, perfil OTEB).
+- **Comportamento do hóspede de MS:** fica **no máximo 2 noites, geralmente no fim de semana**, e **aproveita muito o próprio hotel** (rios, trilhas, atividades, piscina); sai pouco para os passeios da cidade.
+- Consequência para anúncios e conteúdo: MS é público central e merece atenção especial, com mensagem de "o hotel é o passeio" e estadia curta; o público de fora (SP e demais) é o que mais tende a ficar mais noites e a vir de avião.
+
 **Complemento (2026-09-27)**
 - Rio cheio é **raro** e o cancelamento de atividades é **muito raro**: não usar "sujeito às condições do rio" (revisado em 2026-09-27).
 - **Pode dizer** que o hotel fica **mais tranquilo de domingo a quinta** (dono, 2026-09-27).
