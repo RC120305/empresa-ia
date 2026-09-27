@@ -1,63 +1,457 @@
 {
-  "id": "2026-10-plano-de-midia",
-  "titulo": "Plano de mídia paga · Meta Ads",
-  "verba": 1500,
-  "decisoes": [
-    {"k": "cenario", "q": "Qual distribuição da verba?", "tipo": "escolha", "opcoes": [
-      {"v": "A", "t": "A · Equilibrado (recomendado)", "d": "Out: prospecção R$ 45/dia + remarketing R$ 12/dia = R$ 1.482. Nov: prospecção R$ 20 + remarketing R$ 10 + Réveillon R$ 20/dia = R$ 1.500."},
-      {"v": "B", "t": "B · Conservador", "d": "Gasta menos: R$ 1.170 em outubro e R$ 1.290 em novembro. Réveillon a R$ 15/dia."},
-      {"v": "C", "t": "C · Concentrado no Réveillon", "d": "Réveillon a R$ 30/dia em novembro; prospecção roda só de 16 a 30/11."}]},
-    {"k": "reveillon", "q": "Pacote de Réveillon (4 noites): valor, datas, o que inclui e vagas", "tipo": "texto", "ph": "Ex.: 29/12 a 02/01, R$ ..., inclui café e ..., vagas em ..."},
-    {"k": "medicao", "q": "A equipe de reservas pode perguntar \"como nos conheceu?\" e anotar o código do anúncio, se a data é de domingo a quinta e se virou reserva?", "tipo": "escolha", "opcoes": [
-      {"v": "sim", "t": "Sim, vamos anotar", "d": "Assim sabemos quanto custa cada reserva vinda do anúncio."},
-      {"v": "nao", "t": "Ainda não", "d": "Medimos só o custo por conversa no WhatsApp."}]},
-    {"k": "limite", "q": "Você vai definir o limite de gastos da conta em R$ 1.500 por mês (trava de segurança no Gerenciador de Anúncios)?", "tipo": "escolha", "opcoes": [
-      {"v": "sim", "t": "Sim", "d": "A conta nunca passa desse valor."},
-      {"v": "depois", "t": "Depois", "d": "Fica pendente; nada é ativado sem o seu OK de qualquer forma."}]}
+ "id": "2026-10-plano-de-midia",
+ "titulo": "Plano de mídia paga · Meta Ads (v2.1)",
+ "verba": 1500,
+ "decisoes": [
+  {
+   "k": "dezembro",
+   "q": "Quando começa a campanha da 1ª quinzena de dezembro?",
+   "tipo": "escolha",
+   "opcoes": [
+    {
+     "v": "nov",
+     "t": "Opção 1 · 01 a 30/11 (seu pedido)",
+     "d": "Outubro fica com as prospecções (voo SP/Campinas R$ 23/dia + resto do Brasil R$ 22/dia) e o remarketing = R$ 1.482. Pega o check-in de 01/12 com só 30 dias de antecedência."
+    },
+    {
+     "v": "out",
+     "t": "Opção 2 · 13/10 a 30/11 (recomendada pelos números)",
+     "d": "Quem vem de 01 a 15/12 reserva entre 12 e 31/10. Outubro: voo SP/Campinas R$ 33/dia + dezembro R$ 20/dia (desde 13/10) + remarketing = R$ 1.498; o resto do Brasil não roda."
+    }
+   ]
+  },
+  {
+   "k": "voo",
+   "q": "Dividir a prospecção em duas: \"voo direto\" para quem mora perto de Guarulhos, Congonhas e Viracopos, e o resto do Brasil?",
+   "tipo": "escolha",
+   "opcoes": [
+    {
+     "v": "sim",
+     "t": "Sim, dividir (recomendado)",
+     "d": "Mesma verba, só dividida. Em 30 dias comparamos o custo por conversa e, se a de voo não for melhor, voltam a ser uma só (com o seu OK)."
+    },
+    {
+     "v": "nao",
+     "t": "Não, manter uma prospecção só",
+     "d": "Os anúncios de voo entram na prospecção única, para o Brasil todo."
+    }
+   ]
+  },
+  {
+   "k": "medicao",
+   "q": "A equipe de reservas pode perguntar \"como nos conheceu?\" e anotar o código do anúncio, a cidade de origem, se veio de avião, se a data é de domingo a quinta e se virou reserva?",
+   "tipo": "escolha",
+   "opcoes": [
+    {
+     "v": "sim",
+     "t": "Sim, vamos anotar",
+     "d": "Assim sabemos quanto custa cada reserva vinda do anúncio."
+    },
+    {
+     "v": "nao",
+     "t": "Ainda não",
+     "d": "Medimos só o custo por conversa no WhatsApp."
+    }
+   ]
+  },
+  {
+   "k": "limite",
+   "q": "Você vai definir o limite de gastos da conta em R$ 1.500 por mês (trava de segurança no Gerenciador de Anúncios)?",
+   "tipo": "escolha",
+   "opcoes": [
+    {
+     "v": "sim",
+     "t": "Sim",
+     "d": "A conta nunca passa desse valor."
+    },
+    {
+     "v": "depois",
+     "t": "Depois",
+     "d": "Fica pendente; nada é ativado sem o seu OK de qualquer forma."
+    }
+   ]
+  },
+  {
+   "k": "reveillon",
+   "q": "Quais são as datas do pacote de Réveillon? (só para a campanha de janeiro não vender essas noites; não haverá anúncio de Réveillon)",
+   "tipo": "texto",
+   "ph": "Ex.: 29/12 a 02/01"
+  }
+ ],
+ "arquitetura": [
+  [
+   "Permanente",
+   "Voo direto · Grande SP e região de Campinas (\"voa no domingo, volta na quinta\")",
+   "o ano todo (pausa em nov.)",
+   "5 anúncios V1–V5"
   ],
-  "arquitetura": [
-    ["Permanente", "Prospecção \"domingo a quinta / baixa temporada\"", "o ano todo", "Conversas no WhatsApp · 12 anúncios"],
-    ["Permanente", "Remarketing (quem já interagiu com o hotel)", "o ano todo", "Conversas no WhatsApp · 4 anúncios"],
-    ["Pontual", "Réveillon (4 noites)", "01/11 a 10/12/2026", "6 anúncios"],
-    ["Pontual", "Carnaval 2027 (4 noites)", "11/12/2026 a 20/01/2027", "a planejar"],
-    ["Pontual", "Janela de ouro 1 (estadias em maio e junho)", "15/03 a 15/05/2027", "a planejar"],
-    ["Pontual", "Janela de ouro 2 (estadias em agosto e setembro)", "15/06 a 15/08/2027", "a planejar"],
-    ["Gatilho", "Feriado com vaga 50 dias antes (ex.: 20/11)", "quando houver vaga", "vira 1 anúncio no remarketing"]
+  [
+   "Permanente",
+   "Prospecção \"domingo a quinta / baixa\" · resto do Brasil",
+   "o ano todo (pausa em nov.)",
+   "12 anúncios P01–P12"
   ],
-  "regras": ["Sem pontual no mês: prospecção R$ 1.200 + remarketing R$ 300.", "Com pontual o mês todo: prospecção R$ 600 + remarketing R$ 300 + pontual R$ 600.", "Nunca dois pontuais ao mesmo tempo; a verba do pontual sai da prospecção.", "Piso de R$ 20/dia por campanha; o que sobra no mês não passa para o seguinte sem o seu OK.", "Finados: sem campanha paga (a janela de venda já passou)."],
-  "sessenta": [
-    ["Outubro", "Prospecção", "06 a 31/10", 45, 1170],
-    ["Outubro", "Remarketing", "06 a 31/10", 12, 312],
-    ["Novembro", "Prospecção", "01 a 30/11", 20, 600],
-    ["Novembro", "Remarketing", "01 a 30/11", 10, 300],
-    ["Novembro", "Réveillon", "01 a 30/11 (segue até 10/12)", 20, 600]
+  [
+   "Permanente",
+   "Remarketing (quem já interagiu com o hotel)",
+   "o ano todo",
+   "4 anúncios R1–R4"
   ],
-  "grupos": [
-    {"nome": "Prospecção permanente · domingo a quinta", "ads": [
-      ["P01", "Casais", "Cabana elevada a 3 m", "carrossel", "Aqui, a pressa fica no chão"],
-      ["P02", "Casais", "Cabana Master, 85 m², banheira para 2", "imagem", "Uma quarta a dois, sem pressa"],
-      ["P03", "Casais e aventureiros", "Programação inclusa com monitor (custo-benefício)", "vídeo", "Terça-feira, 8h30, na mira"],
-      ["P04", "55+", "Mais tranquilo de domingo a quinta; piscina climatizada, hidromassagem e sauna", "carrossel", "Domingo a quinta, no ritmo seu"],
-      ["P05", "Todas", "Único hotel de Bonito cercado por dois rios", "imagem", "Entre dois rios"],
-      ["P06", "Eco-conscientes", "Coleta seletiva, compostagem, biólogo; fauna", "imagem", "Aqui, os primeiros moradores são eles"],
-      ["P07", "Famílias", "Aventura sem sair do hotel (opcionais a partir de 6 anos e 1,15 m)", "carrossel", "A aventura mora aqui dentro"],
-      ["P08", "Aventureiros", "Arvorismo: 18 obstáculos e tirolesa aquática (opcional)", "imagem", "18 obstáculos e o Formoso lá embaixo"],
-      ["P09", "Aventureiros", "Boia cross: 1.200 m, guias treinados (opcional)", "vídeo ou imagem", "1.200 metros de corredeira"],
-      ["P10", "55+ e casais", "Objeção \"fica longe\": 6 km do centro, todo em asfalto", "imagem", "Longe da pressa, a 6 km do centro"],
-      ["P11", "Casais", "Uma quarta em cinco sentidos", "carrossel", "Uma quarta em cinco sentidos"],
-      ["P12", "Casais e 55+", "Uma quarta-feira qualquer entre dois rios", "vídeo", "Uma quarta-feira qualquer"]]},
-    {"nome": "Remarketing permanente", "ads": [
-      ["R1", "Quem já interagiu", "Notas: Google 4,7 · Booking 9,3 · TripAdvisor 4,5 (set/2026)", "imagem", "Quem vem, conta"],
-      ["R2", "Quem já interagiu", "O que vem na diária + desconto para quem reserva direto", "carrossel", "Está tudo na diária"],
-      ["R3", "Quem já interagiu", "E se a viagem fosse numa terça?", "imagem", "E se fosse numa terça?"],
-      ["R4", "Quem já interagiu", "Feriado de 20/11 esticado até segunda (06/10 a 13/11, só com vaga)", "imagem", "E se a volta for na segunda?"]]},
-    {"nome": "Pontual · Réveillon (01/11 a 10/12)", "ads": [
-      ["RV1", "Casais", "Virar o ano entre dois rios", "imagem", "O ano novo começa entre dois rios"],
-      ["RV2", "Famílias", "4 noites, um dia por tela (restaurante aberto, sem prometer ceia)", "carrossel", "4 noites, um rio por dia"],
-      ["RV3", "Casais", "Cabana Master a dois, banheira", "imagem", "O primeiro banho do ano, a dois"],
-      ["RV4", "Todas", "Pacote a partir de R$ [confirmar valor] + o que inclui", "imagem", "Réveillon em 4 noites"],
-      ["RV5", "Famílias", "Até 5 na Master ou no Conjugado; Bangalô Especial até 4", "imagem", "A família toda, no mesmo lugar"],
-      ["RV6", "Aventureiros", "Começar 2027 na boia cross (opcional)", "vídeo ou imagem", "Comece 2027 na correnteza"]]}
+  [
+   "Pontual",
+   "1ª quinzena de dezembro (estadias de 01 a 15/12)",
+   "Op. 1: 01–30/11 · Op. 2: 13/10–30/11",
+   "5 anúncios D1–D5"
   ],
-  "etapas": ["Plano e verba", "Textos dos anúncios", "Artes 4:5 e 9:16", "Subir pausada na conta", "Ativar campanha", "Resultados"]
+  [
+   "Pontual",
+   "Férias de janeiro (estadias em jan/2027)",
+   "01/11 a 16/12",
+   "5 anúncios J1–J5"
+  ],
+  [
+   "Pontual futura",
+   "Janela de ouro 1 (estadias em maio e junho)",
+   "15/03 a 15/05/2027",
+   "a criar em fev/2027"
+  ],
+  [
+   "Pontual futura",
+   "Janela de ouro 2 (estadias em agosto e setembro)",
+   "15/06 a 15/08/2027",
+   "a criar em mai/2027"
+  ]
+ ],
+ "regras": [
+  "Sem campanhas de feriado, Réveillon ou Carnaval (decisão sua).",
+  "Teto de R$ 1.500 por mês; piso de R$ 20/dia por campanha; remarketing entre R$ 7 e R$ 10/dia.",
+  "Com uma pontual no mês: fica só a prospecção de voo e o resto do Brasil pausa. Com duas pontuais (novembro): as duas prospecções pausam.",
+  "Nunca três pontuais ao mesmo tempo; o que sobra no mês não passa para o seguinte sem o seu OK.",
+  "Anúncios de voo: companhias e dias só com a malha confirmada; nunca preço de passagem, \"voo incluso\", parceria, logos ou \"transfer\"."
+ ],
+ "sessenta": [
+  [
+   "Outubro (Opção 1)",
+   "Voo direto SP/Campinas",
+   "06 a 31/10",
+   23,
+   598
+  ],
+  [
+   "Outubro (Opção 1)",
+   "Prospecção resto do Brasil",
+   "06 a 31/10",
+   22,
+   572
+  ],
+  [
+   "Outubro (Opção 1)",
+   "Remarketing",
+   "06 a 31/10",
+   12,
+   312
+  ],
+  [
+   "Novembro",
+   "1ª quinzena de dezembro",
+   "01 a 30/11",
+   20,
+   600
+  ],
+  [
+   "Novembro",
+   "Férias de janeiro",
+   "01 a 30/11",
+   20,
+   600
+  ],
+  [
+   "Novembro",
+   "Remarketing",
+   "01 a 30/11",
+   10,
+   300
+  ],
+  [
+   "Dezembro",
+   "Voo direto SP/Campinas",
+   "01 a 31/12",
+   20,
+   620
+  ],
+  [
+   "Dezembro",
+   "Prospecção resto do Brasil",
+   "17 a 31/12",
+   20,
+   300
+  ],
+  [
+   "Dezembro",
+   "Férias de janeiro",
+   "01 a 16/12",
+   20,
+   320
+  ],
+  [
+   "Dezembro",
+   "Remarketing",
+   "01 a 31/12",
+   8,
+   248
+  ]
+ ],
+ "grupos": [
+  {
+   "nome": "Permanente · Voo direto (Grande SP e Campinas)",
+   "ads": [
+    [
+     "V1",
+     "Casais e 55+",
+     "Roteiro: voo de domingo → 4 noites → voo de quinta",
+     "carrossel",
+     "Domingo a quinta, voando direto"
+    ],
+    [
+     "V2",
+     "Casais e 55+",
+     "8 km do aeroporto (táxi ou carro alugado); 6 km do centro, todo em asfalto",
+     "imagem",
+     "Do avião à rede: 8 km"
+    ],
+    [
+     "V3",
+     "Casais e aventureiros",
+     "Sai de Campinas, Congonhas ou Guarulhos; o hotel como base entre dois rios",
+     "imagem",
+     "Sai de Campinas, Congonhas ou Guarulhos"
+    ],
+    [
+     "V4",
+     "55+ e casais",
+     "Quem pode escolher evita o fim de semana; domingo tem voo das 3 companhias; mais tranquilo de domingo a quinta",
+     "carrossel",
+     "Quem pode escolher, vem no domingo"
+    ],
+    [
+     "V5",
+     "Aventureiros e casais",
+     "Chega domingo, segunda já está no rio (programação inclusa; opcionais marcados)",
+     "vídeo de fotos",
+     "Pousa domingo. Segunda, no rio"
+    ]
+   ]
+  },
+  {
+   "nome": "Permanente · Prospecção domingo a quinta (resto do Brasil)",
+   "ads": [
+    [
+     "P01",
+     "Casais",
+     "Cabana elevada a 3 m",
+     "carrossel",
+     "Aqui, a pressa fica no chão"
+    ],
+    [
+     "P02",
+     "Casais",
+     "Cabana Master, 85 m², banheira para 2",
+     "imagem",
+     "Uma quarta a dois, sem pressa"
+    ],
+    [
+     "P03",
+     "Casais e aventureiros",
+     "Programação inclusa com monitor (custo-benefício)",
+     "vídeo",
+     "Terça-feira, 8h30, na mira"
+    ],
+    [
+     "P04",
+     "55+",
+     "Mais tranquilo de domingo a quinta; piscina climatizada, hidromassagem e sauna",
+     "carrossel",
+     "Domingo a quinta, no ritmo seu"
+    ],
+    [
+     "P05",
+     "Todas",
+     "Único hotel de Bonito cercado por dois rios",
+     "imagem",
+     "Entre dois rios"
+    ],
+    [
+     "P06",
+     "Eco-conscientes",
+     "Coleta seletiva, compostagem, biólogo; fauna",
+     "imagem",
+     "Aqui, os primeiros moradores são eles"
+    ],
+    [
+     "P07",
+     "Famílias",
+     "Aventura sem sair do hotel (opcionais a partir de 6 anos e 1,15 m)",
+     "carrossel",
+     "A aventura mora aqui dentro"
+    ],
+    [
+     "P08",
+     "Aventureiros",
+     "Arvorismo: 18 obstáculos e tirolesa aquática (opcional)",
+     "imagem",
+     "18 obstáculos e o Formoso lá embaixo"
+    ],
+    [
+     "P09",
+     "Aventureiros",
+     "Boia cross: 1.200 m, guias treinados (opcional)",
+     "vídeo ou imagem",
+     "1.200 metros de corredeira"
+    ],
+    [
+     "P10",
+     "55+ e casais",
+     "Objeção \"fica longe\": 6 km do centro, todo em asfalto",
+     "imagem",
+     "Longe da pressa, a 6 km do centro"
+    ],
+    [
+     "P11",
+     "Casais",
+     "Uma quarta em cinco sentidos",
+     "carrossel",
+     "Uma quarta em cinco sentidos"
+    ],
+    [
+     "P12",
+     "Casais e 55+",
+     "Uma quarta-feira qualquer entre dois rios",
+     "vídeo",
+     "Uma quarta-feira qualquer"
+    ]
+   ]
+  },
+  {
+   "nome": "Permanente · Remarketing",
+   "ads": [
+    [
+     "R1",
+     "Quem já interagiu",
+     "Notas: Google 4,7 · Booking 9,3 · TripAdvisor 4,5 (set/2026)",
+     "imagem",
+     "Quem vem, conta"
+    ],
+    [
+     "R2",
+     "Quem já interagiu",
+     "O que vem na diária + desconto para quem reserva direto",
+     "carrossel",
+     "Está tudo na diária"
+    ],
+    [
+     "R3",
+     "Quem já interagiu",
+     "E se a viagem fosse numa terça?",
+     "imagem",
+     "E se fosse numa terça?"
+    ],
+    [
+     "R4",
+     "Casais e 55+",
+     "Baixa temporada, reserva sem aperto: desconto direto, 50% de sinal, até 6x no cartão, reembolso integral com 30 dias",
+     "imagem",
+     "Baixa temporada, reserva sem aperto"
+    ]
+   ]
+  },
+  {
+   "nome": "Pontual · 1ª quinzena de dezembro",
+   "ads": [
+    [
+     "D1",
+     "Casais",
+     "Pausa a dois antes da correria de fim de ano; Cabana Master com banheira",
+     "imagem",
+     "Antes da correria, uma pausa a dois"
+    ],
+    [
+     "D2",
+     "55+ e casais",
+     "Com a chuva, a mata fica mais verde; piscina climatizada, hidromassagem e sauna",
+     "carrossel",
+     "Com a chuva, a mata fica mais verde"
+    ],
+    [
+     "D3",
+     "Aventureiros e casais",
+     "O calor pede rio: boia cross (opcional), 1.200 m",
+     "vídeo ou imagem",
+     "O calor pede rio"
+    ],
+    [
+     "D4",
+     "Casais e 55+",
+     "Um dia inteiro incluso: café, arco e flecha, tirolesa, SUP e caiaque",
+     "carrossel",
+     "Um dia inteiro já incluso"
+    ],
+    [
+     "D5",
+     "Casais",
+     "Chuva como programa: Cabana Casal elevada, rede na varanda",
+     "imagem",
+     "Chuva no telhado, rede na varanda"
+    ]
+   ]
+  },
+  {
+   "nome": "Pontual · Férias de janeiro (famílias)",
+   "ads": [
+    [
+     "J1",
+     "Famílias",
+     "Programação diária inclusa, com monitor",
+     "carrossel",
+     "Férias com a agenda pronta"
+    ],
+    [
+     "J2",
+     "Famílias",
+     "Choveu? Piscina climatizada, hidromassagem, salão de jogos e playground",
+     "imagem",
+     "Choveu? As férias continuam"
+    ],
+    [
+     "J3",
+     "Famílias",
+     "Bangalô Especial até 4; Master e Conjugado até 5; até 5 anos não pagam na cama dos pais",
+     "carrossel",
+     "A família toda, no mesmo lugar"
+    ],
+    [
+     "J4",
+     "Famílias com filhos a partir de 6 anos",
+     "Arvorismo e boia cross (opcionais), com segurança",
+     "carrossel",
+     "Com 6 anos e 1,15 m, já dá"
+    ],
+    [
+     "J5",
+     "Famílias",
+     "Base para os passeios: 6 km do centro, 8 km do aeroporto; rio do hotel à tarde",
+     "imagem",
+     "Passeio de manhã, rio do hotel à tarde"
+    ]
+   ]
+  }
+ ],
+ "etapas": [
+  "Plano e verba",
+  "Textos dos anúncios",
+  "Artes 4:5 e 9:16",
+  "Subir pausada na conta",
+  "Ativar campanha",
+  "Resultados"
+ ],
+ "titulo60": "Próximos 90 dias"
 }

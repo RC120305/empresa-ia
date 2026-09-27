@@ -638,7 +638,7 @@ function renderAds(){
     <ul class="muted" style="margin:0;padding-left:18px">${A.regras.map(r=>`<li>${esc(r)}</li>`).join("")}</ul>
   </div>
 
-  <div class="panel"><h2>Próximos 60 dias (cenário A)</h2>
+  <div class="panel"><h2>${esc(A.titulo60 || "Próximos 60 dias")}</h2>
     <div class="tbl"><table><thead><tr><th>Mês</th><th>Campanha</th><th>Período</th><th style="text-align:right">Por dia</th><th style="text-align:right">Total</th></tr></thead><tbody>
     ${Object.entries(meses).map(([m,rs])=>rs.map(r=>`<tr><td>${esc(m)}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td class="num">${brl(r[3])}</td><td class="num">${brl(r[4])}</td></tr>`).join("")+`<tr class="total"><td colspan="4">Total de ${esc(m.toLowerCase())}</td><td class="num">${brl(rs.reduce((s,r)=>s+r[4],0))}</td></tr>`).join("")}
     </tbody></table></div>
