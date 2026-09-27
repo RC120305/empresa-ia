@@ -1,6 +1,9 @@
+> **APROVADA pelo dono em 2026-09-27** (v3). Decisões: vender **domingo a quinta** (com a honestidade sobre o domingo à noite); post 1 **reaproveita o carrossel Cabana Casal v3**; vídeos: o dono verifica com a produtora; enquanto isso, a produção segue (Reels com plano B de fotos). Horários: ter e qui 18h, sáb 9h (MS).
+> **Drive:** pasta `2026-10 Outubro` ID `1H6pL_c3aA97e74-cvDR8ATcXJPYQQOfi` (https://drive.google.com/drive/folders/1H6pL_c3aA97e74-cvDR8ATcXJPYQQOfi) · `antigas` ID `1PfeEZ8FdbkDi3GkW7dT-TIgyLc7x6Ocd` · `Calendário Outubro v1` ID `1JhHx5OaaRgVtS-KSbJ8gt_-zYtQqAFX88zmz7piWT5Y`.
+
 # Pauta do Instagram: OUTUBRO/2026 (proposta v3, feita com o acervo atual)
 
-> **Autor:** Estrategista de Social Media e Tráfego · **Data:** 27/09/2026 · **Status:** PROPOSTA v3, aguardando o seu OK (skill `conteudo-mensal`, Fase 1).
+> **Autor:** Estrategista de Social Media e Tráfego · **Data:** 27/09/2026 · **Status:** APROVADA (v3) em 27/09/2026.
 > **Seu pedido:** "gere uma programação de conteúdo com os materiais que tenho no momento, o acervo de imagens. Os vídeos você pode sugerir, mas levam tempo para fazer; temos alguns já prontos, sugira algo que possamos verificar se já está pronto. Mais à frente encomendamos vídeos personalizados."
 > **O que mudou em relação à v2:** (1) **todo carrossel e toda imagem usam só fotos que existem** no `contexto/inventario-imagens.md` (380 fotos, 27/09/2026), com o nome do arquivo e o início do ID (os nomes se repetem); (2) saíram os temas que dependiam de lacuna: 140 aves, compostagem, ciclovia, trabalho remoto com bancada, noite, chuva, amanhecer/pôr do sol, vista aérea do hotel e ioga; (3) cada Reels tem **(a) o vídeo a verificar com a produtora** (talvez já pronto) e **(b) um plano B só com fotos**, para o post sair de qualquer jeito; (4) no fim, as listas do que **encomendar** (vídeos) e **fotografar**.
 > **Mantido da v2:** foco em **meio de semana (domingo a quinta) + baixa temporada**; feriado só como apoio (1 post de 20/11 e stories); rotação de formatos aprovada.
