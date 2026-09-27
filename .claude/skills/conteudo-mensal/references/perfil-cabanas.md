@@ -85,4 +85,4 @@ Ver `formatos.md`. Resumo: carrossel de 5 a 7 telas (capa imersiva → experiên
 
 ## Referências de bons posts (aprovados pelo dono)
 1. Carrossel Cabana Casal (`design/pecas/2026-10-carrossel-cabana-casal/`, versão v3): "Aqui, a *pressa* **fica** no chão" · "Cada **degrau** deixa a *cidade* mais longe" · "Na **rede**, o tempo *balança* devagar" · "**Adormecer** na madeira, *acordar* entre árvores" · "Seu **lugar** de *conexão* espera por você".
-2. Layouts oficiais: com faixa discreta (fotos claras) e sem faixa (fotos com área escura), títulos de 54 a 56 px (guia de estilo, item 0b).
+2. Layouts oficiais (3): **sem faixa (preferido)**, faixa discreta (fotos claras) e caixa central (fotos movimentadas com centro calmo); melhor por post, nunca misturados no mesmo carrossel; títulos de 54 a 56 px (guia de estilo, item 0b).

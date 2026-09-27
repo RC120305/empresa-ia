@@ -12,11 +12,12 @@
 - As seções abaixo sobre fotografia e cenas das referências valem apenas como inspiração de **clima**; em caso de conflito, **este item 0 prevalece**.
 
 ## 0b. Padrões aprovados pelo dono (2026-09-26, carrossel da Cabana Casal)
-**Duas opções de layout, ambas oficiais.** O Designer escolhe pela luz da foto e mantém **a mesma opção em todas as telas** de um carrossel.
+**Três opções de layout, todas oficiais** (a 3ª aprovada em 2026-09-27). O dono **prefere sem faixa**; o Designer escolhe a melhor para **cada post** pela luz da foto, e **nunca mistura layouts no mesmo carrossel** (todas as telas com a mesma opção).
 | Opção | Como é | Quando usar | Modelo no kit |
 |---|---|---|---|
 | **Com faixa discreta** | Foto no alto; faixa marrom `#847059` de largura total com **no máximo ~22% da altura** (≈290 px); texto à esquerda; à direita, numeração + logo branco + "BONITO · MS", separados por fio laranja vertical | Fotos **claras** (dia, céu, paredes claras); quando a leitura precisa ser garantida | `design/modelos/modelo-faixa-discreta.html` |
 | **Sem faixa** | Foto em tela cheia; texto direto sobre a foto com **sombra suave e localizada** só atrás do bloco de texto (nunca escurecer a foto inteira nem a água) | Fotos com área **escura ou calma** para o texto (madeira, fim de tarde, varanda iluminada) | `design/modelos/modelo-sem-faixa.html` |
+| **Caixa central** | Foto em tela cheia; **título em itálico (Playfair) dentro de uma caixa marrom `#847059` sólida, centralizada**; linha de apoio em itálico logo abaixo da caixa (28 px, com sombra suave); logo branco centralizado em cima ou embaixo; composição simétrica. Inspirada nas referências `ref-reserva-rio-de-contas-caixa-*.jpg` | Fotos **movimentadas ou claras** com um ponto calmo no centro (ex.: frutas diante da janela, rede no deck). Evitar quando a caixa cobre o assunto principal (rio, pessoa) ou quando o título pede 2 linhas. Perde o negrito da palavra-chave (tudo em itálico) | `design/modelos/modelo-caixa-central.html` + `estilo-caixa-central.css` |
 - **Faixa grande (≈1/3 da altura) não é mais usada:** o dono prefere algo discreto.
 - **Tamanho do título:** **54 a 56 px** no feed (3:4 ou 4:5) (o dono pediu fontes menores). Apoio de 19 a 20 px; a linha de apoio e a linha curta laranja só aparecem quando há apoio.
 - **Copy da arte: imersiva, não descritiva.** O texto da arte fala do que a pessoa **sente** (conexão com a natureza, desacelerar); a foto e a legenda mostram o que é. Ex. aprovado: "Aqui, a *pressa* **fica** no chão"; "Na **rede**, o tempo *balança* devagar". Evite legendar a foto ("Cama king sob o teto de madeira"). A regra de verdade continua: poesia sim, fato inventado não (nada de vista, silêncio absoluto, exclusividade ou fauna garantida).

@@ -1,0 +1,57 @@
+/* TESTE "caixa central" (2026-09-27). Inspirado nas referências da Reserva Rio de Contas
+   (contexto/referencias-instagram/ref-reserva-rio-de-contas-caixa-1.jpg e -2.jpg). Só o estilo; textos e logo são do Cabanas.
+   Proposta para o kit: se o dono aprovar, copiar para design/modelos/estilo-caixa-central.css (o Designer só grava em design/pecas/).
+
+   Estrutura (composição simétrica e central, muito respiro):
+   - foto em tela cheia, sem faixa;
+   - título dentro de uma CAIXA sólida marrom da marca (#847059), sem borda, cantos retos, centralizada;
+   - linha de apoio logo abaixo da caixa, fora dela, em itálico claro menor, com sombra suave localizada;
+   - selo centralizado (logo branco >= 100 px + fio laranja · BONITO · MS · fio laranja), em cima do bloco (.selo-cima)
+     ou na base da peça (.selo-base).
+   Cor da caixa: a paleta não tem terracota; o marrom madeira #847059 é a cor oficial de "faixas atrás de títulos"
+   (identidade.md cita a terracota da Rio de Contas como equivalente). Opacidade 100%: caixa sólida. */
+
+.foto { inset: 0; height: 100%; }
+
+/* Sombra localizada (mesma do modelo sem faixa): só atrás do apoio e do selo, nunca na foto inteira */
+.sombra { position: absolute; pointer-events: none;
+  background: radial-gradient(ellipse closest-side at 50% 50%,
+    rgba(18,12,6,var(--forca,.5)) 0%,
+    rgba(18,12,6,calc(var(--forca,.5) * .78)) 45%,
+    rgba(18,12,6,calc(var(--forca,.5) * .35)) 75%,
+    rgba(18,12,6,0) 100%); }
+
+/* Bloco central: a altura vem de --topo no HTML (ajuste por foto para não cobrir o ponto principal nem rostos) */
+.cc { position: absolute; left: var(--margem); right: var(--margem); top: var(--topo, 150px); z-index: 2;
+  display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+/* Caixa do título */
+.cc-caixa { background: var(--marrom); padding: 16px 46px 22px; max-width: 100%; }
+.cc-caixa .titulo { font-family: "Playfair Display", serif; font-style: italic; font-weight: 400;
+  font-size: 56px; line-height: 1.12; color: var(--creme); text-shadow: none; white-space: nowrap; }
+.cc-caixa .titulo.duas { white-space: normal; }
+/* Pilar 2 (sustentabilidade): verde só como detalhe, um filete sob a caixa; nunca texto sobre verde */
+.cc-caixa.verde-detalhe { box-shadow: inset 0 -5px 0 var(--verde); padding-bottom: 27px; }
+
+/* Linha de apoio: frase em itálico, caixa normal, fora da caixa */
+.cc-apoio { margin-top: 20px; font-family: "Playfair Display", serif; font-style: italic; font-weight: 400;
+  font-size: 28px; line-height: 1.3; letter-spacing: .01em; color: var(--creme);
+  text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 16px rgba(0,0,0,.55); }
+/* Variante para comparação: Josefin Sans (sem itálico real no kit; o navegador inclina a letra) */
+.cc-apoio.josefin { font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 27px; letter-spacing: .02em; }
+
+/* Selo centralizado: logo branco + fio laranja · BONITO · MS · fio laranja */
+.cc-selo { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.cc-selo img { height: 104px; width: auto; display: block; filter: drop-shadow(0 1px 6px rgba(0,0,0,.5)); }
+.cc-selo .local { display: flex; align-items: center; gap: 18px;
+  font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 19px; letter-spacing: .45em; text-transform: uppercase;
+  white-space: nowrap; text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 12px rgba(0,0,0,.5); }
+.cc-selo .local span { margin-right: -.45em; }
+.cc-selo .fio { width: 56px; height: 1px; background: var(--laranja); box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.cc .cc-selo { margin-bottom: 34px; }                 /* selo em cima da caixa (ref. 2) */
+.cc-selo.base { position: absolute; left: 0; right: 0; bottom: 60px; z-index: 2; }  /* selo na base (ref. 1) */
+
+/* Numeração discreta (carrossel) */
+.num-sf { position: absolute; top: 64px; right: var(--margem); z-index: 2;
+  font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 21px; letter-spacing: .3em; margin-right: -.3em; color: var(--creme);
+  text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 12px rgba(0,0,0,.5); }
