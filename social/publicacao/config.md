@@ -1,6 +1,6 @@
 # Configuração da publicação automática
 
-- ID da conta do Instagram (@hotelcabanasbonito): [descobrir no primeiro teste]
+- ID da conta do Instagram (@hotelcabanasbonito): 17841403994091310 (confirmado pela API em 27/09/2026)
 - Chave: variável de ambiente `META_IG_TOKEN` (criada pelo dono; nunca registrar o valor aqui)
 - Rede: `graph.facebook.com` liberado? [pendente]
 - Hospedagem das imagens (URL pública exigida pela Meta): [a definir no teste: (a) Drive com link público; (b) outro serviço de hospedagem indicado pelo dono]
@@ -11,3 +11,6 @@
 - Proporção 3:4 aceita pela API? [validar no teste]
 - App: "Cabanas Publicação", ID 1825674138454665, no portfólio "Hotel Cabanas" (27/09/2026)
 - Usuário do sistema: "Publicador Cabanas" (função Employee, ID 61577402477573), com Controle total só no app; Página, Instagram e conta de anúncios atribuídos pelo dono (anúncios: Gerenciar campanhas, sem pagamentos)
+- Caminho adotado (27/09/2026): **plano B**. A Página e a conta de anúncios (432014510158521) estão na conta pessoal do dono, não no portfólio "Hotel Cabanas"; mover foi adiado até a verificação da empresa sair. A chave de publicação é uma **chave de Página que não expira**, gerada pela conta do dono (administrador) no app Cabanas Publicação, e fica só na variável `META_IG_TOKEN` do ambiente.
+- Anúncios pela API: pendentes (decidir depois da verificação: mover a conta de anúncios e a Página para o portfólio, ou usar chave de usuário de 60 dias).
+- Arrumação pendente: há 3 apps "Cabanas Publicação" (o certo é 1825674138454665; os outros são tentativas repetidas); o app foi removido do portfólio e pode ser reconectado em Apps → Adicionar → Conectar um ID do app.
