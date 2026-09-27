@@ -67,7 +67,7 @@ Passe a cada funcionário **só o necessário** e peça que leia os próprios ar
    - **Texto principal** com gancho na 1ª linha (até ~125 caracteres antes do "ver mais"), **título** (até ~40) e **descrição** (até ~30), **com a contagem**; **botão (CTA)** sugerido (ver `meta-ads.md`).
    - **Briefing de arte:** texto da arte (gancho imersivo de 3 a 8 palavras + 1 fato concreto; o CTA vai no botão e, se couber, numa linha curta), foto desejada.
    - Vídeo: **briefing para a produtora** (gancho nos 3 primeiros segundos, cenas, duração 15 a 30 s, legendas na tela, 9:16).
-   - O próprio checklist: fatos, "(opcional)", "[confirmar valor vigente]", atributos por persona, nada de concorrente, nada de urgência falsa, "sujeito às condições do rio" em meses de chuva.
+   - O próprio checklist: fatos, "(opcional)", "[confirmar valor vigente]", atributos por persona, nada de concorrente, nada de urgência falsa; nunca "água cristalina garantida" em meses de chuva.
 2. **Revisão rápida (sua):** compare com `hotel-operacional.md`; confira limites e contagens; confira que cada anúncio tem link com UTM.
 3. **PAUSA 2:** mostre um resumo (AD NN + gancho + título) e publique `Textos <Campanha> v1` no Drive. Avance com o OK (o dono pode dizer "pode seguir direto para as artes").
 
