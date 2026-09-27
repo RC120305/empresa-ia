@@ -453,5 +453,88 @@
   "Ativar campanha",
   "Resultados"
  ],
- "titulo60": "Próximos 90 dias"
+ "titulo60": "Próximos 90 dias",
+ "publico": {
+  "fonte": "Origem dos turistas de Bonito, jan–ago/2026 (OTEB, boletim de agosto). É o público do destino, não ainda o do Cabanas: ajustamos quando chegar a origem dos seus hóspedes e depois de 30 dias de anúncio.",
+  "idade": "25 a 65+ anos, público amplo (o anúncio escolhe a pessoa); famílias só nas férias de janeiro.",
+  "regioes": [
+   {
+    "id": "sp-voo",
+    "nome": "Grande São Paulo e região de Campinas (raio de ~40 km dos aeroportos)",
+    "dado": "SP = 30% dos turistas",
+    "campanha": "Voo direto",
+    "padrao": "sim"
+   },
+   {
+    "id": "sp-interior",
+    "nome": "Interior de São Paulo (fora do raio dos aeroportos)",
+    "dado": "parte dos 30% de SP",
+    "campanha": "Domingo a quinta",
+    "padrao": "sim"
+   },
+   {
+    "id": "pr",
+    "nome": "Paraná",
+    "dado": "7,3%",
+    "campanha": "Domingo a quinta",
+    "padrao": "sim"
+   },
+   {
+    "id": "rj",
+    "nome": "Rio de Janeiro",
+    "dado": "6,7%",
+    "campanha": "Domingo a quinta",
+    "padrao": "sim"
+   },
+   {
+    "id": "rs",
+    "nome": "Rio Grande do Sul",
+    "dado": "6,2%",
+    "campanha": "Domingo a quinta",
+    "padrao": "sim"
+   },
+   {
+    "id": "sc",
+    "nome": "Santa Catarina",
+    "dado": "5,7%",
+    "campanha": "Domingo a quinta",
+    "padrao": "sim"
+   },
+   {
+    "id": "mg",
+    "nome": "Minas Gerais",
+    "dado": "4,9%",
+    "campanha": "Domingo a quinta",
+    "padrao": "sim"
+   },
+   {
+    "id": "df-go-es",
+    "nome": "Distrito Federal, Goiás e Espírito Santo",
+    "dado": "3,7% somados",
+    "campanha": "Domingo a quinta",
+    "padrao": "testar"
+   },
+   {
+    "id": "ms",
+    "nome": "Mato Grosso do Sul (Campo Grande, Dourados…)",
+    "dado": "16,1% (inclui muitos visitantes de um dia)",
+    "campanha": "Domingo a quinta",
+    "padrao": "testar"
+   },
+   {
+    "id": "ne-no",
+    "nome": "Nordeste e Norte",
+    "dado": "5,8% somados, sem voo direto",
+    "campanha": "—",
+    "padrao": "nao"
+   },
+   {
+    "id": "exterior",
+    "nome": "Estrangeiros (Paraguai lidera com 3,6%)",
+    "dado": "pequeno volume",
+    "campanha": "—",
+    "padrao": "nao"
+   }
+  ]
+ }
 }

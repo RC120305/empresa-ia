@@ -644,6 +644,15 @@ function renderAds(){
     </tbody></table></div>
   </div>
 
+  ${A.publico ? `<div class="panel"><h2>Público e região</h2>
+    <p class="muted">${esc(A.publico.fonte)}</p>
+    <p class="muted"><b>Idade:</b> ${esc(A.publico.idade)}</p>
+    <div class="tbl"><table><thead><tr><th>Região</th><th>Peso no destino</th><th>Campanha</th><th>Anunciar?</th></tr></thead><tbody>
+    ${A.publico.regioes.map(r => { const v = (dec.regioes||{})[r.id] || r.padrao; return `<tr><td>${esc(r.nome)}</td><td>${esc(r.dado)}</td><td>${esc(r.campanha)}</td><td><div class="row" style="display:flex;gap:4px;flex-wrap:wrap">${[["sim","Sim"],["testar","Testar"],["nao","Não"]].map(([k,l])=>`<button type="button" class="sbtn" data-reg="${esc(r.id)}" data-v="${k}" aria-pressed="${v===k}" ${aprovado?"disabled":""}>${l}</button>`).join("")}</div></td></tr>`; }).join("")}
+    </tbody></table></div>
+    <p class="muted">"Testar" = entra com pouca verba nos primeiros 30 dias; fica se o custo por conversa for bom.</p>
+  </div>` : ""}
+
   <div class="panel"><h2>Suas decisões</h2>
     ${A.decisoes.map(d => d.tipo === "escolha"
       ? `<fieldset style="border:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px"><legend style="font-weight:600;margin-bottom:6px">${esc(d.q)}</legend><div class="opts">${d.opcoes.map(o=>`<label class="opt ${dec[d.k]===o.v?"sel":""}"><input type="radio" name="dec-${d.k}" value="${esc(o.v)}" ${dec[d.k]===o.v?"checked":""} ${aprovado?"disabled":""}><span><b>${esc(o.t)}</b><span>${esc(o.d)}</span></span></label>`).join("")}</div></fieldset>`
@@ -666,13 +675,17 @@ function renderAds(){
     <p class="muted">Estes botões só ficam disponíveis quando os anúncios estiverem prontos e aprovados. Nada é gasto antes do segundo OK.</p>
     <div class="lock"><button class="btn fix" type="button" disabled>1. Autorizar subir pausada (sem gastar)</button><button class="btn ok" type="button" disabled>2. Ativar campanha</button></div>
   </div>`;
-  if (!db) box.querySelectorAll("input,textarea,button[data-adkeep],#ads-aprovar,#ads-reabrir").forEach(el => el.disabled = true);
+  if (!db) box.querySelectorAll("input,textarea,button[data-adkeep],button[data-reg],#ads-aprovar,#ads-reabrir").forEach(el => el.disabled = true);
   // eventos
   box.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener("change", async () => {
     const k = r.name.replace("dec-",""); await saveAds({decisoes: {...(adsState.decisoes||{}), [k]: r.value}});
   }));
   box.querySelectorAll('textarea[data-dec]').forEach(ta => ta.addEventListener("change", async () => {
     await saveAds({decisoes: {...(adsState.decisoes||{}), [ta.dataset.dec]: ta.value.trim()}});
+  }));
+  box.querySelectorAll('[data-reg]').forEach(bt => bt.addEventListener("click", async () => {
+    const d = adsState.decisoes || {};
+    await saveAds({decisoes: {...d, regioes: {...(d.regioes||{}), [bt.dataset.reg]: bt.dataset.v}}});
   }));
   box.querySelectorAll('[data-adkeep]').forEach(b => b.addEventListener("click", async () => {
     const id = b.dataset.adkeep, cur = (adsState.ads||{})[id] === "cortar" ? "manter" : "cortar";
@@ -682,14 +695,15 @@ function renderAds(){
   const ap = box.querySelector("#ads-aprovar");
   if (ap) ap.addEventListener("click", async () => {
     const msg = box.querySelector("#ads-msg");
-    if (!(adsState.decisoes||{}).cenario) { msg.className = "msg err"; msg.textContent = "Escolha a distribuição da verba antes de aprovar."; return; }
+    if (!(adsState.decisoes||{}).dezembro) { msg.className = "msg err"; msg.textContent = "Escolha quando começa a campanha de dezembro antes de aprovar."; return; }
     ap.disabled = true;
     let aviso = false;
     if (comments) {
       try {
         if (await comments.canSendToClaude() === "available") {
           const d = adsState.decisoes||{}, cortados = Object.entries(adsState.ads||{}).filter(([,v])=>v==="cortar").map(([k])=>k);
-          const txt = `Plano de anúncios APROVADO na Central (${A.id}). Cenário ${d.cenario}. Réveillon: ${d.reveillon||"sem dados ainda"}. Medição: ${d.medicao||"-"}. Limite da conta: ${d.limite||"-"}. Cortados: ${cortados.join(", ")||"nenhum"}. Obs.: ${(obs&&obs.value.trim())||"-"}. Seguir para a Fase 2 (textos).`;
+          const regs = A.publico ? A.publico.regioes.map(r => r.id + "=" + ((d.regioes||{})[r.id] || r.padrao)).join(", ") : "-";
+          const txt = `Plano de anúncios APROVADO na Central (${A.id}). Dezembro começa: ${d.dezembro||"-"}. Dividir voo: ${d.voo||"-"}. Regiões: ${regs}. Réveillon: ${d.reveillon||"sem dados ainda"}. Medição: ${d.medicao||"-"}. Limite da conta: ${d.limite||"-"}. Cortados: ${cortados.join(", ")||"nenhum"}. Obs.: ${(obs&&obs.value.trim())||"-"}. Seguir para a Fase 2 (textos).`;
           await comments.sendToClaude({anchor: await comments.anchorFor(ap), text: txt.slice(0,3900)});
           aviso = true;
         }
