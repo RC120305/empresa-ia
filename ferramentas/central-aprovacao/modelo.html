@@ -20,6 +20,7 @@
   --brown:#BFA68A; --brown-ink:#1C1814; --green:#A9C266; --green-soft:#2C3320; --tag:#B7CC7A; --chip:#2F2821;
   --wait:#E0A067; --wait-soft:#3A2B1E; --fix:#E58B74; --fix-soft:#3B241F; color-scheme: dark;
 }
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-inline:16px;padding-block:24px 48px}
 .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:32px}
 .label{font-family:"Josefin Sans",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.16em;font-size:12px;color:var(--muted)}
@@ -79,6 +80,12 @@ h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;m
 .cap .h{color:var(--tag)}
 .cap.clip{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .links{display:flex;gap:14px;flex-wrap:wrap}
+.editbox{display:flex;flex-direction:column;gap:8px}
+.editbox textarea{font:inherit;font-size:14px;line-height:1.5;color:var(--ink);background:var(--surface);border:1px solid var(--brown);border-radius:5px;padding:10px;min-height:260px;resize:vertical}
+.editbox textarea:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.editmeta{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.editmeta .warn{color:var(--fix);font-weight:600}
+.edited{font-size:12px;color:var(--brown);font-weight:600}
 .styles{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .styles span{font-size:12px;color:var(--muted);margin-right:2px}
 .sbtn{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;padding:4px 10px;cursor:pointer}
@@ -112,7 +119,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   <header>
     <div class="label">@hotelcabanasbonito · outubro/2026 · feed 3:4</div>
     <h1>Central de aprovação, <em>outubro</em></h1>
-    <p class="intro">Veja cada post como vai ao ar. Toque em <b>Aprovar</b> quando estiver pronto, ou em <b>Pedir correção</b> para dizer o que mudar e, se quiser, enviar a foto nova. O pedido vai direto para o Claude, e a versão corrigida volta nesta mesma página para você conferir. Em cada post você também pode comparar os <b>3 estilos</b> de arte com as mesmas fotos e escolher um.</p>
+    <p class="intro">Veja cada post como vai ao ar. Toque em <b>Aprovar</b> quando estiver pronto, <b>edite a legenda</b> direto aqui, ou toque em <b>Pedir correção</b> para dizer o que mudar e, se quiser, enviar a foto nova. O pedido vai direto para o Claude, e a versão corrigida volta nesta mesma página para você conferir. Em cada post você também pode comparar os <b>3 estilos</b> de arte com as mesmas fotos e escolher um.</p>
     <div class="tally" aria-live="polite">
       <div><b id="t-ok">0</b><span>aprovados</span></div>
       <div><b id="t-fix">0</b><span>com correção pedida</span></div>
@@ -208,7 +215,19 @@ function buildCard(p){
       <div class="meta"><span class="chip">${FMT[p.fmt]||p.fmt}</span><span class="st ${ready?"pendente":"video"}" data-st>${ready?"para revisar":"aguardando vídeo"}</span></div>
       <p class="theme">${esc(p.tema)}</p>
       <p class="cap clip">${caption(p.leg)}</p>
-      <div class="links"><button class="linkbtn" data-more type="button" aria-expanded="false">ver legenda completa</button><button class="linkbtn" data-copy type="button">copiar legenda</button></div>
+      <span class="edited" data-edited hidden>Legenda editada por você</span>
+      <div class="links"><button class="linkbtn" data-more type="button" aria-expanded="false">ver legenda completa</button><button class="linkbtn" data-copy type="button">copiar legenda</button><button class="linkbtn" data-edit type="button" hidden>editar legenda</button></div>
+      <div class="editbox" data-editbox hidden>
+        <label for="leg-${p.n}" class="label" style="font-size:11px">Legenda do post ${p.n}</label>
+        <textarea id="leg-${p.n}" spellcheck="true"></textarea>
+        <div class="editmeta"><span data-chars></span><span data-first></span><span data-tags></span></div>
+        <div class="actions" style="border:none;padding:0">
+          <button class="btn ok" type="button" data-save>Salvar legenda</button>
+          <button class="btn ghost" type="button" data-cancel-edit>Cancelar</button>
+          <button class="btn ghost" type="button" data-restore hidden>Voltar à original</button>
+        </div>
+        <p class="msg" data-edit-msg></p>
+      </div>
       <div data-sent></div>
       <div class="actions" data-actions>
         <button class="btn ok" data-approve type="button">Aprovar</button>
@@ -218,7 +237,7 @@ function buildCard(p){
         <label for="onde-${p.n}">O que mudar
           <select id="onde-${p.n}" name="onde">
             <option value="Post inteiro">Post inteiro</option>${telas}
-            <option value="Legenda">Legenda</option><option value="Hashtags">Hashtags</option><option value="Data ou horário">Data ou horário</option>
+            <option value="Texto da arte">Texto da arte (diga a tela e o novo texto)</option><option value="Legenda">Legenda</option><option value="Hashtags">Hashtags</option><option value="Data ou horário">Data ou horário</option>
           </select></label>
         <label for="pedido-${p.n}">Seu pedido
           <textarea id="pedido-${p.n}" name="pedido" placeholder="Ex.: troca a foto da tela 3 por uma da piscina; deixa a legenda mais curta" required></textarea></label>
@@ -240,7 +259,7 @@ function buildCard(p){
   more.addEventListener("click", () => { const open = cap.classList.toggle("clip") === false; more.textContent = open ? "recolher legenda" : "ver legenda completa"; more.setAttribute("aria-expanded", open); });
   const copyBtn = card.querySelector("[data-copy]");
   copyBtn.addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText(p.leg); copyBtn.textContent = "legenda copiada"; }
+    try { await navigator.clipboard.writeText(legAtual(p.n)); copyBtn.textContent = "legenda copiada"; }
     catch { cap.classList.remove("clip"); const r = document.createRange(); r.selectNodeContents(cap); const s = getSelection(); s.removeAllRanges(); s.addRange(r); copyBtn.textContent = "texto selecionado: copie"; }
     setTimeout(() => copyBtn.textContent = "copiar legenda", 2500);
   });
@@ -254,6 +273,39 @@ function buildCard(p){
     prev.addEventListener("click", () => track.scrollBy({left:-track.clientWidth, behavior:"smooth"}));
     next.addEventListener("click", () => track.scrollBy({left:track.clientWidth, behavior:"smooth"}));
   }
+
+  // editar legenda
+  const eb = card.querySelector("[data-editbox]"), ta = eb.querySelector("textarea"), emsg = card.querySelector("[data-edit-msg]");
+  const meta = () => {
+    const v = ta.value, first = v.split("\n")[0], tags = (v.match(/#[\wÀ-ÿ]+/g) || []).length;
+    card.querySelector("[data-chars]").textContent = v.length + " caracteres";
+    const f = card.querySelector("[data-first]"); f.textContent = "1ª linha: " + first.length + (first.length > 125 ? " (passa de 125: corta no \"ver mais\")" : ""); f.className = first.length > 125 ? "warn" : "";
+    const h = card.querySelector("[data-tags]"); h.textContent = tags + " hashtags" + (tags > 5 ? " (máximo 5)" : ""); h.className = tags > 5 ? "warn" : "";
+  };
+  ta.addEventListener("input", meta);
+  card.querySelector("[data-edit]").addEventListener("click", () => {
+    ta.value = legAtual(p.n); meta(); eb.hidden = false; emsg.textContent = "";
+    card.querySelector("[data-restore]").hidden = !state[p.n]?.legenda; ta.focus();
+  });
+  card.querySelector("[data-cancel-edit]").addEventListener("click", () => { eb.hidden = true; });
+  card.querySelector("[data-save]").addEventListener("click", async (e) => {
+    if (!db) return;
+    const v = ta.value.trim();
+    if (!v) { emsg.className = "msg err"; emsg.textContent = "A legenda não pode ficar vazia."; return; }
+    e.target.disabled = true;
+    try {
+      const patch = v === p.leg ? {legenda: null, legendaEditadaEm: null} : {legenda: v, legendaEditadaEm: new Date().toISOString()};
+      if (state[p.n]?.status === "aprovado") patch.status = "pendente";
+      await save(p.n, patch);
+      eb.hidden = true; smsg.className = "msg"; smsg.textContent = "Legenda salva." + (patch.status ? " O post voltou para revisão: aprove de novo quando quiser." : "");
+    } catch { emsg.className = "msg err"; emsg.textContent = "Não foi possível salvar agora. Tente de novo em instantes."; }
+    e.target.disabled = false;
+  });
+  card.querySelector("[data-restore]").addEventListener("click", async () => {
+    if (!db) return;
+    try { await save(p.n, {legenda: null, legendaEditadaEm: null}); eb.hidden = true; smsg.className = "msg"; smsg.textContent = "Legenda original restaurada."; }
+    catch { emsg.className = "msg err"; emsg.textContent = "Não foi possível restaurar agora."; }
+  });
 
   // estilos
   card.querySelectorAll("[data-estilo]").forEach(b => b.addEventListener("click", async () => {
@@ -327,6 +379,8 @@ function buildCard(p){
   return card;
 }
 
+function legAtual(n){ return state[n]?.legenda || byId[n].leg; }
+
 function applyStyle(n, e){
   const p = byId[n]; if (!p.estilos || !p.estilos[e]) return;
   p.imgs = p.estilos[e]; p.atual = e;
@@ -346,6 +400,8 @@ async function save(n, patch){
 function paint(n){
   const card = document.getElementById("post-" + n); if (!card) return;
   const d = state[n], p = byId[n];
+  card.querySelector(".cap").innerHTML = caption(legAtual(n));
+  card.querySelector("[data-edited]").hidden = !d?.legenda;
   if (!p.imgs.length) return;
   const est = d?.estilo || p.padrao;
   if (est && est !== p.atual) applyStyle(n, est);
@@ -379,6 +435,7 @@ tally();
     return;
   }
   if (!assets) document.querySelectorAll("[data-up]").forEach(u => u.hidden = true);
+  document.querySelectorAll("[data-edit]").forEach(b => b.hidden = false);
   db.collection("decisoes").where("mes","==",MES).onSnapshot(snap => {
     snap.docs.forEach(d => { const b = d.data(); if (b && b.post) state[b.post] = b; });
     POSTS.forEach(p => paint(p.n));

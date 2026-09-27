@@ -25,7 +25,7 @@ description: >-
 
 ## Fluxo
 1. **Ler a aprovação:** encontre a pasta do mês em "Conteúdo Instagram" (`../conteudo-mensal/references/estrutura-drive.md`), abra o `Calendário <Mês> vN` de maior N (`read_file_content`) e liste os posts com Status **Aprovado** cuja data e horário já passaram e que **não** constam em `social/conteudo/AAAA-MM/publicacoes.md`.
-2. **Conferir cada post:** legenda da planilha = legenda de `conteudo.md`; arte(s) existem em `design/pecas/AAAA-MM-instagram/POST-NN/`; sem marcações pendentes. Reels: só com o vídeo final da produtora e a capa.
+2. **Conferir cada post:** se a central tiver `legenda` editada pelo dono, ela é a legenda a publicar (já sincronizada no `conteudo.md`); senão, legenda da planilha = legenda de `conteudo.md`; arte(s) existem em `design/pecas/AAAA-MM-instagram/POST-NN/`; sem marcações pendentes. Reels: só com o vídeo final da produtora e a capa.
 3. **Preparar a mídia:** converter PNG → **JPEG** (qualidade 90; a API aceita só JPEG para imagens) e hospedar numa **URL pública** pelo método de `config.md`.
    - ⚠️ A API documenta proporção de 4:5 a 1,91:1; o feed do Cabanas é **3:4**. Validar no teste; se a API recusar, usar a versão 4:5 da arte e avisar o dono.
 4. **Publicar pela API** (`https://graph.facebook.com/<versão>/`):
