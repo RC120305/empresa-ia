@@ -614,6 +614,13 @@ if (location.hash === "#anuncios") showTab(true);
 
 let adsState = {};
 const brl = v => "R$ " + Number(v).toLocaleString("pt-BR");
+const PERSONAS = [["Casais",/casa/i],["55+",/55|aposent/i],["Famílias",/fam[ií]l/i],["Aventureiros",/aventur/i],["Eco-conscientes",/eco/i],["Todos",/todas|todos|interag/i]];
+function mixPersonas(ads, keep){
+  const tot = {}; let n = 0;
+  ads.forEach(a => { if (keep[a[0]] === "cortar") return; const hits = PERSONAS.filter(([,re]) => re.test(a[1])); const hs = hits.length ? hits : [["Outros"]]; hs.forEach(([k]) => tot[k] = (tot[k]||0) + 1/hs.length); n++; });
+  if (!n) return "";
+  return Object.entries(tot).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `<span class="pill">${esc(k)} ${Math.round(v/n*100)}%</span>`).join(" ");
+}
 function renderAds(){
   const A = ANUNCIOS, box = document.getElementById("sec-ads");
   if (!A) { box.innerHTML = `<div class="panel"><h2>Anúncios</h2><p class="muted">Ainda não há plano de anúncios para este mês.</p></div>`; return; }
@@ -659,7 +666,7 @@ function renderAds(){
       : `<label style="font-weight:600;display:flex;flex-direction:column;gap:6px" for="dec-${d.k}">${esc(d.q)}<textarea id="dec-${d.k}" data-dec="${d.k}" placeholder="${esc(d.ph||"")}" ${aprovado?"disabled":""} style="font:inherit;font-weight:400;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);min-height:70px">${esc(dec[d.k]||"")}</textarea></label>`).join("")}
   </div>
 
-  ${A.grupos.map(g=>`<div class="panel"><h2>${esc(g.nome)}</h2><p class="muted">Marque "cortar" nos que você não quer. Os textos e as artes vêm na próxima etapa.</p><div class="adgrid">
+  ${A.grupos.map(g=>`<div class="panel"><h2>${esc(g.nome)}</h2><div class="row" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="muted">Personas no ar:</span> ${mixPersonas(g.ads, keep)}</div><p class="muted">Cada anúncio fala com uma persona e o Meta o entrega a quem tem esse perfil. Marque "cortar" nos que você não quer; a mistura de personas se ajusta. Os textos e as artes vêm na próxima etapa.</p><div class="adgrid">
     ${g.ads.map(a=>{ const cut = keep[a[0]] === "cortar"; return `<div class="ad ${cut?"cut":""}"><span class="code">${esc(a[0])} · ${esc(a[3])} · ${esc(a[1])}</span><p class="hook">“${esc(a[4])}”</p><p class="ang">${esc(a[2])}</p><div class="row"><button type="button" class="sbtn" data-adkeep="${esc(a[0])}" aria-pressed="${!cut}" ${aprovado?"disabled":""}>${cut?"Cortado · toque para manter":"Mantido · toque para cortar"}</button></div></div>`; }).join("")}
   </div></div>`).join("")}
 
@@ -695,7 +702,7 @@ function renderAds(){
   const ap = box.querySelector("#ads-aprovar");
   if (ap) ap.addEventListener("click", async () => {
     const msg = box.querySelector("#ads-msg");
-    if (!(adsState.decisoes||{}).dezembro || !(adsState.decisoes||{}).ms) { msg.className = "msg err"; msg.textContent = "Responda as duas primeiras decisões antes de aprovar."; return; }
+    if (!(adsState.decisoes||{}).excecao2026) { msg.className = "msg err"; msg.textContent = "Responda a primeira decisão (feriados de 2026) antes de aprovar."; return; }
     ap.disabled = true;
     let aviso = false;
     if (comments) {
@@ -703,7 +710,7 @@ function renderAds(){
         if (await comments.canSendToClaude() === "available") {
           const d = adsState.decisoes||{}, cortados = Object.entries(adsState.ads||{}).filter(([,v])=>v==="cortar").map(([k])=>k);
           const regs = A.publico ? A.publico.regioes.map(r => r.id + "=" + ((d.regioes||{})[r.id] || r.padrao)).join(", ") : "-";
-          const txt = `Plano de anúncios APROVADO na Central (${A.id}). MS no lugar do resto do Brasil: ${d.ms||"-"}. Dezembro: ${d.dezembro||"-"}. Antecedência MS: ${d.antecedencia||"-"}. Regiões: ${regs}. Réveillon: ${d.reveillon||"sem dados ainda"}. Medição: ${d.medicao||"-"}. Limite da conta: ${d.limite||"-"}. Cortados: ${cortados.join(", ")||"nenhum"}. Obs.: ${(obs&&obs.value.trim())||"-"}. Seguir para a Fase 2 (textos).`;
+          const txt = `Plano de anúncios APROVADO na Central (${A.id}). Exceção 2026 (MS sem pausar em Finados/Consciência Negra): ${d.excecao2026||"-"}. Férias: ${d.ferias||"-"}. Regiões: ${regs}. Réveillon: ${d.reveillon||"sem dados ainda"}. Medição: ${d.medicao||"-"}. Limite da conta: ${d.limite||"-"}. Cortados: ${cortados.join(", ")||"nenhum"}. Obs.: ${(obs&&obs.value.trim())||"-"}. Seguir para a Fase 2 (textos).`;
           await comments.sendToClaude({anchor: await comments.anchorFor(ap), text: txt.slice(0,3900)});
           aviso = true;
         }

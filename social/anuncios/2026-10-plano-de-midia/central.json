@@ -1,47 +1,30 @@
 {
  "id": "2026-10-plano-de-midia",
- "titulo": "Plano de mídia paga · Meta Ads (v2.2)",
+ "titulo": "Plano de mídia paga · Meta Ads (v2.3)",
  "verba": 1500,
  "decisoes": [
   {
-   "k": "ms",
-   "q": "Nos meses normais, a campanha de MS entra no lugar da prospecção \"resto do Brasil\"?",
+   "k": "excecao2026",
+   "q": "Em 2026, Finados e Consciência Negra ainda têm vagas. A campanha de MS roda direto de 06/10 a 28/11 (sem pausar nesses feriados)?",
    "tipo": "escolha",
    "opcoes": [
     {
-     "v": "ms+voo",
-     "t": "Sim: MS + voo SP/Campinas (recomendado)",
-     "d": "Com R$ 50/dia só cabem duas campanhas de venda mais o remarketing. O \"resto do Brasil\" fica pronto e roda nas férias (17/12 a 09/01) e nas janelas de ouro."
+     "v": "sim",
+     "t": "Sim, rodar direto em 2026 (recomendado)",
+     "d": "Outubro fica em R$ 1.248 e novembro em R$ 1.440, abaixo do teto. A regra de pausa volta a valer a partir de dezembro."
     },
     {
-     "v": "ms+br",
-     "t": "MS + resto do Brasil",
-     "d": "A campanha de voo fica parada."
+     "v": "nao",
+     "t": "Não, seguir a regra de pausa",
+     "d": "MS começa em 19/10 e pausa de 31/10 a 07/11. Outubro R$ 954, novembro R$ 1.293."
     }
    ]
   },
   {
-   "k": "dezembro",
-   "q": "A campanha da 1ª quinzena de dezembro fala com quem?",
-   "tipo": "escolha",
-   "opcoes": [
-    {
-     "v": "ms",
-     "t": "MS, de 01/11 a 10/12 (recomendado)",
-     "d": "O hóspede de MS deve reservar mais perto da data; SP já compra esse período em outubro pela campanha de voo."
-    },
-    {
-     "v": "brasil",
-     "t": "Brasil inteiro, de 13/10 a 30/11",
-     "d": "Segue a antecedência de 45 a 50 dias do público de fora."
-    }
-   ]
-  },
-  {
-   "k": "antecedencia",
-   "q": "Com quantos dias de antecedência o hóspede de MS costuma reservar? E há alguma condição para quem estica até terça?",
+   "k": "ferias",
+   "q": "O calendário de férias usado é: 19/12/2026 a 31/01/2027 e 01 a 31/07/2027. Está certo para o público de MS? (Carnaval, Páscoa, Corpus Christi, 7 de Setembro e 11–12/10 também pausam MS.)",
    "tipo": "texto",
-   "ph": "Ex.: uns 10 a 15 dias; sem condição especial por enquanto"
+   "ph": "Ex.: sim; ou as férias em MS vão de ... a ..."
   },
   {
    "k": "medicao",
@@ -51,7 +34,7 @@
     {
      "v": "sim",
      "t": "Sim, vamos anotar",
-     "d": "Assim sabemos quanto custa cada reserva e quais regiões vendem domingo a quinta."
+     "d": "Assim sabemos quanto custa cada reserva e quais públicos vendem."
     },
     {
      "v": "nao",
@@ -76,149 +59,116 @@
      "d": "Fica pendente; nada é ativado sem o seu OK de qualquer forma."
     }
    ]
-  },
-  {
-   "k": "reveillon",
-   "q": "Datas do pacote de Réveillon (só para a campanha de janeiro não vender essas noites; não haverá anúncio de Réveillon)",
-   "tipo": "texto",
-   "ph": "Ex.: 29/12 a 02/01"
   }
  ],
  "arquitetura": [
   [
    "Permanente",
-   "MS · o hotel é o passeio (Campo Grande, Dourados e entorno) · esticar para domingo a terça; fim de semana curto só em maio e junho",
-   "ano todo, menos 01/11–09/01 e 01–19/07",
-   "6 anúncios M1–M6"
+   "MS · o hotel é o passeio (Campo Grande, Dourados e entorno; sem Bonito e vizinhas) · vende 15 a 20 dias à frente",
+   "ano todo, pausa em feriados e férias",
+   "M1–M6 + D1–D5 em novembro"
   ],
   [
    "Permanente",
-   "Voo direto · Grande SP e Campinas · domingo a quinta",
-   "fora das férias e das janelas de ouro",
-   "5 anúncios V1–V5"
+   "Fora do estado (Brasil sem MS) · vende 45 a 50 dias à frente · inclui os anúncios de voo direto",
+   "ano todo, nunca pausa",
+   "P01–P12, V1–V5, J1–J5 (nov/dez)"
+  ],
+  [
+   "Permanente",
+   "Fora do estado · conjunto extra SP/Campinas (voo direto)",
+   "só quando MS pausa por 14 dias ou mais (férias)",
+   "V1–V5 e J"
   ],
   [
    "Permanente",
    "Remarketing (quem já interagiu com o hotel)",
    "ano todo",
-   "4 anúncios R1–R4"
-  ],
-  [
-   "Reserva",
-   "Resto do Brasil (sem MS e sem os raios do voo)",
-   "17/12 a 09/01 e janelas de ouro",
-   "12 anúncios P01–P12"
-  ],
-  [
-   "Pontual",
-   "1ª quinzena de dezembro · MS",
-   "01/11 a 10/12",
-   "5 anúncios D1–D5"
-  ],
-  [
-   "Pontual",
-   "Férias de janeiro · fora do estado",
-   "01/11 a 16/12",
-   "5 anúncios J1–J5"
-  ],
-  [
-   "Pontual futura",
-   "Janelas de ouro 2027 (maio/junho e agosto/setembro) · fora do estado",
-   "15/03–15/05 e 15/06–15/08",
-   "a criar"
+   "R1–R4"
   ]
  ],
  "regras": [
-  "Teto de R$ 1.500 por mês; piso de R$ 20/dia por campanha de venda; remarketing em torno de R$ 10/dia.",
-  "Fora das férias (fev a abr, ago a out): MS fica com pelo menos 50% da verba de venda, ângulo \"esticar para domingo a terça\".",
-  "Maio e junho: MS com 70% a 75% (R$ 30/dia de 16/05 a 30/06) e os anúncios de fim de semana curto (M5, M6) ligados; a de voo pausa.",
-  "Novembro e início de dezembro: 50% MS (pontual de dezembro) × 50% fora (pontual de janeiro).",
-  "Férias (10/12 a 09/01 e 01 a 19/07): MS pausa; a verba vai para o público de fora.",
-  "Semana de tempo ruim: com o seu OK, M5 e M6 entram dentro da verba de MS.",
-  "Sem campanhas de feriado, Réveillon ou Carnaval. Anúncios de voo: nunca preço de passagem, \"voo incluso\", logos ou \"transfer\"."
+  "Três campanhas sempre ligadas: MS + Fora do estado + Remarketing. Sem campanhas de feriado.",
+  "Divisão típica: MS R$ 21 + Fora R$ 21 + Remarketing R$ 6 por dia (≈ R$ 1.440 a R$ 1.488/mês). Maio e junho: MS R$ 25/dia com M5 e M6.",
+  "MS pausa quando as estadias que ela venderia (15 a 20 dias à frente) caem em feriado ou férias: 11–18/10/26 · 31/10–07/11/26 · 29/11/26–26/01/27 · 06–13/03/27 · 07–15/05/27 · 11/06–16/07/27 · 15–23/08/27 · 19–27/09/27.",
+  "Pausa curta de MS (feriado): a verba fica sem gastar. Pausa longa (férias): vai para o conjunto SP/Campinas da Fora do estado.",
+  "Antigas campanhas de dezembro, janeiro e janelas de ouro viram troca de anúncios dentro das permanentes."
  ],
  "sessenta": [
   [
    "Outubro",
-   "MS · o hotel é o passeio",
-   "06 a 31/10",
-   25,
-   650
+   "MS",
+   "19 a 30/10",
+   21,
+   252
   ],
   [
    "Outubro",
-   "Voo direto SP/Campinas",
+   "Fora do estado",
    "06 a 31/10",
-   22,
-   572
+   21,
+   546
   ],
   [
    "Outubro",
    "Remarketing",
    "06 a 31/10",
-   10,
-   260
+   6,
+   156
   ],
   [
    "Novembro",
-   "1ª quinzena de dezembro (MS)",
-   "01 a 30/11",
-   20,
-   600
+   "MS (mensagem: 1ª quinzena de dezembro)",
+   "08 a 28/11",
+   21,
+   441
   ],
   [
    "Novembro",
-   "Férias de janeiro (fora do estado)",
+   "Fora do estado (mensagem: férias de janeiro)",
    "01 a 30/11",
-   20,
-   600
+   21,
+   630
+  ],
+  [
+   "Novembro",
+   "Fora do estado · SP/Campinas",
+   "29 e 30/11",
+   21,
+   42
   ],
   [
    "Novembro",
    "Remarketing",
    "01 a 30/11",
-   10,
-   300
+   6,
+   180
   ],
   [
    "Dezembro",
-   "1ª quinzena de dezembro (MS)",
-   "01 a 10/12",
-   20,
-   200
+   "Fora do estado",
+   "01 a 31/12",
+   21,
+   651
   ],
   [
    "Dezembro",
-   "Férias de janeiro (fora do estado)",
-   "01 a 16/12",
-   20,
-   320
-  ],
-  [
-   "Dezembro",
-   "Voo direto SP/Campinas",
-   "17 a 31/12",
-   20,
-   300
-  ],
-  [
-   "Dezembro",
-   "Resto do Brasil",
-   "17 a 31/12",
-   20,
-   300
+   "Fora do estado · SP/Campinas",
+   "01 a 31/12",
+   21,
+   651
   ],
   [
    "Dezembro",
    "Remarketing",
    "01 a 31/12",
-   10,
-   310
+   6,
+   186
   ]
  ],
  "grupos": [
   {
-   "nome": "Permanente · MS · o hotel é o passeio (Campo Grande, Dourados e entorno)",
+   "nome": "Campanha MS · o hotel é o passeio",
    "ads": [
     [
      "M1",
@@ -261,11 +211,46 @@
      "Fim de semana curto em família: piscina climatizada, playground, Bangalô Especial",
      "carrossel",
      "Frio lá fora, piscina climatizada aqui dentro"
+    ],
+    [
+     "D1",
+     "Casais",
+     "Pausa a dois antes da correria de fim de ano; Cabana Master com banheira (entra em novembro)",
+     "imagem",
+     "Antes da correria, uma pausa a dois"
+    ],
+    [
+     "D2",
+     "55+ e casais",
+     "Com a chuva, a mata fica mais verde; piscina climatizada, hidromassagem e sauna (entra em novembro)",
+     "carrossel",
+     "Com a chuva, a mata fica mais verde"
+    ],
+    [
+     "D3",
+     "Aventureiros e casais",
+     "O calor pede rio: boia cross (opcional), 1.200 m (entra em novembro)",
+     "vídeo ou imagem",
+     "O calor pede rio"
+    ],
+    [
+     "D4",
+     "Casais e 55+",
+     "Um dia inteiro incluso: café, arco e flecha, tirolesa, SUP e caiaque (entra em novembro)",
+     "carrossel",
+     "Um dia inteiro já incluso"
+    ],
+    [
+     "D5",
+     "Casais",
+     "Chuva como programa: Cabana Casal elevada, rede na varanda (entra em novembro)",
+     "imagem",
+     "Chuva no telhado, rede na varanda"
     ]
    ]
   },
   {
-   "nome": "Permanente · Voo direto (Grande SP e Campinas)",
+   "nome": "Campanha Fora do estado (inclui voo direto)",
    "ads": [
     [
      "V1",
@@ -301,125 +286,7 @@
      "Chega domingo, segunda já está no rio (programação inclusa; opcionais marcados)",
      "vídeo de fotos",
      "Pousa domingo. Segunda, no rio"
-    ]
-   ]
-  },
-  {
-   "nome": "Permanente · Remarketing",
-   "ads": [
-    [
-     "R1",
-     "Quem já interagiu",
-     "Notas: Google 4,7 · Booking 9,3 · TripAdvisor 4,5 (set/2026)",
-     "imagem",
-     "Quem vem, conta"
     ],
-    [
-     "R2",
-     "Quem já interagiu",
-     "O que vem na diária + desconto para quem reserva direto",
-     "carrossel",
-     "Está tudo na diária"
-    ],
-    [
-     "R3",
-     "Quem já interagiu",
-     "E se a viagem fosse numa terça?",
-     "imagem",
-     "E se fosse numa terça?"
-    ],
-    [
-     "R4",
-     "Casais e 55+",
-     "Baixa temporada, reserva sem aperto: desconto direto, 50% de sinal, até 6x no cartão, reembolso integral com 30 dias",
-     "imagem",
-     "Baixa temporada, reserva sem aperto"
-    ]
-   ]
-  },
-  {
-   "nome": "Pontual · 1ª quinzena de dezembro (MS)",
-   "ads": [
-    [
-     "D1",
-     "Casais",
-     "Pausa a dois antes da correria de fim de ano; Cabana Master com banheira",
-     "imagem",
-     "Antes da correria, uma pausa a dois"
-    ],
-    [
-     "D2",
-     "55+ e casais",
-     "Com a chuva, a mata fica mais verde; piscina climatizada, hidromassagem e sauna",
-     "carrossel",
-     "Com a chuva, a mata fica mais verde"
-    ],
-    [
-     "D3",
-     "Aventureiros e casais",
-     "O calor pede rio: boia cross (opcional), 1.200 m",
-     "vídeo ou imagem",
-     "O calor pede rio"
-    ],
-    [
-     "D4",
-     "Casais e 55+",
-     "Um dia inteiro incluso: café, arco e flecha, tirolesa, SUP e caiaque",
-     "carrossel",
-     "Um dia inteiro já incluso"
-    ],
-    [
-     "D5",
-     "Casais",
-     "Chuva como programa: Cabana Casal elevada, rede na varanda",
-     "imagem",
-     "Chuva no telhado, rede na varanda"
-    ]
-   ]
-  },
-  {
-   "nome": "Pontual · Férias de janeiro (fora do estado)",
-   "ads": [
-    [
-     "J1",
-     "Famílias",
-     "Programação diária inclusa, com monitor",
-     "carrossel",
-     "Férias com a agenda pronta"
-    ],
-    [
-     "J2",
-     "Famílias",
-     "Choveu? Piscina climatizada, hidromassagem, salão de jogos e playground",
-     "imagem",
-     "Choveu? As férias continuam"
-    ],
-    [
-     "J3",
-     "Famílias",
-     "Bangalô Especial até 4; Master e Conjugado até 5; até 5 anos não pagam na cama dos pais",
-     "carrossel",
-     "A família toda, no mesmo lugar"
-    ],
-    [
-     "J4",
-     "Famílias com filhos a partir de 6 anos",
-     "Arvorismo e boia cross (opcionais), com segurança",
-     "carrossel",
-     "Com 6 anos e 1,15 m, já dá"
-    ],
-    [
-     "J5",
-     "Famílias",
-     "Base para os passeios: 6 km do centro, 8 km do aeroporto; rio do hotel à tarde",
-     "imagem",
-     "Passeio de manhã, rio do hotel à tarde"
-    ]
-   ]
-  },
-  {
-   "nome": "Reserva · Resto do Brasil (férias e janelas de ouro)",
-   "ads": [
     [
      "P01",
      "Casais",
@@ -503,6 +370,74 @@
      "Uma quarta-feira qualquer entre dois rios",
      "vídeo",
      "Uma quarta-feira qualquer"
+    ],
+    [
+     "J1",
+     "Famílias",
+     "Programação diária inclusa, com monitor (entra em nov/dez)",
+     "carrossel",
+     "Férias com a agenda pronta"
+    ],
+    [
+     "J2",
+     "Famílias",
+     "Choveu? Piscina climatizada, hidromassagem, salão de jogos e playground (entra em nov/dez)",
+     "imagem",
+     "Choveu? As férias continuam"
+    ],
+    [
+     "J3",
+     "Famílias",
+     "Bangalô Especial até 4; Master e Conjugado até 5; até 5 anos não pagam na cama dos pais (entra em nov/dez)",
+     "carrossel",
+     "A família toda, no mesmo lugar"
+    ],
+    [
+     "J4",
+     "Famílias com filhos a partir de 6 anos",
+     "Arvorismo e boia cross (opcionais), com segurança (entra em nov/dez)",
+     "carrossel",
+     "Com 6 anos e 1,15 m, já dá"
+    ],
+    [
+     "J5",
+     "Famílias",
+     "Base para os passeios: 6 km do centro, 8 km do aeroporto; rio do hotel à tarde (entra em nov/dez)",
+     "imagem",
+     "Passeio de manhã, rio do hotel à tarde"
+    ]
+   ]
+  },
+  {
+   "nome": "Campanha Remarketing",
+   "ads": [
+    [
+     "R1",
+     "Quem já interagiu",
+     "Notas: Google 4,7 · Booking 9,3 · TripAdvisor 4,5 (set/2026)",
+     "imagem",
+     "Quem vem, conta"
+    ],
+    [
+     "R2",
+     "Quem já interagiu",
+     "O que vem na diária + desconto para quem reserva direto",
+     "carrossel",
+     "Está tudo na diária"
+    ],
+    [
+     "R3",
+     "Quem já interagiu",
+     "E se a viagem fosse numa terça?",
+     "imagem",
+     "E se fosse numa terça?"
+    ],
+    [
+     "R4",
+     "Casais e 55+",
+     "Baixa temporada, reserva sem aperto: desconto direto, 50% de sinal, até 6x no cartão, reembolso integral com 30 dias",
+     "imagem",
+     "Baixa temporada, reserva sem aperto"
     ]
    ]
   }
@@ -515,9 +450,9 @@
   "Ativar campanha",
   "Resultados"
  ],
- "titulo60": "Próximos 90 dias",
+ "titulo60": "Próximos 90 dias (seguindo a regra de pausa)",
  "publico": {
-  "fonte": "Base: 40% a 60% dos hóspedes do Cabanas são de MS (dado seu) + origem dos turistas de Bonito (OTEB, ago/2026) para o público de fora. Ajustamos com os números depois de 30 dias.",
+  "fonte": "Base: 40% a 60% dos hóspedes do Cabanas são de MS (dado seu) + origem dos turistas de Bonito (OTEB, ago/2026) para o público de fora. Personas: separadas pelos anúncios dentro de cada campanha (o Meta entrega cada anúncio a quem tem o perfil). Ajustamos com os números depois de 30 dias.",
   "idade": "25 a 65+ anos, público amplo (o anúncio escolhe a pessoa); famílias só nas férias de janeiro.",
   "regioes": [
    {
@@ -531,56 +466,56 @@
     "id": "sp-voo",
     "nome": "Grande São Paulo e região de Campinas (raio de ~40 km dos aeroportos)",
     "dado": "SP = 30% dos turistas",
-    "campanha": "Voo direto",
+    "campanha": "Fora do estado (anúncios de voo; conjunto próprio nas férias)",
     "padrao": "sim"
    },
    {
     "id": "sp-interior",
     "nome": "Interior de São Paulo (fora do raio dos aeroportos)",
     "dado": "parte dos 30% de SP",
-    "campanha": "Férias, janelas de ouro e janeiro",
+    "campanha": "Fora do estado",
     "padrao": "sim"
    },
    {
     "id": "pr",
     "nome": "Paraná",
     "dado": "7,3%",
-    "campanha": "Férias, janelas de ouro e janeiro",
+    "campanha": "Fora do estado",
     "padrao": "sim"
    },
    {
     "id": "rj",
     "nome": "Rio de Janeiro",
     "dado": "6,7%",
-    "campanha": "Férias, janelas de ouro e janeiro",
+    "campanha": "Fora do estado",
     "padrao": "sim"
    },
    {
     "id": "rs",
     "nome": "Rio Grande do Sul",
     "dado": "6,2%",
-    "campanha": "Férias, janelas de ouro e janeiro",
+    "campanha": "Fora do estado",
     "padrao": "sim"
    },
    {
     "id": "sc",
     "nome": "Santa Catarina",
     "dado": "5,7%",
-    "campanha": "Férias, janelas de ouro e janeiro",
+    "campanha": "Fora do estado",
     "padrao": "sim"
    },
    {
     "id": "mg",
     "nome": "Minas Gerais",
     "dado": "4,9%",
-    "campanha": "Férias, janelas de ouro e janeiro",
+    "campanha": "Fora do estado",
     "padrao": "sim"
    },
    {
     "id": "df-go-es",
     "nome": "Distrito Federal, Goiás e Espírito Santo",
     "dado": "3,7% somados",
-    "campanha": "Domingo a quinta",
+    "campanha": "Fora do estado",
     "padrao": "testar"
    },
    {
