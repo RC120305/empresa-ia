@@ -91,7 +91,7 @@ O Hotel Cabanas fala como **um anfitrião que recebe em casa**: uma família que
 | **Legenda** | **Informa**: o que é, o que está incluído, como reservar | Gancho na 1ª linha (até ~125 caracteres); frases curtas; opcionais marcados; CTA com motor ou WhatsApp; 3 a 8 hashtags no fim | "A Cabana Casal fica a 3 m do chão, toda em madeira, com varanda privativa com rede e cama king. Reserve direto: sbreserva.silbeck.com.br/hotelcabanas" |
 | **Stories** | **Próximo e leve**: bastidor, conversa | Frases de uma linha; perguntas, enquetes, caixinha; 1 emoji por tela no máximo; CTA por figurinha de link | "Hora do arco e flecha, 8h30, com monitor. Você acerta no centro de primeira? Sim / Nunca tentei" |
 | **Anúncio** (Meta, Google, YouTube) | **Claro, com CTA** | 1 benefício + 2 fatos exclusivos + CTA; limites do canal com contagem; preço só com "[confirmar valor vigente]"; nada de urgência falsa | "Trilhas com caiaque e SUP inclusas, com monitor. Reserve direto com desconto." |
-| **Comentários** | **Anfitrião simpático** | Responder com o nome da pessoa quando houver; curto; se a pergunta for de preço ou data, levar ao WhatsApp; nunca discutir; nunca oferecer desconto (só o dono) | "Que bom que gostou, Marina! A varanda com rede é da Cabana Casal. Para datas, chama a gente no WhatsApp (67) 99117-1648." |
+| **Comentários** | **Anfitrião simpático** | Responder com o nome da pessoa quando houver; curto; se a pergunta for de preço ou data, levar ao WhatsApp; nunca discutir; nunca oferecer desconto (só o dono) | "Que bom que gostou, Marina! A varanda com rede é da Cabana Casal. Para datas, fale conosco no WhatsApp (67) 99117-1648." |
 | **Respostas a avaliações positivas** | **Gratidão específica** | Agradecer citando algo que o hóspede mencionou; citar o colaborador só com autorização; convite a voltar sem prometer nada | "Obrigado, Paulo! Ficamos felizes que a descida do boia cross tenha sido o ponto alto. A equipe vai adorar ler." |
 | **Respostas a avaliações negativas** | **Honesto, calmo, com solução** | Agradecer → reconhecer o ponto sem desculpas genéricas → explicar o fato (sem culpar o hóspede) → dizer a ação **real** tomada ("[ação a confirmar com o dono]") → levar para o privado (e-mail ou WhatsApp). Nunca expor dados da reserva. Sem ironia, sem "política é política" | Ver exemplo bom nº 9 |
 | **WhatsApp** (modelos para a equipe) | **Conversa de recepção**: prestativo e direto | Saudação + resposta objetiva + próximo passo; responder objeções com fatos ("está caro", "fica longe", "não tem vaga"); informar restrições antes de fechar (menores de 5 anos nas Cabanas Casal e Tripla, idade e altura nas atividades, sem almoço, restaurante fechado domingo à noite); nunca inventar condição | "Oi, Ana! Estamos a 6 km do centro, todo o caminho no asfalto, e a 8 km do aeroporto. Boa parte da diversão fica aqui dentro: trilhas, decks de banho e a programação com monitor." |
@@ -111,8 +111,8 @@ O Hotel Cabanas fala como **um anfitrião que recebe em casa**: uma família que
 | 6 | Legenda (casais, junho) | "Junho em Bonito é baixa temporada e época de águas mais transparentes. Na Cabana Master, varanda ampla com balanço e banheira de hidromassagem para dois. Piquenique ao pôr do sol no deck do Formosinho (opcional)." | Sazonalidade como fato do destino; atributos corretos da Master; opcional marcado |
 | 7 | Stories | "Pergunta que sempre chega: pode levar criança pequena na cabana? Na Cabana Master, pode. Na Casal e na Tripla, a partir de 5 anos." | Próximo, responde objeção com a regra real |
 | 8 | Anúncio | "Boia cross e arvorismo com tirolesa aquática dentro do hotel (opcionais). Café da manhã e trilhas com caiaque inclusos. Reserve direto com desconto: sbreserva.silbeck.com.br/hotelcabanas" | Claro, 2+ fatos exclusivos, opcionais marcados, CTA direto |
-| 9 | Resposta a avaliação negativa | "Olá, Carla. Obrigado por contar. Você tem razão em esperar essa informação antes: nosso restaurante não abre no domingo à noite, e isso precisa estar claro já na reserva. [Ação tomada, a confirmar com o dono]. Se puder, fale com a gente em contato@hotelcabanas.com.br." | Reconhece, explica o fato, não culpa, leva ao privado, não inventa solução |
-| 10 | WhatsApp ("está caro") | "Entendo, Rafael! Na diária já estão o café da manhã, a piscina climatizada, a sauna e a programação com monitor: arco e flecha e trilhas com tirolesa, caiaque e SUP. E reservando direto com a gente, os valores já têm desconto." | Responde pelo que está incluído, sem citar concorrente nem dar desconto extra |
+| 9 | Resposta a avaliação negativa | "Olá, Carla. Obrigado por contar. Você tem razão em esperar essa informação antes: nosso restaurante não abre no domingo à noite, e isso precisa estar claro já na reserva. [Ação tomada, a confirmar com o dono]. Se puder, fale conosco em contato@hotelcabanas.com.br." | Reconhece, explica o fato, não culpa, leva ao privado, não inventa solução |
+| 10 | WhatsApp ("está caro") | "Entendo, Rafael! Na diária já estão o café da manhã, a piscina climatizada, a sauna e a programação com monitor: arco e flecha e trilhas com tirolesa, caiaque e SUP. E reservando direto conosco, os valores já têm desconto." | Responde pelo que está incluído, sem citar concorrente nem dar desconto extra |
 
 ### 5.2 Dez exemplos RUINS
 | # | Exemplo | Por que é ruim |
@@ -187,7 +187,7 @@ O Hotel Cabanas fala como **um anfitrião que recebe em casa**: uma família que
 1. **Palavras que você adora** e quer ver mais (ex.: "ecossistema", "pés no chão e alma entre as árvores", "casa na árvore")?
 2. **Palavras que você detesta** ou não quer ver nunca (ex.: "resort", "pousada", "paraíso", "romântico", "hóspede" × "visitante")?
 3. **"Romântico"**: pode usar com moderação (é vantagem no Código de Cultura) ou prefere sempre mostrar pelo fato?
-4. **"A gente" ou "nós"?** Hoje o manual permite "a gente" em stories, comentários e WhatsApp, e "nós/nosso" em legendas e anúncios.
+4. ~~"A gente" ou "nós"?~~ **Respondido (2026-09-27): "nós" em todos os canais.** Exemplos do manual já ajustados ("conosco", "fale conosco").
 5. **Quem assina** as respostas a avaliações (ex.: "Renata, Hotel Cabanas", "Equipe Cabanas")? Podemos citar colaboradores pelo nome nas respostas (com autorização)?
 6. **Avaliações negativas:** existe um padrão de ação/compensação que a equipe usa? (O manual proíbe oferecer desconto ou condição sem você.)
 7. **Emojis:** o limite de 1 a 2 por legenda está bom? Algum emoji preferido ou proibido?
@@ -196,7 +196,7 @@ O Hotel Cabanas fala como **um anfitrião que recebe em casa**: uma família que
 10. **Frase curta de posicionamento para a bio** (ex.: "O único hotel de Bonito cercado por dois rios · desde 2001"): aprova ou prefere outra?
 11. **Grafia única da assinatura**: "BONITO · MS" (padrão 0b) em todas as peças, substituindo "BONITO / MS" e "B O N I T O · M S"?
 12. **Frases de voz dos exemplos bons nº 3 e nº 4** ("Um biólogo à frente da casa"; "Banheira para dois, tempo para nada"): aprova o tom para usar em peças futuras?
-13. **Pétalas, rosa e plaquinha "LOVE"** nas fotos: são decoração especial (opcional)? Isso define como a legenda fala dessas fotos.
+13. ~~Pétalas, rosa e plaquinha "LOVE"~~ **Respondido (2026-09-27): são da decoração especial (opcional).** Legenda com essas fotos indica "decoração especial (opcional)".
 
 ## Quem precisa fazer o quê
 - **Você (dono):** aprovar ou ajustar o manual e responder aos itens da seção 8.

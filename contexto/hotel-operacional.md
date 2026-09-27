@@ -25,7 +25,7 @@
 | **Apartamento Standard** | 20 a 25 m² | 2 a 4 pessoas | O mais econômico; em blocos; estacionamento em frente |
 
 **Itens em todas as acomodações:** Smart TV a cabo, ar-condicionado split inverter **quente e frio**, aquecimento **solar e a gás** nas duchas, secador, frigobar, amenities (shampoo, condicionador, sabonete), Wi-Fi, armário, bancada de trabalho, roupa de cama e toalhas.
-- **Toalhas dobradas em forma de bichos** (ex.: cisnes) sobre a cama: **arrumação padrão** do hotel (confirmado pelo dono em 2026-09-26). Pétalas, rosa e plaquinha "LOVE" que aparecem em algumas fotos: [a confirmar com o dono se fazem parte da decoração especial].
+- **Toalhas dobradas em forma de bichos** (ex.: cisnes) sobre a cama: **arrumação padrão** do hotel (confirmado pelo dono em 2026-09-26). Pétalas, rosa e plaquinha "LOVE" que aparecem em algumas fotos: **são da decoração especial (opcional)**, confirmado pelo dono em 2026-09-27. Legenda ou anúncio com essas fotos sempre indica "decoração especial (opcional)".
 **Não há:** ferro de passar, camas extras, quartos para fumantes. Há **cofre central** gratuito e **berços** mediante agendamento.
 
 ## 3. O que está incluído na diária
@@ -47,6 +47,8 @@
 
 \* Valores do documento: em anúncios, use "[confirmar valor vigente]". Boia cross e arvorismo também atendem não hóspedes (não há day use).
 
+**Rio cheio (confirmado pelo dono em 2026-09-27):** as atividades de rio **não funcionam com o rio cheio**. Em peças de meses de chuva (out/dez a mar) com boia cross, flutuação, caiaque ou SUP, escrever "sujeito às condições do rio" e nunca prometer a atividade na data; o ângulo desses meses é o lazer que não depende do rio (piscina climatizada, hidromassagem, sauna, trilhas, arvorismo).
+
 ## 5. Serviços opcionais
 - **Piquenique Sunset:** num deck à margem do Rio Formosinho, ao pôr do sol. Reserva pelo WhatsApp de reservas.
 - **Decoração especial no quarto:** contratada antes do check-in, pelo WhatsApp de reservas.
@@ -57,6 +59,7 @@
 ## 6. Alimentação
 - **Café da manhã** incluso, das 6h30 às 9h30. Se precisar tomar mais cedo, é só avisar a recepção.
 - **Restaurante:** jantar à la carte, **de segunda a sábado, das 19h às 21h**. **Fechado no domingo à noite** (confirmado pelo dono); aos domingos, durante o dia, funciona a lanchonete.
+- **Natal e Réveillon:** o restaurante **funciona normalmente** (confirmado pelo dono em 2026-09-27). Ceia ou programação especial não consta: não prometer.
 - **Lanchonete e bar:** lanches e porções, **de segunda a sábado das 11h às 21h e aos domingos das 11h às 17h**. **Não há almoço**, só lanchonete. O bar serve bebidas o dia todo, incluindo vinhos e drinks.
 - A lanchonete entrega no quarto, na piscina e nos **decks 11 e 12 do Rio Formosinho**.
 - **Dietas restritivas:** há opções sem glúten e sem lactose, desde que solicitadas na reserva.
@@ -77,6 +80,7 @@
 - **Pets:** não são permitidos, por causa dos animais silvestres.
 - **Bebidas:** o documento traz duas versões (ver a seção 12). **Alimentos:** podem ser trazidos.
 - **Pagamento:** 50% antecipado; cartão de crédito (até 6x), débito ou depósito. **Não aceita boleto.**
+- **Estadia mínima / pacotes (confirmado pelo dono em 2026-09-27):** só nos **pacotes de Réveillon e de Carnaval, com 4 noites**. Nos demais feriados não há estadia mínima. Valores e o que o pacote inclui: [a confirmar com o dono].
 - **Cancelamento:** reembolso integral com 30 dias de antecedência; 50% do sinal com 15 dias; sem reembolso dentro de 15 dias. Reservas feitas por agência ou canal online seguem a política deles.
 - **Não há:** day use, espaço para eventos, transfer próprio (a equipe indica quem faça), desconto para terceira idade, oferta para aniversariantes, tarifa para longa estadia nem convênio com Bancorbrás.
 - **Reserva direta:** "nossos valores já possuem desconto para você que reserva direto em nosso site". **Argumento de canal direto.**

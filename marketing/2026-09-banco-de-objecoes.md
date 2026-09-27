@@ -27,7 +27,7 @@
 **(a) O que o hóspede realmente teme:** pagar mais sem saber por quê; somar a diária com passeios, alimentação e deslocamento e estourar o orçamento; comparar só o número da diária com outro hotel sem comparar o que vem junto.
 
 **(b) Resposta para WhatsApp:**
-> Entendo você, e quero te mostrar o que já está dentro da diária. Além do café da manhã, você tem piscina climatizada, hidromassagem aquecida, sauna, balneário privativo e uma programação diária com monitor: arco e flecha, trilhas com tirolesa, caiaque e stand up paddle nos rios Formoso e Formosinho. Muita gente vem a Bonito para passeios de natureza, e aqui boa parte disso já acontece sem sair do hotel. Reservando direto com a gente, os valores já têm desconto, e dá para parcelar em até 6x no cartão.
+> Entendo você, e quero te mostrar o que já está dentro da diária. Além do café da manhã, você tem piscina climatizada, hidromassagem aquecida, sauna, balneário privativo e uma programação diária com monitor: arco e flecha, trilhas com tirolesa, caiaque e stand up paddle nos rios Formoso e Formosinho. Muita gente vem a Bonito para passeios de natureza, e aqui boa parte disso já acontece sem sair do hotel. Reservando direto conosco, os valores já têm desconto, e dá para parcelar em até 6x no cartão.
 
 *Variação para família com criança pequena:* acrescentar "E crianças até 5 anos não pagam, dormindo na cama dos pais."
 *Variação quando o orçamento é o limite:* "Se quiser, te passo o valor do Apartamento Standard, que é a nossa opção mais econômica [confirmar valor vigente]."
@@ -116,7 +116,7 @@
 **(d) Como virar conteúdo:** carrossel **"Dia de chuva no Cabanas"** (pilar 3, editorial sensorial): sauna, hidromassagem aquecida, salão de jogos, varanda com rede na chuva (Cabana Casal ou bangalô), verde intenso. Persona: casais em fevereiro/março. Pedir fotos reais de dia chuvoso.
 
 **(e) O que NUNCA dizer:**
-- "Boia cross, flutuação e caiaque funcionam normalmente com chuva" → "[confirmar funcionamento com o rio cheio]".
+- "Boia cross, flutuação e caiaque funcionam normalmente com chuva": **falso**; o dono confirmou que as atividades de rio **não funcionam com o rio cheio**. Usar "sujeito às condições do rio".
 - "Água cristalina garantida" em meses de chuva.
 - "Se chover, devolvemos o dinheiro" ou "remarcamos sem custo" (não consta) → "[a confirmar com o dono]".
 
@@ -150,14 +150,14 @@
 **(a) O que o hóspede realmente teme:** chegar e não conseguir usar o quarto ou o banheiro; passar constrangimento; correr risco de queda.
 
 **(b) Resposta para WhatsApp:**
-> Obrigado por avisar, assim a gente te orienta direitinho. Temos quartos com rampa para cadeirantes, mas preciso ser transparente: os banheiros não têm barras de apoio. As cabanas Casal e Tripla têm acesso por escada. Posso te passar mais detalhes das acomodações para você decidir com tranquilidade?
+> Obrigado por avisar, assim nós orientamos você direitinho. Temos quartos com rampa para cadeirantes, mas preciso ser transparente: os banheiros não têm barras de apoio. As cabanas Casal e Tripla têm acesso por escada. Posso te passar mais detalhes das acomodações para você decidir com tranquilidade?
 
 **(c) Provas e fatos:**
 - Quartos com rampas para cadeirantes; banheiros sem barras; nunca anunciar "acessibilidade total" (`hotel-operacional.md`, seção 8).
 - Cabana Casal e Tripla: acesso por escada (`hotel-operacional.md`, seção 2).
 - Honestidade: "prometer algo sabendo que não poderá ser entregue" é intolerável (`cultura.md`, seção 3).
 
-**(d) Como virar conteúdo:** não recomendo post promocional sobre acessibilidade enquanto os banheiros não tiverem barras. Sugestão: incluir a informação honesta num **destaque de stories "Dúvidas frequentes"**, com a frase "Temos quartos com rampa; os banheiros não têm barras de apoio. Fale com a gente antes de reservar." Persona: 55+.
+**(d) Como virar conteúdo:** não recomendo post promocional sobre acessibilidade enquanto os banheiros não tiverem barras. Sugestão: incluir a informação honesta num **destaque de stories "Dúvidas frequentes"**, com a frase "Temos quartos com rampa; os banheiros não têm barras de apoio. Fale conosco antes de reservar." Persona: 55+.
 
 **(e) O que NUNCA dizer:**
 - "Hotel acessível", "acessibilidade total", "adaptado".
@@ -231,7 +231,7 @@
 **(a) O que o hóspede realmente teme:** não entender o sistema de Bonito e ficar sem passeio; pagar intermediário sem necessidade.
 
 **(b) Resposta para WhatsApp:**
-> As atividades do hotel (programação inclusa, boia cross, arvorismo e flutuação) acontecem aqui dentro e são contratadas diretamente com a gente. Já os passeios fora do hotel, como os atrativos famosos de Bonito, funcionam com voucher e têm vagas limitadas por dia, por isso vale reservar com antecedência. Para esses, nossa agência parceira é a Portal Ecotrip, que pode te ajudar a montar o roteiro.
+> As atividades do hotel (programação inclusa, boia cross, arvorismo e flutuação) acontecem aqui dentro e são contratadas diretamente conosco. Já os passeios fora do hotel, como os atrativos famosos de Bonito, funcionam com voucher e têm vagas limitadas por dia, por isso vale reservar com antecedência. Para esses, nossa agência parceira é a Portal Ecotrip, que pode te ajudar a montar o roteiro.
 
 **(c) Provas e fatos:**
 - Atividades internas realizadas dentro do hotel e contratadas com o próprio hotel; agência parceira para passeios externos: Portal Ecotrip, bonitoecotrip.com.br, (67) 99341-4734 (`destino-bonito.md`, seção 2; `hotel-operacional.md`, seção 11).
@@ -294,11 +294,11 @@
 | 3 | Sem vaga | "Reserve com antecedência; maio, junho, agosto e setembro são baixa temporada em Bonito." |
 | 4 | Chuva | "Piscina climatizada, hidromassagem aquecida e sauna das 7h às 22h." |
 | 5 | Criança < 5 | "A Cabana Master e os bangalôs aceitam; até 5 anos não paga na cama dos pais." |
-| 6 | Acessibilidade | "Quartos com rampa; banheiros sem barras: fale com a gente antes." |
+| 6 | Acessibilidade | "Quartos com rampa; banheiros sem barras: fale conosco antes." |
 | 7 | Sem almoço | "Lanchonete com entrega no quarto, na piscina e nos decks; jantar de segunda a sábado." |
 | 8 | Transfer | "Não temos transfer próprio, mas indicamos quem faça." |
 | 9 | Day use | "Não temos day use; boia cross e arvorismo atendem visitantes (opcional)." |
-| 10 | Voucher | "As atividades do hotel são contratadas direto com a gente." |
+| 10 | Voucher | "As atividades do hotel são contratadas direto conosco." |
 | 11 | Frio | "Ar quente e frio, duchas aquecidas, sauna e hidromassagem aquecida." |
 
 ---
@@ -306,7 +306,7 @@
 # A confirmar com o dono
 1. **Aprovação das respostas (b)** de cada objeção, e se a equipe de reservas pode usá-las como modelo no WhatsApp.
 2. **Preço:** tarifário de alta e baixa temporada (uso interno) e se podemos dizer que o hotel é "mais em conta na baixa temporada". Valor atual do Standard e das atividades opcionais [confirmar valor vigente].
-3. **Chuva e rio cheio:** as atividades de rio (boia cross, flutuação, caiaque, SUP) funcionam com o rio cheio? Existe remarcação ou política especial em caso de cancelamento da atividade pelo clima?
+3. ~~Chuva e rio cheio~~ **Respondido (2026-09-27): não funcionam com o rio cheio.** Pendente: existe remarcação ou política especial quando a atividade é cancelada pelo clima?
 4. **Crianças:** os Apartamentos Standard e Superior aceitam menores de 5 anos? Idade mínima para as trilhas da programação inclusa (tirolesa, SUP, caiaque)?
 5. **Acessibilidade:** quais acomodações têm rampa? A Cabana Master tem escada? Trilhas e decks são acessíveis? Há previsão de barras nos banheiros?
 6. **Alimentação:** a equipe indica restaurantes na cidade para o domingo à noite? Qual link de cardápio usar (cabanasaventura.com.br × hotelcabanas.com.br)? Política de bebidas (divergência nº 5).

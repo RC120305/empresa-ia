@@ -5,7 +5,7 @@
 
 ## Identidade
 - @perfil: **@hotelcabanasbonito** (https://www.instagram.com/hotelcabanasbonito/, conforme `hotel-operacional.md`)
-- Idioma: **português do Brasil**, tratando o leitor por **"você"**.
+- Idioma: **português do Brasil**, tratando o leitor por **"você"**. A marca fala na primeira pessoa do plural: **"nós"** ("conosco", "nossa equipe"), **nunca "a gente"** (decisão do dono em 2026-09-27).
 - Nicho: hotel de lazer e turismo de natureza em Bonito/MS; "o seu lugar de conexão com a natureza".
 - Público: as personas de `contexto/hotel-cabanas.md` (Casais, Famílias, Aventureiros, 55+, Ciclista/Ornitólogo, Eco-conscientes). Prioridade de origem: SP, depois PR, RJ e Sul.
 - Quem fala: a **equipe Cabanas**, uma família que cuida do lugar há 25 anos (Gilberto e Cleodete; segunda geração Renata e Ricardo, biólogo). Tom de anfitrião, nunca de vendedor.
@@ -30,7 +30,8 @@
 - **Fato inventado** ou **relação implícita** sem base: distância/vista do rio de uma acomodação, "exclusivo", "só vocês dois", horários, autoria, o que está incluído (ver a tabela de atributos por acomodação em `.claude/agents/marketing-anuncios.md`).
 - **Promessas absolutas** ("garantido", "o mais bonito", "segurança absoluta") e **de saúde** ("regula o corpo", terapêutico).
 - **"Pet friendly"** (o hotel não aceita pets). **Recreação infantil** (não existe). **"Acessível"** sem ressalva (banheiros sem barras).
-- **Água cristalina garantida** em meses de chuva (out/dez a mar).
+- **Água cristalina garantida** em meses de chuva (out/dez a mar). Atividades de rio **não funcionam com o rio cheio**: nesses meses, "sujeito às condições do rio" e nunca prometer a atividade na data.
+- Pétalas, rosa e plaquinha "LOVE" das fotos são a **decoração especial (opcional)**.
 - Serviço **opcional** (piquenique, decoração especial, massagem, ioga, atividades pagas) como se fosse incluso: sempre "(opcional)".
 - **Preço** sem "[confirmar valor vigente]".
 - **Urgência falsa** ("últimas cabanas", "só hoje") sem confirmação do dono.

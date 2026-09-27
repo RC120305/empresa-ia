@@ -117,3 +117,11 @@ Acolhedor, familiar, inspirador e autêntico. Fala de natureza com encantamento,
 - **Sustentabilidade**: ações **em desenvolvimento, sem dados ainda**. Comunicar só as práticas confirmadas (coleta seletiva, compostagem, sem copos descartáveis, proprietário biólogo), **sem números**.
 - **Ioga**: aos sábados, à margem do rio (confirmado; horário e detalhes em `hotel-operacional.md`).
 - Bicicletas: **o hotel não empresta nem aluga**.
+
+**Complemento (2026-09-27)**
+- Atividades de rio **não funcionam com o rio cheio** (detalhe em `hotel-operacional.md`, seção 4).
+- **Pacotes de 4 noites** (estadia mínima) só no **Réveillon** e no **Carnaval**.
+- Restaurante **funciona normalmente** no Natal e no Réveillon.
+- Voz da marca: **"nós"** (não "a gente").
+- Pétalas, rosa e plaquinha "LOVE" das fotos = **decoração especial (opcional)**.
+- **Calendário de alta e baixa temporada do hotel**: bem definido; o dono vai enviar (até lá, usar as réguas do destino como proposta).
