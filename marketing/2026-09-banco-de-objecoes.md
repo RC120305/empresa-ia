@@ -132,7 +132,7 @@
 - Casal e Tripla não aceitam menores de 5 anos; Cabana Master aceita (confirmado pelo dono); Bangalô e Bangalô Especial aceitam crianças (`hotel-operacional.md`, seções 2 e 8).
 - Crianças até 5 anos não pagam, na cama dos pais; a partir de 5 anos pagam normalmente (`hotel-operacional.md`, seção 8).
 - Berços mediante agendamento; micro-ondas no receptivo para papinhas e mamadeiras; playground e área infantil com brinquedos e casinha no receptivo; **não há recreação** (`hotel-operacional.md`, seções 2 e 8).
-- Idades mínimas das atividades opcionais: boia cross e arvorismo a partir de 6 anos e 1,15 m; flutuação a partir de 7 anos; **não flexibilizamos idade nem altura** (`hotel-operacional.md`, seção 4; `cultura.md`, seção 3).
+- Idades mínimas das atividades opcionais: boia cross e arvorismo a partir de 5 anos e 1,15 m; flutuação a partir de 7 anos; **não flexibilizamos idade nem altura** (`hotel-operacional.md`, seção 4; `cultura.md`, seção 3).
 - Para 5 pessoas: só a Cabana Master e o Apartamento Conjugado (`hotel-cabanas.md`, seção 1).
 
 **(d) Como virar conteúdo:** carrossel **"Com os pequenos no Cabanas"** (pilar 1): Cabana Master (varanda com balanço), playground, Bangalô Especial com 2 camas king, café da manhã. Última tela: "Até 5 anos não pagam, na cama dos pais". Persona: famílias (Aventureiros de Fim de Semana). Fotos de crianças só com autorização de imagem.

@@ -96,7 +96,7 @@ sbreserva.silbeck.com.br/hotelcabanas · WhatsApp (67) 99117-1648
 O feriado de 20 de novembro cai numa sexta. E se a volta ficar para segunda?
 
 Sexta: check-in a partir das 15h e piscina climatizada até as 22h.
-Sábado: arco e flecha às 8h30, com monitor, incluso. Arvorismo com 18 obstáculos e tirolesa aquática no Rio Formoso (opcional; a partir de 6 anos e 1,15 m).
+Sábado: arco e flecha às 8h30, com monitor, incluso. Arvorismo com 18 obstáculos e tirolesa aquática no Rio Formoso (opcional; a partir de 5 anos e 1,15 m).
 Domingo: dia livre, com trilhas de acesso livre, decks à margem dos dois rios e piscina climatizada até as 22h.
 Segunda: café da manhã incluso (das 6h30 às 9h30) e check-out até as 13h. Depois dele, você pode seguir usando a estrutura: temos vestiários, duchas e guarda-volumes.
 
@@ -318,7 +318,7 @@ Quatro noites em Bonito, de domingo a quinta, quando o hotel fica mais tranquilo
 
 Domingo: check-in a partir das 15h, piscina climatizada e sauna até as 22h.
 Segunda: arco e flecha às 8h30 e, às 14h, trilha no Rio Formosinho com tirolesa, com monitor, inclusos na diária.
-Terça: arvorismo com 18 obstáculos e tirolesa aquática no Rio Formoso (opcional; a partir de 6 anos e 1,15 m) e, à tarde, trilha com caiaque ou stand up paddle, inclusa.
+Terça: arvorismo com 18 obstáculos e tirolesa aquática no Rio Formoso (opcional; a partir de 5 anos e 1,15 m) e, à tarde, trilha com caiaque ou stand up paddle, inclusa.
 Quarta: dia para os passeios de Bonito. O centro fica a 6 km, com todo o acesso em asfalto.
 Quinta: café da manhã incluso (das 6h30 às 9h30) e check-out até as 13h. Depois, você pode seguir usando a estrutura: temos vestiários, duchas e guarda-volumes.
 
@@ -377,7 +377,7 @@ Manda para quem vai com você. E, para reservar direto (nossos valores já têm 
 ### Briefing de arte
 FRASE: "**8h30**: a *aventura* que não depende do rio" (8) · apoio opcional "ARCO E FLECHA · INCLUSO"
 Foto: `Atividades e balneário / imagem_arco_flecha_mulher_sorrindo` (1fbDfq).
-**Alternativa** (livre para uso): FRASE "**18** obstáculos e uma *tirolesa aquática*" (6), apoio "ARVORISMO (OPCIONAL)", foto `Arvorismo / arvorismo_tirolesa_pessoa_close_sorriso` (15RuNc). Se usar a alternativa, a legenda troca o 1º e o 2º parágrafos por: "Arvorismo com 18 obstáculos e uma tirolesa aquática no Rio Formoso (opcional; a partir de 6 anos e 1,15 m)."
+**Alternativa** (livre para uso): FRASE "**18** obstáculos e uma *tirolesa aquática*" (6), apoio "ARVORISMO (OPCIONAL)", foto `Arvorismo / arvorismo_tirolesa_pessoa_close_sorriso` (15RuNc). Se usar a alternativa, a legenda troca o 1º e o 2º parágrafos por: "Arvorismo com 18 obstáculos e uma tirolesa aquática no Rio Formoso (opcional; a partir de 5 anos e 1,15 m)."
 
 ### Legenda
 Todo dia, às 8h30, tem arco e flecha com monitor. A aventura começa em terra firme.

@@ -25,7 +25,7 @@
 |---|---|---|---|---|
 | 1 | Levar ao Reels | "Uma quarta a dois, na Cabana Master." | **Menção ao post** (Reels de 15/10) | Repost do Reels 2 |
 | 2 | Segurança (1/2) | "Antes de cada descida, a orientação dos nossos guias treinados." | — | `Boia Cross / boia_briefing_inicial` (1IPZ-w) |
-| 3 | Segurança (2/2) | "Boia cross: 1.200 m no Rio Formoso (opcional). A partir de 6 anos e 1,15 m." | **Link:** WhatsApp ("Tire suas dúvidas") | `Boia Cross / boia_guia_carregando_boia` (1JqUhv) |
+| 3 | Segurança (2/2) | "Boia cross: 1.200 m no Rio Formoso (opcional). A partir de 5 anos e 1,15 m." | **Link:** WhatsApp ("Tire suas dúvidas") | `Boia Cross / boia_guia_carregando_boia` (1JqUhv) |
 | 4 | Prova social | "4,7 no Google, com 1.015 avaliações (set/2026)." · 2ª linha: "Obrigado a cada hóspede que contou como foi." | **Link:** motor (UTM `2026-10-meio-de-semana`) | Arte 9:16, fundo marrom, sem foto |
 | 5 | Responder à caixinha, com honestidade | Uma tela por resposta, ex.: "Fica longe? O centro de Bonito fica a 6 km, com todo o acesso em asfalto." · "E o movimento? De domingo a quinta, o hotel fica mais tranquilo." | — | Arte 9:16 com a pergunta recebida (sem identificar quem perguntou) |
 
@@ -33,7 +33,7 @@
 | # | Objetivo | Tela (texto) | Figurinha | Imagem |
 |---|---|---|---|---|
 | 1 | Valor da diária (objeção "está caro") | "O que está na sua diária: café da manhã, piscina climatizada, sauna, academia, salão de jogos, playground e a programação com monitor." · 2ª linha: "E reservando direto, os valores já têm desconto." | **Link:** motor (UTM `2026-10-meio-de-semana`) | Arte 9:16 com `area_espaco_relaxamento_academia` (1iqJ9n) e `play_ground` (1fikC1) |
-| 2 | Segurança no arvorismo | "Equipamento conferido antes de subir." · 2ª linha: "Arvorismo (opcional), a partir de 6 anos e 1,15 m." | — | `Arvorismo / arvorismo_condutor_equipando_cliente` (1T_TCt) e `arvorismo_detalhe_vagao_de_seguranca` (1g_x54) |
+| 2 | Segurança no arvorismo | "Equipamento conferido antes de subir." · 2ª linha: "Arvorismo (opcional), a partir de 5 anos e 1,15 m." | — | `Arvorismo / arvorismo_condutor_equipando_cliente` (1T_TCt) e `arvorismo_detalhe_vagao_de_seguranca` (1g_x54) |
 | 3 | Prova social | "9,3 no Booking, com 318 avaliações (set/2026)." | — | Arte 9:16, fundo marrom, sem foto |
 | 4 | Interação | "Rede ou balanço?" · rodapé pequeno: "Rede: Cabana Casal · Balanço: Cabana Master" | **Enquete:** "Rede" / "Balanço" | Arte dividida: `cabana_casal_01_varanda` (1ieD_L) × `cabana_master_varanda_cadeiras` (1r0GZ4) |
 | 5 | Finados (**só enquanto houver vaga**) | "Finados: de 31/10 a 02/11. Ainda temos datas." | **Link:** WhatsApp | Arte 9:16, foto a escolher entre as do banco |

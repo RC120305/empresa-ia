@@ -42,6 +42,6 @@ Fotos reais de dia, 4:5, água sem escurecer; título em Playfair Display creme;
 | 4 | Bangalô de dia, rede na varanda | "Até **4** pessoas, *sem dividir parede*" |
 | 5 | Faixa marrom `#847059`, destaque em laranja | "Reserve **direto** *para o dia 12*" · motor de reservas + WhatsApp 67 99117-1648 |
 
-Legenda: "Dia das Crianças entre os rios Formoso e Formosinho. 🌿 Caiaque, stand up paddle e trilhas com monitor inclusos na diária; boia cross e arvorismo (opcionais) a partir de 6 anos e 1,15 m. Bangalô para até 4. 👉 sbreserva.silbeck.com.br/hotelcabanas #BonitoMS #FériasEmFamília #HotelCabanas #Ecoturismo"
+Legenda: "Dia das Crianças entre os rios Formoso e Formosinho. 🌿 Caiaque, stand up paddle e trilhas com monitor inclusos na diária; boia cross e arvorismo (opcionais) a partir de 5 anos e 1,15 m. Bangalô para até 4. 👉 sbreserva.silbeck.com.br/hotelcabanas #BonitoMS #FériasEmFamília #HotelCabanas #Ecoturismo"
 
 **Só publicar após a confirmação do dono:** atividades de rio em outubro com o rio cheio; idade mínima da programação inclusa; fotos reais com autorização de imagem. (O post não promete monitoria infantil, porque o hotel não tem recreação.)

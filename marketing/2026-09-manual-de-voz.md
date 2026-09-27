@@ -156,7 +156,7 @@ O Hotel Cabanas fala como **um anfitrião que recebe em casa**: uma família que
 - Google Ads: iniciais maiúsculas nos títulos são permitidas (padrão do canal).
 
 ### 6.4 Números
-- **Algarismos** para medidas, idades, horários e contagens: 3 m, 30 m², 85 m², 1.200 m, 500 m, 18 obstáculos, 6 km, 25 anos, 140 espécies de aves, a partir de 6 anos e 1,15 m.
+- **Algarismos** para medidas, idades, horários e contagens: 3 m, 30 m², 85 m², 1.200 m, 500 m, 18 obstáculos, 6 km, 25 anos, 140 espécies de aves, a partir de 5 anos e 1,15 m.
 - **Horários:** "8h30", "das 7h às 22h", "das 14h às 15h" (sem ":00").
 - **Notas:** com vírgula, fonte e mês: "4,7 no Google (1.015 avaliações, set/2026)"; "9,3 no Booking"; "4,5 no TripAdvisor". Pode arredondar a quantidade para "mais de mil avaliações".
 - **Preço:** "R$ 80" + "[confirmar valor vigente]" (só para aprovação; nunca publicar sem o dono confirmar).

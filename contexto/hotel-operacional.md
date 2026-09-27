@@ -10,7 +10,7 @@
 - **Área:** 40 hectares (400.000 m²) de área verde, entre os rios **Formoso e Formosinho**, com águas cristalinas. O documento descreve "área preservada de floresta nativa".
 - **"Único hotel de Bonito cercado por dois rios"**: afirmação **aprovada pelo dono para anúncios** em 2026-09-26.
 - **Fauna presente:** macacos, araras, cotias, quatis, tatus, entre outros.
-- **Distâncias:** 8 km do Aeroporto de Bonito; 280 km do Aeroporto de Campo Grande.
+- **Distâncias:** 8 km do Aeroporto de Bonito; 280 km do Aeroporto de Campo Grande. **Campo Grande e Dourados ficam a cerca de 260 km de Bonito** (cada uma; dono, 2026-09-27).
 
 ## 2. Acomodações
 | Tipo | Área | Capacidade | Destaques |
@@ -41,9 +41,11 @@
 ## 4. Atividades opcionais (pagas; todas realizadas **dentro do hotel**)
 | Atividade | Descrição | Duração | Restrições | Valor para hóspede* |
 |---|---|---|---|---|
-| **Boia cross** | Descida em boias individuais por corredeiras e cachoeiras do Rio Formoso, 1.200 m, com guias treinados | 1 h | Gestantes, quem ingeriu álcool, **menores de 6 anos** e altura abaixo de 1,15 m | R$ 80/pessoa |
-| **Arvorismo** | **18 obstáculos + 2 tirolesas**, sendo a última uma **tirolesa aquática no Rio Formoso**, com guias treinados | 1 h 15 | Gestantes, quem ingeriu álcool, **menores de 6 anos** e altura abaixo de 1,15 m | R$ 100/pessoa |
+| **Boia cross** | Descida em boias individuais por corredeiras e cachoeiras do Rio Formoso, 1.200 m, com guias treinados | 1 h | Gestantes, quem ingeriu álcool, **menores de 5 anos** e altura abaixo de 1,15 m | R$ 80/pessoa |
+| **Arvorismo** | **18 obstáculos + 2 tirolesas**, sendo a última uma **tirolesa aquática no Rio Formoso**, com guias treinados | 1 h 15 | Gestantes, quem ingeriu álcool, **menores de 5 anos** e altura abaixo de 1,15 m | R$ 100/pessoa |
 | **Flutuação** | **500 m no Rio Formoso**, com guia do hotel; peixes como **dourado, piraputanga e curimbatá** | 1 h | Gestantes, quem ingeriu álcool, **menores de 7 anos** | R$ 100/pessoa |
+
+**Idade mínima (dono, 2026-09-27):** boia cross e arvorismo: **a partir de 5 anos e com pelo menos 1,15 m**. As atividades da **programação inclusa** (arco e flecha, trilhas com tirolesa, caiaque, SUP) **não têm idade mínima**.
 
 \* Valores do documento: em anúncios, use "[confirmar valor vigente]". Boia cross e arvorismo também atendem não hóspedes (não há day use).
 
