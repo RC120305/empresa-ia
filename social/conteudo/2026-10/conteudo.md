@@ -396,4 +396,4 @@ sbreserva.silbeck.com.br/hotelcabanas · WhatsApp (67) 99117-1648
 ---
 
 ## A confirmar com o dono (consolidado)
-1. Foto `bangalo_quadruplo_varanda_com_rede` (post 7, telas 5 e 6): Bangalô (40 m²) ou Bangalô Especial (45 m²)? O texto alternativo já está no post 7.
+Nada pendente (27/09): todas as dúvidas foram respondidas pelo dono. Antes de publicar, só reconfirmar vaga do feriado de 20/11 (post 3).
