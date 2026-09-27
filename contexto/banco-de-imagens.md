@@ -10,7 +10,7 @@
 | ↳ Cabana casal | `1jerV3-wB_-vNUdXCv5m4mRPLH4DOJfb2` | |
 | ↳ Cabanas triplo | `1sdnJkW5eEb8F1II1jgk4UNjObsR1mFD2` | |
 | ↳ Cabana Master | `1b9IhPTzgchm2dcUhDFWXT_WGHnOeW54B` | |
-| ↳ Bangalô | `1Pu0dUQZMdbEohql-6tfu5UyfovEMvaF2` | |
+| ↳ Bangalô | `1Pu0dUQZMdbEohql-6tfu5UyfovEMvaF2` | **Todas as fotos são do Bangalô (40 m²)** (dono, 2026-09-27), inclusive a varanda com rede e banco (`bangalo_quadruplo_varanda_com_rede`) |
 | ↳ **Bangalô Especial** | `1YUf0Owu4N_CLydXjxDFs3lRr8GXYDofA` | 45 m², até 4 pessoas (2 camas king), para famílias. Ver `hotel-operacional.md` |
 | ↳ Conjugado | `1J3ER6_A3EngEuVKkWRVcEv7oHNd_Omkm` | |
 | ↳ Quádruplo superior | `1Zx2uw4jUTznM1T3GXOWztxYIZ-ocepXL` | Corresponde ao Apartamento Superior (2 a 4 pessoas) |

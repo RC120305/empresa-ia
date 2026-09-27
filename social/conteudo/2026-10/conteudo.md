@@ -233,7 +233,7 @@ sbreserva.silbeck.com.br/hotelcabanas · WhatsApp (67) 99117-1648
 #hotelcabanasbonito #bonitoms #bonitomatogrossodosul #turismodenatureza #trilhas
 
 ### A confirmar com o dono
-- [a confirmar com o dono: a foto `bangalo_quadruplo_varanda_com_rede` (telas 5 e 6) é do Bangalô (40 m²) ou do Bangalô Especial (45 m²)?] Se for do **Bangalô Especial**: o apoio da tela 5 passa a ser "BANGALÔ ESPECIAL · 45 M²", e o parágrafo da legenda passa a ser: "O Bangalô Especial é de alvenaria, elevado do chão e não divide paredes com outra acomodação. Tem 45 m², para até 4 pessoas, com 2 camas de casal king e ampla varanda privativa com rede, banco e vista para a natureza."
+- Confirmado pelo dono (27/09): as fotos das telas 5 e 6 são do **Bangalô (40 m²)**. Nada pendente.
 
 ---
 
