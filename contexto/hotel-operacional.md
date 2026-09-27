@@ -80,7 +80,7 @@
 - **Pets:** não são permitidos, por causa dos animais silvestres.
 - **Bebidas:** o documento traz duas versões (ver a seção 12). **Alimentos:** podem ser trazidos.
 - **Pagamento:** 50% antecipado; cartão de crédito (até 6x), débito ou depósito. **Não aceita boleto.**
-- **Estadia mínima / pacotes (confirmado pelo dono em 2026-09-27):** só nos **pacotes de Réveillon e de Carnaval, com 4 noites**. Nos demais feriados não há estadia mínima. Valores e o que o pacote inclui: [a confirmar com o dono].
+- **Estadia mínima / pacotes (confirmado pelo dono em 2026-09-27):** só nos **pacotes de Réveillon e de Carnaval, com 4 noites**. Pacote de Réveillon 2026/27: **29/12 a 02/01** (dono, na Central, 27/09). Nos demais feriados não há estadia mínima. Valores e o que o pacote inclui: [a confirmar com o dono].
 - **Cancelamento:** reembolso integral com 30 dias de antecedência; 50% do sinal com 15 dias; sem reembolso dentro de 15 dias. Reservas feitas por agência ou canal online seguem a política deles.
 - **Não há:** day use, espaço para eventos, transfer próprio (a equipe indica quem faça), desconto para terceira idade, oferta para aniversariantes, tarifa para longa estadia nem convênio com Bancorbrás.
 - **Reserva direta:** "nossos valores já possuem desconto para você que reserva direto em nosso site". **Argumento de canal direto.**

@@ -633,7 +633,7 @@ function renderAds(){
 
   <div class="panel"><h2>Arquitetura do ano</h2>
     <div class="tbl"><table><thead><tr><th>Camada</th><th>Campanha</th><th>Quando roda</th><th>Formato</th></tr></thead><tbody>
-    ${A.arquitetura.map(r=>`<tr><td><span class="pill ${r[0]==="Permanente"?"perm":r[0]==="Pontual"?"pont":""}">${esc(r[0])}</span></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join("")}
+    ${A.arquitetura.map(r=>`<tr><td><span class="pill ${r[0]==="Permanente"?"perm":r[0].startsWith("Pontual")?"pont":""}">${esc(r[0])}</span></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join("")}
     </tbody></table></div>
     <ul class="muted" style="margin:0;padding-left:18px">${A.regras.map(r=>`<li>${esc(r)}</li>`).join("")}</ul>
   </div>
@@ -695,7 +695,7 @@ function renderAds(){
   const ap = box.querySelector("#ads-aprovar");
   if (ap) ap.addEventListener("click", async () => {
     const msg = box.querySelector("#ads-msg");
-    if (!(adsState.decisoes||{}).dezembro) { msg.className = "msg err"; msg.textContent = "Escolha quando começa a campanha de dezembro antes de aprovar."; return; }
+    if (!(adsState.decisoes||{}).dezembro || !(adsState.decisoes||{}).ms) { msg.className = "msg err"; msg.textContent = "Responda as duas primeiras decisões antes de aprovar."; return; }
     ap.disabled = true;
     let aviso = false;
     if (comments) {
@@ -703,7 +703,7 @@ function renderAds(){
         if (await comments.canSendToClaude() === "available") {
           const d = adsState.decisoes||{}, cortados = Object.entries(adsState.ads||{}).filter(([,v])=>v==="cortar").map(([k])=>k);
           const regs = A.publico ? A.publico.regioes.map(r => r.id + "=" + ((d.regioes||{})[r.id] || r.padrao)).join(", ") : "-";
-          const txt = `Plano de anúncios APROVADO na Central (${A.id}). Dezembro começa: ${d.dezembro||"-"}. Dividir voo: ${d.voo||"-"}. Regiões: ${regs}. Réveillon: ${d.reveillon||"sem dados ainda"}. Medição: ${d.medicao||"-"}. Limite da conta: ${d.limite||"-"}. Cortados: ${cortados.join(", ")||"nenhum"}. Obs.: ${(obs&&obs.value.trim())||"-"}. Seguir para a Fase 2 (textos).`;
+          const txt = `Plano de anúncios APROVADO na Central (${A.id}). MS no lugar do resto do Brasil: ${d.ms||"-"}. Dezembro: ${d.dezembro||"-"}. Antecedência MS: ${d.antecedencia||"-"}. Regiões: ${regs}. Réveillon: ${d.reveillon||"sem dados ainda"}. Medição: ${d.medicao||"-"}. Limite da conta: ${d.limite||"-"}. Cortados: ${cortados.join(", ")||"nenhum"}. Obs.: ${(obs&&obs.value.trim())||"-"}. Seguir para a Fase 2 (textos).`;
           await comments.sendToClaude({anchor: await comments.anchorFor(ap), text: txt.slice(0,3900)});
           aviso = true;
         }
