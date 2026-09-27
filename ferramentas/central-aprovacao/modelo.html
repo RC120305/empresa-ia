@@ -80,6 +80,17 @@ h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;m
 .cap .h{color:var(--tag)}
 .cap.clip{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .links{display:flex;gap:14px;flex-wrap:wrap}
+.artbox{display:flex;flex-direction:column;gap:10px;border:1px solid var(--brown);border-radius:6px;padding:12px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:4px;padding:4px 10px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.tab.mod::after{content:" •";color:var(--wait)}
+.stage{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;background:var(--chip);border-radius:4px}
+.stage iframe{position:absolute;top:0;left:0;width:1080px;height:1440px;border:0;transform-origin:0 0;pointer-events:none}
+.artbox label{font-size:13px;font-weight:600;display:flex;flex-direction:column;gap:5px}
+.artbox textarea,.artbox input[type=text]{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:8px}
+.artbox textarea{min-height:70px;resize:vertical}
+.hint{font-size:12px;color:var(--muted);margin:0}
 .editbox{display:flex;flex-direction:column;gap:8px}
 .editbox textarea{font:inherit;font-size:14px;line-height:1.5;color:var(--ink);background:var(--surface);border:1px solid var(--brown);border-radius:5px;padding:10px;min-height:260px;resize:vertical}
 .editbox textarea:focus-visible{outline:2px solid var(--green);outline-offset:2px}
@@ -119,7 +130,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   <header>
     <div class="label">@hotelcabanasbonito · outubro/2026 · feed 3:4</div>
     <h1>Central de aprovação, <em>outubro</em></h1>
-    <p class="intro">Veja cada post como vai ao ar. Toque em <b>Aprovar</b> quando estiver pronto, <b>edite a legenda</b> direto aqui, ou toque em <b>Pedir correção</b> para dizer o que mudar e, se quiser, enviar a foto nova. O pedido vai direto para o Claude, e a versão corrigida volta nesta mesma página para você conferir. Em cada post você também pode comparar os <b>3 estilos</b> de arte com as mesmas fotos e escolher um.</p>
+    <p class="intro">Veja cada post como vai ao ar. Toque em <b>Aprovar</b> quando estiver pronto, <b>edite a legenda ou o texto da arte</b> direto aqui (com prévia ao vivo), ou toque em <b>Pedir correção</b> para dizer o que mudar e, se quiser, enviar a foto nova. O pedido vai direto para o Claude, e a versão corrigida volta nesta mesma página para você conferir. Em cada post você também pode comparar os <b>3 estilos</b> de arte com as mesmas fotos e escolher um.</p>
     <div class="tally" aria-live="polite">
       <div><b id="t-ok">0</b><span>aprovados</span></div>
       <div><b id="t-fix">0</b><span>com correção pedida</span></div>
@@ -216,7 +227,20 @@ function buildCard(p){
       <p class="theme">${esc(p.tema)}</p>
       <p class="cap clip">${caption(p.leg)}</p>
       <span class="edited" data-edited hidden>Legenda editada por você</span>
-      <div class="links"><button class="linkbtn" data-more type="button" aria-expanded="false">ver legenda completa</button><button class="linkbtn" data-copy type="button">copiar legenda</button><button class="linkbtn" data-edit type="button" hidden>editar legenda</button></div>
+      <div class="links"><button class="linkbtn" data-more type="button" aria-expanded="false">ver legenda completa</button><button class="linkbtn" data-copy type="button">copiar legenda</button><button class="linkbtn" data-edit type="button" hidden>editar legenda</button><button class="linkbtn" data-art type="button" hidden>editar texto da arte</button></div>
+      <div class="artbox" data-artbox hidden>
+        <span class="label" style="font-size:11px">Texto da arte · prévia ao vivo no estilo escolhido</span>
+        <div class="tabs" role="tablist" data-tabs></div>
+        <div class="stage" data-stage><iframe title="Prévia da arte" data-frame loading="lazy"></iframe></div>
+        <label>Título da arte<textarea data-titulo maxlength="120"></textarea></label>
+        <p class="hint">Use **palavra** para negrito, *palavra* para itálico e Enter para quebrar a linha. No estilo 2 (caixa central) tudo fica em itálico.</p>
+        <label>Linha de apoio<input type="text" data-apoio maxlength="80"></label>
+        <div class="actions" style="border:none;padding:0">
+          <button class="btn ok" type="button" data-art-save>Salvar texto da arte</button>
+          <button class="btn ghost" type="button" data-art-cancel>Cancelar</button>
+        </div>
+        <p class="msg" data-art-msg></p>
+      </div>
       <div class="editbox" data-editbox hidden>
         <label for="leg-${p.n}" class="label" style="font-size:11px">Legenda do post ${p.n}</label>
         <textarea id="leg-${p.n}" spellcheck="true"></textarea>
@@ -307,6 +331,68 @@ function buildCard(p){
     catch { emsg.className = "msg err"; emsg.textContent = "Não foi possível restaurar agora."; }
   });
 
+  // editar texto da arte (prévia ao vivo na peça HTML)
+  if (p.pecas) {
+    const ab = card.querySelector("[data-artbox]"), tabs = ab.querySelector("[data-tabs]"), frame = ab.querySelector("[data-frame]"), stage = ab.querySelector("[data-stage]");
+    const tIn = ab.querySelector("[data-titulo]"), aIn = ab.querySelector("[data-apoio]"), amsg = ab.querySelector("[data-art-msg]");
+    const draft = {}; let tela = 1, orig = {};
+    const fit = () => { frame.style.transform = "scale(" + (stage.clientWidth / 1080) + ")"; };
+    new ResizeObserver(fit).observe(stage);
+    const estiloAtual = () => (p.atual || p.padrao || "1");
+    const push = () => frame.contentWindow?.postMessage({tipo:"peca-set", titulo: md2html(tIn.value, estiloAtual()==="2"), apoio: aIn.value}, "*");
+    const show = (n) => {
+      if (draft[tela]) { draft[tela] = {titulo: tIn.value, apoio: aIn.value}; }
+      tela = n;
+      tabs.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.t === n)));
+      frame.dataset.t = n;
+      frame.src = p.pecas[estiloAtual()][n-1];
+    };
+    window.addEventListener("message", (e) => {
+      const d = e.data || {}; if (d.tipo !== "peca-textos" || e.source !== frame.contentWindow) return;
+      const n = +frame.dataset.t;
+      orig[n] = orig[n] || {titulo: html2md(d.titulo), apoio: d.apoio};
+      const salvo = state[p.n]?.textos?.[n];
+      const v = draft[n] || salvo || orig[n];
+      tIn.value = v.titulo; aIn.value = v.apoio; push(); fit();
+    });
+    const mark = () => { draft[tela] = {titulo: tIn.value, apoio: aIn.value}; tabs.querySelector(`[data-t="${tela}"]`)?.classList.add("mod"); push(); };
+    tIn.addEventListener("input", mark); aIn.addEventListener("input", mark);
+    card.querySelector("[data-art]").addEventListener("click", () => {
+      tabs.innerHTML = p.pecas[estiloAtual()].map((_,i)=>`<button type="button" role="tab" class="tab" data-t="${i+1}" aria-selected="false">Tela ${i+1}</button>`).join("");
+      tabs.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => show(+b.dataset.t)));
+      ab.hidden = false; amsg.textContent = ""; show(tela); fit();
+    });
+    ab.querySelector("[data-art-cancel]").addEventListener("click", () => { ab.hidden = true; for (const k in draft) delete draft[k]; tabs.querySelectorAll(".mod").forEach(b=>b.classList.remove("mod")); });
+    ab.querySelector("[data-art-save]").addEventListener("click", async (e) => {
+      if (!db) return;
+      draft[tela] = {titulo: tIn.value, apoio: aIn.value};
+      const mudou = Object.keys(draft).filter(n => draft[n].titulo.trim() && (!orig[n] || draft[n].titulo !== orig[n].titulo || draft[n].apoio !== orig[n].apoio));
+      if (!mudou.length) { amsg.className = "msg"; amsg.textContent = "Nada mudou ainda."; return; }
+      e.target.disabled = true;
+      let aviso = false;
+      if (comments) {
+        try {
+          if (await comments.canSendToClaude() === "available") {
+            const anchor = await comments.anchorFor(card);
+            const linhas = mudou.map(n => `Tela ${n}: título "${draft[n].titulo.replace(/\n/g," / ")}" · apoio "${draft[n].apoio}"`).join("\n");
+            await comments.sendToClaude({anchor, text: (`Texto da arte editado na Central (${MES}), POST ${p.n}. Gerar as artes finais nos 3 estilos:\n` + linhas).slice(0, 3900)});
+            aviso = true;
+          }
+        } catch {}
+      }
+      try {
+        const textos = {...(state[p.n]?.textos || {})};
+        mudou.forEach(n => textos[n] = {titulo: draft[n].titulo.trim(), apoio: draft[n].apoio.trim(), situacao: "novo"});
+        const patch = {textos};
+        if (state[p.n]?.status === "aprovado") patch.status = "pendente";
+        await save(p.n, patch);
+        ab.hidden = true; tabs.querySelectorAll(".mod").forEach(b=>b.classList.remove("mod"));
+        smsg.className = "msg"; smsg.textContent = aviso ? "Texto salvo e enviado ao Claude. As artes finais atualizadas aparecem aqui quando estiverem prontas." : "Texto salvo. Avise o Claude na conversa (\"tem correções na central\") para gerar as artes finais.";
+      } catch { amsg.className = "msg err"; amsg.textContent = "Não foi possível salvar agora. Tente de novo em instantes."; }
+      e.target.disabled = false;
+    });
+  }
+
   // estilos
   card.querySelectorAll("[data-estilo]").forEach(b => b.addEventListener("click", async () => {
     const e = b.dataset.estilo;
@@ -379,6 +465,15 @@ function buildCard(p){
   return card;
 }
 
+function html2md(h){
+  return String(h||"").replace(/<br\s*\/?>/gi,"\n").replace(/<b>(.*?)<\/b>/gi,"**$1**").replace(/<strong>(.*?)<\/strong>/gi,"**$1**").replace(/<i>(.*?)<\/i>/gi,"*$1*").replace(/<em>(.*?)<\/em>/gi,"*$1*").replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/&nbsp;/g," ").trim();
+}
+function md2html(m, soItalico){
+  let h = esc(String(m||"").trim());
+  if (soItalico) h = h.replace(/\*\*(.+?)\*\*/g,"$1").replace(/\*(.+?)\*/g,"$1");
+  else h = h.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\*(.+?)\*/g,"<i>$1</i>");
+  return h.replace(/\n/g,"<br>");
+}
 function legAtual(n){ return state[n]?.legenda || byId[n].leg; }
 
 function applyStyle(n, e){
@@ -416,8 +511,10 @@ function paint(n){
   ap.textContent = st === "aprovado" ? "Desfazer aprovação" : "Aprovar";
   ap.className = st === "aprovado" ? "btn ghost" : "btn ok";
   const sent = card.querySelector("[data-sent]");
+  const tx = d?.textos ? Object.entries(d.textos) : [];
   const peds = d?.pedidos || [];
-  sent.innerHTML = peds.map(x => `<div class="sent"><b>${esc(x.onde)} · ${x.situacao === "feito" ? "corrigido · confira a arte acima" : x.situacao === "em_andamento" ? "em andamento" : "enviado"}</b><span>${esc(x.pedido)}</span>${(x.imagens||[]).length ? `<div class="thumbs">${x.imagens.map(i=>`<img src="/_blob/${esc(i.id)}" alt="${esc(i.nome||"foto enviada")}">`).join("")}</div>` : ""}${x.resposta ? `<span class="reply">${esc(x.resposta)}</span>` : ""}</div>`).join("");
+  const txHtml = tx.length ? `<div class="sent"><b>Texto da arte · ${tx.every(([,v])=>v.situacao==="feito") ? "artes atualizadas · confira acima" : "aguardando as artes finais"}</b>${tx.map(([t,v])=>`<span>Tela ${esc(t)}: ${esc(v.titulo).replace(/\n/g," / ")}${v.apoio ? " · " + esc(v.apoio) : ""}</span>`).join("")}</div>` : "";
+  sent.innerHTML = txHtml + peds.map(x => `<div class="sent"><b>${esc(x.onde)} · ${x.situacao === "feito" ? "corrigido · confira a arte acima" : x.situacao === "em_andamento" ? "em andamento" : "enviado"}</b><span>${esc(x.pedido)}</span>${(x.imagens||[]).length ? `<div class="thumbs">${x.imagens.map(i=>`<img src="/_blob/${esc(i.id)}" alt="${esc(i.nome||"foto enviada")}">`).join("")}</div>` : ""}${x.resposta ? `<span class="reply">${esc(x.resposta)}</span>` : ""}</div>`).join("");
 }
 
 buildCards();
@@ -436,6 +533,7 @@ tally();
   }
   if (!assets) document.querySelectorAll("[data-up]").forEach(u => u.hidden = true);
   document.querySelectorAll("[data-edit]").forEach(b => b.hidden = false);
+  POSTS.forEach(p => { if (p.pecas) document.querySelector("#post-" + p.n + " [data-art]").hidden = false; });
   db.collection("decisoes").where("mes","==",MES).onSnapshot(snap => {
     snap.docs.forEach(d => { const b = d.data(); if (b && b.post) state[b.post] = b; });
     POSTS.forEach(p => paint(p.n));

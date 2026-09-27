@@ -48,6 +48,12 @@ for r in csv.DictReader(open(cal)):
     posts.append(dict(n=nn, data=r["Data"], dia=r["Dia"], hora=r["Horário"], fmt=r["Formato"],
                       tema=r["Tema"], leg=r["Legenda final (com hashtags)"], imgs=imgs,
                       estilos=estilos, padrao=padrao, status=r["Status"]))
+pj = f"{out}/pecas.json"
+if os.path.exists(pj):
+    pecas = json.load(open(pj))
+    for p in posts:
+        if p["n"] in pecas:
+            p["pecas"] = pecas[p["n"]]
 tpl = open(os.path.join(os.path.dirname(__file__), "modelo.html")).read()
 data = json.dumps(posts, ensure_ascii=False).replace("</", "<\\/")
 open(f"{out}/index.html", "w").write(tpl.replace("__DATA__", data).replace("__MES__", mes))
