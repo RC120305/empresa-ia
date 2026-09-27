@@ -55,6 +55,17 @@ Há **duas réguas diferentes**, e elas não coincidem: **clima e água** × **d
 
 **Leitura estratégica:**
 - **São Paulo é o mercado nº 1**, e há voos diretos das 3 companhias saindo de SP e Campinas. As campanhas pagas devem priorizar a segmentação SP capital e interior, seguida de PR, RJ e Sul.
+
+### Voos diretos para Bonito (pesquisa de 2026-09-27; conferir a cada 3 meses)
+Todos saem da região de São Paulo e chegam ao Aeroporto de Bonito (8 km do hotel):
+| Companhia | Origem | Dias da semana |
+|---|---|---|
+| **Azul** | Viracopos (Campinas) | terça, quinta e domingo |
+| **Gol** | Congonhas (São Paulo) | terça, sábado e domingo |
+| **Latam** | Guarulhos (São Paulo) | quarta, sexta e domingo (3 por semana a partir de 25/10/2026) |
+- **Domingo** tem voo das três companhias; terça, quarta e quinta também têm voos: combina com a estadia de **domingo a quinta** (o gargalo do hotel).
+- Horários e tarifas mudam: em peças, citar só "voos diretos de São Paulo e Campinas" + companhias e dias, com "[confirmar malha vigente]" no rascunho. Nunca prometer preço de passagem nem parceria com as companhias.
+- Fontes: [O Pantaneiro, 02/09/2026](https://www.opantaneiro.com.br/bonito/2026/09/02/bonito-tera-tres-voos-semanais-diretos-para-sao-paulo-pela-latam.html) · [Prefeitura de Bonito, 26/06/2026](https://www.bonito.ms.gov.br/2026/06/26/bonito-ganha-mais-opcoes-de-voos-com-ampliacao-da-operacao-da-latam/) · [Campo Grande News](https://www.campograndenews.com.br/cidades/interior/com-chegada-da-latam-bonito-tera-voos-5-dias-por-semana-operados-por-3-empresas)
 - O hotel tem ocupação 2,38 contra 2,45 da concorrência (escala de 0 a 5 do Guia). O destino como um todo roda perto de 53%. **Há espaço para crescer fora dos picos.**
 
 ## 6. O viajante de natureza: comportamento e tendências
