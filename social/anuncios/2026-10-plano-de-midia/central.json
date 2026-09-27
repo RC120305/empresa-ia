@@ -172,7 +172,7 @@
    "ads": [
     [
      "M1",
-     "55+ e aposentados",
+     "55+",
      "Esticar: vem no domingo, volta na terça; mais tranquilo de domingo a quinta; piscina climatizada, hidro e sauna",
      "carrossel",
      "Domingo a terça, sem pressa de voltar"
@@ -186,7 +186,7 @@
     ],
     [
      "M3",
-     "Aventureiros com folga",
+     "Aventureiros (folga no meio da semana)",
      "Segunda é dia de rio (inclusas; arvorismo e boia cross opcionais)",
      "vídeo de fotos",
      "Folga na segunda? Segunda é dia de rio"
@@ -200,14 +200,14 @@
     ],
     [
      "M5",
-     "Casais · só maio/junho e tempo ruim",
+     "Casais",
      "Fim de semana curto no frio: hidro aquecida, sauna, ar quente e frio",
      "carrossel",
      "Esfriou? A hidro está aquecida"
     ],
     [
      "M6",
-     "Famílias · só maio/junho e tempo ruim",
+     "Famílias",
      "Fim de semana curto em família: piscina climatizada, playground, Bangalô Especial",
      "carrossel",
      "Frio lá fora, piscina climatizada aqui dentro"
@@ -221,14 +221,14 @@
     ],
     [
      "D2",
-     "55+ e casais",
+     "55+ (2ª: Casais)",
      "Com a chuva, a mata fica mais verde; piscina climatizada, hidromassagem e sauna (entra em novembro)",
      "carrossel",
      "Com a chuva, a mata fica mais verde"
     ],
     [
      "D3",
-     "Aventureiros e casais",
+     "Aventureiros (2ª: Casais)",
      "O calor pede rio: boia cross (opcional), 1.200 m (entra em novembro)",
      "vídeo ou imagem",
      "O calor pede rio"
@@ -254,7 +254,7 @@
    "ads": [
     [
      "V1",
-     "Casais e 55+",
+     "Casais (2ª: 55+)",
      "Roteiro: voo de domingo → 4 noites → voo de quinta",
      "carrossel",
      "Domingo a quinta, voando direto"
@@ -268,21 +268,21 @@
     ],
     [
      "V3",
-     "Casais e aventureiros",
+     "Casais e Aventureiros",
      "Sai de Campinas, Congonhas ou Guarulhos; o hotel como base entre dois rios",
      "imagem",
      "Sai de Campinas, Congonhas ou Guarulhos"
     ],
     [
      "V4",
-     "55+ e casais",
+     "55+ (2ª: Casais)",
      "Quem pode escolher evita o fim de semana; domingo tem voo das 3 companhias; mais tranquilo de domingo a quinta",
      "carrossel",
      "Quem pode escolher, vem no domingo"
     ],
     [
      "V5",
-     "Aventureiros e casais",
+     "Aventureiros (2ª: Casais)",
      "Chega domingo, segunda já está no rio (programação inclusa; opcionais marcados)",
      "vídeo de fotos",
      "Pousa domingo. Segunda, no rio"
@@ -303,7 +303,7 @@
     ],
     [
      "P03",
-     "Casais e aventureiros",
+     "Casais (2ª: Aventureiros)",
      "Programação inclusa com monitor (custo-benefício)",
      "vídeo",
      "Terça-feira, 8h30, na mira"
@@ -345,21 +345,21 @@
     ],
     [
      "P09",
-     "Aventureiros",
+     "Aventureiros (2ª: Famílias com filhos a partir de 6 anos)",
      "Boia cross: 1.200 m, guias treinados (opcional)",
      "vídeo ou imagem",
      "1.200 metros de corredeira"
     ],
     [
      "P10",
-     "55+ e casais",
+     "55+ e Casais",
      "Objeção \"fica longe\": 6 km do centro, todo em asfalto",
      "imagem",
      "Longe da pressa, a 6 km do centro"
     ],
     [
      "P11",
-     "Casais",
+     "Casais (2ª: 55+)",
      "Uma quarta em cinco sentidos",
      "carrossel",
      "Uma quarta em cinco sentidos"
@@ -394,14 +394,14 @@
     ],
     [
      "J4",
-     "Famílias com filhos a partir de 6 anos",
+     "Famílias com filhos a partir de 6 anos (2ª: Aventureiros)",
      "Arvorismo e boia cross (opcionais), com segurança (entra em nov/dez)",
      "carrossel",
      "Com 6 anos e 1,15 m, já dá"
     ],
     [
      "J5",
-     "Famílias",
+     "Famílias (2ª: Casais)",
      "Base para os passeios: 6 km do centro, 8 km do aeroporto; rio do hotel à tarde (entra em nov/dez)",
      "imagem",
      "Passeio de manhã, rio do hotel à tarde"
@@ -413,28 +413,28 @@
    "ads": [
     [
      "R1",
-     "Quem já interagiu",
+     "Todas",
      "Notas: Google 4,7 · Booking 9,3 · TripAdvisor 4,5 (set/2026)",
      "imagem",
-     "Quem vem, conta"
+     "4,7 no Google, com mais de mil avaliações"
     ],
     [
      "R2",
-     "Quem já interagiu",
+     "Todas",
      "O que vem na diária + desconto para quem reserva direto",
      "carrossel",
-     "Está tudo na diária"
+     "O que já vem na sua diária"
     ],
     [
      "R3",
-     "Quem já interagiu",
+     "Casais e 55+",
      "E se a viagem fosse numa terça?",
      "imagem",
-     "E se fosse numa terça?"
+     "E se a viagem fosse numa terça?"
     ],
     [
      "R4",
-     "Casais e 55+",
+     "Todas",
      "Baixa temporada, reserva sem aperto: desconto direto, 50% de sinal, até 6x no cartão, reembolso integral com 30 dias",
      "imagem",
      "Baixa temporada, reserva sem aperto"
