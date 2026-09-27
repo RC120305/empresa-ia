@@ -8,8 +8,9 @@ description: >-
   "monta o conteúdo de novembro", "/conteudo-mensal dezembro", "plano do mês".
   Cobre também a Fase 3 (título, legenda e capa quando a produtora entrega um
   Reels) e pedidos avulsos (um carrossel extra, uma sequência de stories). NÃO
-  usar para refazer posts que já existem (ver alterar-conteudo) nem para
-  relatório de métricas (ver relatorio-metricas).
+  usar para refazer posts que já existem (ver alterar-conteudo), para
+  relatório de métricas (ver relatorio-metricas) nem para anúncios pagos (ver
+  campanha-anuncios).
 ---
 
 # Conteúdo Mensal — Hotel Cabanas

@@ -44,7 +44,7 @@ números**: sem print, sem número.
      reservas diretas) e às **duas réguas de sazonalidade**;
    - regra do caderno da Bárbara Bruna: olhar **envios por alcance** e tempo de
      exibição, não só curtidas; identificar o **post vencedor** do mês para virar
-     anúncio;
+     anúncio (atalho "post vencedor → anúncio" da skill `campanha-anuncios`);
    - o que **não** dá para concluir sem dados (ex.: reservas vindas do Instagram).
    Coloque as frases em `destaques` e `recomendacoes` no JSON.
 5. **Escreva o JSON** em `social/relatorios/AAAA-MM-dados.json` (molde:

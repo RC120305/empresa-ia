@@ -20,7 +20,8 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
   - `.claude/skills/conteudo-mensal/`: `/conteudo-mensal <mês>`: pauta (Estrategista) → OK do dono → textos (Marketing) → artes (Designer) → publicação no Drive (pasta "Conteúdo Instagram"). Perfil de voz e plano de postagem em `references/perfil-cabanas.md`.
   - `.claude/skills/alterar-conteudo/`: `/alterar-conteudo`: refaz posts existentes, com proposta + OK antes de reescrever.
   - `.claude/skills/relatorio-metricas/`: `/relatorio-metricas <mês>`: prints do Insights → PDF na identidade do Cabanas, com a leitura do Estrategista.
-  - Conteúdo do mês em `social/conteudo/AAAA-MM/`; relatórios em `social/relatorios/`.
+  - `.claude/skills/campanha-anuncios/`: `/campanha-anuncios <campanha>`: anúncios pagos no Meta Ads: plano com 10 a 15 criativos e cenários de verba (Estrategista) → OK → textos (Marketing) → OK → artes 4:5 e 9:16 (Designer) → kit de subida (Drive, pasta "Anúncios") → leitura dos números. Ninguém mexe na conta nem gasta verba.
+  - Conteúdo do mês em `social/conteudo/AAAA-MM/`; relatórios em `social/relatorios/`; campanhas pagas em `social/anuncios/`.
 - `.claude/skills/rh/`: a **Diretora de RH**, que desenha cargos e contrata, avalia e ajusta os funcionários de IA. Acione com `/rh`.
 - `.claude/agents/`: os **funcionários contratados** (um arquivo por cargo).
 - `rh/organograma.md`: quem existe, vagas sugeridas e histórico.
