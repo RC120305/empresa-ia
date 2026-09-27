@@ -4,7 +4,9 @@ Página privada no claude.ai onde o dono vê cada post pronto (artes deslizávei
 
 - **Outubro/2026:** https://claude.ai/artifact/9MZa4dNUHTXm3ANwXjwPYB
 - **Gerar para um mês:** `python3 ferramentas/central-aprovacao/gerar.py AAAA-MM <scratchpad>/central` → publicar com o Artifact tool (`files` = as imagens `img/*.jpg`, `capabilities: {"db": {}, "assets": {}}`). Para o mesmo mês, republicar no **mesmo URL** (`url`), para não perder as decisões. Ajustar no HTML gerado as semanas (`WEEKS`) e o cabeçalho.
-- **Onde ficam as decisões:** banco da página, coleção `decisoes`, um documento por post: id `AAAA-MM_POST-NN`, campos `status` (`aprovado` | `corrigir` | `pendente`), `pedidos` (lista de `{onde, pedido, imagens:[{id,nome}], enviadoEm, situacao, resposta?}`), `aprovadoEm`, `atualizadoEm`.
+- **Três estilos por post (pedido do dono, 2026-09-27):** a central mostra os botões **1 · sem faixa**, **2 · caixa central** e **3 · faixa embaixo**, com as mesmas fotos. O Designer entrega, para cada post de fotos, `POST-NN/estilos/estilo-1|2|3/POST-NN-i.png` (mesmo nº de telas). O estilo que o dono escolhe fica no campo `estilo` do documento; é esse que vai para `final/` e para a publicação.
+- **Correção vai direto ao Claude:** ao enviar um pedido, a página usa `sendToClaude` (capacidade `comments`) e acorda a sessão que acompanha a central; se não houver sessão, o pedido fica salvo e o dono avisa na conversa. Publicar sempre com `capabilities: {"db": {}, "assets": {}, "comments": {}}`.
+- **Onde ficam as decisões:** banco da página, coleção `decisoes`, um documento por post: id `AAAA-MM_POST-NN`, campos `status` (`aprovado` | `corrigir` | `pendente`), `estilo` (`1` | `2` | `3`), `pedidos` (lista de `{onde, pedido, imagens:[{id,nome}], enviadoEm, situacao, resposta?}`), `aprovadoEm`, `atualizadoEm`.
 - **Ler:** `ArtifactData` `query` em `decisoes` com `where mes == AAAA-MM` (ou `list`). As fotos enviadas são assets da página: baixar com `Artifact` `read` + `path` = id do asset.
 
 ## Como a equipe usa
