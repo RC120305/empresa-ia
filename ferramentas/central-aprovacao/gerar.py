@@ -58,6 +58,12 @@ if os.path.exists(pj):
 tpl = open(os.path.join(os.path.dirname(__file__), "modelo.html")).read()
 data = json.dumps(posts, ensure_ascii=False).replace("</", "<\\/")
 ads = sorted(glob.glob(f"social/anuncios/{mes}-*/central.json"))
-anuncios = json.dumps(json.load(open(ads[-1])), ensure_ascii=False).replace("</", "<\\/") if ads else "null"
+anuncios = "null"
+if ads:
+    A = json.load(open(ads[-1]))
+    mz = os.path.join(os.path.dirname(ads[-1]), "matriz.json")
+    if os.path.exists(mz):
+        A["matriz"] = json.load(open(mz))
+    anuncios = json.dumps(A, ensure_ascii=False).replace("</", "<\\/")
 open(f"{out}/index.html", "w").write(tpl.replace("__DATA__", data).replace("__MES__", mes).replace("__ANUNCIOS__", anuncios))
 print(f"{len(posts)} posts -> {out}/index.html")

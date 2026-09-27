@@ -121,6 +121,8 @@ h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;m
 .lock{display:flex;gap:10px;flex-wrap:wrap}
 .lock .btn{flex:1 1 220px}
 .muted{color:var(--muted);font-size:13px;margin:0}
+details{border-top:1px solid var(--line);padding-top:8px}
+details summary{cursor:pointer;padding:4px 0}
 .topbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .stage{position:relative;width:100%;aspect-ratio:3/4;overflow:hidden;background:var(--chip);border-radius:4px}
 .stage iframe{position:absolute;top:0;left:0;width:1080px;height:1440px;border:0;transform-origin:0 0;pointer-events:none}
@@ -658,6 +660,20 @@ function renderAds(){
     ${A.publico.regioes.map(r => { const v = (dec.regioes||{})[r.id] || r.padrao; return `<tr><td>${esc(r.nome)}</td><td>${esc(r.dado)}</td><td>${esc(r.campanha)}</td><td><div class="row" style="display:flex;gap:4px;flex-wrap:wrap">${[["sim","Sim"],["testar","Testar"],["nao","Não"]].map(([k,l])=>`<button type="button" class="sbtn" data-reg="${esc(r.id)}" data-v="${k}" aria-pressed="${v===k}" ${aprovado?"disabled":""}>${l}</button>`).join("")}</div></td></tr>`; }).join("")}
     </tbody></table></div>
     <p class="muted">"Testar" = entra com pouca verba nos primeiros 30 dias; fica se o custo por conversa for bom.</p>
+  </div>` : ""}
+
+  ${A.matriz ? `<div class="panel"><h2>Matriz de criativos</h2>
+    <p class="muted">Cada anúncio fala com uma persona e uma região. Estas são as regras que o Marketing e o Designer seguem.</p>
+    <details><summary><b>Regras por persona</b></summary><div class="tbl"><table><thead><tr><th>Persona</th><th>Fotos só dela</th><th>Nunca usar</th><th>Argumento</th><th>Nunca dizer</th></tr></thead><tbody>
+    ${A.matriz.personas.map(p=>`<tr><td><b>${esc(p.nome)}</b></td><td>${esc([].concat(p.exclusivas||[]).join(", "))}</td><td>${esc([].concat(p.proibidas||[]).join(", "))}</td><td>${esc(p.argumento||"")}</td><td>${esc([].concat(p.nunca||[]).join("; "))}</td></tr>`).join("")}
+    </tbody></table></div></details>
+    <details><summary><b>Regras por região</b></summary><div class="tbl"><table><thead><tr><th>Região</th><th>Situação</th><th>Argumento</th><th>Nunca dizer</th></tr></thead><tbody>
+    ${A.matriz.regioes.map(r=>`<tr><td><b>${esc(r.nome)}</b></td><td>${esc(r.situacao||"")}</td><td>${esc(r.argumento||"")}</td><td>${esc([].concat(r.nunca||[]).join("; "))}</td></tr>`).join("")}
+    </tbody></table></div></details>
+    <details><summary><b>Anúncio por anúncio</b> (${A.matriz.matriz.length})</summary><div class="tbl"><table><thead><tr><th>AD</th><th>Campanha</th><th>Persona</th><th>Foto</th><th>Gancho</th><th>Argumento</th></tr></thead><tbody>
+    ${A.matriz.matriz.map(x=>`<tr><td><b>${esc(x.ad)}</b></td><td>${esc(x.campanha||"")}</td><td>${esc(x.persona||"")}</td><td>${esc(x.foto||"")} <span class="pill">${esc(x.tipo||"")}</span></td><td>${esc(x.gancho||"")}</td><td>${esc(x.argumento||"")}</td></tr>`).join("")}
+    </tbody></table></div></details>
+    ${(A.matriz.correcoes||[]).length ? `<details><summary><b>Correções feitas pela equipe</b></summary><ul class="muted">${A.matriz.correcoes.map(c=>`<li>${esc(typeof c==="string"?c:JSON.stringify(c))}</li>`).join("")}</ul></details>` : ""}
   </div>` : ""}
 
   <div class="panel"><h2>Suas decisões</h2>
