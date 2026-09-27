@@ -118,6 +118,8 @@ Acolhedor, familiar, inspirador e autêntico. Fala de natureza com encantamento,
 - **Ioga**: aos sábados, à margem do rio (confirmado; horário e detalhes em `hotel-operacional.md`).
 - Bicicletas: **o hotel não empresta nem aluga**.
 
+**Gargalo de ocupação (dono, 2026-09-27): o problema NÃO são os feriados, que lotam. O gargalo é o MEIO DE SEMANA e a BAIXA TEMPORADA.** Conteúdo e anúncios devem priorizar estadias de domingo a quinta e os meses de baixa; feriados entram só como apoio. (Ex.: 10 a 12/10/2026 já lotado; Finados e 20 a 22/11 ainda com vagas.) Atenção: o restaurante fecha no domingo à noite, o que pesa em estadias que começam no domingo.
+
 **Complemento (2026-09-27)**
 - Atividades de rio **não funcionam com o rio cheio** (detalhe em `hotel-operacional.md`, seção 4).
 - **Pacotes de 4 noites** (estadia mínima) só no **Réveillon** e no **Carnaval**.

@@ -43,6 +43,10 @@
 - Frases aprovadas pelo dono: "O único hotel de Bonito cercado por dois rios"; "melhor custo-benefício de Bonito"; slogan "O seu lugar de conexão com a natureza".
 - Em posts de inspiração, o CTA pode ser suave: "Salva para a sua próxima viagem" / "Manda para quem vai com você" (estimula **envios**, o sinal mais forte do Instagram).
 
+## Prioridade comercial (dono, 2026-09-27)
+- **O gargalo é o meio de semana e a baixa temporada, não os feriados** (feriados lotam sozinhos). A pauta e os anúncios priorizam estadias de **domingo a quinta** e os meses de baixa; feriado só como apoio e só com vaga confirmada.
+- O hotel tem **bastante material em vídeo**: Reels partem primeiro do acervo existente; a produtora grava o que faltar.
+
 ## Provas sociais e objeções
 - Notas que **podem** ser publicadas, sempre com fonte e mês: **Google 4,7 (1.015 avaliações) · Booking 9,3 (318) · TripAdvisor 4,5 (349)** (set/2026). Ex.: "4,7 no Google, com mais de mil avaliações". Ver `contexto/hotel-cabanas.md`, seção 9.
 - Objeções mais comuns: **"está caro"** (responder com o que está incluído + reserva direta; nunca comparar com concorrentes), **"fica longe"** (6 km, asfalto, atividades dentro do hotel), **"não há vaga quando procuro"** (reservar com antecedência; janela de ouro e baixa temporada). Use-as como pauta de posts, stories e anúncios.
