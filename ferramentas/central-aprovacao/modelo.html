@@ -114,6 +114,8 @@ h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;m
 .adgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 .ad{border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--surface)}
 .ad.cut{opacity:.55;border-style:dashed}
+.ad.okd{border-color:var(--green)}
+.ad.fixd{border-color:var(--fix)}
 .ad .code{font-family:"Josefin Sans",sans-serif;font-size:12px;letter-spacing:.12em;color:var(--muted)}
 .ad .hook{font-family:"Playfair Display",serif;font-size:17px;margin:0;text-wrap:balance}
 .ad .ang{font-size:13px;color:var(--muted);margin:0}
@@ -832,7 +834,8 @@ function renderAds(){
   if (!A) { box.innerHTML = `<div class="panel"><h2>Anúncios</h2><p class="muted">Ainda não há plano de anúncios para este mês.</p></div>`; return; }
   const st = adsState, dec = st.decisoes || {}, keep = st.ads || {};
   const aprovado = st.status === "aprovado";
-  const etapa = aprovado ? 1 : 0;
+  const tx = st.textos || {}, txOk = st.textosStatus === "aprovado";
+  const etapa = txOk ? 2 : aprovado ? 1 : 0;
   const meses = {};
   A.sessenta.forEach(r => { (meses[r[0]] = meses[r[0]] || []).push(r); });
   box.innerHTML = `
@@ -841,8 +844,27 @@ function renderAds(){
     <h2>Campanhas permanentes + pontuais</h2>
     <p class="muted">As permanentes ficam sempre ligadas para atrair público (foco em domingo a quinta e baixa temporada). As pontuais entram nos períodos-chave, 45 a 50 dias antes da estadia. Nenhum real é gasto sem os seus dois OKs no fim desta página.</p>
     <div class="steps">${A.etapas.map((e,i)=>`<span class="${i<etapa?"ok":i===etapa?"on":""}">${i+1}. ${esc(e)}</span>`).join("")}</div>
-    ${aprovado ? `<p class="msg">Plano aprovado. Próxima etapa: a equipe escreve os textos dos anúncios mantidos, que aparecem aqui para você aprovar e editar.</p>` : ""}
+    ${aprovado && !A.textos ? `<p class="msg">Plano aprovado. Próxima etapa: a equipe escreve os textos dos anúncios mantidos, que aparecem aqui para você aprovar e editar.</p>` : ""}
   </div>
+  ${A.textos ? `<div class="panel" id="ads-textos">
+    <span class="label">Etapa 2 · textos (${esc(A.textos.versao)})</span>
+    <h2>Textos dos anúncios: ${A.textos.anuncios.length} para aprovar</h2>
+    <p class="muted">${txOk ? "Textos aprovados. O Designer está montando as artes (4:5 e 9:16), que aparecem aqui para você aprovar." : "Confira cada anúncio. Aprove um por um ou todos de uma vez; se algo precisar mudar, toque em Pedir ajuste e diga o quê. As artes só começam depois do seu OK."}</p>
+    <div class="adgrid">${A.textos.anuncios.map(a => { const e = tx[a.cod] || {}; return `<div class="ad ${e.st === "aprovado" ? "okd" : e.st === "ajuste" ? "fixd" : ""}">
+      <span class="code">${esc(a.cod)} · ${esc(a.cab)}</span>
+      <p class="hook">${esc(a.titulo.replace(/\s*\(\*\*\d+\*\*\)$/, ""))}</p>
+      <p class="ang" style="white-space:pre-line;color:var(--ink)">${esc(a.texto)}</p>
+      ${a.variacaoB ? `<p class="ang"><b>Variação B da 1ª linha:</b> ${esc(a.variacaoB.replace(/\s*\(\*\*\d+\*\*\)$/, ""))}</p>` : ""}
+      <p class="ang"><b>Descrição:</b> ${esc(a.descricao.replace(/\s*\(\*\*\d+\*\*\)$/, ""))} · <b>Botão:</b> ${esc(a.botao)}</p>
+      <p class="ang"><b>Mensagem pronta:</b> ${esc(a.mensagem)}</p>
+      <details><summary class="ang">Texto da arte e fotos (${a.arte.length} ${a.arte.length > 1 ? "telas" : "tela"})</summary>${a.arte.map(x => `<p class="ang">${esc(x.card)}. ${esc(x.texto)} <span class="pill">${esc(x.foto.split(" (")[0])}</span></p>`).join("")}</details>
+      ${e.st === "ajuste" && e.pedido ? `<p class="ang" style="color:var(--fix)"><b>Seu pedido:</b> ${esc(e.pedido)}</p>` : ""}
+      ${txOk ? "" : `<div class="row"><button type="button" class="sbtn" data-txok="${esc(a.cod)}" aria-pressed="${e.st === "aprovado"}">${e.st === "aprovado" ? "Aprovado ✓" : "Aprovar"}</button><button type="button" class="sbtn" data-txfix="${esc(a.cod)}">Pedir ajuste</button></div>
+      <div data-txbox="${esc(a.cod)}" hidden style="display:flex;flex-direction:column;gap:6px"><textarea style="font:inherit;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);min-height:60px" placeholder="O que mudar neste anúncio?"></textarea><button type="button" class="btn fix" data-txsend="${esc(a.cod)}">Enviar pedido de ajuste</button></div>`}
+    </div>`; }).join("")}</div>
+    ${txOk ? `<button class="btn ghost" type="button" id="tx-reabrir">Reabrir os textos</button>` : `<div class="actions" style="border:none;padding:0"><button class="btn ok" type="button" id="tx-todos">Aprovar todos os textos e seguir para as artes</button></div>`}
+    <p class="msg" id="tx-msg"></p>
+  </div>` : ""}
 
   <div class="panel"><h2>Arquitetura do ano</h2>
     <div class="tbl"><table><thead><tr><th>Camada</th><th>Campanha</th><th>Quando roda</th><th>Formato</th></tr></thead><tbody>
@@ -940,6 +962,31 @@ function renderAds(){
       box.querySelector("#ads-msg").textContent = aviso ? "Plano aprovado e enviado ao Claude." : "Plano aprovado. Avise o Claude na conversa para seguir.";
     } catch { box.querySelector("#ads-msg").className = "msg err"; box.querySelector("#ads-msg").textContent = "Não foi possível salvar agora."; ap.disabled = false; }
   });
+  const avisar = async (el, txt) => { if (!comments) return false; try { if (await comments.canSendToClaude() !== "available") return false; await comments.sendToClaude({anchor: await comments.anchorFor(el), text: txt.slice(0, 3900)}); return true; } catch { return false; } };
+  box.querySelectorAll("[data-txok]").forEach(b => b.addEventListener("click", async () => {
+    const c = b.dataset.txok, cur = (adsState.textos || {})[c] || {};
+    await saveAds({textos: {...(adsState.textos || {}), [c]: cur.st === "aprovado" ? {} : {st: "aprovado", em: new Date().toISOString()}}});
+  }));
+  box.querySelectorAll("[data-txfix]").forEach(b => b.addEventListener("click", () => { const bx = box.querySelector(`[data-txbox="${b.dataset.txfix}"]`); bx.hidden = !bx.hidden; if (!bx.hidden) bx.querySelector("textarea").focus(); }));
+  box.querySelectorAll("[data-txsend]").forEach(b => b.addEventListener("click", async () => {
+    const c = b.dataset.txsend, ta = box.querySelector(`[data-txbox="${c}"] textarea`), pedido = ta.value.trim(), msg = box.querySelector("#tx-msg");
+    if (!pedido) { ta.focus(); return; }
+    b.disabled = true;
+    const ok = await avisar(b, `Ajuste pedido no texto do anúncio ${c} (${A.id}, ${A.textos.versao}): ${pedido}`);
+    await saveAds({textos: {...(adsState.textos || {}), [c]: {st: "ajuste", pedido, em: new Date().toISOString()}}});
+    msg.className = "msg"; msg.textContent = ok ? `Pedido de ajuste do ${c} enviado ao Claude.` : `Pedido do ${c} salvo. Avise o Claude na conversa.`;
+  }));
+  const todos = box.querySelector("#tx-todos");
+  if (todos) todos.addEventListener("click", async () => {
+    const msg = box.querySelector("#tx-msg"), t = adsState.textos || {};
+    const ajustes = A.textos.anuncios.filter(a => (t[a.cod] || {}).st === "ajuste").map(a => a.cod);
+    todos.disabled = true;
+    const ok = await avisar(todos, `Textos dos anúncios APROVADOS na Central (${A.id}, ${A.textos.versao}).` + (ajustes.length ? ` Com ajuste pedido antes: ${ajustes.join(", ")}.` : "") + " Seguir para a Fase 3 (artes 4:5 e 9:16).");
+    const novo = {...t}; A.textos.anuncios.forEach(a => { if ((novo[a.cod] || {}).st !== "ajuste") novo[a.cod] = {st: "aprovado", em: new Date().toISOString()}; });
+    await saveAds({textos: novo, textosStatus: "aprovado", textosAprovadosEm: new Date().toISOString()});
+    msg.className = "msg"; msg.textContent = ok ? "Textos aprovados e enviados ao Claude." : "Textos aprovados. Avise o Claude na conversa para seguir.";
+  });
+  const txr = box.querySelector("#tx-reabrir"); if (txr) txr.addEventListener("click", () => saveAds({textosStatus: "pendente"}));
   const re = box.querySelector("#ads-reabrir");
   if (re) re.addEventListener("click", () => saveAds({status: "pendente"}));
 }

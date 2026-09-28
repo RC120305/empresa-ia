@@ -64,6 +64,9 @@ if ads:
     mz = os.path.join(os.path.dirname(ads[-1]), "matriz.json")
     if os.path.exists(mz):
         A["matriz"] = json.load(open(mz))
+    tj = os.path.join(os.path.dirname(ads[-1]), "textos.json")
+    if os.path.exists(tj):
+        A["textos"] = json.load(open(tj, encoding="utf-8"))
     anuncios = json.dumps(A, ensure_ascii=False).replace("</", "<\\/")
 bdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "banco")
 banco = json.load(open(f"{bdir}/banco.json", encoding="utf-8"))

@@ -113,3 +113,9 @@
 | 8 | Cabana Tripla: 35 m² no texto e 30 m² na lista | Não cite a metragem da Tripla |
 | 9 | Tirolesa: aparece na programação inclusa **e** dentro do arvorismo pago | "Tirolesa na programação inclusa; arvorismo com tirolesa aquática (opcional)" |
 | 10 | ✅ **Resolvida (dono):** o site oficial para anúncios é **hotelcabanas.com.br** | — |
+
+
+## Respostas do dono em 28/09/2026 (anúncios)
+- **Tereré:** o hóspede pode levar a garrafa de tereré; esse tipo de bebida não tem problema.
+- **Parcelamento:** a reserva pode ser parcelada em **até 6x no cartão**. Nos anúncios e posts, **não** citar sinal nem regras de cancelamento.
+- **Voos diretos:** malha das 3 companhias confirmada pelo dono (Azul/Viracopos, Gol/Congonhas, Latam/Guarulhos, conforme `destino-bonito.md`); o voo de domingo chega a tempo do check-in.
