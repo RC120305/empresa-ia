@@ -64,3 +64,6 @@ Ex.: `https://sbreserva.silbeck.com.br/hotelcabanas?utm_source=meta&utm_medium=p
 - Nada de anúncio sobre acessibilidade (não há apartamentos adaptados).
 - Opcionais marcados "(opcional)"; decoração especial (pétalas, LOVE) é opcional.
 - Nunca citar concorrentes; notas públicas com fonte e mês.
+
+
+> **Regra do dono (28/09/2026): não exagerar no "domingo a quinta".** O meio de semana é o objetivo de venda, mas não o tema de todo texto: no máximo 1 em cada 4 anúncios ou posts leva esse ângulo, e só uma vez no texto. Nos demais, variar: dois rios e 40 hectares, cabanas suspensas, programação inclusa, estrutura (piscina climatizada, hidro, sauna), café da manhã, 25 anos de família, localização, avaliações, reserva direta, momentos a dois, família.
