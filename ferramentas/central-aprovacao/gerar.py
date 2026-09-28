@@ -7,7 +7,7 @@ e <saida>/img/*.jpg. Publique com o Artifact tool (files = img/*,
 capabilities {"db":{}, "assets":{}}). WEEKS e textos do cabeçalho do modelo
 são de outubro/2026: ajuste-os no index.html gerado para cada mês.
 """
-import csv, glob, hashlib, json, os, shutil, sys
+import csv, glob, hashlib, json, os, re, shutil, sys
 from PIL import Image
 
 
@@ -67,6 +67,25 @@ if ads:
     tj = os.path.join(os.path.dirname(ads[-1]), "textos.json")
     if os.path.exists(tj):
         A["textos"] = json.load(open(tj, encoding="utf-8"))
+    # artes dos anúncios: design/pecas/anuncios/<plano>/<COD>/<COD>-<tela>-feed45.png e -story.png
+    pdir = f"design/pecas/anuncios/{os.path.basename(os.path.dirname(ads[-1]))}"
+    if os.path.isdir(pdir) and A.get("textos"):
+        os.makedirs(f"{out}/ads", exist_ok=True)
+        tela = lambda f: int(re.search(r"-(\d+)-feed45\.png$", f).group(1))
+        A["artes"] = {}
+        for a in A["textos"]["anuncios"]:
+            c, telas = a["cod"], []
+            for f in sorted(glob.glob(f"{pdir}/{a['cod']}/{a['cod']}-*-feed45.png"), key=tela):
+                par = {}
+                for k, src in (("f", f), ("s", f.replace("-feed45.png", "-story.png"))):
+                    if os.path.exists(src):
+                        name = f"{c}-{tela(f)}-{k}.jpg"
+                        im = Image.open(src).convert("RGB"); im.thumbnail((720, 1280))
+                        im.save(f"{out}/ads/{name}", quality=74, optimize=True, progressive=True)
+                        par[k] = f"ads/{name}?v={md5(src)[:8]}"
+                telas.append(par)
+            if telas:
+                A["artes"][c] = telas
     anuncios = json.dumps(A, ensure_ascii=False).replace("</", "<\\/")
 bdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "banco")
 banco = json.load(open(f"{bdir}/banco.json", encoding="utf-8"))

@@ -120,6 +120,9 @@ h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;m
 .ad .hook{font-family:"Playfair Display",serif;font-size:17px;margin:0;text-wrap:balance}
 .ad .ang{font-size:13px;color:var(--muted);margin:0}
 .ad .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.arstrip{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.arstrip img{flex:0 0 100%;width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:4px;scroll-snap-align:start;background:var(--line)}
+.arstrip img.st{aspect-ratio:9/16}
 .lock{display:flex;gap:10px;flex-wrap:wrap}
 .lock .btn{flex:1 1 220px}
 .muted{color:var(--muted);font-size:13px;margin:0}
@@ -835,7 +838,9 @@ function renderAds(){
   const st = adsState, dec = st.decisoes || {}, keep = st.ads || {};
   const aprovado = st.status === "aprovado";
   const tx = st.textos || {}, txOk = st.textosStatus === "aprovado";
-  const etapa = txOk ? 2 : aprovado ? 1 : 0;
+  const ar = st.artes || {}, arOk = st.artesStatus === "aprovado", ARTES = A.artes || {}, CODS = Object.keys(ARTES);
+  const etapa = arOk ? 3 : txOk || CODS.length ? 2 : aprovado ? 1 : 0;
+  const fmtA = window.__fmtArte || "f";
   const meses = {};
   A.sessenta.forEach(r => { (meses[r[0]] = meses[r[0]] || []).push(r); });
   box.innerHTML = `
@@ -849,7 +854,7 @@ function renderAds(){
   ${A.textos ? `<div class="panel" id="ads-textos">
     <span class="label">Etapa 2 · textos (${esc(A.textos.versao)})</span>
     <h2>Textos dos anúncios: ${A.textos.anuncios.length} para aprovar</h2>
-    <p class="muted">${txOk ? "Textos aprovados. O Designer está montando as artes (4:5 e 9:16), que aparecem aqui para você aprovar." : "Confira cada anúncio. Aprove um por um ou todos de uma vez; se algo precisar mudar, toque em Pedir ajuste e diga o quê. As artes só começam depois do seu OK."}</p>
+    <p class="muted">${txOk ? (CODS.length ? "Textos aprovados. As artes estão logo abaixo para você aprovar." : "Textos aprovados. O Designer está montando as artes (4:5 e 9:16), que aparecem aqui para você aprovar.") : "Confira cada anúncio. Aprove um por um ou todos de uma vez; se algo precisar mudar, toque em Pedir ajuste e diga o quê." + (CODS.length ? " As artes já foram feitas com estes textos (logo abaixo)." : " As artes só começam depois do seu OK.")}</p>
     <div class="adgrid">${A.textos.anuncios.map(a => { const e = tx[a.cod] || {}; return `<div class="ad ${e.st === "aprovado" ? "okd" : e.st === "ajuste" ? "fixd" : ""}">
       <span class="code">${esc(a.cod)} · ${esc(a.cab)}</span>
       <p class="hook">${esc(a.titulo.replace(/\s*\(\*\*\d+\*\*\)$/, ""))}</p>
@@ -864,6 +869,23 @@ function renderAds(){
     </div>`; }).join("")}</div>
     ${txOk ? `<button class="btn ghost" type="button" id="tx-reabrir">Reabrir os textos</button>` : `<div class="actions" style="border:none;padding:0"><button class="btn ok" type="button" id="tx-todos">Aprovar todos os textos e seguir para as artes</button></div>`}
     <p class="msg" id="tx-msg"></p>
+  </div>` : ""}
+
+  ${CODS.length ? `<div class="panel" id="ads-artes">
+    <span class="label">Etapa 3 · artes (estilo sem faixa)</span>
+    <h2>Artes dos anúncios: ${CODS.length} para aprovar</h2>
+    <p class="muted">${arOk ? "Artes aprovadas. Próximo passo: subir as campanhas <b>pausadas</b> na conta, só com o seu OK nas travas do dinheiro abaixo." : "Cada anúncio tem as telas no formato do feed (4:5) e do story (9:16). Arraste para o lado para ver o carrossel. Aprove um por um ou todos; se algo precisar mudar, toque em Pedir ajuste e diga o quê."}</p>
+    <div class="row" style="display:flex;gap:6px;margin-bottom:10px" role="group" aria-label="Formato"><button type="button" class="sbtn" data-arfmt="f" aria-pressed="${fmtA === "f"}">Feed 4:5</button><button type="button" class="sbtn" data-arfmt="s" aria-pressed="${fmtA === "s"}">Story 9:16</button></div>
+    <div class="adgrid">${CODS.map(c => { const e = ar[c] || {}, t = (A.textos.anuncios.find(a => a.cod === c) || {}), telas = ARTES[c]; return `<div class="ad ${e.st === "aprovado" ? "okd" : e.st === "ajuste" ? "fixd" : ""}">
+      <span class="code">${esc(c)} · ${esc(t.cab || "")}</span>
+      <div class="arstrip">${telas.map((x, i) => `<img src="${esc(x[fmtA] || x.f)}" alt="${esc(c)}, tela ${i + 1} de ${telas.length}" loading="lazy" class="${fmtA === "s" ? "st" : ""}">`).join("")}</div>
+      <span class="ang">${telas.length} ${telas.length > 1 ? "telas" : "tela"}${telas.length > 1 ? " · arraste para o lado" : ""}</span>
+      ${e.st === "ajuste" && e.pedido ? `<p class="ang" style="color:var(--fix)"><b>Seu pedido:</b> ${esc(e.pedido)}</p>` : ""}
+      ${arOk ? "" : `<div class="row"><button type="button" class="sbtn" data-arok="${esc(c)}" aria-pressed="${e.st === "aprovado"}">${e.st === "aprovado" ? "Aprovado ✓" : "Aprovar"}</button><button type="button" class="sbtn" data-arfix="${esc(c)}">Pedir ajuste</button></div>
+      <div data-arbox="${esc(c)}" hidden style="display:flex;flex-direction:column;gap:6px"><textarea style="font:inherit;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);min-height:60px" placeholder="O que mudar nesta arte? (diga a tela: 1, 2…)"></textarea><button type="button" class="btn fix" data-arsend="${esc(c)}">Enviar pedido de ajuste</button></div>`}
+    </div>`; }).join("")}</div>
+    ${arOk ? `<button class="btn ghost" type="button" id="ar-reabrir">Reabrir as artes</button>` : `<div class="actions" style="border:none;padding:0"><button class="btn ok" type="button" id="ar-todos">Aprovar todas as artes</button></div>`}
+    <p class="msg" id="ar-msg"></p>
   </div>` : ""}
 
   <div class="panel"><h2>Arquitetura do ano</h2>
@@ -988,6 +1010,31 @@ function renderAds(){
     await saveAds({textos: novo, textosStatus: "aprovado", textosAprovadosEm: new Date().toISOString()});
     msg.className = "msg"; msg.textContent = ok ? "Textos aprovados e enviados ao Claude." : "Textos aprovados. Avise o Claude na conversa para seguir.";
   });
+  box.querySelectorAll("[data-arfmt]").forEach(b => b.addEventListener("click", () => { window.__fmtArte = b.dataset.arfmt; const y = scrollY; renderAds(); scrollTo(0, y); }));
+  box.querySelectorAll("[data-arok]").forEach(b => b.addEventListener("click", async () => {
+    const c = b.dataset.arok, cur = (adsState.artes || {})[c] || {};
+    await saveAds({artes: {...(adsState.artes || {}), [c]: cur.st === "aprovado" ? {} : {st: "aprovado", em: new Date().toISOString()}}});
+  }));
+  box.querySelectorAll("[data-arfix]").forEach(b => b.addEventListener("click", () => { const bx = box.querySelector(`[data-arbox="${b.dataset.arfix}"]`); bx.hidden = !bx.hidden; if (!bx.hidden) bx.querySelector("textarea").focus(); }));
+  box.querySelectorAll("[data-arsend]").forEach(b => b.addEventListener("click", async () => {
+    const c = b.dataset.arsend, ta = box.querySelector(`[data-arbox="${c}"] textarea`), pedido = ta.value.trim(), msg = box.querySelector("#ar-msg");
+    if (!pedido) { ta.focus(); return; }
+    b.disabled = true;
+    const ok = await avisar(b, `Ajuste pedido na arte do anúncio ${c} (${A.id}): ${pedido}`);
+    await saveAds({artes: {...(adsState.artes || {}), [c]: {st: "ajuste", pedido, em: new Date().toISOString()}}});
+    msg.className = "msg"; msg.textContent = ok ? `Pedido de ajuste do ${c} enviado ao Claude.` : `Pedido do ${c} salvo. Avise o Claude na conversa.`;
+  }));
+  const artodos = box.querySelector("#ar-todos");
+  if (artodos) artodos.addEventListener("click", async () => {
+    const msg = box.querySelector("#ar-msg"), t = adsState.artes || {};
+    const ajustes = CODS.filter(c => (t[c] || {}).st === "ajuste");
+    artodos.disabled = true;
+    const ok = await avisar(artodos, `Artes dos anúncios APROVADAS na Central (${A.id}).` + (ajustes.length ? ` Com ajuste pedido antes: ${ajustes.join(", ")}.` : "") + " Próximo: subir PAUSADA só com o OK do dono.");
+    const novo = {...t}; CODS.forEach(c => { if ((novo[c] || {}).st !== "ajuste") novo[c] = {st: "aprovado", em: new Date().toISOString()}; });
+    await saveAds({artes: novo, artesStatus: "aprovado", artesAprovadasEm: new Date().toISOString()});
+    msg.className = "msg"; msg.textContent = ok ? "Artes aprovadas e enviadas ao Claude." : "Artes aprovadas. Avise o Claude na conversa.";
+  });
+  const arr = box.querySelector("#ar-reabrir"); if (arr) arr.addEventListener("click", () => saveAds({artesStatus: "pendente"}));
   const txr = box.querySelector("#tx-reabrir"); if (txr) txr.addEventListener("click", () => saveAds({textosStatus: "pendente"}));
   const re = box.querySelector("#ads-reabrir");
   if (re) re.addEventListener("click", () => saveAds({status: "pendente"}));
