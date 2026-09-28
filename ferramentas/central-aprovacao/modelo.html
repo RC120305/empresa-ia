@@ -59,6 +59,13 @@ h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;m
 .track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;aspect-ratio:3/4}
 .track::-webkit-scrollbar{display:none}
 .track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start}
+.adcard .track{aspect-ratio:4/5}
+.adcard.fmt-s .track{aspect-ratio:9/16}
+.adinfo{margin:0;display:flex;flex-direction:column;gap:4px;font-size:13px;border-left:2px solid var(--line);padding-left:10px}
+.adinfo div{display:flex;flex-wrap:wrap;gap:0 6px}
+.adinfo dt{color:var(--muted);font-weight:600}
+.adinfo dt::after{content:":"}
+.adinfo dd{margin:0}
 .count{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:12px;padding:2px 8px;border-radius:10px;font-variant-numeric:tabular-nums}
 .nav{position:absolute;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.88);color:#33291F;font-size:18px;cursor:pointer;display:grid;place-items:center}
 .nav.prev{left:8px}.nav.next{right:8px}.nav[disabled]{opacity:0;pointer-events:none}
@@ -120,9 +127,7 @@ h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;m
 .ad .hook{font-family:"Playfair Display",serif;font-size:17px;margin:0;text-wrap:balance}
 .ad .ang{font-size:13px;color:var(--muted);margin:0}
 .ad .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.arstrip{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding-bottom:4px}
-.arstrip img{flex:0 0 100%;width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:4px;scroll-snap-align:start;background:var(--line)}
-.arstrip img.st{aspect-ratio:9/16}
+
 .lock{display:flex;gap:10px;flex-wrap:wrap}
 .lock .btn{flex:1 1 220px}
 .muted{color:var(--muted);font-size:13px;margin:0}
@@ -246,7 +251,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
 
   <div id="weeks" style="display:flex;flex-direction:column;gap:36px"></div>
   </div>
-  <div id="sec-ads" class="ads" hidden></div>
+  <div id="sec-ads" class="ads" hidden><div id="ads-cards" style="display:flex;flex-direction:column;gap:36px"></div><div id="ads-main" class="ads"></div></div>
   <section id="sec-chat" class="chat" hidden aria-labelledby="chat-t">
     <div>
       <h2 id="chat-t">Conversa com a equipe</h2>
@@ -305,6 +310,10 @@ const ESTILOS = [{k:"1",n:"sem faixa",d:"Texto direto sobre a foto"},{k:"2",n:"c
 const FMT = {carrossel:"Carrossel", reels:"Reels", imagem:"Imagem"};
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const byId = Object.fromEntries(POSTS.map(p => [p.n, p]));
+const ADCARDS = (ANUNCIOS && ANUNCIOS.cards) || [];
+ADCARDS.forEach(p => byId[p.n] = p);
+const ESTILOS_AD = [{k:"f",n:"Feed 4:5",d:"Como aparece no feed"},{k:"s",n:"Story 9:16",d:"Como aparece nos stories e no Reels"}];
+const cardId = p => (p.ad ? "ad-" : "post-") + p.n;
 const state = {};           // n -> decision doc
 let db = null, assets = null, comments = null;
 const pendingImgs = {};     // n -> [{id,url,nome}] fotos de fora (assets)
@@ -355,32 +364,34 @@ function buildCards(){
 
 function buildCard(p){
   const ready = p.imgs.length > 0;
-  const card = document.createElement("article"); card.className = "card"; card.id = "post-" + p.n;
+  const card = document.createElement("article"); card.className = "card" + (p.ad ? " adcard" : ""); card.id = cardId(p);
+  const L = p.ad ? "texto" : "legenda", QUEM = p.ad ? `anúncio ${p.n}` : `post ${p.n}`;
   const media = ready
-    ? `<div class="car"><div class="track" tabindex="0" aria-label="Imagens do post ${p.n}">` +
-      p.imgs.map((s,i)=>`<img src="${s}" alt="Post ${p.n}, tela ${i+1}" loading="lazy">`).join("") + `</div>` +
+    ? `<div class="car"><div class="track" tabindex="0" aria-label="Imagens do ${QUEM}">` +
+      p.imgs.map((s,i)=>`<img src="${s}" alt="${p.ad ? "Anúncio" : "Post"} ${p.n}, tela ${i+1}" loading="lazy">`).join("") + `</div>` +
       (p.imgs.length>1?`<span class="count">1/${p.imgs.length}</span><button class="nav prev" aria-label="Tela anterior" disabled>‹</button><button class="nav next" aria-label="Próxima tela">›</button>`:"") +
       `</div>` + (p.imgs.length>1?`<div class="dots">${p.imgs.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:"")
     : `<div class="reelbox"><span class="label">Reels · 9:16</span><h3>${esc(p.tema)}</h3><p>Aguardando o vídeo da produtora. Se não chegar a tempo, sai a versão com fotos do banco de imagens.</p></div>`;
   const telas = ready ? p.imgs.map((_,i)=>`<option value="Tela ${i+1}">Tela ${i+1}</option>`).join("") : "";
   card.innerHTML = `
     <div class="card-top"><div class="avatar" aria-hidden="true">C</div>
-      <div class="who"><b>hotelcabanasbonito</b><span>${p.dia}, ${p.data} · ${p.hora}</span></div>
-      <span class="num">POST ${p.n}</span></div>
+      <div class="who"><b>hotelcabanasbonito</b><span>${p.ad ? "Patrocinado · " + esc(p.cab) : `${p.dia}, ${p.data} · ${p.hora}`}</span></div>
+      <span class="num">${p.ad ? "ANÚNCIO" : "POST"} ${p.n}</span></div>
     ${media}
     <div class="body">
-      ${ready ? `<div class="styles" role="group" aria-label="Estilo da arte"><span>Estilo:</span>${ESTILOS.map(e=>`<button type="button" class="sbtn" data-estilo="${e.k}" aria-pressed="false" title="${e.d}">${e.k} · ${e.n}</button>`).join("")}</div>` : ""}
+      ${ready ? `<div class="styles" role="group" aria-label="${p.ad ? "Formato" : "Estilo da arte"}"><span>${p.ad ? "Formato:" : "Estilo:"}</span>${(p.ad ? ESTILOS_AD : ESTILOS).map(e=>`<button type="button" class="sbtn" data-estilo="${e.k}" aria-pressed="false" title="${e.d}">${p.ad ? e.n : e.k + " · " + e.n}</button>`).join("")}</div>` : ""}
       <div class="meta"><span class="chip">${FMT[p.fmt]||p.fmt}</span><span class="st ${ready?"pendente":"video"}" data-st>${ready?"para revisar":"aguardando vídeo"}</span></div>
       <p class="theme">${esc(p.tema)}</p>
       <p class="cap clip">${caption(p.leg)}</p>
-      <span class="edited" data-edited hidden>Legenda editada por você</span>
-      <div class="links"><button class="linkbtn" data-more type="button" aria-expanded="false">ver legenda completa</button><button class="linkbtn" data-copy type="button">copiar legenda</button><button class="linkbtn" data-edit type="button" hidden>editar legenda</button><button class="linkbtn" data-art type="button" hidden>editar texto da arte</button></div>
+      <span class="edited" data-edited hidden>${p.ad ? "Texto editado" : "Legenda editada"} por você</span>
+      ${p.ad ? `<dl class="adinfo"><div><dt>Título</dt><dd>${esc(p.titulo)}</dd></div><div><dt>Descrição</dt><dd>${esc(p.descricao)}</dd></div><div><dt>Botão</dt><dd>${esc(p.botao)}</dd></div>${p.variacaoB ? `<div><dt>Variação B da 1ª linha</dt><dd>${esc(p.variacaoB)}</dd></div>` : ""}${p.mensagem ? `<div><dt>Mensagem pronta no WhatsApp</dt><dd>${esc(p.mensagem)}</dd></div>` : ""}</dl>` : ""}
+      <div class="links"><button class="linkbtn" data-more type="button" aria-expanded="false">ver ${L} completo${p.ad ? "" : "a"}</button><button class="linkbtn" data-copy type="button">copiar ${L}</button><button class="linkbtn" data-edit type="button" hidden>editar ${L}</button><button class="linkbtn" data-art type="button" hidden>editar texto da arte</button></div>
       <div class="artbox" data-artbox hidden>
-        <span class="label" style="font-size:11px">Texto da arte · prévia ao vivo no estilo escolhido</span>
+        <span class="label" style="font-size:11px">Texto da arte · prévia ao vivo no ${p.ad ? "formato" : "estilo"} escolhido</span>
         <div class="tabs" role="tablist" data-tabs></div>
         <div class="stage" data-stage><iframe title="Prévia da arte" data-frame loading="lazy"></iframe></div>
         <label>Título da arte<textarea data-titulo maxlength="120"></textarea></label>
-        <p class="hint">Use **palavra** para negrito, *palavra* para itálico e Enter para quebrar a linha. No estilo 2 (caixa central) tudo fica em itálico.</p>
+        <p class="hint">Use **palavra** para negrito, *palavra* para itálico e Enter para quebrar a linha.${p.ad ? " O texto vale para o feed e para o story." : " No estilo 2 (caixa central) tudo fica em itálico."}</p>
         <label>Linha de apoio<input type="text" data-apoio maxlength="80"></label>
         <div class="actions" style="border:none;padding:0">
           <button class="btn ok" type="button" data-art-save>Salvar texto da arte</button>
@@ -389,11 +400,11 @@ function buildCard(p){
         <p class="msg" data-art-msg></p>
       </div>
       <div class="editbox" data-editbox hidden>
-        <label for="leg-${p.n}" class="label" style="font-size:11px">Legenda do post ${p.n}</label>
+        <label for="leg-${p.n}" class="label" style="font-size:11px">${p.ad ? "Texto principal do anúncio" : "Legenda do post"} ${p.n}</label>
         <textarea id="leg-${p.n}" spellcheck="true"></textarea>
         <div class="editmeta"><span data-chars></span><span data-first></span><span data-tags></span></div>
         <div class="actions" style="border:none;padding:0">
-          <button class="btn ok" type="button" data-save>Salvar legenda</button>
+          <button class="btn ok" type="button" data-save>Salvar ${L}</button>
           <button class="btn ghost" type="button" data-cancel-edit>Cancelar</button>
           <button class="btn ghost" type="button" data-restore hidden>Voltar à original</button>
         </div>
@@ -407,8 +418,8 @@ function buildCard(p){
       <form class="fixbox" data-form hidden>
         <label for="onde-${p.n}">O que mudar
           <select id="onde-${p.n}" name="onde">
-            <option value="Post inteiro">Post inteiro</option>${telas}
-            <option value="Texto da arte">Texto da arte (diga a tela e o novo texto)</option><option value="Legenda">Legenda</option><option value="Hashtags">Hashtags</option><option value="Data ou horário">Data ou horário</option>
+            <option value="${p.ad ? "Anúncio inteiro" : "Post inteiro"}">${p.ad ? "Anúncio inteiro" : "Post inteiro"}</option>${telas}
+            <option value="Texto da arte">Texto da arte (diga a tela e o novo texto)</option>${p.ad ? `<option value="Texto principal">Texto principal</option><option value="Título, descrição ou botão">Título, descrição ou botão</option><option value="Mensagem pronta">Mensagem pronta do WhatsApp</option>` : `<option value="Legenda">Legenda</option><option value="Hashtags">Hashtags</option><option value="Data ou horário">Data ou horário</option>`}
           </select></label>
         <label for="pedido-${p.n}">Seu pedido
           <textarea id="pedido-${p.n}" name="pedido" placeholder="Ex.: troca a foto da tela 3 por uma da piscina; deixa a legenda mais curta" required></textarea></label>
@@ -439,12 +450,12 @@ function buildCard(p){
 
   // legenda
   const more = card.querySelector("[data-more]"), cap = card.querySelector(".cap");
-  more.addEventListener("click", () => { const open = cap.classList.toggle("clip") === false; more.textContent = open ? "recolher legenda" : "ver legenda completa"; more.setAttribute("aria-expanded", open); });
+  more.addEventListener("click", () => { const open = cap.classList.toggle("clip") === false; more.textContent = open ? "recolher " + L : "ver " + L + (p.ad ? " completo" : " completa"); more.setAttribute("aria-expanded", open); });
   const copyBtn = card.querySelector("[data-copy]");
   copyBtn.addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText(legAtual(p.n)); copyBtn.textContent = "legenda copiada"; }
+    try { await navigator.clipboard.writeText(legAtual(p.n)); copyBtn.textContent = L + " copiad" + (p.ad ? "o" : "a"); }
     catch { cap.classList.remove("clip"); const r = document.createRange(); r.selectNodeContents(cap); const s = getSelection(); s.removeAllRanges(); s.addRange(r); copyBtn.textContent = "texto selecionado: copie"; }
-    setTimeout(() => copyBtn.textContent = "copiar legenda", 2500);
+    setTimeout(() => copyBtn.textContent = "copiar " + L, 2500);
   });
 
   // carrossel
@@ -474,19 +485,19 @@ function buildCard(p){
   card.querySelector("[data-save]").addEventListener("click", async (e) => {
     if (!db) return;
     const v = ta.value.trim();
-    if (!v) { emsg.className = "msg err"; emsg.textContent = "A legenda não pode ficar vazia."; return; }
+    if (!v) { emsg.className = "msg err"; emsg.textContent = (p.ad ? "O texto" : "A legenda") + " não pode ficar vazi" + (p.ad ? "o." : "a."); return; }
     e.target.disabled = true;
     try {
       const patch = v === p.leg ? {legenda: null, legendaEditadaEm: null} : {legenda: v, legendaEditadaEm: new Date().toISOString()};
       if (state[p.n]?.status === "aprovado") patch.status = "pendente";
       await save(p.n, patch);
-      eb.hidden = true; smsg.className = "msg"; smsg.textContent = "Legenda salva." + (patch.status ? " O post voltou para revisão: aprove de novo quando quiser." : "");
+      eb.hidden = true; smsg.className = "msg"; smsg.textContent = (p.ad ? "Texto salvo." : "Legenda salva.") + (patch.status ? ` O ${p.ad ? "anúncio" : "post"} voltou para revisão: aprove de novo quando quiser.` : "");
     } catch { emsg.className = "msg err"; emsg.textContent = "Não foi possível salvar agora. Tente de novo em instantes."; }
     e.target.disabled = false;
   });
   card.querySelector("[data-restore]").addEventListener("click", async () => {
     if (!db) return;
-    try { await save(p.n, {legenda: null, legendaEditadaEm: null}); eb.hidden = true; smsg.className = "msg"; smsg.textContent = "Legenda original restaurada."; }
+    try { await save(p.n, {legenda: null, legendaEditadaEm: null}); eb.hidden = true; smsg.className = "msg"; smsg.textContent = (p.ad ? "Texto original restaurado." : "Legenda original restaurada."); }
     catch { emsg.className = "msg err"; emsg.textContent = "Não foi possível restaurar agora."; }
   });
 
@@ -504,6 +515,7 @@ function buildCard(p){
       tela = n;
       tabs.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.t === n)));
       frame.dataset.t = n;
+      if (p.ad) { const st9 = estiloAtual() === "s"; frame.style.height = st9 ? "1920px" : "1350px"; stage.style.aspectRatio = st9 ? "9/16" : "4/5"; }
       frame.src = p.pecas[estiloAtual()][n-1];
     };
     window.addEventListener("message", (e) => {
@@ -534,7 +546,7 @@ function buildCard(p){
           if (await comments.canSendToClaude() === "available") {
             const anchor = await comments.anchorFor(card);
             const linhas = mudou.map(n => `Tela ${n}: título "${draft[n].titulo.replace(/\n/g," / ")}" · apoio "${draft[n].apoio}"`).join("\n");
-            await comments.sendToClaude({anchor, text: (`Texto da arte editado na Central (${MES}), POST ${p.n}. Gerar as artes finais nos 3 estilos:\n` + linhas).slice(0, 3900)});
+            await comments.sendToClaude({anchor, text: ((p.ad ? `Texto da arte editado na Central, ANÚNCIO ${p.n} (${ANUNCIOS.id}). Gerar as artes finais (feed 4:5 e story 9:16):\n` : `Texto da arte editado na Central (${MES}), POST ${p.n}. Gerar as artes finais nos 3 estilos:\n`) + linhas).slice(0, 3900)});
             aviso = true;
           }
         } catch {}
@@ -556,7 +568,7 @@ function buildCard(p){
   card.querySelectorAll("[data-estilo]").forEach(b => b.addEventListener("click", async () => {
     const e = b.dataset.estilo;
     applyStyle(p.n, e);
-    if (db) { try { await save(p.n, {estilo: e}); } catch {} }
+    if (db && !p.ad) { try { await save(p.n, {estilo: e}); } catch {} }
   }));
 
   // ações
@@ -628,10 +640,10 @@ function buildCard(p){
         if (await comments.canSendToClaude() === "available") {
           const anchor = await comments.anchorFor(card);
           const fotos = (pendingImgs[p.n] || []).length, banco = pendingBanco[p.n] || [];
-          const txt = `Correção na Central de Aprovação (${MES}), POST ${p.n} (${p.tema}) · ${form.onde.value}: ${pedido}`
+          const txt = (p.ad ? `Correção de ANÚNCIO na Central (${ANUNCIOS.id}), ${p.n} (${p.cab})` : `Correção na Central de Aprovação (${MES}), POST ${p.n} (${p.tema})`) + ` · ${form.onde.value}: ${pedido}`
             + (banco.length ? ` · Foto(s) do banco: ${banco.map(b => `${b.nome} [${b.id}] (${b.pasta})`).join("; ")}.` : "")
             + (fotos ? ` · ${fotos} foto(s) de fora anexada(s) na central, para guardar no banco na pasta "${form.pasta.value}"${form.desc.value.trim() ? ` (${form.desc.value.trim()})` : ""}.` : "")
-            + ` Estilo escolhido: ${p.atual || p.padrao}.`;
+            + (p.ad ? ` Formato visto: ${p.atual === "s" ? "story 9:16" : "feed 4:5"}.` : ` Estilo escolhido: ${p.atual || p.padrao}.`);
           await comments.sendToClaude({anchor, text: txt.slice(0, 3900)});
           enviadoAoClaude = true;
         }
@@ -666,63 +678,67 @@ function legAtual(n){ return state[n]?.legenda || byId[n].leg; }
 
 // prévia ao vivo das telas com texto editado que ainda não viraram arte final
 function livePreviews(n){
-  const p = byId[n], card = document.getElementById("post-" + n);
+  const p = byId[n], card = document.getElementById(cardId(p));
   if (!p.pecas || !card) return;
   const track = card.querySelector(".track"); if (!track) return;
   const tx = state[n]?.textos || {}, est = p.atual || p.padrao || "1";
-  const slides = [...track.children];
-  slides.forEach((el, i) => {
-    const t = tx[i+1], pend = t && t.situacao !== "feito";
+  const H = p.ad ? (est === "s" ? 1920 : 1350) : 1440, fixo = p.ad && est === "s";
+  [...track.children].forEach((el, i) => {
+    const t = tx[i+1], pend = !!(t && t.situacao !== "feito");
     const isLive = el.classList.contains("live");
-    if (pend) {
+    if (pend || fixo) {
       const src = p.pecas[est]?.[i]; if (!src) return;
       let box = el;
       if (!isLive) {
         box = document.createElement("div"); box.className = "live";
-        box.innerHTML = `<iframe title="Prévia da tela ${i+1}" loading="lazy"></iframe><span class="tag">prévia da sua edição · arte final em preparo</span>`;
+        box.innerHTML = `<iframe title="Tela ${i+1}" loading="lazy"></iframe><span class="tag" hidden>prévia da sua edição · arte final em preparo</span>`;
         el.replaceWith(box);
         const fr = box.querySelector("iframe");
         new ResizeObserver(() => { fr.style.transform = "scale(" + (box.clientWidth / 1080) + ")"; }).observe(box);
       }
       const fr = box.querySelector("iframe");
-      fr.dataset.titulo = md2html(t.titulo, est === "2"); fr.dataset.apoio = t.apoio || "";
+      fr.style.height = H + "px"; box.querySelector(".tag").hidden = !pend;
+      fr.dataset.pend = pend ? "1" : "";
+      fr.dataset.titulo = pend ? md2html(t.titulo, est === "2") : ""; fr.dataset.apoio = pend ? (t.apoio || "") : "";
       if (fr.dataset.src !== src) { fr.dataset.src = src; fr.src = src; }
-      else fr.contentWindow?.postMessage({tipo:"peca-set", titulo: fr.dataset.titulo, apoio: fr.dataset.apoio}, "*");
+      else if (pend) fr.contentWindow?.postMessage({tipo:"peca-set", titulo: fr.dataset.titulo, apoio: fr.dataset.apoio}, "*");
     } else if (isLive) {
-      const im = document.createElement("img"); im.src = p.imgs[i]; im.alt = `Post ${n}, tela ${i+1}`; el.replaceWith(im);
+      const im = document.createElement("img"); im.src = p.imgs[i]; im.alt = `${p.ad ? "Anúncio" : "Post"} ${n}, tela ${i+1}`; el.replaceWith(im);
     }
   });
 }
 window.addEventListener("message", (e) => {
   const d = e.data || {}; if (d.tipo !== "peca-textos") return;
-  document.querySelectorAll(".live iframe").forEach(fr => { if (fr.contentWindow === e.source) fr.contentWindow.postMessage({tipo:"peca-set", titulo: fr.dataset.titulo, apoio: fr.dataset.apoio}, "*"); });
+  document.querySelectorAll(".live iframe").forEach(fr => { if (fr.contentWindow === e.source && fr.dataset.pend) fr.contentWindow.postMessage({tipo:"peca-set", titulo: fr.dataset.titulo, apoio: fr.dataset.apoio}, "*"); });
 });
 
 function applyStyle(n, e){
   const p = byId[n]; if (!p.estilos || !p.estilos[e]) return;
   p.imgs = p.estilos[e]; p.atual = e;
-  const card = document.getElementById("post-" + n);
+  const card = document.getElementById(cardId(p));
+  if (p.ad) { card.classList.toggle("fmt-s", e === "s"); }
   const track = card.querySelector(".track");
   if (track) [...track.children].forEach((el,i) => { if (el.tagName === "IMG" && p.imgs[i]) el.src = p.imgs[i]; });
   livePreviews(n);
   card.querySelectorAll("[data-estilo]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.estilo === e)));
-  renderGrade();
+  if (!p.ad) renderGrade();
 }
 
 async function save(n, patch){
-  const ref = db.collection("decisoes").doc(docId(n));
-  const base = state[n] ? {...state[n]} : {mes: MES, post: n, tema: byId[n].tema, data: byId[n].data};
+  const p = byId[n];
+  const ref = p.ad ? db.collection("anuncios_artes").doc(ANUNCIOS.id + "_" + n) : db.collection("decisoes").doc(docId(n));
+  const base = state[n] ? {...state[n]} : p.ad ? {plano: ANUNCIOS.id, cod: n, tema: p.tema, cab: p.cab} : {mes: MES, post: n, tema: p.tema, data: p.data};
   const body = {...base, ...patch, atualizadoEm: new Date().toISOString()};
   await ref.set(body);
 }
 
 function paint(n){
-  const card = document.getElementById("post-" + n); if (!card) return;
-  const d = state[n], p = byId[n];
+  const p = byId[n], card = document.getElementById(cardId(p)); if (!card) return;
+  const d = state[n];
   card.querySelector(".cap").innerHTML = caption(legAtual(n));
   card.querySelector("[data-edited]").hidden = !d?.legenda;
   if (!p.imgs.length) return;
-  const est = d?.estilo || p.padrao;
+  const est = p.ad ? (p.atual || p.padrao) : (d?.estilo || p.padrao);
   if (est && est !== p.atual) applyStyle(n, est);
   else card.querySelectorAll("[data-estilo]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.estilo === (p.atual||p.padrao))));
   const st = d?.status || "pendente";
@@ -833,14 +849,13 @@ function mixPersonas(ads, keep){
   return Object.entries(tot).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `<span class="pill">${esc(k)} ${Math.round(v/n*100)}%</span>`).join(" ");
 }
 function renderAds(){
-  const A = ANUNCIOS, box = document.getElementById("sec-ads");
+  const A = ANUNCIOS, box = document.getElementById("ads-main");
   if (!A) { box.innerHTML = `<div class="panel"><h2>Anúncios</h2><p class="muted">Ainda não há plano de anúncios para este mês.</p></div>`; return; }
   const st = adsState, dec = st.decisoes || {}, keep = st.ads || {};
   const aprovado = st.status === "aprovado";
   const tx = st.textos || {}, txOk = st.textosStatus === "aprovado";
-  const ar = st.artes || {}, arOk = st.artesStatus === "aprovado", ARTES = A.artes || {}, CODS = Object.keys(ARTES);
+  const CODS = ADCARDS.map(c => c.n), arOk = CODS.length && CODS.every(c => state[c]?.status === "aprovado");
   const etapa = arOk ? 3 : txOk || CODS.length ? 2 : aprovado ? 1 : 0;
-  const fmtA = window.__fmtArte || "f";
   const meses = {};
   A.sessenta.forEach(r => { (meses[r[0]] = meses[r[0]] || []).push(r); });
   box.innerHTML = `
@@ -851,24 +866,8 @@ function renderAds(){
     <div class="steps">${A.etapas.map((e,i)=>`<span class="${i<etapa?"ok":i===etapa?"on":""}">${i+1}. ${esc(e)}</span>`).join("")}</div>
     ${aprovado && !A.textos ? `<p class="msg">Plano aprovado. Próxima etapa: a equipe escreve os textos dos anúncios mantidos, que aparecem aqui para você aprovar e editar.</p>` : ""}
   </div>
-  ${CODS.length ? `<div class="panel" id="ads-artes">
-    <span class="label">Etapa 3 · artes (estilo sem faixa)</span>
-    <h2>Artes dos anúncios: ${CODS.length} para aprovar</h2>
-    <p class="muted">${arOk ? "Artes aprovadas. Próximo passo: subir as campanhas <b>pausadas</b> na conta, só com o seu OK nas travas do dinheiro abaixo." : "Cada anúncio tem as telas no formato do feed (4:5) e do story (9:16). Arraste para o lado para ver o carrossel. Aprove um por um ou todos; se algo precisar mudar, toque em Pedir ajuste e diga o quê."}</p>
-    <div class="row" style="display:flex;gap:6px;margin-bottom:10px" role="group" aria-label="Formato"><button type="button" class="sbtn" data-arfmt="f" aria-pressed="${fmtA === "f"}">Feed 4:5</button><button type="button" class="sbtn" data-arfmt="s" aria-pressed="${fmtA === "s"}">Story 9:16</button></div>
-    <div class="adgrid">${CODS.map(c => { const e = ar[c] || {}, t = (A.textos.anuncios.find(a => a.cod === c) || {}), telas = ARTES[c]; return `<div class="ad ${e.st === "aprovado" ? "okd" : e.st === "ajuste" ? "fixd" : ""}">
-      <span class="code">${esc(c)} · ${esc(t.cab || "")}</span>
-      <div class="arstrip">${telas.map((x, i) => `<img src="${esc(x[fmtA] || x.f)}" alt="${esc(c)}, tela ${i + 1} de ${telas.length}" loading="lazy" class="${fmtA === "s" ? "st" : ""}">`).join("")}</div>
-      <span class="ang">${telas.length} ${telas.length > 1 ? "telas" : "tela"}${telas.length > 1 ? " · arraste para o lado" : ""}</span>
-      ${e.st === "ajuste" && e.pedido ? `<p class="ang" style="color:var(--fix)"><b>Seu pedido:</b> ${esc(e.pedido)}</p>` : ""}
-      ${arOk ? "" : `<div class="row"><button type="button" class="sbtn" data-arok="${esc(c)}" aria-pressed="${e.st === "aprovado"}">${e.st === "aprovado" ? "Aprovado ✓" : "Aprovar"}</button><button type="button" class="sbtn" data-arfix="${esc(c)}">Pedir ajuste</button></div>
-      <div data-arbox="${esc(c)}" hidden style="display:flex;flex-direction:column;gap:6px"><textarea style="font:inherit;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);min-height:60px" placeholder="O que mudar nesta arte? (diga a tela: 1, 2…)"></textarea><button type="button" class="btn fix" data-arsend="${esc(c)}">Enviar pedido de ajuste</button></div>`}
-    </div>`; }).join("")}</div>
-    ${arOk ? `<button class="btn ghost" type="button" id="ar-reabrir">Reabrir as artes</button>` : `<div class="actions" style="border:none;padding:0"><button class="btn ok" type="button" id="ar-todos">Aprovar todas as artes</button></div>`}
-    <p class="msg" id="ar-msg"></p>
-  </div>` : ""}
 
-  ${A.textos ? `<div class="panel" id="ads-textos">
+  ${A.textos && !CODS.length ? `<div class="panel" id="ads-textos">
     <span class="label">Etapa 2 · textos (${esc(A.textos.versao)})</span>
     <h2>Textos dos anúncios: ${A.textos.anuncios.length} para aprovar</h2>
     <p class="muted">${txOk ? (CODS.length ? "Textos aprovados. As artes estão logo abaixo para você aprovar." : "Textos aprovados. O Designer está montando as artes (4:5 e 9:16), que aparecem aqui para você aprovar.") : "Confira cada anúncio. Aprove um por um ou todos de uma vez; se algo precisar mudar, toque em Pedir ajuste e diga o quê." + (CODS.length ? " As artes já foram feitas com estes textos (logo abaixo)." : " As artes só começam depois do seu OK.")}</p>
@@ -1011,31 +1010,6 @@ function renderAds(){
     await saveAds({textos: novo, textosStatus: "aprovado", textosAprovadosEm: new Date().toISOString()});
     msg.className = "msg"; msg.textContent = ok ? "Textos aprovados e enviados ao Claude." : "Textos aprovados. Avise o Claude na conversa para seguir.";
   });
-  box.querySelectorAll("[data-arfmt]").forEach(b => b.addEventListener("click", () => { window.__fmtArte = b.dataset.arfmt; const y = scrollY; renderAds(); scrollTo(0, y); }));
-  box.querySelectorAll("[data-arok]").forEach(b => b.addEventListener("click", async () => {
-    const c = b.dataset.arok, cur = (adsState.artes || {})[c] || {};
-    await saveAds({artes: {...(adsState.artes || {}), [c]: cur.st === "aprovado" ? {} : {st: "aprovado", em: new Date().toISOString()}}});
-  }));
-  box.querySelectorAll("[data-arfix]").forEach(b => b.addEventListener("click", () => { const bx = box.querySelector(`[data-arbox="${b.dataset.arfix}"]`); bx.hidden = !bx.hidden; if (!bx.hidden) bx.querySelector("textarea").focus(); }));
-  box.querySelectorAll("[data-arsend]").forEach(b => b.addEventListener("click", async () => {
-    const c = b.dataset.arsend, ta = box.querySelector(`[data-arbox="${c}"] textarea`), pedido = ta.value.trim(), msg = box.querySelector("#ar-msg");
-    if (!pedido) { ta.focus(); return; }
-    b.disabled = true;
-    const ok = await avisar(b, `Ajuste pedido na arte do anúncio ${c} (${A.id}): ${pedido}`);
-    await saveAds({artes: {...(adsState.artes || {}), [c]: {st: "ajuste", pedido, em: new Date().toISOString()}}});
-    msg.className = "msg"; msg.textContent = ok ? `Pedido de ajuste do ${c} enviado ao Claude.` : `Pedido do ${c} salvo. Avise o Claude na conversa.`;
-  }));
-  const artodos = box.querySelector("#ar-todos");
-  if (artodos) artodos.addEventListener("click", async () => {
-    const msg = box.querySelector("#ar-msg"), t = adsState.artes || {};
-    const ajustes = CODS.filter(c => (t[c] || {}).st === "ajuste");
-    artodos.disabled = true;
-    const ok = await avisar(artodos, `Artes dos anúncios APROVADAS na Central (${A.id}).` + (ajustes.length ? ` Com ajuste pedido antes: ${ajustes.join(", ")}.` : "") + " Próximo: subir PAUSADA só com o OK do dono.");
-    const novo = {...t}; CODS.forEach(c => { if ((novo[c] || {}).st !== "ajuste") novo[c] = {st: "aprovado", em: new Date().toISOString()}; });
-    await saveAds({artes: novo, artesStatus: "aprovado", artesAprovadasEm: new Date().toISOString()});
-    msg.className = "msg"; msg.textContent = ok ? "Artes aprovadas e enviadas ao Claude." : "Artes aprovadas. Avise o Claude na conversa.";
-  });
-  const arr = box.querySelector("#ar-reabrir"); if (arr) arr.addEventListener("click", () => saveAds({artesStatus: "pendente"}));
   const txr = box.querySelector("#tx-reabrir"); if (txr) txr.addEventListener("click", () => saveAds({textosStatus: "pendente"}));
   const re = box.querySelector("#ads-reabrir");
   if (re) re.addEventListener("click", () => saveAds({status: "pendente"}));
@@ -1110,6 +1084,26 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && !document.
 document.getElementById("recarregar").addEventListener("click", () => location.reload());
 buildCards();
 POSTS.forEach(p => { if (p.padrao) applyStyle(p.n, p.padrao); });
+function buildAdCards(){
+  const box = document.getElementById("ads-cards"); if (!ADCARDS.length) return;
+  box.innerHTML = `<section class="panel"><span class="label">Etapa 3 · anúncios prontos para aprovar</span><h2>Os ${ADCARDS.length} anúncios</h2><p class="muted">Cada anúncio mostra as artes no feed (4:5) e no story (9:16), o texto e o botão. Aprove ou peça correção como nos posts: dá para trocar a foto (do banco ou de fora), editar o texto principal e o texto da arte. Aprovar não sobe nada: subir pausada e ativar continuam precisando do seu OK.</p><p class="muted" id="ads-tally"></p><p class="muted"><a href="#ads-main">Ver o plano, a verba e as decisões ↓</a></p></section>`;
+  const ordem = (ANUNCIOS.grupos || []).map(g => g.nome), pos = g => { const i = ordem.indexOf(g); return i < 0 ? 99 : i; };
+  const grupos = [...new Set(ADCARDS.map(p => p.grupo))].sort((a, b) => pos(a) - pos(b));
+  grupos.forEach(g => {
+    const sec = document.createElement("section"); sec.className = "week";
+    const lst = ADCARDS.filter(p => p.grupo === g);
+    sec.innerHTML = `<div class="week-head"><h2>${esc(g.split(" (")[0])}</h2><span class="label">${lst.length} anúncio${lst.length > 1 ? "s" : ""}</span></div><div class="cards"></div>`;
+    lst.forEach(p => sec.querySelector(".cards").appendChild(buildCard(p)));
+    box.appendChild(sec);
+  });
+  ADCARDS.forEach(p => applyStyle(p.n, "f"));
+}
+function tallyAds(){
+  const el = document.getElementById("ads-tally"); if (!el) return;
+  const ok = ADCARDS.filter(p => state[p.n]?.status === "aprovado").length, fix = ADCARDS.filter(p => state[p.n]?.status === "corrigir").length;
+  el.innerHTML = `<b>${ok}</b> aprovados · <b>${fix}</b> com correção pedida · <b>${ADCARDS.length - ok - fix}</b> para revisar`;
+}
+buildAdCards(); tallyAds();
 renderAds();
 renderGrade();
 tally();
@@ -1126,7 +1120,11 @@ tally();
   }
   if (!assets) document.querySelectorAll("[data-up]").forEach(u => u.hidden = true);
   document.querySelectorAll("[data-edit]").forEach(b => b.hidden = false);
-  POSTS.forEach(p => { if (p.pecas) document.querySelector("#post-" + p.n + " [data-art]").hidden = false; });
+  [...POSTS, ...ADCARDS].forEach(p => { if (p.pecas) document.querySelector("#" + cardId(p) + " [data-art]").hidden = false; });
+  if (ADCARDS.length) db.collection("anuncios_artes").where("plano","==",ANUNCIOS.id).onSnapshot(snap => {
+    snap.docs.forEach(d => { const b = d.data(); if (b && b.cod) state[b.cod] = b; });
+    ADCARDS.forEach(p => paint(p.n)); tallyAds(); renderAds();
+  }, () => {});
   db.collection("chat").onSnapshot(snap => {
     const docs = snap.docs.map(d => ({...d.data(), _id: d.id})).filter(m => m && m.texto);
     const porId = Object.fromEntries(docs.map(m => [m._id, m]));
