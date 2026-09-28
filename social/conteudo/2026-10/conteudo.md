@@ -397,3 +397,31 @@ sbreserva.silbeck.com.br/hotelcabanas · WhatsApp (67) 99117-1648
 
 ## A confirmar com o dono (consolidado)
 Nada pendente (27/09): todas as dúvidas foram respondidas pelo dono. Antes de publicar, só reconfirmar vaga do feriado de 20/11 (post 3).
+
+---
+
+## POST 13 · 25/10 (domingo) 18h · imagem · extra pedido pelo dono
+- Data: 25/10 (domingo) · 18h · Pilar: 1 (Contemplação) · Persona: Casais · Objetivo: reservar
+- Status: texto final (pedido do dono pela Central em 28/09/2026)
+- Justificativa: casais não dependem das férias escolares e o meio de semana é o gargalo do hotel (perfil-cabanas, "Prioridade comercial"); publicado em 25/10, alcança quem reserva de 45 a 50 dias antes: estadias do início de dezembro (1ª quinzena, baixa temporada em Bonito, com chuva; destino-bonito §3), além de fevereiro a abril.
+- Cuidado: não se sabe se a foto é da Cabana Casal ou da Master. A legenda **não nomeia o tipo** e não cita atributos de um tipo só (rede, balanço, banheira, metragem, "3 m", "privativa").
+
+### Briefing de arte
+FRASE: "A varanda é *de vocês*" (5) · apoio "DE DOMINGO A QUINTA, SEM PRESSA" (textos definidos pelo dono)
+Foto: pasta "Casal na cabana", `IMG_3751.JPG` (18JoXg), https://drive.google.com/file/d/18JoXgU9hUFp3gTBb0VLziQ-2pYEfGbaM/view (casal abraçado na varanda de madeira, luz de fim de tarde, olhando a mata). Feed 3:4.
+
+### Legenda
+Fim de tarde, uma varanda de madeira e a mata em volta. Ninguém olhando o relógio.
+
+A cabana suspensa nasceu de uma ideia dos nossos fundadores, Gilberto e Cleodete, inspirada numa estrutura que eles tinham no sítio da família. A proposta era simples: dormir na altura das árvores, com privacidade e respeito à natureza.
+Em volta, 40 hectares de área verde entre o Rio Formoso e o Rio Formosinho.
+
+Na diária: café da manhã (das 6h30 às 9h30), piscina climatizada, hidromassagem aquecida e sauna (das 7h às 22h) e a programação diária com monitor.
+Para fechar o dia a dois, dá para reservar o piquenique ao pôr do sol num deck à margem do Rio Formosinho (opcional, pelo WhatsApp de reservas).
+
+De domingo a quinta, o ritmo por aqui é outro. Na 1ª quinzena de dezembro e de fevereiro a abril, Bonito está na baixa temporada (fora os feriados).
+
+Manda para quem vai com você. E reserve direto: nossos valores já têm desconto para quem reserva direto.
+sbreserva.silbeck.com.br/hotelcabanas · WhatsApp (67) 99117-1648
+
+#hotelcabanasbonito #bonitoms #matogrossodosul #turismodenatureza #viagemadois
