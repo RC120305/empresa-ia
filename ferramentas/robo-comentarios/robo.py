@@ -13,14 +13,16 @@ Regras (aprovadas pelo dono em 28/09/2026, ver social/publicacao/robo-comentario
 - No máximo uma resposta por pessoa em cada post (só o 1º comentário dela com a palavra).
 - Sem arquivo de estado: cada rodada agendada cuida só dos comentários que chegaram desde o
   horário anterior da rotina (janelas que não se sobrepõem), então ninguém recebe duas respostas.
-A chave da Meta é aplicada pelo ambiente nas chamadas a graph.facebook.com (não vai no código).
+A chave da Meta é aplicada pelo ambiente nas chamadas a graph.facebook.com (não vai no código);
+ferramentas/meta/meta.py cuida de chave da Página ou de usuário.
 """
-import datetime, json, os, sys, unicodedata, urllib.parse, urllib.request
+import datetime, json, os, sys, unicodedata, urllib.parse
 
-API = "https://graph.facebook.com/v21.0"
-PAGINA, IG = "158244147578036", "17841403994091310"
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "meta"))
+import meta  # noqa: E402  (acesso à Meta; funciona com chave da Página ou de usuário)
+
+PAGINA, IG = meta.PAGINA, meta.IG
 PALAVRA = "reserva"
-AQUI = os.path.dirname(os.path.abspath(__file__))
 MOTOR = "https://sbreserva.silbeck.com.br/hotelcabanas?utm_source=instagram&utm_medium=direct&utm_campaign=comente-reserva"
 WHATS = "https://wa.me/5567991171648?text=" + urllib.parse.quote("Olá! Vim pelo Instagram e quero saber das datas.")
 
@@ -32,19 +34,11 @@ def texto(nome):
 
 
 def get(caminho, **q):
-    url = f"{API}/{caminho}?" + urllib.parse.urlencode(q)
-    with urllib.request.urlopen(url, timeout=30) as r:
-        return json.load(r)
+    return meta.get(caminho, pagina=True, **q)
 
 
 def post(caminho, corpo):
-    req = urllib.request.Request(f"{API}/{caminho}", data=json.dumps(corpo).encode(),
-                                 headers={"Content-Type": "application/json"}, method="POST")
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return True, json.load(r)
-    except urllib.error.HTTPError as e:
-        return False, json.loads(e.read() or b"{}")
+    return meta.post(caminho, corpo, pagina=True)
 
 
 def sem_acento(s):
