@@ -89,3 +89,8 @@ Ver `formatos.md`. Resumo: carrossel de 5 a 7 telas (capa imersiva → experiên
 
 
 > **Regra do dono (28/09/2026): não exagerar no "domingo a quinta".** O meio de semana é o objetivo de venda, mas não o tema de todo texto: no máximo 1 em cada 4 anúncios ou posts leva esse ângulo, e só uma vez no texto. Nos demais, variar: dois rios e 40 hectares, cabanas suspensas, programação inclusa, estrutura (piscina climatizada, hidro, sauna), café da manhã, 25 anos de família, localização, avaliações, reserva direta, momentos a dois, família.
+
+## Chamada "Comente RESERVA" (dono, 28/09/2026)
+Toda legenda de post do feed ou de Reels termina, antes das hashtags, com a linha:
+"Quer o link para reservar? Comente RESERVA que a gente te manda no direct."
+O robô (`social/publicacao/robo-comentarios.md`) responde por direct a quem comentar RESERVA, com os botões "Reservar online" e "Falar no WhatsApp". A bio tem um Linktree (site, motor, WhatsApp, tour virtual, acomodações).
