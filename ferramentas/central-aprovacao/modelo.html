@@ -831,6 +831,16 @@ async function saveAds(patch){
 }
 
 // ---------- seletor do banco de imagens ----------
+let downloads = null;
+async function baixarFoto(id, nome, bt){
+  if (!downloads) { bt.textContent += " (baixe pelo navegador no computador)"; return; }
+  try {
+    const blob = await (await fetch("/_blob/" + id)).blob();
+    let fn = String(nome || "foto").replace(/\.[^.]+$/, "");
+    const ext = /png/.test(blob.type) ? "png" : /webp/.test(blob.type) ? "webp" : "jpg";
+    await downloads.save({filename: fn + "." + ext, data: blob});
+  } catch (e) { if (e?.code !== "declined") bt.textContent += " (não foi possível baixar agora)"; }
+}
 let pickCb = null, pickSel = new Map(), pickLast = null;
 function bancoItens(){
   const novas = bancoNovas.map(b => ({id: "asset:" + b.assetId, nome: b.descricao || b.nome, pasta: b.pasta, thumb: "/_blob/" + b.assetId, nova: !b.driveId}));
@@ -870,7 +880,8 @@ function drawPicker(){
   document.getElementById("pk-n").textContent = pickSel.size + " selecionada(s)";
   const falta = bancoNovas.filter(b => !b.driveId), pd = document.getElementById("pk-drive");
   pd.hidden = !falta.length;
-  pd.innerHTML = falta.length ? `Fotos enviadas pela Central que ainda faltam subir no Drive: ` + falta.map(b => `<a href="/_blob/${esc(b.assetId)}" download="${esc(b.nome)}">${esc(b.descricao || b.nome)}</a> (pasta ${esc(b.pasta)})`).join(" · ") : "";
+  pd.innerHTML = falta.length ? `Fotos enviadas pela Central que ainda faltam subir no Drive (baixe e arraste para a pasta indicada): ` + falta.map(b => `<button type="button" class="linkbtn" data-dl="${esc(b.assetId)}" data-nome="${esc(b.nome)}">${esc(b.descricao || b.nome)}</button> (pasta ${esc(b.pasta)})`).join(" · ") : "";
+  pd.querySelectorAll("[data-dl]").forEach(bt => bt.addEventListener("click", () => baixarFoto(bt.dataset.dl, bt.dataset.nome, bt)));
 }
 document.getElementById("pk-pasta").addEventListener("change", drawPicker);
 document.getElementById("pk-q").addEventListener("input", drawPicker);
@@ -890,6 +901,7 @@ tally();
   try { db = await claude.use("db"); } catch { db = null; }
   try { assets = await claude.use("assets"); } catch { assets = null; }
   try { comments = await claude.use("comments"); } catch { comments = null; }
+  try { downloads = await claude.use("downloads"); } catch { downloads = null; }
   if (!db) {
     document.getElementById("offline").hidden = false;
     document.querySelectorAll("[data-actions]").forEach(a => a.hidden = true);

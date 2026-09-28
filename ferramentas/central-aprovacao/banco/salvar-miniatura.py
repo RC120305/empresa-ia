@@ -16,6 +16,8 @@ try:
     if "content" not in d and "text" in d:
         d = json.loads(d["text"])
     b64 = d["content"]
+    if d.get("id") and d["id"] != fid:  # dois downloads no mesmo arquivo: vale o ID de dentro
+        print("aviso: arquivo era do ID", d["id"], "e não de", fid); fid = d["id"]
 except Exception:
     b64 = raw.strip()
 im = ImageOps.exif_transpose(Image.open(io.BytesIO(base64.b64decode(b64)))).convert("RGB")
