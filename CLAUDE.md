@@ -23,7 +23,7 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
   - `.claude/skills/relatorio-metricas/`: `/relatorio-metricas <mês>`: prints do Insights → PDF na identidade do Cabanas, com a leitura do Estrategista.
   - `.claude/skills/campanha-anuncios/`: `/campanha-anuncios <campanha>`: anúncios pagos no Meta Ads: plano com 10 a 15 criativos e cenários de verba (Estrategista) → OK → textos (Marketing) → OK → artes 4:5 e 9:16 (Designer) → OK do dono → sobe **pausada** na conta (API da Meta) → **ativa só com o OK do dono** → leitura dos números. Verba só a aprovada.
   - `.claude/skills/publicar-instagram/`: publica no Instagram **só os posts que o dono marcou "Aprovado"** na planilha `Calendário` (API da Meta; em implantação, ver `social/publicacao/`).
-  - **Central de Aprovação** (página do dono para aprovar, pedir correção e enviar foto): ver `.claude/skills/conteudo-mensal/references/central-de-aprovacao.md`. Quando o dono disser "tem correções na central", ler os pedidos e aplicar com `/alterar-conteudo`.
+  - **Central de Aprovação** (página do dono para aprovar, pedir correção, trocar foto pelo banco e conversar com a equipe na aba **Conversa**; séries programadas em `social/conteudo/series.md`): ver `.claude/skills/conteudo-mensal/references/central-de-aprovacao.md`. Quando o dono disser "tem correções na central", ler os pedidos e aplicar com `/alterar-conteudo`.
   - Conteúdo do mês em `social/conteudo/AAAA-MM/`; relatórios em `social/relatorios/`; campanhas pagas em `social/anuncios/`.
 - `.claude/skills/rh/`: a **Diretora de RH**, que desenha cargos e contrata, avalia e ajusta os funcionários de IA. Acione com `/rh`.
 - `.claude/agents/`: os **funcionários contratados** (um arquivo por cargo).

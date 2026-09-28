@@ -88,8 +88,8 @@ h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;m
 .live{flex:0 0 100%;width:100%;height:100%;position:relative;overflow:hidden;scroll-snap-align:start}
 .live iframe{position:absolute;top:0;left:0;width:1080px;height:1440px;border:0;transform-origin:0 0;pointer-events:none}
 .live .tag{position:absolute;left:8px;bottom:8px;background:var(--wait);color:#fff;font-size:11px;font-weight:600;padding:3px 8px;border-radius:3px;z-index:2}
-.tabsbar{display:flex;gap:4px;border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding-top:6px}
-.tabsbar button{font:inherit;font-size:15px;font-weight:600;background:none;border:none;border-bottom:3px solid transparent;padding:10px 14px;color:var(--muted);cursor:pointer}
+.tabsbar{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding-top:6px}
+.tabsbar button{white-space:nowrap;font:inherit;font-size:15px;font-weight:600;background:none;border:none;border-bottom:3px solid transparent;padding:10px 14px;color:var(--muted);cursor:pointer}
 .tabsbar button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brown)}
 .tabsbar button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
 .ads{display:flex;flex-direction:column;gap:28px}
@@ -189,6 +189,19 @@ details summary{cursor:pointer;padding:4px 0}
 .pk-foot span{font-size:13px;color:var(--muted);flex:1 1 100%}
 .pk-foot .btn{flex:1 1 auto}
 @media (min-width:640px){.pk-foot span{flex:1 1 auto}.pk-foot .btn{flex:0 0 auto}}
+.chat{display:flex;flex-direction:column;gap:14px;max-width:760px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.msgs{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px;min-height:220px;max-height:60vh;overflow-y:auto}
+.bub{max-width:88%;padding:9px 12px;border-radius:10px;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.bub.dono{align-self:flex-end;background:var(--brown);color:var(--brown-ink);border-bottom-right-radius:3px}
+.bub.claude{align-self:flex-start;background:var(--chip);color:var(--ink);border-bottom-left-radius:3px}
+.bub small{display:block;font-size:11px;opacity:.75;margin-top:4px}
+.bub .thumbs{margin-top:6px}
+.bub a{color:inherit}
+.typing{align-self:flex-start;font-size:13px;color:var(--muted);font-style:italic}
+.composer{display:flex;flex-direction:column;gap:8px}
+.composer textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px;min-height:90px;resize:vertical}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--fix);vertical-align:middle;margin-left:4px}
 footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px;max-width:72ch}
 </style>
 
@@ -207,7 +220,8 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   </header>
   <nav class="tabsbar" role="tablist" aria-label="Seções">
     <button type="button" role="tab" id="tab-org" aria-selected="true">Posts orgânicos</button>
-    <button type="button" role="tab" id="tab-ads" aria-selected="false">Anúncios (Meta Ads)</button>
+    <button type="button" role="tab" id="tab-ads" aria-selected="false">Anúncios</button>
+    <button type="button" role="tab" id="tab-chat" aria-selected="false">Conversa <span class="dot" id="chat-dot" hidden></span></button>
   </nav>
   <p class="banner" id="offline" hidden>Os botões de aprovação não estão disponíveis nesta visualização. Abra a página pelo claude.ai com a sua conta para aprovar e pedir correções.</p>
 
@@ -221,6 +235,31 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   <div id="weeks" style="display:flex;flex-direction:column;gap:36px"></div>
   </div>
   <div id="sec-ads" class="ads" hidden></div>
+  <section id="sec-chat" class="chat" hidden aria-labelledby="chat-t">
+    <div>
+      <h2 id="chat-t">Conversa com a equipe</h2>
+      <p class="note">Peça aqui o que quiser: posts novos com o tema que você escolher, séries programadas (ex.: "um carrossel de acomodações a cada 15 dias"), trocar o post de um dia, ajustes, dúvidas. A mensagem chega ao Claude, que aciona a equipe (Estrategista, Marketing, Designer) e responde aqui. Nada é publicado sem o seu "Aprovado".</p>
+    </div>
+    <div class="chips" id="chat-sugs">
+      <button type="button" class="sbtn" data-sug="Quero um post novo sobre: ">Post novo</button>
+      <button type="button" class="sbtn" data-sug="Quero um carrossel de 5 a 8 fotos sobre: ">Carrossel</button>
+      <button type="button" class="sbtn" data-sug="Troque o post do dia __/__ por: ">Trocar o post de um dia</button>
+      <button type="button" class="sbtn" data-sug="Quero uma série fixa: um post sobre ____ a cada ___ dias, começando em __/__.">Série programada</button>
+      <button type="button" class="sbtn" data-sug="Ajuste no post __: ">Ajuste</button>
+    </div>
+    <div class="msgs" id="chat-msgs" aria-live="polite"></div>
+    <form class="composer" id="chat-form">
+      <label for="chat-txt" class="flabel">Sua mensagem</label>
+      <textarea id="chat-txt" name="txt" placeholder="Ex.: crie um post simples com uma foto de casal na cabana e coloque no lugar do post do dia 22/10" required></textarea>
+      <div class="up">
+        <button class="btn ghost" type="button" id="chat-banco">Anexar do banco de imagens</button>
+        <label class="btn ghost filebtn" id="chat-upl">Anexar foto de fora<input type="file" id="chat-file" accept="image/jpeg,image/png,image/webp" multiple aria-label="Anexar foto de fora"></label>
+        <button class="btn ok" type="submit" id="chat-send" style="flex:0 0 auto">Enviar</button>
+      </div>
+      <div class="thumbs" id="chat-thumbs"></div>
+      <p class="msg" id="chat-msg"></p>
+    </form>
+  </section>
 
   <footer>Artes em <code>design/pecas/2026-10-instagram/POST-NN/final/</code> e textos em <code>social/conteudo/2026-10/conteudo.md</code> e na planilha "Calendário Outubro v2" do Drive. Horários no fuso de Mato Grosso do Sul. O pedido de correção é enviado ao Claude automaticamente quando a sua conta permite; se aparecer "Pedido salvo", avise na conversa.</footer>
 </div>
@@ -690,16 +729,79 @@ function paint(n){
 }
 
 // ---------- aba Anúncios ----------
-const tabOrg = document.getElementById("tab-org"), tabAds = document.getElementById("tab-ads");
-function showTab(ads){
-  document.getElementById("sec-org").hidden = ads; document.getElementById("sec-ads").hidden = !ads;
-  tabOrg.setAttribute("aria-selected", String(!ads)); tabAds.setAttribute("aria-selected", String(ads));
-  try { localStorage.setItem("central-aba", ads ? "ads" : "org"); } catch {}
+const ABAS = ["org", "ads", "chat"];
+function showTab(k){
+  if (k === true) k = "ads"; if (k === false) k = "org";
+  ABAS.forEach(a => { document.getElementById("sec-" + a).hidden = a !== k; document.getElementById("tab-" + a).setAttribute("aria-selected", String(a === k)); });
+  if (k === "chat") { chatVisto(); const m = document.getElementById("chat-msgs"); m.scrollTop = m.scrollHeight; }
+  try { localStorage.setItem("central-aba", k); } catch {}
 }
-tabOrg.addEventListener("click", () => showTab(false));
-tabAds.addEventListener("click", () => showTab(true));
-try { if (localStorage.getItem("central-aba") === "ads") showTab(true); } catch {}
-if (location.hash === "#anuncios") showTab(true);
+ABAS.forEach(a => document.getElementById("tab-" + a).addEventListener("click", () => showTab(a)));
+try { const a = localStorage.getItem("central-aba"); if (ABAS.includes(a)) showTab(a); } catch {}
+if (location.hash === "#anuncios") showTab("ads");
+if (location.hash === "#conversa") showTab("chat");
+
+// ---------- aba Conversa ----------
+let chatMsgs = [], chatBanco = [], chatImgs = [];
+const fmtHora = iso => { try { return new Date(iso).toLocaleString("pt-BR", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}); } catch { return ""; } };
+const fmtTexto = t => esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(https:\/\/claude\.ai\/[\w\/.-]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+function chatVisto(){ try { localStorage.setItem("chat-visto", String(chatMsgs.filter(m => m.autor === "claude").length)); } catch {} document.getElementById("chat-dot").hidden = true; }
+function renderChat(){
+  const box = document.getElementById("chat-msgs"), perto = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+  if (!chatMsgs.length) { box.innerHTML = '<p class="muted">Nenhuma mensagem ainda. Escreva abaixo ou toque numa sugestão.</p>'; return; }
+  box.innerHTML = chatMsgs.map(m => `<div class="bub ${m.autor === "claude" ? "claude" : "dono"}">${fmtTexto(m.texto || "")}` +
+    ((m.banco||[]).length || (m.imagens||[]).length ? `<div class="thumbs">${(m.banco||[]).map(b => `<span class="pk-img th-img" role="img" aria-label="${esc(nomeFoto(b.nome))}" style="${esc(sprite(BANCO_ID[b.id] || {thumb:""}))}"></span>`).join("")}${(m.imagens||[]).map(i => `<img src="/_blob/${esc(i.id)}" alt="${esc(i.nome||"foto")}">`).join("")}</div>` : "") +
+    `<small>${m.autor === "claude" ? "Claude" : "Você"} · ${fmtHora(m.criadoEm)}${m.autor !== "claude" && m.situacao === "salvo" ? " · salvo (avise o Claude na conversa)" : ""}</small></div>`).join("") +
+    (chatMsgs.length && chatMsgs[chatMsgs.length - 1].autor !== "claude" && chatMsgs[chatMsgs.length - 1].situacao !== "salvo" ? '<p class="typing">A equipe recebeu e está trabalhando. A resposta aparece aqui.</p>' : "");
+  if (perto || document.getElementById("sec-chat").hidden === false) box.scrollTop = box.scrollHeight;
+  let visto = 0; try { visto = +localStorage.getItem("chat-visto") || 0; } catch {}
+  const novas = chatMsgs.filter(m => m.autor === "claude").length;
+  if (document.getElementById("sec-chat").hidden) document.getElementById("chat-dot").hidden = novas <= visto; else chatVisto();
+}
+function drawChatThumbs(){
+  const t = document.getElementById("chat-thumbs"); t.innerHTML = "";
+  chatBanco.forEach((b, i) => { const x = document.createElement("button"); x.type = "button"; x.className = "th"; x.title = "Tocar para remover"; x.setAttribute("aria-label", "Remover " + nomeFoto(b.nome)); x.innerHTML = `<span class="pk-img th-img" style="${esc(sprite(b))}"></span><span>banco</span>`; x.addEventListener("click", () => { chatBanco.splice(i, 1); drawChatThumbs(); }); t.appendChild(x); });
+  chatImgs.forEach((b, i) => { const x = document.createElement("button"); x.type = "button"; x.className = "th"; x.title = "Tocar para remover"; x.setAttribute("aria-label", "Remover " + b.nome); x.innerHTML = `<img src="/_blob/${esc(b.id)}" alt=""><span>nova</span>`; x.addEventListener("click", () => { chatImgs.splice(i, 1); drawChatThumbs(); }); t.appendChild(x); });
+}
+document.querySelectorAll("[data-sug]").forEach(b => b.addEventListener("click", () => { const t = document.getElementById("chat-txt"); t.value = b.dataset.sug; t.focus(); }));
+document.getElementById("chat-banco").addEventListener("click", () => openPicker(sel => { chatBanco = [...chatBanco, ...sel.filter(x => !chatBanco.some(y => y.id === x.id))]; drawChatThumbs(); }));
+document.getElementById("chat-file").addEventListener("change", async e => {
+  const cm = document.getElementById("chat-msg");
+  if (!assets) return;
+  for (const f of e.target.files) {
+    cm.className = "msg"; cm.textContent = "Enviando " + f.name + "…";
+    try { const r = await assets.upload(f, f.type ? undefined : {type:"image/jpeg"}); chatImgs.push({id: r.id, nome: f.name}); drawChatThumbs(); cm.textContent = "Foto anexada."; }
+    catch (err) { cm.className = "msg err"; cm.textContent = err?.code === "too_large" ? "Foto grande demais (máximo 20 MB)." : "Não foi possível enviar a foto agora."; }
+  }
+  e.target.value = "";
+});
+document.getElementById("chat-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const cm = document.getElementById("chat-msg"), txt = document.getElementById("chat-txt").value.trim(), btn = document.getElementById("chat-send");
+  if (!db) { cm.className = "msg err"; cm.textContent = "A conversa só funciona abrindo a central pelo navegador, com a sua conta."; return; }
+  if (!txt) { cm.className = "msg err"; cm.textContent = "Escreva a sua mensagem."; return; }
+  btn.disabled = true;
+  const agora = new Date().toISOString(), id = "m-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6);
+  const msg = {autor: "dono", texto: txt, criadoEm: agora, banco: chatBanco.map(({id, nome, pasta}) => ({id, nome, pasta})), imagens: chatImgs, situacao: "enviado"};
+  let avisado = false;
+  if (comments) {
+    try {
+      if (await comments.canSendToClaude() === "available") {
+        const extra = (msg.banco.length ? `\nFotos do banco anexadas: ${msg.banco.map(b => `${b.nome} [${b.id}] (${b.pasta})`).join("; ")}.` : "") + (msg.imagens.length ? `\n${msg.imagens.length} foto(s) de fora anexada(s) (assets: ${msg.imagens.map(i => i.id).join(", ")}).` : "");
+        await comments.sendToClaude({anchor: await comments.anchorFor(document.getElementById("chat-msgs")), text: (`Mensagem no chat da Central (${MES}), id ${id}:\n${txt}${extra}`).slice(0, 3900)});
+        avisado = true;
+      }
+    } catch { avisado = false; }
+  }
+  if (!avisado) msg.situacao = "salvo";
+  try {
+    await db.collection("chat").doc(id).set(msg);
+    document.getElementById("chat-txt").value = ""; chatBanco = []; chatImgs = []; drawChatThumbs();
+    cm.className = "msg"; cm.textContent = avisado ? "Mensagem enviada." : "Mensagem salva. Avise o Claude na conversa (\"tem mensagem na central\").";
+  } catch { cm.className = "msg err"; cm.textContent = "Não foi possível enviar agora. Tente de novo em instantes."; }
+  btn.disabled = false;
+});
+renderChat();
 
 let adsState = {};
 const brl = v => "R$ " + Number(v).toLocaleString("pt-BR");
@@ -913,6 +1015,8 @@ tally();
   if (!assets) document.querySelectorAll("[data-up]").forEach(u => u.hidden = true);
   document.querySelectorAll("[data-edit]").forEach(b => b.hidden = false);
   POSTS.forEach(p => { if (p.pecas) document.querySelector("#post-" + p.n + " [data-art]").hidden = false; });
+  db.collection("chat").onSnapshot(snap => { chatMsgs = snap.docs.map(d => d.data()).filter(m => m && m.texto).sort((a, b) => String(a.criadoEm).localeCompare(String(b.criadoEm))); renderChat(); }, () => {});
+  if (!assets) document.getElementById("chat-upl").hidden = true;
   db.collection("banco").onSnapshot(snap => { bancoNovas = snap.docs.map(d => d.data()).filter(Boolean); }, () => {});
   if (ANUNCIOS) db.collection("anuncios").doc(ANUNCIOS.id).onSnapshot(s => { adsState = s.exists ? {...s.data()} : {}; renderAds(); }, () => {});
   renderAds();

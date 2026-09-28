@@ -17,6 +17,8 @@ description: >-
 
 Produz o Instagram do mês em **3 fases**: **Fase 1** pauta (no chat, com OK do dono) → **Fase 2** produção (textos, artes, briefing da produtora e publicação no Drive) → **Fase 3** reativa (Reels entregues pela produtora).
 
+> **Séries programadas:** antes de montar a pauta, ler `social/conteudo/series.md` e reservar as datas das séries ativas (ex.: carrossel de acomodações a cada 15 dias).
+
 ## Leia antes de tudo
 1. `references/perfil-cabanas.md`: voz, tabus, CTA, **plano de postagem** (12 posts, rotação, stories) e antecedência de reserva.
 2. `references/formatos.md`: mecânica de cada formato.
