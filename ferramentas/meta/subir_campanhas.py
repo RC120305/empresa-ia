@@ -170,17 +170,26 @@ def subir(cfg, tx, artes, pasta):
     existentes = {c["name"]: c["id"] for c in meta.get(f"{meta.CONTA_ANUNCIOS}/campaigns", fields="name,status", limit=200).get("data", [])}
     for c in cfg["campanhas"]:
         nome = f"{cfg['prefixo']}-{c['nome']}"
-        if nome in existentes:
-            print(f"já existe, pulei: {nome} ({existentes[nome]})")
+        camp = registro.get("campanhas", {}).get(nome)
+        if camp:  # subida anterior interrompida: retoma sem duplicar
+            print(f"campanha já criada, retomando: {nome} ({camp['id']})")
+        elif nome in existentes:
+            print(f"já existe (fora do registro), pulei: {nome} ({existentes[nome]})")
             continue
-        ok, r = meta.post(f"{meta.CONTA_ANUNCIOS}/campaigns", {"name": nome, "objective": "OUTCOME_ENGAGEMENT", "status": "PAUSED",
-                                                               "special_ad_categories": [], "is_adset_budget_sharing_enabled": False})
-        if not ok:
-            raise SystemExit(f"PARADO ao criar a campanha {nome}: {json.dumps(r, ensure_ascii=False)[:500]}")
-        camp = registro.setdefault("campanhas", {}).setdefault(nome, {"id": r["id"], "conjuntos": {}})
-        salvar()
-        print(f"campanha criada PAUSADA: {nome} ({r['id']})")
+        else:
+            ok, r = meta.post(f"{meta.CONTA_ANUNCIOS}/campaigns", {"name": nome, "objective": "OUTCOME_ENGAGEMENT", "status": "PAUSED",
+                                                                   "special_ad_categories": [], "is_adset_budget_sharing_enabled": False})
+            if not ok:
+                raise SystemExit(f"PARADO ao criar a campanha {nome}: {json.dumps(r, ensure_ascii=False)[:500]}")
+            camp = registro.setdefault("campanhas", {}).setdefault(nome, {"id": r["id"], "conjuntos": {}})
+            salvar()
+            print(f"campanha criada PAUSADA: {nome} ({r['id']})")
         for cj in c["conjuntos"]:
+            if cj["nome"] in camp["conjuntos"]:
+                conj = camp["conjuntos"][cj["nome"]]
+                print(f"  conjunto já criado, retomando: {cj['nome']} ({conj['id']})")
+                subir_anuncios(cj, conj, tx, artes, registro, salvar)
+                continue
             pubs = [publico(p, registro) for p in cj.get("publicos", [])]
             corpo = {"name": cj["nome"], "campaign_id": camp["id"], "daily_budget": cj["reais_dia"] * 100, "billing_event": "IMPRESSIONS",
                      "optimization_goal": "CONVERSATIONS", "destination_type": "WHATSAPP", "bid_strategy": "LOWEST_COST_WITHOUT_CAP",
@@ -192,17 +201,26 @@ def subir(cfg, tx, artes, pasta):
             conj = camp["conjuntos"].setdefault(cj["nome"], {"id": r["id"], "anuncios": {}})
             salvar()
             print(f"  conjunto criado PAUSADO: {cj['nome']} ({r['id']}) · R$ {cj['reais_dia']}/dia")
-            for cod in cj["anuncios"]:
-                cr = criativo(cod, tx[cod], telas(artes, cod), registro)
-                ok, r = meta.post(f"{meta.CONTA_ANUNCIOS}/ads", {"name": cod, "adset_id": conj["id"], "creative": {"creative_id": cr}, "status": "PAUSED"})
-                if not ok:
-                    raise SystemExit(f"PARADO ao criar o anúncio {cod}: {json.dumps(r, ensure_ascii=False)[:500]}")
-                conj["anuncios"][cod] = r["id"]
-                salvar()
-                print(f"    anúncio criado PAUSADO: {cod} ({r['id']})")
+            subir_anuncios(cj, conj, tx, artes, registro, salvar)
     registro["subidoEm"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
     salvar()
     print("Tudo PAUSADO. Nada foi ativado. Conferir no Gerenciador de Anúncios e ativar só com o OK do dono.")
+
+
+def subir_anuncios(cj, conj, tx, artes, registro, salvar):
+    for cod in cj["anuncios"]:
+        if cod in conj["anuncios"]:
+            continue  # já subiu numa rodada anterior
+        try:
+            cr = criativo(cod, tx[cod], telas(artes, cod), registro)
+        finally:
+            salvar()  # guarda as artes já enviadas, mesmo se o criativo falhar
+        ok, r = meta.post(f"{meta.CONTA_ANUNCIOS}/ads", {"name": cod, "adset_id": conj["id"], "creative": {"creative_id": cr}, "status": "PAUSED"})
+        if not ok:
+            raise SystemExit(f"PARADO ao criar o anúncio {cod}: {json.dumps(r, ensure_ascii=False)[:500]}")
+        conj["anuncios"][cod] = r["id"]
+        salvar()
+        print(f"    anúncio criado PAUSADO: {cod} ({r['id']})")
 
 
 def main():
