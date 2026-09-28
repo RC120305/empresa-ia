@@ -7,7 +7,7 @@ e <saida>/img/*.jpg. Publique com o Artifact tool (files = img/*,
 capabilities {"db":{}, "assets":{}}). WEEKS e textos do cabeçalho do modelo
 são de outubro/2026: ajuste-os no index.html gerado para cada mês.
 """
-import csv, glob, hashlib, json, os, sys
+import csv, glob, hashlib, json, os, shutil, sys
 from PIL import Image
 
 
@@ -65,5 +65,13 @@ if ads:
     if os.path.exists(mz):
         A["matriz"] = json.load(open(mz))
     anuncios = json.dumps(A, ensure_ascii=False).replace("</", "<\\/")
-open(f"{out}/index.html", "w").write(tpl.replace("__DATA__", data).replace("__MES__", mes).replace("__ANUNCIOS__", anuncios))
+bdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "banco")
+banco = json.load(open(f"{bdir}/banco.json", encoding="utf-8"))
+os.makedirs(f"{out}/banco/mini", exist_ok=True)
+for b in banco:  # miniaturas do banco de imagens (seletor "Escolher do banco")
+    src = f"{bdir}/mini/{b['id']}.jpg"
+    if os.path.exists(src) and not os.path.exists(f"{out}/banco/mini/{b['id']}.jpg"):
+        shutil.copy(src, f"{out}/banco/mini/{b['id']}.jpg")
+bjs = json.dumps(banco, ensure_ascii=False).replace("</", "<\\/")
+open(f"{out}/index.html", "w").write(tpl.replace("__BANCO__", bjs).replace("__DATA__", data).replace("__MES__", mes).replace("__ANUNCIOS__", anuncios))
 print(f"{len(posts)} posts -> {out}/index.html")

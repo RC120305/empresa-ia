@@ -162,6 +162,32 @@ details summary{cursor:pointer;padding:4px 0}
 .reply{border-left:3px solid var(--green);padding-left:8px;color:var(--ink)}
 .msg{font-size:13px;color:var(--muted);margin:0}
 .msg.err{color:var(--fix)}
+.fotobox{display:flex;flex-direction:column;gap:8px;border-top:1px dashed var(--line);padding-top:10px}
+.flabel{font-size:13px;font-weight:600}
+.filebtn{position:relative;overflow:hidden;display:inline-flex;align-items:center}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.filebtn:focus-within{outline:2px solid var(--green);outline-offset:2px}
+.fixbox input[type=text]{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:8px}
+.thumbs .th{position:relative;border:none;padding:0;background:none;cursor:pointer}
+.thumbs .th span{position:absolute;left:3px;bottom:3px;font-size:10px;font-weight:600;padding:1px 5px;border-radius:3px;background:var(--ink);color:var(--surface)}
+.picker{position:fixed;inset:0;background:rgba(20,16,12,.55);z-index:50;display:flex;align-items:stretch;justify-content:center;padding:max(12px,env(safe-area-inset-top)) 12px 12px}
+.pk-in{background:var(--bg);border-radius:8px;width:100%;max-width:980px;display:flex;flex-direction:column;overflow:hidden}
+.pk-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.pk-head h2{font-size:20px;margin-right:auto}
+.pk-bar{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px}
+.pk-bar select,.pk-bar input{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:8px;flex:1 1 200px;min-width:0}
+.pk-grid{flex:1 1 0;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));grid-auto-rows:max-content;gap:8px;padding:4px 14px 14px;align-content:start}
+.pk-item{font:inherit;border:2px solid transparent;border-radius:6px;padding:0;background:var(--surface);cursor:pointer;display:flex;flex-direction:column;text-align:left;overflow:hidden;color:var(--ink)}
+.pk-item img{width:100%;height:auto;aspect-ratio:1;flex:none;object-fit:cover;display:block;background:var(--chip)}
+.pk-item small{font-size:11px;line-height:1.3;padding:4px 6px;color:var(--muted);overflow-wrap:anywhere}
+.pk-item[aria-pressed="true"]{border-color:var(--green)}
+.pk-item[aria-pressed="true"] small{color:var(--green);font-weight:600}
+.pk-item:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.pk-item .nova{font-size:10px;font-weight:700;color:var(--wait);padding:0 6px}
+.pk-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 14px max(10px,env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.pk-foot span{font-size:13px;color:var(--muted);flex:1 1 100%}
+.pk-foot .btn{flex:1 1 auto}
+@media (min-width:640px){.pk-foot span{flex:1 1 auto}.pk-foot .btn{flex:0 0 auto}}
 footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px;max-width:72ch}
 </style>
 
@@ -198,10 +224,23 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   <footer>Artes em <code>design/pecas/2026-10-instagram/POST-NN/final/</code> e textos em <code>social/conteudo/2026-10/conteudo.md</code> e na planilha "Calendário Outubro v2" do Drive. Horários no fuso de Mato Grosso do Sul. O pedido de correção é enviado ao Claude automaticamente quando a sua conta permite; se aparecer "Pedido salvo", avise na conversa.</footer>
 </div>
 
+<div class="picker" id="picker" hidden role="dialog" aria-modal="true" aria-labelledby="pk-t">
+  <div class="pk-in">
+    <div class="pk-head"><h2 id="pk-t">Banco de imagens do hotel</h2><button class="btn ghost" type="button" data-pk-close>Fechar</button></div>
+    <div class="pk-bar">
+      <label class="sr" for="pk-pasta" style="position:absolute;left:-9999px">Pasta</label><select id="pk-pasta"></select>
+      <label for="pk-q" style="position:absolute;left:-9999px">Buscar</label><input id="pk-q" type="search" placeholder="Buscar pelo nome (ex.: piscina, redário, master)">
+    </div>
+    <p class="hint" id="pk-drive" hidden style="padding:0 14px 8px"></p>
+    <div class="pk-grid" id="pk-grid"></div>
+    <div class="pk-foot"><span id="pk-n">0 selecionada(s)</span><button class="btn ghost" type="button" data-pk-close>Cancelar</button><button class="btn ok" type="button" id="pk-ok">Usar selecionadas</button></div>
+  </div>
+</div>
 <script>
 const MES = "__MES__";
 const ANUNCIOS = __ANUNCIOS__;
 const POSTS = __DATA__;
+const BANCO = __BANCO__;
 const WEEKS = [
   {t:"Semana 1", s:"06 a 10/10 · o meio de semana + apoio de 20/11", ids:["01","02","03"]},
   {t:"Semana 2", s:"13 a 17/10 · Bonito sem pressa", ids:["04","05","06"]},
@@ -214,7 +253,11 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":
 const byId = Object.fromEntries(POSTS.map(p => [p.n, p]));
 const state = {};           // n -> decision doc
 let db = null, assets = null, comments = null;
-const pendingImgs = {};     // n -> [{id,url,nome}]
+const pendingImgs = {};     // n -> [{id,url,nome}] fotos de fora (assets)
+const pendingBanco = {};    // n -> [{id,nome,pasta}] fotos escolhidas do banco
+const PASTAS = [...new Set(BANCO.map(b => b.pasta))];
+let bancoNovas = [];        // fotos de fora já incorporadas ao banco (db "banco")
+const nomeFoto = s => String(s).replace(/\.jpe?g$/i,"").replace(/_/g," ");
 
 function caption(t){ return esc(t).replace(/(#[\wÀ-ÿ]+)/g,'<span class="h">$1</span>'); }
 const docId = n => MES + "_POST-" + n;
@@ -313,9 +356,21 @@ function buildCard(p){
           </select></label>
         <label for="pedido-${p.n}">Seu pedido
           <textarea id="pedido-${p.n}" name="pedido" placeholder="Ex.: troca a foto da tela 3 por uma da piscina; deixa a legenda mais curta" required></textarea></label>
-        <div class="up" data-up><label for="foto-${p.n}" style="font-weight:600;font-size:13px">Foto nova (opcional)</label>
-          <input id="foto-${p.n}" type="file" accept="image/jpeg,image/png,image/webp" multiple></div>
-        <div class="thumbs" data-thumbs></div>
+        <div class="fotobox">
+          <span class="flabel">Trocar foto (opcional) · escolha a tela em "O que mudar"</span>
+          <div class="up">
+            <button class="btn ghost" type="button" data-banco>Escolher do banco de imagens</button>
+            <label class="btn ghost filebtn" data-up>Enviar foto de fora<input type="file" accept="image/jpeg,image/png,image/webp" multiple aria-label="Enviar foto de fora do banco"></label>
+          </div>
+          <div class="fotobox" data-extra hidden style="border:none;padding:0">
+            <p class="hint">A foto de fora passa a fazer parte do banco de imagens do hotel. Diga onde guardar:</p>
+            <label for="pasta-${p.n}">Pasta do banco
+              <select id="pasta-${p.n}" name="pasta">${PASTAS.map(x=>`<option>${esc(x)}</option>`).join("")}<option>Outras</option></select></label>
+            <label for="desc-${p.n}">Descrição curta (opcional)
+              <input id="desc-${p.n}" name="desc" type="text" placeholder="ex.: piscina ao entardecer, casal no redário"></label>
+          </div>
+          <div class="thumbs" data-thumbs></div>
+        </div>
         <p class="msg" data-msg></p>
         <div class="actions" style="border:none;padding:0">
           <button class="btn fix" type="submit" style="background:var(--fix);color:var(--surface)">Enviar correção</button>
@@ -464,7 +519,29 @@ function buildCard(p){
   card.querySelector("[data-fix]").addEventListener("click", () => { form.hidden = false; form.querySelector("textarea").focus(); });
   card.querySelector("[data-cancel]").addEventListener("click", () => { form.hidden = true; msg.textContent = ""; });
 
-  const fileIn = form.querySelector('input[type="file"]'), thumbs = form.querySelector("[data-thumbs]");
+  const fileIn = form.querySelector('input[type="file"]'), thumbs = form.querySelector("[data-thumbs]"), extra = form.querySelector("[data-extra]");
+  const drawThumbs = () => {
+    thumbs.innerHTML = "";
+    (pendingBanco[p.n] || []).forEach((b, i) => {
+      const t = document.createElement("button"); t.type = "button"; t.className = "th"; t.title = "Tocar para remover";
+      t.setAttribute("aria-label", "Remover " + nomeFoto(b.nome));
+      t.innerHTML = `<img src="${esc(b.thumb)}" alt=""><span>banco</span>`;
+      t.addEventListener("click", () => { pendingBanco[p.n].splice(i, 1); drawThumbs(); });
+      thumbs.appendChild(t);
+    });
+    (pendingImgs[p.n] || []).forEach((b, i) => {
+      const t = document.createElement("button"); t.type = "button"; t.className = "th"; t.title = "Tocar para remover";
+      t.setAttribute("aria-label", "Remover " + b.nome);
+      t.innerHTML = `<img src="/_blob/${esc(b.id)}" alt=""><span>nova</span>`;
+      t.addEventListener("click", () => { pendingImgs[p.n].splice(i, 1); drawThumbs(); });
+      thumbs.appendChild(t);
+    });
+    extra.hidden = !(pendingImgs[p.n] || []).length;
+  };
+  form.querySelector("[data-banco]").addEventListener("click", () => openPicker(sel => {
+    pendingBanco[p.n] = [...(pendingBanco[p.n] || []), ...sel.filter(x => !(pendingBanco[p.n] || []).some(y => y.id === x.id))];
+    drawThumbs(); msg.className = "msg"; msg.textContent = sel.length ? sel.length + " foto(s) do banco escolhida(s)." : "";
+  }));
   fileIn.addEventListener("change", async () => {
     if (!assets) return;
     pendingImgs[p.n] = pendingImgs[p.n] || [];
@@ -473,7 +550,7 @@ function buildCard(p){
       try {
         const r = await assets.upload(f, f.type ? undefined : {type:"image/jpeg"});
         pendingImgs[p.n].push({id:r.id, nome:f.name});
-        const im = document.createElement("img"); im.src = r.url; im.alt = f.name; thumbs.appendChild(im);
+        drawThumbs();
         msg.textContent = "Foto anexada.";
       } catch (err) {
         msg.className = "msg err";
@@ -494,8 +571,11 @@ function buildCard(p){
       try {
         if (await comments.canSendToClaude() === "available") {
           const anchor = await comments.anchorFor(card);
-          const fotos = (pendingImgs[p.n] || []).length;
-          const txt = `Correção na Central de Aprovação (${MES}), POST ${p.n} (${p.tema}) · ${form.onde.value}: ${pedido}` + (fotos ? ` · ${fotos} foto(s) nova(s) anexada(s) na central.` : "") + ` Estilo escolhido: ${p.atual || p.padrao}.`;
+          const fotos = (pendingImgs[p.n] || []).length, banco = pendingBanco[p.n] || [];
+          const txt = `Correção na Central de Aprovação (${MES}), POST ${p.n} (${p.tema}) · ${form.onde.value}: ${pedido}`
+            + (banco.length ? ` · Foto(s) do banco: ${banco.map(b => `${b.nome} [${b.id}] (${b.pasta})`).join("; ")}.` : "")
+            + (fotos ? ` · ${fotos} foto(s) de fora anexada(s) na central, para guardar no banco na pasta "${form.pasta.value}"${form.desc.value.trim() ? ` (${form.desc.value.trim()})` : ""}.` : "")
+            + ` Estilo escolhido: ${p.atual || p.padrao}.`;
           await comments.sendToClaude({anchor, text: txt.slice(0, 3900)});
           enviadoAoClaude = true;
         }
@@ -503,9 +583,13 @@ function buildCard(p){
     }
     try {
       const prev = state[p.n]?.pedidos || [];
-      const novo = {onde: form.onde.value, pedido, imagens: pendingImgs[p.n] || [], enviadoEm: new Date().toISOString(), situacao: "novo"};
+      const ext = (pendingImgs[p.n] || []).map(i => ({...i, pasta: form.pasta.value, descricao: form.desc.value.trim()}));
+      const novo = {onde: form.onde.value, pedido, imagens: ext, banco: (pendingBanco[p.n] || []).map(({id,nome,pasta}) => ({id,nome,pasta})), enviadoEm: new Date().toISOString(), situacao: "novo"};
       await save(p.n, {status:"corrigir", pedidos:[...prev, novo]});
-      pendingImgs[p.n] = []; thumbs.innerHTML = ""; form.reset(); form.hidden = true;
+      for (const i of ext) {
+        try { await db.collection("banco").doc(i.id).set({assetId: i.id, nome: i.nome, pasta: i.pasta, descricao: i.descricao, origem: "Central", post: p.n, mes: MES, enviadoEm: novo.enviadoEm, driveId: null}); } catch {}
+      }
+      pendingImgs[p.n] = []; pendingBanco[p.n] = []; drawThumbs(); form.reset(); form.hidden = true;
       smsg.className = "msg"; smsg.textContent = enviadoAoClaude ? "Pedido enviado ao Claude. A versão corrigida aparece aqui quando estiver pronta." : "Pedido salvo. Avise o Claude na conversa (\"tem correções na central\") para ele começar.";
     } catch (err) { msg.className = "msg err"; msg.textContent = "Não foi possível enviar agora. Tente de novo em instantes."; }
     btn.disabled = false;
@@ -599,7 +683,7 @@ function paint(n){
   const tx = d?.textos ? Object.entries(d.textos) : [];
   const peds = d?.pedidos || [];
   const txHtml = tx.length ? `<div class="sent"><b>Texto da arte · ${tx.every(([,v])=>v.situacao==="feito") ? "artes atualizadas · confira acima" : "aguardando as artes finais"}</b>${tx.map(([t,v])=>`<span>Tela ${esc(t)}: ${esc(v.titulo).replace(/\n/g," / ")}${v.apoio ? " · " + esc(v.apoio) : ""}</span>`).join("")}</div>` : "";
-  sent.innerHTML = txHtml + peds.map(x => `<div class="sent"><b>${esc(x.onde)} · ${x.situacao === "feito" ? "corrigido · confira a arte acima" : x.situacao === "em_andamento" ? "em andamento" : "enviado"}</b><span>${esc(x.pedido)}</span>${(x.imagens||[]).length ? `<div class="thumbs">${x.imagens.map(i=>`<img src="/_blob/${esc(i.id)}" alt="${esc(i.nome||"foto enviada")}">`).join("")}</div>` : ""}${x.resposta ? `<span class="reply">${esc(x.resposta)}</span>` : ""}</div>`).join("");
+  sent.innerHTML = txHtml + peds.map(x => `<div class="sent"><b>${esc(x.onde)} · ${x.situacao === "feito" ? "corrigido · confira a arte acima" : x.situacao === "em_andamento" ? "em andamento" : "enviado"}</b><span>${esc(x.pedido)}</span>${(x.imagens||[]).length || (x.banco||[]).length ? `<div class="thumbs">${(x.banco||[]).map(i=>`<img src="banco/mini/${esc(i.id)}.jpg" alt="${esc(nomeFoto(i.nome))}" title="Do banco: ${esc(nomeFoto(i.nome))}">`).join("")}${(x.imagens||[]).map(i=>`<img src="/_blob/${esc(i.id)}" alt="${esc(i.nome||"foto enviada")}" title="Foto de fora${i.pasta ? " · pasta " + esc(i.pasta) : ""}">`).join("")}</div>` : ""}${x.resposta ? `<span class="reply">${esc(x.resposta)}</span>` : ""}</div>`).join("");
 }
 
 // ---------- aba Anúncios ----------
@@ -746,6 +830,55 @@ async function saveAds(patch){
   await db.collection("anuncios").doc(ANUNCIOS.id).set(body);
 }
 
+// ---------- seletor do banco de imagens ----------
+let pickCb = null, pickSel = new Map(), pickLast = null;
+function bancoItens(){
+  const novas = bancoNovas.map(b => ({id: "asset:" + b.assetId, nome: b.descricao || b.nome, pasta: b.pasta, thumb: "/_blob/" + b.assetId, nova: !b.driveId}));
+  return [...novas, ...BANCO.map(b => ({...b, thumb: "banco/mini/" + b.id + ".jpg"}))];
+}
+function openPicker(cb){
+  pickCb = cb; pickSel = new Map(); pickLast = document.activeElement;
+  const sel = document.getElementById("pk-pasta");
+  const pastas = [...new Set(bancoItens().map(b => b.pasta))];
+  sel.innerHTML = `<option value="">Todas as pastas (${bancoItens().length})</option>` + pastas.map(x => `<option>${esc(x)}</option>`).join("");
+  document.getElementById("pk-q").value = "";
+  document.getElementById("picker").hidden = false; document.body.style.overflow = "hidden";
+  drawPicker(); sel.focus();
+}
+function closePicker(ok){
+  document.getElementById("picker").hidden = true; document.body.style.overflow = "";
+  if (ok && pickCb) pickCb([...pickSel.values()]);
+  pickCb = null; if (pickLast) pickLast.focus();
+}
+function drawPicker(){
+  const pasta = document.getElementById("pk-pasta").value, q = document.getElementById("pk-q").value.trim().toLowerCase();
+  const g = document.getElementById("pk-grid"); g.innerHTML = "";
+  const itens = bancoItens().filter(b => (!pasta || b.pasta === pasta) && (!q || nomeFoto(b.nome).toLowerCase().includes(q) || b.pasta.toLowerCase().includes(q)));
+  itens.forEach(b => {
+    const it = document.createElement("button"); it.type = "button"; it.className = "pk-item";
+    it.setAttribute("aria-pressed", pickSel.has(b.id) ? "true" : "false");
+    it.innerHTML = `<img src="${esc(b.thumb)}" alt="" loading="lazy">${b.nova ? '<span class="nova">NOVA · falta subir no Drive</span>' : ""}<small>${esc(nomeFoto(b.nome))}${pasta ? "" : " · " + esc(b.pasta)}</small>`;
+    it.querySelector("img").addEventListener("error", e => { e.target.style.visibility = "hidden"; }, {once:true});
+    it.addEventListener("click", () => {
+      if (pickSel.has(b.id)) pickSel.delete(b.id); else pickSel.set(b.id, {id: b.id, nome: b.nome, pasta: b.pasta, thumb: b.thumb});
+      it.setAttribute("aria-pressed", pickSel.has(b.id) ? "true" : "false");
+      document.getElementById("pk-n").textContent = pickSel.size + " selecionada(s)";
+    });
+    g.appendChild(it);
+  });
+  if (!itens.length) g.innerHTML = '<p class="muted">Nenhuma foto com esse nome nesta pasta.</p>';
+  document.getElementById("pk-n").textContent = pickSel.size + " selecionada(s)";
+  const falta = bancoNovas.filter(b => !b.driveId), pd = document.getElementById("pk-drive");
+  pd.hidden = !falta.length;
+  pd.innerHTML = falta.length ? `Fotos enviadas pela Central que ainda faltam subir no Drive: ` + falta.map(b => `<a href="/_blob/${esc(b.assetId)}" download="${esc(b.nome)}">${esc(b.descricao || b.nome)}</a> (pasta ${esc(b.pasta)})`).join(" · ") : "";
+}
+document.getElementById("pk-pasta").addEventListener("change", drawPicker);
+document.getElementById("pk-q").addEventListener("input", drawPicker);
+document.getElementById("pk-ok").addEventListener("click", () => closePicker(true));
+document.querySelectorAll("[data-pk-close]").forEach(b => b.addEventListener("click", () => closePicker(false)));
+document.getElementById("picker").addEventListener("click", e => { if (e.target.id === "picker") closePicker(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !document.getElementById("picker").hidden) closePicker(false); });
+
 document.getElementById("recarregar").addEventListener("click", () => location.reload());
 buildCards();
 POSTS.forEach(p => { if (p.padrao) applyStyle(p.n, p.padrao); });
@@ -765,6 +898,7 @@ tally();
   if (!assets) document.querySelectorAll("[data-up]").forEach(u => u.hidden = true);
   document.querySelectorAll("[data-edit]").forEach(b => b.hidden = false);
   POSTS.forEach(p => { if (p.pecas) document.querySelector("#post-" + p.n + " [data-art]").hidden = false; });
+  db.collection("banco").onSnapshot(snap => { bancoNovas = snap.docs.map(d => d.data()).filter(Boolean); }, () => {});
   if (ANUNCIOS) db.collection("anuncios").doc(ANUNCIOS.id).onSnapshot(s => { adsState = s.exists ? {...s.data()} : {}; renderAds(); }, () => {});
   renderAds();
   db.collection("decisoes").where("mes","==",MES).onSnapshot(snap => {
