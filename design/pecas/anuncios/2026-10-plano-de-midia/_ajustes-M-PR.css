@@ -1,0 +1,20 @@
+/* M2, M3, M4, PR1, PR2 (lote 1, out/2026). Complemento de anuncio-sem-faixa.css (padrão do M1), sem mudar fontes, cores ou tamanhos.
+   - recorte por variável: --pos (4:5) e --pos-story (9:16);
+   - posição do bloco por variável: --top / --top-story (bloco cima) e --bottom / --bottom-story (bloco baixo);
+   - 9:16: assinatura sobe para 350 px da base (zona segura de 340 px embaixo pedida para o lote), texto a partir de 300 px do topo. */
+.foto { object-position: var(--pos, center); }
+.story .foto { object-position: var(--pos-story, var(--pos, center)); }
+
+.bloco-sf.cima  { top: var(--top, 110px); }
+.bloco-sf.baixo { bottom: var(--bottom, 250px); }
+.story .bloco-sf.cima  { top: var(--top-story, 300px); }
+.story .bloco-sf.baixo { bottom: var(--bottom-story, 690px); }
+
+.story .assin-sf { bottom: 350px; right: 140px; }
+.story .num-sf { top: 290px; right: 140px; }
+
+/* Números no título com algarismos alinhados (o Playfair usa estilo antigo por padrão: "8h30" parecia "8h3o") */
+.bloco-sf .titulo { font-variant-numeric: lining-nums; font-feature-settings: "lnum" 1; }
+
+/* Fato em várias linhas (distâncias, Cabana Master) */
+.bloco-sf .fato.lista { line-height: 1.7; }
