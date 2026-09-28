@@ -17,3 +17,5 @@ A equipe sobe as campanhas pela API da Meta, **pausadas**, e só ativa com o OK 
 | Campanha | Período | Persona e ângulo vencedores | Custo por resultado | Observação |
 |---|---|---|---|---|
 | — | — | — | — | — |
+
+- **Decisão do dono (2026-09-28):** antes de gerar os criativos (artes), a equipe avisa o dono e só começa com o OK dele, mesmo depois de os textos estarem aprovados.

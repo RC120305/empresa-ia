@@ -72,6 +72,7 @@ Passe a cada funcionário **só o necessário** e peça que leia os próprios ar
 3. **PAUSA 2:** mostre um resumo (AD NN + gancho + título) e publique `Textos <Campanha> v1` no Drive. Avance com o OK (o dono pode dizer "pode seguir direto para as artes").
 
 ## Fase 3 — Artes
+> **Regra do dono (28/09/2026):** mesmo com os textos aprovados, **avisar o dono e esperar o OK explícito antes de gerar os criativos** (dizer quantos anúncios, formatos e fotos). Só então acionar o Designer.
 1. Acione o **Designer** com o briefing de arte de cada anúncio de imagem ou carrossel. Cada anúncio sai em **dois tamanhos**: `feed45` (1080 × 1350) e `story` (1080 × 1920), respeitando as **zonas seguras** do 9:16. Layouts oficiais (com ou sem faixa), só fotos reais. Salva em `design/pecas/anuncios/<AAAA-MM>-<campanha>/AD-NN/`.
 2. Envie os PNGs ao dono com `SendUserFile` (agrupados por persona) e publique no Drive a planilha `Anúncios <Campanha> vN` (colunas em `estrutura-campanha.md`), com a coluna **Status** para o dono marcar **"Aprovado"** por anúncio. Vídeos: `Briefing produtora <Campanha> v1`.
 3. **PAUSA 3:** só anúncios com **"Aprovado"** seguem para a conta.
