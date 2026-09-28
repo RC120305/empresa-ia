@@ -1,0 +1,88 @@
+/* Anúncios Meta Ads out/2026: P01, P02, P04, P05, P10, R1, R2, R3, R4.
+   Base: design/modelos/estilo-sem-faixa.css (aprovado pelo dono), sem mudar o visual:
+   título Playfair 56 px, apoio/fato em Josefin caixa alta espaçada, linha curta laranja,
+   assinatura (fio laranja + BONITO · MS + logo branco 100 px), numeração discreta.
+   Diferença técnica: a sombra localizada fica presa ao bloco de texto (::before),
+   então acompanha o texto nos dois tamanhos. Nenhuma foto é escurecida por inteiro.
+   Um HTML por tela serve aos dois tamanhos: um script põe a classe "story" em .peca
+   quando a janela é 9:16 (1080 x 1920). No 9:16: nada nos 250 px de cima e de baixo
+   (+20 px de folga), texto até ~1250 px de altura e longe dos ~120 px da direita. */
+
+.foto { inset: 0; height: 100%; object-position: var(--pos, center); }
+.story .foto { object-position: var(--pos-story, var(--pos, center)); }
+
+/* Sombra radial suave, só atrás do bloco */
+.sombra-sf { position: absolute; pointer-events: none; z-index: 1;
+  background: radial-gradient(ellipse closest-side at 50% 50%,
+    rgba(18,12,6,var(--forca,.55)) 0%,
+    rgba(18,12,6,calc(var(--forca,.55) * .78)) 45%,
+    rgba(18,12,6,calc(var(--forca,.55) * .35)) 75%,
+    rgba(18,12,6,0) 100%); }
+
+.bloco-sf { position: absolute; left: var(--margem); max-width: 800px; z-index: 2; }
+.bloco-sf::before { content: ""; position: absolute; z-index: -1; pointer-events: none;
+  left: -300px; right: -220px; top: -170px; bottom: -170px;
+  background: radial-gradient(ellipse closest-side at 50% 50%,
+    rgba(18,12,6,var(--forca,.55)) 0%,
+    rgba(18,12,6,calc(var(--forca,.55) * .8)) 50%,
+    rgba(18,12,6,calc(var(--forca,.55) * .35)) 78%,
+    rgba(18,12,6,0) 100%); }
+.bloco-sf.baixo { bottom: 230px; }
+.bloco-sf.cima  { top: 110px; }
+.story .bloco-sf { max-width: 780px; }
+.story .bloco-sf.cima  { top: 330px; }
+.story .bloco-sf.baixo { bottom: 690px; }
+
+.bloco-sf .apoio { font-size: 20px; letter-spacing: .38em; font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0,0,0,.6), 0 0 14px rgba(0,0,0,.45); }
+.bloco-sf .titulo { font-size: 56px; line-height: 1.1;
+  text-shadow: 0 1px 3px rgba(0,0,0,.5), 0 0 20px rgba(0,0,0,.4); }
+.story .bloco-sf .titulo { font-size: 60px; }
+.bloco-sf .linha { width: 80px; margin: 22px 0 18px; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.bloco-sf .apoio + .linha { margin: 16px 0 18px; }
+/* Fato do anúncio (logo abaixo do gancho) */
+.bloco-sf .fato { font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 21px; letter-spacing: .2em; text-transform: uppercase; line-height: 1.5;
+  text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 14px rgba(0,0,0,.5); }
+/* Serviço opcional: aviso na própria arte */
+.bloco-sf .nota { font-family: "Cormorant Garamond", serif; font-style: italic; font-weight: 600; font-size: 30px; line-height: 1.2; margin-top: 12px;
+  text-shadow: 0 1px 3px rgba(0,0,0,.75), 0 0 14px rgba(0,0,0,.55); }
+/* Contatos da tela de CTA */
+.bloco-sf .contato { font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 24px; letter-spacing: .03em; line-height: 1.45; margin-top: 16px;
+  text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 14px rgba(0,0,0,.5); }
+.bloco-sf .contato b { font-weight: 600; letter-spacing: .2em; text-transform: uppercase; font-size: 19px; margin-right: 12px; opacity: .9; }
+
+/* Assinatura */
+.assin-sf { position: absolute; left: var(--margem); right: var(--margem); bottom: 60px;
+  display: flex; align-items: center; gap: 26px; z-index: 2; }
+.story .assin-sf { bottom: 270px; right: 130px; }
+.assin-sf::before { content: ""; position: absolute; z-index: -1; pointer-events: none;
+  right: -140px; width: 700px; top: -90px; bottom: -90px;
+  background: radial-gradient(ellipse closest-side at 60% 50%, rgba(18,12,6,var(--forca-assin,.5)) 0%, rgba(18,12,6,calc(var(--forca-assin,.5) * .6)) 55%, rgba(18,12,6,0) 100%); }
+.assin-sf .fio { flex: 1; height: 1px; background: var(--laranja); box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.assin-sf .local { font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 19px; letter-spacing: .45em; text-transform: uppercase; white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0,0,0,.65), 0 0 12px rgba(0,0,0,.45); }
+.assin-sf img { height: 100px; width: auto; display: block; filter: drop-shadow(0 1px 6px rgba(0,0,0,.45)); }
+
+/* Numeração discreta (carrossel) */
+.num-sf { position: absolute; top: 64px; right: var(--margem); z-index: 2;
+  font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 21px; letter-spacing: .3em; margin-right: -.3em;
+  text-shadow: 0 1px 3px rgba(0,0,0,.8), 0 0 14px rgba(0,0,0,.6); }
+.story .num-sf { top: 280px; right: 140px; }
+
+/* Ajuste 1 (após conferir o P01-1): sombras um pouco mais firmes em fotos claras de dia */
+.bloco-sf { --forca: .62; }
+.assin-sf::before { right: -160px; width: 620px; top: -110px; bottom: -110px;
+  background: radial-gradient(ellipse closest-side at 62% 50%, rgba(18,12,6,var(--forca-assin,.62)) 0%, rgba(18,12,6,calc(var(--forca-assin,.62) * .75)) 50%, rgba(18,12,6,calc(var(--forca-assin,.62) * .3)) 78%, rgba(18,12,6,0) 100%); }
+.num-sf::before { content: ""; position: absolute; z-index: -1; left: -70px; right: -60px; top: -50px; bottom: -50px;
+  background: radial-gradient(ellipse closest-side, rgba(18,12,6,.55) 0%, rgba(18,12,6,.35) 55%, rgba(18,12,6,0) 100%); }
+
+/* Ajuste 2: sombras da assinatura e da numeração como elementos próprios (o ::before não aparecia) */
+.assin-sf::before, .num-sf::before { content: none; }
+.sombra-assin { left: auto; right: -170px; bottom: -110px; width: 720px; height: 400px; --forca: .75; }
+.story .sombra-assin { right: -110px; bottom: 100px; }
+.sombra-num { right: -60px; top: -40px; width: 300px; height: 210px; --forca: .65; }
+.story .sombra-num { right: 10px; top: 175px; }
+
+/* Posição do bloco só no 9:16 (quando o assunto da foto pede outro lugar) */
+.story .bloco-sf.story-cima  { top: 330px; bottom: auto; }
+.story .bloco-sf.story-baixo { top: auto; bottom: 690px; }

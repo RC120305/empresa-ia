@@ -1,0 +1,51 @@
+/* Anúncios Meta, plano de mídia out/2026 (V1 a V5). Estilo 1 "sem faixa", o único pedido pelo dono (28/09/2026).
+   Base: design/modelos/estilo-sem-faixa.css (sem mudança de fontes, cores, tamanhos ou assinatura).
+   Diferença: a sombra localizada vem "presa" ao bloco de texto e à assinatura (pseudo-elemento),
+   para acompanhar o texto nos dois tamanhos (4:5 e 9:16). Nunca escurece a foto inteira nem a água.
+   4:5 (feed45, 1080 x 1350): bloco embaixo (bottom 250) ou em cima (top 96); assinatura a 60 px da base.
+   9:16 (story, 1080 x 1920): texto entre 250 e ~1250 px de altura (área que o Reels não cobre),
+   assinatura acima dos 250 px de baixo (+ folga de 20 px) e longe dos ~120 px da direita. */
+
+.foto { inset: 0; height: 100%; }
+
+/* Sombra localizada (radial, se desfaz nas bordas) */
+.bloco-sf::before, .assin-sf::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse closest-side at 50% 50%,
+    rgba(18,12,6,var(--forca,.5)) 0%,
+    rgba(18,12,6,calc(var(--forca,.5) * .78)) 45%,
+    rgba(18,12,6,calc(var(--forca,.5) * .35)) 75%,
+    rgba(18,12,6,0) 100%); }
+.bloco-sf::before { inset: -140px -220px -140px -300px; }
+.assin-sf::before { inset: -70px -140px -70px 35%; --forca: var(--forca-assin, .45); }
+
+/* Bloco de texto */
+.bloco-sf { position: absolute; left: var(--margem); max-width: 800px; z-index: 2; }
+.bloco-sf.baixo { bottom: 250px; }
+.bloco-sf.cima  { top: 96px; }
+.bloco-sf .apoio { font-size: 20px; letter-spacing: .38em; font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0,0,0,.6), 0 0 14px rgba(0,0,0,.45); }
+.bloco-sf .linha { width: 80px; margin: 16px 0 18px; box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.bloco-sf .titulo { font-size: 56px; line-height: 1.08;
+  text-shadow: 0 1px 3px rgba(0,0,0,.5), 0 0 20px rgba(0,0,0,.4); }
+/* Apoio depois do título (fato do anúncio) */
+.bloco-sf .titulo + .linha { margin: 22px 0 16px; }
+
+/* CTA da última tela */
+.bloco-sf .cta { font-size: 24px; margin-top: 22px; letter-spacing: .24em;
+  text-shadow: 0 1px 3px rgba(0,0,0,.75), 0 0 14px rgba(0,0,0,.55); }
+.bloco-sf .contato { font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 24px; letter-spacing: .03em; line-height: 1.45; margin-top: 8px;
+  text-shadow: 0 1px 3px rgba(0,0,0,.7), 0 0 14px rgba(0,0,0,.5); }
+
+/* Assinatura: fio laranja + BONITO · MS + logo branco 100 px */
+.assin-sf { position: absolute; left: var(--margem); right: var(--margem); bottom: 60px;
+  display: flex; align-items: center; gap: 26px; z-index: 2; }
+.assin-sf .fio { flex: 1; height: 1px; background: var(--laranja); box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.assin-sf .local { font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 19px; letter-spacing: .45em; text-transform: uppercase; white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0,0,0,.65), 0 0 12px rgba(0,0,0,.45); }
+.assin-sf img { height: 100px; width: auto; display: block; filter: drop-shadow(0 1px 6px rgba(0,0,0,.45)); }
+
+/* 9:16 */
+.story .bloco-sf.baixo { bottom: 690px; }            /* texto termina em ~1230 px */
+.story .bloco-sf.cima  { top: 290px; }               /* 250 px + folga */
+.story .assin-sf { bottom: 290px; right: 140px; }   /* acima dos 250 px de baixo, longe da coluna de botões */
