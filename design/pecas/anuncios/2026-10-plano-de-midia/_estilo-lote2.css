@@ -1,0 +1,15 @@
+/* Lote 2 (V5, P02, P04, P05, P10), 28/09/2026. Acréscimos ao _estilo-P-R.css, sem mudar o visual
+   (mesma tipografia, sombras localizadas, assinatura e numeração):
+   - .bloco-sf.direita: bloco alinhado à direita, para fotos em que o espaço calmo fica à direita;
+   - 9:16: assinatura acima dos 340 px de baixo (pedido deste lote), texto entre 250 e ~1250 px;
+   - .peca.marrom: tela de fechamento sem foto, fundo marrom da marca (#847059). */
+
+.bloco-sf.direita { left: auto; right: var(--margem); text-align: right; }
+.bloco-sf.direita .linha { margin-left: auto; }
+.story .bloco-sf.direita { right: 140px; }
+
+.story .assin-sf { bottom: 360px; }
+.story .sombra-assin { bottom: 190px; }
+
+.peca.marrom { background: var(--marrom); }
+.peca.marrom .bloco-sf { --forca: 0; }
