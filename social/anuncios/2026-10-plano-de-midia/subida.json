@@ -1,0 +1,60 @@
+{
+  "_sobre": "Estrutura da subida (plano v2.5 aprovado pelo dono em 28/09/2026). Lida por ferramentas/meta/subir_campanhas.py. Tudo sobe PAUSADO; ativar só com o OK do dono. Valores em R$/dia (orçamento por conjunto). Datas de início/fim: ver plano.md §3.",
+  "prefixo": "cabanas",
+  "whatsapp": "+5567991171648",
+  "campanhas": [
+    {
+      "nome": "perm-fora-do-estado",
+      "conjuntos": [
+        {
+          "nome": "brasil-sem-ms-pr",
+          "reais_dia": 24,
+          "inicio": "2026-10-06",
+          "local": {"pais": "BR", "excluir_estados": ["Mato Grosso do Sul", "Paraná"]},
+          "anuncios": ["V1", "V3", "V4", "V5", "P01", "P02", "P04", "P05", "P10"],
+          "obs": "R$ 24/dia de 06/10 a 07/11 e R$ 20/dia a partir de 08/11 (mudança com o OK do dono). V2 fica para o conjunto 2 (SP/Campinas), que sobe em 25/11."
+        }
+      ]
+    },
+    {
+      "nome": "perm-parana-de-carro",
+      "conjuntos": [
+        {
+          "nome": "4-cidades-raio-40km",
+          "reais_dia": 24,
+          "inicio": "2026-10-06",
+          "local": {"cidades": [["Umuarama", "PR"], ["Cascavel", "PR"], ["Maringá", "PR"], ["Londrina", "PR"]], "raio_km": 40},
+          "anuncios": ["PR1", "PR2"],
+          "obs": "R$ 24/dia até 07/11, R$ 20/dia a partir de 08/11."
+        }
+      ]
+    },
+    {
+      "nome": "perm-remarketing",
+      "conjuntos": [
+        {
+          "nome": "engajou-365-dias",
+          "reais_dia": 4,
+          "inicio": "2026-10-06",
+          "local": {"pais": "BR"},
+          "publicos": ["engajou-instagram-365", "engajou-facebook-365"],
+          "anuncios": ["R1", "R2", "R3", "R4"],
+          "obs": "R4 pausado de 29/11 a 26/01 e de 11/06 a 16/07. Públicos personalizados criados na subida."
+        }
+      ]
+    },
+    {
+      "nome": "perm-ms-o-hotel-e-o-passeio",
+      "conjuntos": [
+        {
+          "nome": "cg-dourados-raio-40km",
+          "reais_dia": 20,
+          "inicio": "2026-11-08",
+          "local": {"cidades": [["Campo Grande", "MS"], ["Dourados", "MS"]], "raio_km": 40, "excluir_cidades": [["Bonito", "MS"]], "raio_excluir_km": 40},
+          "anuncios": ["M1", "M2", "M3", "M4"],
+          "obs": "Estreia em 08/11 (sobe pausada junto com as outras; ativação em 08/11 com o OK do dono)."
+        }
+      ]
+    }
+  ]
+}
