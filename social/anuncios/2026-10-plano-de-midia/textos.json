@@ -1,12 +1,12 @@
 {
- "versao": "v2",
- "arquivo": "social/anuncios/2026-10-plano-de-midia/textos-v2.md",
+ "versao": "v3",
+ "arquivo": "social/anuncios/2026-10-plano-de-midia/textos-v3.md",
  "anuncios": [
   {
    "cod": "M1",
-   "cab": "55+ · carrossel (5)",
-   "texto": "Domingo a terça, sem pressa de voltar: o hotel fica mais tranquilo de domingo a quinta.\n\nBonito fica logo ali, 260 km de Campo Grande. Vem no domingo, volta na terça e aproveita:\ncafé da manhã incluso;\npiscina climatizada, hidromassagem aquecida e sauna a vapor, das 7h às 22h;\ntrilhas e decks de banho à margem dos dois rios, dentro do hotel.\nLeva a garrafa de tereré.",
-   "variacaoB": "\"Bora pro Cabanas? Vem no domingo e volta na terça, que o hotel fica mais tranquilo de domingo a quinta.\" (**103**)",
+   "cab": "55+ · carrossel (5) · mantém o meio de semana",
+   "texto": "Domingo a terça, sem pressa de voltar, entre o Formoso e o Formosinho.\n\nBonito fica logo ali, 260 km de Campo Grande. Aproveita:\ncafé da manhã incluso;\npiscina climatizada, hidromassagem aquecida e sauna a vapor, das 7h às 22h;\ntrilhas e decks de banho à margem dos dois rios, dentro do hotel.\nLeva a garrafa de tereré.",
+   "variacaoB": "\"Bora pro Cabanas? Vem no domingo, volta na terça e aproveita sem pressa.\" (**72**)",
    "titulo": "Domingo a terça no Hotel Cabanas (**32**)",
    "descricao": "Café da manhã incluso (**21**)",
    "botao": "Enviar mensagem",
@@ -15,7 +15,7 @@
     {
      "card": "1 (capa)",
      "foto": "imagem_redario_casal_sorrindo (1EkScr)",
-     "texto": "Domingo a terça, sem pressa de voltar · fato: \"O hotel fica mais tranquilo de domingo a quinta\""
+     "texto": "Domingo a terça, sem pressa de voltar · fato: \"Café da manhã incluso\""
     },
     {
      "card": "2",
@@ -42,29 +42,29 @@
   {
    "cod": "M2",
    "cab": "Casais · imagem",
-   "texto": "E se o fim de semana de sempre fosse de domingo a terça? Na Cabana Master, a banheira de hidromassagem é para dois.\n\nSão 85 m², varanda ampla com balanço e, na segunda e na terça, a programação diária inclusa com monitor: arco e flecha, trilhas com tirolesa, caiaque e stand up paddle. Os horários podem variar conforme a temporada.\nFinal de semana é pouco? Bora até terça. [nova, validar com o dono]\nDecoração especial no quarto (opcional).\nPartiu Hotel Cabanas?",
-   "variacaoB": "\"Sai sexta depois do trabalho e chega para o jantar. E volta na terça: banheira de hidromassagem para 2 na Cabana Master.\" (**120**)",
-   "titulo": "Cabana Master: banheira para dois (**33**)",
+   "texto": "Partiu Cabanas a dois? Na Cabana Master, a banheira de hidromassagem é para dois e a varanda tem balanço.\n\nSão 85 m², a maior acomodação do hotel, em dois ambientes. Programação diária inclusa com monitor: arco e flecha, trilhas com tirolesa, caiaque e stand up paddle (os horários podem variar conforme a temporada).\nDecoração especial no quarto (opcional).\nBonito fica logo ali, 260 km de Campo Grande.",
+   "variacaoB": "\"Bora a dois? Na Cabana Master, 85 m², banheira de hidromassagem para dois e varanda com balanço.\" (**96**) [nova, validar com o dono]",
+   "titulo": "Partiu Cabanas a dois? (**22**)",
    "descricao": "Bonito fica logo ali (**20**)",
    "botao": "Enviar mensagem",
-   "mensagem": "\"Olá! Sou de [cidade] e quero datas de domingo a terça. #M2\"",
+   "mensagem": "\"Olá! Sou de [cidade] e quero datas para a Cabana Master. #M2\"",
    "arte": [
     {
      "card": "1",
      "foto": "Cabana Master / cabana_master_varanda _balanco (1hx24E).",
-     "texto": "Fim de semana de domingo a terça? (7 palavras) · fato: \"Cabana Master · banheira de hidromassagem para 2\"."
+     "texto": "Partiu Cabanas a dois? (4 palavras) · fato: \"Cabana Master · banheira de hidromassagem para 2\"."
     }
    ]
   },
   {
    "cod": "M3",
-   "cab": "Jovens aventureiros (folga no meio da semana) · vídeo de fotos 9:16 (reserva: carrossel 4:5)",
-   "texto": "Folga na segunda? Segunda é dia de rio: caiaque, stand up paddle e tirolesa inclusos na diária.\n\nCom monitor, na programação diária:\n8h30 · arco e flecha\n14h · trilha no Rio Formosinho com tirolesa e stand up paddle\n15h30 · trilha no Rio Formoso com caiaque e stand up paddle\n(os horários podem variar conforme a temporada)\nQuer mais? Arvorismo com 18 obstáculos e tirolesa aquática no Rio Formoso (opcional) e boia cross de 1.200 m por corredeiras e cachoeiras (opcional), com guias treinados. Segurança em primeiro lugar.\nBonito fica logo ali, 260 km de Campo Grande. Bora pro Cabanas?",
-   "variacaoB": "\"Leva a garrafa de tereré: segunda tem caiaque, stand up paddle e tirolesa com monitor, inclusos na diária.\" (**106**)",
-   "titulo": "Segunda é dia de rio no Cabanas (**31**)",
+   "cab": "Jovens aventureiros · vídeo de fotos 9:16 (reserva: carrossel 4:5)",
+   "texto": "Hoje é dia de rio: caiaque, stand up paddle e tirolesa com monitor, inclusos na diária.\n\nCom monitor, na programação diária:\n8h30 · arco e flecha\n14h · trilha no Rio Formosinho com tirolesa e stand up paddle\n15h30 · trilha no Rio Formoso com caiaque e stand up paddle\n(os horários podem variar conforme a temporada)\nQuer mais? Arvorismo com 18 obstáculos e tirolesa aquática no Rio Formoso (opcional) e boia cross de 1.200 m por corredeiras e cachoeiras (opcional), com guias treinados. Segurança em primeiro lugar.\nBonito fica logo ali, 260 km de Campo Grande. Bora pro Cabanas?",
+   "variacaoB": "\"Arco e flecha de manhã, tirolesa e caiaque à tarde: com monitor e inclusos na diária.\" (**85**)",
+   "titulo": "Dia de rio no Cabanas (**21**)",
    "descricao": "Monitor e atividades inclusas (**29**)",
    "botao": "Enviar mensagem",
-   "mensagem": "\"Olá! Sou de [cidade], tenho folga na segunda e quero datas. #M3\"",
+   "mensagem": "\"Olá! Sou de [cidade] e quero datas para curtir o dia de rio. #M3\"",
    "arte": [
     {
      "card": "3–6 s",
@@ -91,12 +91,12 @@
   {
    "cod": "M4",
    "cab": "Casais e 55+ · carrossel (5)",
-   "texto": "Você que é daqui já fez os passeios de Bonito. Agora o passeio é o hotel: 40 hectares entre o Formoso e o Formosinho.\n\nTrilhas e decks de banho à margem dos dois rios, dentro do hotel. Redário próximo ao rio. Programação diária inclusa com monitor: arco e flecha, tirolesa, caiaque e stand up paddle (os horários podem variar conforme a temporada). Para quem quiser, boia cross e arvorismo (opcionais).\nSai sexta depois do trabalho e chega para o jantar. E volta na terça, que de domingo a quinta o hotel fica mais tranquilo.\nPartiu Hotel Cabanas?",
-   "variacaoB": "\"Pega a estrada que o rio espera: de domingo a terça, o passeio é o hotel, entre o Formoso e o Formosinho.\" (**105**) [nova, validar com o dono]",
+   "texto": "Você que é daqui já fez os passeios de Bonito. Agora o passeio é o hotel: 40 hectares entre o Formoso e o Formosinho.\n\nTrilhas e decks de banho à margem dos dois rios, dentro do hotel. Redário próximo ao rio. Programação diária inclusa com monitor: arco e flecha, tirolesa, caiaque e stand up paddle (os horários podem variar conforme a temporada). Para quem quiser, boia cross e arvorismo (opcionais).\nPartiu Hotel Cabanas?",
+   "variacaoB": "\"Pega a estrada que o rio espera: o passeio é o hotel, entre o Formoso e o Formosinho.\" (**85**)",
    "titulo": "O passeio agora é o hotel (**25**)",
    "descricao": "Cercado por dois rios (**21**)",
    "botao": "Enviar mensagem",
-   "mensagem": "\"Olá! Sou de [cidade] e quero datas de domingo a terça. #M4\"",
+   "mensagem": "\"Olá! Sou de [cidade] e quero ver as datas disponíveis. #M4\"",
    "arte": [
     {
      "card": "1 (capa)",
@@ -127,8 +127,8 @@
   },
   {
    "cod": "V1",
-   "cab": "Casais (2ª: 55+) · carrossel (5) · voo direto",
-   "texto": "Voo direto de Campinas no domingo, 4 noites entre dois rios, volta na quinta. Nesses dias, o hotel fica mais tranquilo.\n\nO Aeroporto de Bonito fica a 8 km do hotel, de táxi ou carro alugado. Check-in a partir das 15h; no dia da volta, check-out até 13h, e a estrutura continua liberada depois.\nNa Cabana Master, banheira de hidromassagem para 2 e varanda com balanço. Café da manhã, piscina climatizada, hidromassagem aquecida e programação diária com monitor inclusos na diária.",
+   "cab": "Casais (2ª: 55+) · carrossel (5) · voo direto · mantém o meio de semana",
+   "texto": "Voo direto de Campinas no domingo, 4 noites entre dois rios, volta na quinta.\n\nO Aeroporto de Bonito fica a 8 km do hotel, de táxi ou carro alugado. Check-in a partir das 15h; no dia da volta, check-out até 13h, e a estrutura continua liberada depois.\nNa Cabana Master, banheira de hidromassagem para 2 e varanda com balanço. Café da manhã, piscina climatizada, hidromassagem aquecida e programação diária com monitor inclusos na diária.",
    "variacaoB": "",
    "titulo": "Domingo a quinta, voando direto (**31**)",
    "descricao": "8 km do Aeroporto de Bonito (**27**)",
@@ -158,7 +158,7 @@
     {
      "card": "5",
      "foto": "imagem_redario_balneario_rio_formosinho (1jimO_)",
-     "texto": "Quinta, volta sem pressa · apoio: \"check-out até 13h, estrutura liberada depois\" · CTA"
+     "texto": "Na volta, sem pressa · apoio: \"check-out até 13h, estrutura liberada depois\" · CTA"
     }
    ]
   },
@@ -199,17 +199,17 @@
   {
    "cod": "V4",
    "cab": "55+ (2ª: Casais) · carrossel (5) · voo direto",
-   "texto": "Quem pode escolher o dia vem no domingo: tem voo direto para Bonito e o hotel fica mais tranquilo até quinta.\n\nPiscina climatizada, hidromassagem aquecida e sauna a vapor, das 7h às 22h. Café da manhã incluso. Trilhas e decks de banho à margem dos dois rios, dentro do hotel.\nA 8 km do Aeroporto de Bonito, de táxi ou carro alugado.",
+   "texto": "140 espécies de aves catalogadas, macacos e araras: 40 hectares de natureza entre dois rios.\n\nTrilhas à margem do Formoso e do Formosinho, dentro do hotel, com acesso livre o dia todo. Café da manhã incluso; piscina climatizada, hidromassagem aquecida e sauna a vapor, das 7h às 22h.\nVoo direto de São Paulo e Campinas; o Aeroporto de Bonito fica a 8 km do hotel, de táxi ou carro alugado.",
    "variacaoB": "",
-   "titulo": "Quem pode escolher, vem no domingo (**34**)",
-   "descricao": "Hidromassagem aquecida (**22**)",
+   "titulo": "140 espécies de aves catalogadas (**32**)",
+   "descricao": "Trilhas dentro do hotel (**23**)",
    "botao": "Enviar mensagem",
-   "mensagem": "\"Olá! Quero datas de domingo a quinta, vindo no voo direto. #V4\"",
+   "mensagem": "\"Olá! Quero datas vindo no voo direto, para conhecer as trilhas e as aves. #V4\"",
    "arte": [
     {
      "card": "1 (capa)",
      "foto": "imagem_casal_observando_natureza (1AbONV)",
-     "texto": "Quem pode escolher, vem no domingo · fato: \"Voo direto no domingo\""
+     "texto": "140 espécies de aves, entre dois rios (7 palavras) · fato: \"Trilhas dentro do hotel\""
     },
     {
      "card": "2",
@@ -236,49 +236,49 @@
   {
    "cod": "V5",
    "cab": "Jovens aventureiros (2ª: Casais) · vídeo de fotos 9:16 (reserva: carrossel 4:5) · voo direto",
-   "texto": "Pousa domingo. Segunda, no rio: arco e flecha às 8h30, tirolesa e stand up paddle às 14h, caiaque às 15h30.\n\nEssas atividades estão inclusas na diária, com monitor (os horários podem variar conforme a temporada).\nQuer mais adrenalina? Arvorismo com 18 obstáculos e tirolesa aquática no Rio Formoso (opcional) e boia cross de 1.200 m por corredeiras e cachoeiras (opcional), com guias treinados. Segurança em primeiro lugar.\nVoo direto no domingo; o aeroporto fica a 8 km do hotel.",
+   "texto": "Boia cross de 1.200 m por corredeiras e cachoeiras do Rio Formoso, dentro do hotel (opcional).\n\nCom guias treinados: segurança em primeiro lugar. Boia cross no hotel desde 2004. Arvorismo com 18 obstáculos e tirolesa aquática no Rio Formoso (opcional).\nInclusos na diária, com monitor: arco e flecha, trilhas com tirolesa, caiaque e stand up paddle (os horários podem variar conforme a temporada).\nVoo direto para Bonito; o aeroporto fica a 8 km do hotel.",
    "variacaoB": "",
-   "titulo": "Pousa domingo. Segunda, no rio (**30**)",
+   "titulo": "Boia cross de 1.200 m no hotel (**30**)",
    "descricao": "Arvorismo e boia (opcionais) (**28**)",
    "botao": "Enviar mensagem",
-   "mensagem": "\"Olá! Quero datas de domingo a quinta, vindo no voo direto. #V5\"",
+   "mensagem": "\"Olá! Quero datas vindo no voo direto, para fazer boia cross. #V5\"",
    "arte": [
     {
      "card": "0–3 s",
-     "foto": "imagem_caiaque_rio_formoso_mulher (1EGIkZ)",
-     "texto": "\"Pousa domingo.\" → \"Segunda, no rio\""
+     "foto": "boia_close_adultos_sorrindo (18liRI)",
+     "texto": "\"1.200 m de corredeiras\" → \"Boia cross, dentro do hotel (opcional)\""
     },
     {
      "card": "3–6 s",
-     "foto": "imagem_arco_flecha_casal (1sO8Ca)",
-     "texto": "\"8h30 · arco e flecha · incluso\""
-    },
-    {
-     "card": "6–9 s",
-     "foto": "imagem_standup_formosinho_casal (1iYdKL)",
-     "texto": "\"14h · stand up paddle e tirolesa · incluso\""
-    },
-    {
-     "card": "9–12 s",
      "foto": "arvorismo_tirolesa_pessoa_close_sorriso (15RuNc)",
      "texto": "\"Arvorismo · tirolesa aquática (opcional)\""
     },
     {
+     "card": "6–9 s",
+     "foto": "imagem_arco_flecha_casal (1sO8Ca)",
+     "texto": "\"8h30 · arco e flecha · incluso\""
+    },
+    {
+     "card": "9–12 s",
+     "foto": "imagem_standup_formosinho_casal (1iYdKL)",
+     "texto": "\"14h · stand up paddle e tirolesa · incluso\""
+    },
+    {
      "card": "12–15 s",
-     "foto": "boia_close_adultos_sorrindo (18liRI)",
-     "texto": "\"Boia cross · 1.200 m (opcional)\""
+     "foto": "imagem_caiaque_rio_formoso_mulher (1EGIkZ)",
+     "texto": "\"15h30 · caiaque · incluso\""
     }
    ]
   },
   {
    "cod": "P01",
    "cab": "Casais · carrossel (5)",
-   "texto": "Aqui, a pressa fica no chão: a Cabana Casal é toda de madeira e elevada a 3 m, com varanda privativa e rede.\n\nSobe a escada, deita na rede e deixa a quarta-feira passar devagar. Cama king, garagem privativa embaixo e café da manhã incluso.\nDe domingo a quinta, o hotel fica mais tranquilo.\nDecoração especial no quarto (opcional).",
+   "texto": "Aqui, a pressa fica no chão: a Cabana Casal é toda de madeira e elevada a 3 m, com varanda privativa e rede.\n\nA cabana suspensa nasceu de uma ideia do sítio dos fundadores, Gilberto e Cleodete: dormir na altura das árvores.\nSobe a escada, deita na rede e deixa o dia passar devagar. Cama king, garagem privativa embaixo e café da manhã incluso.\nDecoração especial no quarto (opcional).",
    "variacaoB": "",
    "titulo": "Cabana de madeira, elevada a 3 m (**32**)",
    "descricao": "Varanda privativa com rede (**26**)",
    "botao": "Enviar mensagem",
-   "mensagem": "\"Olá! Quero datas de domingo a quinta. #P01\"",
+   "mensagem": "\"Olá! Quero datas para a Cabana Casal. #P01\"",
    "arte": [
     {
      "card": "1 (capa)",
@@ -310,24 +310,24 @@
   {
    "cod": "P02",
    "cab": "Casais · imagem",
-   "texto": "Uma quarta a dois, sem pressa: na Cabana Master, a banheira de hidromassagem é para 2.\n\nSão 85 m², a maior acomodação do hotel, com varanda ampla e balanço. É a única com banheira de hidromassagem.\nCafé da manhã e programação diária com monitor inclusos. Piquenique ao pôr do sol no deck do Rio Formosinho (opcional) e decoração especial no quarto (opcional).",
+   "texto": "Um dia a dois: piquenique ao pôr do sol no deck do Rio Formosinho (opcional) e banheira para 2.\n\nA banheira de hidromassagem é da Cabana Master: 85 m², a maior acomodação do hotel e a única com banheira, com varanda ampla e balanço.\nCafé da manhã e programação diária com monitor inclusos. Decoração especial no quarto (opcional) e massagem relaxante à margem dos rios (opcional).",
    "variacaoB": "",
-   "titulo": "Cabana Master: banheira para dois (**33**)",
+   "titulo": "Banheira de hidromassagem para 2 (**32**)",
    "descricao": "85 m² e varanda com balanço (**27**)",
    "botao": "Enviar mensagem",
-   "mensagem": "\"Olá! Quero datas de domingo a quinta. #P02\"",
+   "mensagem": "\"Olá! Quero datas para a Cabana Master, com piquenique ao pôr do sol. #P02\"",
    "arte": [
     {
      "card": "1",
      "foto": "Cabana Master / cabana_master_banheira (1yyTKu).",
-     "texto": "Uma quarta a dois, sem pressa (6 palavras) · fato: \"Banheira de hidromassagem para 2\"."
+     "texto": "Pôr do sol e banheira para dois (6 palavras) · fato: \"Banheira de hidromassagem para 2 · Cabana Master\" · rodapé pequeno: \"piquenique ao pôr do sol (opcional)\"."
     }
    ]
   },
   {
    "cod": "P04",
-   "cab": "55+ · carrossel (5)",
-   "texto": "Domingo a quinta, no ritmo seu: o hotel fica mais tranquilo, e a piscina climatizada abre das 7h às 22h.\n\nHidromassagem aquecida e sauna a vapor no mesmo horário. Trilhas à margem dos dois rios, dentro do hotel, e café da manhã incluso.\nO Bangalô é de alvenaria, elevado do chão, e não divide paredes com outra acomodação. A varanda privativa tem rede e vista para a natureza.",
+   "cab": "55+ · carrossel (5) · mantém o meio de semana",
+   "texto": "Domingo a quinta, no ritmo seu: piscina climatizada, hidromassagem aquecida e sauna, das 7h às 22h.\n\nTrilhas à margem dos dois rios, dentro do hotel, e café da manhã incluso.\nO Bangalô é de alvenaria, elevado do chão, e não divide paredes com outra acomodação. A varanda privativa tem rede e vista para a natureza.",
    "variacaoB": "",
    "titulo": "Domingo a quinta, no ritmo seu (**30**)",
    "descricao": "Sauna e hidro até as 22h (**24**)",
@@ -364,12 +364,12 @@
   {
    "cod": "P05",
    "cab": "Todas · imagem",
-   "texto": "Entre dois rios: o Hotel Cabanas é o único hotel de Bonito cercado pelo Formoso e pelo Formosinho.\n\nSão 40 hectares de natureza, com trilhas e decks de banho à margem dos dois rios, dentro do hotel. Caiaque, stand up paddle e tirolesa com monitor, inclusos na diária. Boia cross e arvorismo (opcionais).\nA 6 km do centro, todo o acesso em asfalto. De domingo a quinta, o hotel fica mais tranquilo.",
+   "texto": "Entre dois rios: o Hotel Cabanas é o único hotel de Bonito cercado pelo Formoso e pelo Formosinho.\n\nSão 40 hectares de natureza, com trilhas e decks de banho à margem dos dois rios, dentro do hotel. Caiaque, stand up paddle e tirolesa com monitor, inclusos na diária. Boia cross e arvorismo (opcionais).\nHá 25 anos, um hotel de família, com um proprietário biólogo: aqui vivemos o que vendemos.",
    "variacaoB": "",
    "titulo": "Único de Bonito cercado por dois rios (**37**)",
    "descricao": "Rios Formoso e Formosinho (**25**)",
    "botao": "Enviar mensagem",
-   "mensagem": "\"Olá! Quero datas de domingo a quinta. #P05\"",
+   "mensagem": "\"Olá! Quero ver datas para conhecer o hotel entre dois rios. #P05\"",
    "arte": [
     {
      "card": "1",
@@ -381,12 +381,12 @@
   {
    "cod": "P10",
    "cab": "55+ e Casais · imagem",
-   "texto": "Fica longe? O Hotel Cabanas está a 6 km do centro de Bonito, com todo o acesso em asfalto.\n\nE a 8 km do Aeroporto de Bonito. Longe da pressa: trilhas, decks de banho à margem dos dois rios e a programação diária com monitor estão dentro do hotel, inclusas na diária.\nDe domingo a quinta, o hotel fica mais tranquilo.",
+   "texto": "Fica longe? O Hotel Cabanas está a 6 km do centro de Bonito, com todo o acesso em asfalto.\n\nE a 8 km do Aeroporto de Bonito. Longe da pressa: trilhas, decks de banho à margem dos dois rios e a programação diária com monitor estão dentro do hotel, inclusas na diária.\nPara quem traz a própria bicicleta, há ciclovia até a cidade.",
    "variacaoB": "",
    "titulo": "A 6 km do centro, todo em asfalto (**33**)",
    "descricao": "8 km do Aeroporto de Bonito (**27**)",
    "botao": "Enviar mensagem",
-   "mensagem": "\"Olá! Quero datas de domingo a quinta. #P10\"",
+   "mensagem": "\"Olá! Quero ver datas disponíveis. #P10\"",
    "arte": [
     {
      "card": "1",
@@ -451,25 +451,25 @@
   },
   {
    "cod": "R3",
-   "cab": "Casais e 55+ · imagem · \"não acho vaga\"",
-   "texto": "Não achou vaga no fim de semana? E se a viagem fosse numa terça? De domingo a quinta, o hotel fica mais tranquilo.\n\nDecks de banho à margem dos dois rios, redário próximo ao rio, piscina climatizada, hidromassagem aquecida e programação diária com monitor inclusa.",
+   "cab": "Casais e 55+ · imagem · \"não acho vaga\" · mantém o meio de semana",
+   "texto": "Não achou vaga no fim de semana? E se a viagem fosse numa terça?\n\nDecks de banho à margem dos dois rios, redário próximo ao rio, piscina climatizada, hidromassagem aquecida e programação diária com monitor inclusa.",
    "variacaoB": "",
    "titulo": "E se a viagem fosse numa terça? (**31**)",
-   "descricao": "Domingo a quinta, mais tranquilo (**32**)",
+   "descricao": "Decks à margem dos dois rios (**28**)",
    "botao": "Enviar mensagem",
-   "mensagem": "\"Olá! Quero datas de domingo a quinta. #R3\"",
+   "mensagem": "\"Olá! Quero datas no meio da semana. #R3\"",
    "arte": [
     {
      "card": "1",
      "foto": "imagem_balneario_formosinho_deck_rede (1zW97n).",
-     "texto": "E se a viagem fosse numa terça? (7 palavras) · fato: \"De domingo a quinta, o hotel fica mais tranquilo\"."
+     "texto": "E se a viagem fosse numa terça? (7 palavras) · fato: \"Decks de banho à margem dos dois rios\"."
     }
    ]
   },
   {
    "cod": "R4",
    "cab": "Todas · imagem · condições de reserva (pausado de 29/11 a 26/01 e de 11/06 a 16/07)",
-   "texto": "Baixa temporada, reserva sem aperto: parcele em até 6x no cartão.\n\nQuem reserva direto já tem valores com desconto. De domingo a quinta, o hotel fica mais tranquilo.\nChame no WhatsApp ou reserve em sbreserva.silbeck.com.br/hotelcabanas",
+   "texto": "Baixa temporada, reserva sem aperto: parcele em até 6x no cartão.\n\nQuem reserva direto já tem valores com desconto, pelo WhatsApp ou pelo motor de reservas.\nChame no WhatsApp ou reserve em sbreserva.silbeck.com.br/hotelcabanas",
    "variacaoB": "",
    "titulo": "Parcele em até 6x no cartão (**27**)",
    "descricao": "Desconto na reserva direta (**26**)",
