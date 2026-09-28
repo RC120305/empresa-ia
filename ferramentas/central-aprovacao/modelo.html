@@ -851,6 +851,23 @@ function renderAds(){
     <div class="steps">${A.etapas.map((e,i)=>`<span class="${i<etapa?"ok":i===etapa?"on":""}">${i+1}. ${esc(e)}</span>`).join("")}</div>
     ${aprovado && !A.textos ? `<p class="msg">Plano aprovado. Próxima etapa: a equipe escreve os textos dos anúncios mantidos, que aparecem aqui para você aprovar e editar.</p>` : ""}
   </div>
+  ${CODS.length ? `<div class="panel" id="ads-artes">
+    <span class="label">Etapa 3 · artes (estilo sem faixa)</span>
+    <h2>Artes dos anúncios: ${CODS.length} para aprovar</h2>
+    <p class="muted">${arOk ? "Artes aprovadas. Próximo passo: subir as campanhas <b>pausadas</b> na conta, só com o seu OK nas travas do dinheiro abaixo." : "Cada anúncio tem as telas no formato do feed (4:5) e do story (9:16). Arraste para o lado para ver o carrossel. Aprove um por um ou todos; se algo precisar mudar, toque em Pedir ajuste e diga o quê."}</p>
+    <div class="row" style="display:flex;gap:6px;margin-bottom:10px" role="group" aria-label="Formato"><button type="button" class="sbtn" data-arfmt="f" aria-pressed="${fmtA === "f"}">Feed 4:5</button><button type="button" class="sbtn" data-arfmt="s" aria-pressed="${fmtA === "s"}">Story 9:16</button></div>
+    <div class="adgrid">${CODS.map(c => { const e = ar[c] || {}, t = (A.textos.anuncios.find(a => a.cod === c) || {}), telas = ARTES[c]; return `<div class="ad ${e.st === "aprovado" ? "okd" : e.st === "ajuste" ? "fixd" : ""}">
+      <span class="code">${esc(c)} · ${esc(t.cab || "")}</span>
+      <div class="arstrip">${telas.map((x, i) => `<img src="${esc(x[fmtA] || x.f)}" alt="${esc(c)}, tela ${i + 1} de ${telas.length}" loading="lazy" class="${fmtA === "s" ? "st" : ""}">`).join("")}</div>
+      <span class="ang">${telas.length} ${telas.length > 1 ? "telas" : "tela"}${telas.length > 1 ? " · arraste para o lado" : ""}</span>
+      ${e.st === "ajuste" && e.pedido ? `<p class="ang" style="color:var(--fix)"><b>Seu pedido:</b> ${esc(e.pedido)}</p>` : ""}
+      ${arOk ? "" : `<div class="row"><button type="button" class="sbtn" data-arok="${esc(c)}" aria-pressed="${e.st === "aprovado"}">${e.st === "aprovado" ? "Aprovado ✓" : "Aprovar"}</button><button type="button" class="sbtn" data-arfix="${esc(c)}">Pedir ajuste</button></div>
+      <div data-arbox="${esc(c)}" hidden style="display:flex;flex-direction:column;gap:6px"><textarea style="font:inherit;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);min-height:60px" placeholder="O que mudar nesta arte? (diga a tela: 1, 2…)"></textarea><button type="button" class="btn fix" data-arsend="${esc(c)}">Enviar pedido de ajuste</button></div>`}
+    </div>`; }).join("")}</div>
+    ${arOk ? `<button class="btn ghost" type="button" id="ar-reabrir">Reabrir as artes</button>` : `<div class="actions" style="border:none;padding:0"><button class="btn ok" type="button" id="ar-todos">Aprovar todas as artes</button></div>`}
+    <p class="msg" id="ar-msg"></p>
+  </div>` : ""}
+
   ${A.textos ? `<div class="panel" id="ads-textos">
     <span class="label">Etapa 2 · textos (${esc(A.textos.versao)})</span>
     <h2>Textos dos anúncios: ${A.textos.anuncios.length} para aprovar</h2>
@@ -871,22 +888,6 @@ function renderAds(){
     <p class="msg" id="tx-msg"></p>
   </div>` : ""}
 
-  ${CODS.length ? `<div class="panel" id="ads-artes">
-    <span class="label">Etapa 3 · artes (estilo sem faixa)</span>
-    <h2>Artes dos anúncios: ${CODS.length} para aprovar</h2>
-    <p class="muted">${arOk ? "Artes aprovadas. Próximo passo: subir as campanhas <b>pausadas</b> na conta, só com o seu OK nas travas do dinheiro abaixo." : "Cada anúncio tem as telas no formato do feed (4:5) e do story (9:16). Arraste para o lado para ver o carrossel. Aprove um por um ou todos; se algo precisar mudar, toque em Pedir ajuste e diga o quê."}</p>
-    <div class="row" style="display:flex;gap:6px;margin-bottom:10px" role="group" aria-label="Formato"><button type="button" class="sbtn" data-arfmt="f" aria-pressed="${fmtA === "f"}">Feed 4:5</button><button type="button" class="sbtn" data-arfmt="s" aria-pressed="${fmtA === "s"}">Story 9:16</button></div>
-    <div class="adgrid">${CODS.map(c => { const e = ar[c] || {}, t = (A.textos.anuncios.find(a => a.cod === c) || {}), telas = ARTES[c]; return `<div class="ad ${e.st === "aprovado" ? "okd" : e.st === "ajuste" ? "fixd" : ""}">
-      <span class="code">${esc(c)} · ${esc(t.cab || "")}</span>
-      <div class="arstrip">${telas.map((x, i) => `<img src="${esc(x[fmtA] || x.f)}" alt="${esc(c)}, tela ${i + 1} de ${telas.length}" loading="lazy" class="${fmtA === "s" ? "st" : ""}">`).join("")}</div>
-      <span class="ang">${telas.length} ${telas.length > 1 ? "telas" : "tela"}${telas.length > 1 ? " · arraste para o lado" : ""}</span>
-      ${e.st === "ajuste" && e.pedido ? `<p class="ang" style="color:var(--fix)"><b>Seu pedido:</b> ${esc(e.pedido)}</p>` : ""}
-      ${arOk ? "" : `<div class="row"><button type="button" class="sbtn" data-arok="${esc(c)}" aria-pressed="${e.st === "aprovado"}">${e.st === "aprovado" ? "Aprovado ✓" : "Aprovar"}</button><button type="button" class="sbtn" data-arfix="${esc(c)}">Pedir ajuste</button></div>
-      <div data-arbox="${esc(c)}" hidden style="display:flex;flex-direction:column;gap:6px"><textarea style="font:inherit;font-size:14px;padding:8px;border:1px solid var(--line);border-radius:5px;background:var(--surface);color:var(--ink);min-height:60px" placeholder="O que mudar nesta arte? (diga a tela: 1, 2…)"></textarea><button type="button" class="btn fix" data-arsend="${esc(c)}">Enviar pedido de ajuste</button></div>`}
-    </div>`; }).join("")}</div>
-    ${arOk ? `<button class="btn ghost" type="button" id="ar-reabrir">Reabrir as artes</button>` : `<div class="actions" style="border:none;padding:0"><button class="btn ok" type="button" id="ar-todos">Aprovar todas as artes</button></div>`}
-    <p class="msg" id="ar-msg"></p>
-  </div>` : ""}
 
   <div class="panel"><h2>Arquitetura do ano</h2>
     <div class="tbl"><table><thead><tr><th>Camada</th><th>Campanha</th><th>Quando roda</th><th>Formato</th></tr></thead><tbody>
