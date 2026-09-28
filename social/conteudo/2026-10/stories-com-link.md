@@ -27,7 +27,6 @@ Os Reels (POST 02, 05, 08 e 11) ficam de fora até o vídeo chegar: quando chega
 
 ## Links para a figurinha (copiar e colar no aplicativo)
 - **Motor de reservas:** `https://sbreserva.silbeck.com.br/hotelcabanas?utm_source=instagram&utm_medium=stories&utm_campaign=2026-10` · texto da figurinha: **RESERVAR**
-  [a confirmar: se o motor não abrir com o `?utm_…`, usar o link sem essa parte]
 - **WhatsApp:** `https://wa.me/5567991171648?text=Ol%C3%A1!%20Vi%20o%20story%20do%20Hotel%20Cabanas%20e%20quero%20saber%20das%20datas.` · texto da figurinha: **CHAMAR NO WHATSAPP**
 
 ## Como pôr a figurinha (no celular, cerca de 30 s)

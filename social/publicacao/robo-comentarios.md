@@ -13,7 +13,6 @@ Status: **texto aprovado pelo dono em 28/09/2026**. O robô ainda não está mon
 
 Botões:
 - **Reservar online** → `https://sbreserva.silbeck.com.br/hotelcabanas?utm_source=instagram&utm_medium=direct&utm_campaign=comente-reserva`
-  (se o motor não abrir com o `?utm_…`, usar o link sem essa parte)
 - **Falar no WhatsApp** → `https://wa.me/5567991171648?text=Ol%C3%A1!%20Vim%20pelo%20Instagram%20e%20quero%20saber%20das%20datas.`
 
 Frase do dono: **"Reservando direto, garantimos o melhor preço."** Ela vale para esta mensagem. Nos outros textos, a frase de reserva direta continua a de cada peça, até o dono pedir para trocar.

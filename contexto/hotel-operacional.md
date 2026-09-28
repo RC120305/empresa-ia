@@ -93,7 +93,7 @@
 - Da rodoviária de Bonito, de táxi ("todos os taxistas nos conhecem").
 
 ## 11. Links e contatos oficiais
-- **Reservas (motor):** https://sbreserva.silbeck.com.br/hotelcabanas
+- **Reservas (motor):** https://sbreserva.silbeck.com.br/hotelcabanas (conferido pelo dono no celular em 28/09/2026)
 - **Site oficial (usar em anúncios):** **https://hotelcabanas.com.br/** (confirmado pelo dono em 2026-09-26) · Outro endereço informado, que **não** deve ser usado em anúncios: hotelcabanasbonito.ai.studio
 - **WhatsApp de reservas:** +55 67 99117-1648 · **Telefone:** +55 67 99110-7635 · **E-mail:** contato@hotelcabanas.com.br
 - **Instagram:** https://www.instagram.com/hotelcabanasbonito/ · **Facebook:** https://www.facebook.com/hotelcabanasms · **YouTube:** https://www.youtube.com/@hotelcabanasbonitoms
