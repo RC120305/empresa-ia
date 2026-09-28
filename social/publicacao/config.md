@@ -1,7 +1,7 @@
 # Configuração da publicação automática
 
 - ID da conta do Instagram (@hotelcabanasbonito): 17841403994091310 (confirmado pela API em 27/09/2026)
-- Chave: chave da Página guardada pelo dono em **Credenciais de API** do ambiente, nome `META_IG_TOKEN` (28/09/2026; as sessões usam sem ver o valor; nunca registrar o valor aqui). Só vale em sessão nova.
+- Chave: chave da Página guardada pelo dono em **Credenciais de API** do ambiente, nome `META_IG_TOKEN` (28/09/2026). É aplicada sozinha nas chamadas a graph.facebook.com: chamar a API SEM `access_token`. Nunca registrar o valor aqui.
 - Rede: `graph.facebook.com` liberado (confirmado em 28/09/2026: a API responde)
 - Hospedagem das imagens (URL pública exigida pela Meta): [a definir no teste: (a) Drive com link público; (b) outro serviço de hospedagem indicado pelo dono]
 - Horário padrão das postagens: [definido pelo Estrategista na pauta; fuso America/Campo_Grande]
@@ -16,3 +16,4 @@
 - Arrumação pendente: há 3 apps "Cabanas Publicação" (o certo agora é **1043672718685119**, NÃO apagar; os outros são tentativas repetidas); o app foi removido do portfólio e pode ser reconectado em Apps → Adicionar → Conectar um ID do app.
 
 - 28/09/2026: dono refez a chave no Explorer (app 1043672718685119, token de usuário estendido: "Expira: Nunca", escopos pages_show_list, pages_manage_posts, pages_read_engagement, instagram_basic, instagram_content_publish, business_management; acesso aos dados expira em ~3 meses). Próximo: chave da Página (me/accounts) em `META_IG_TOKEN`, liberar `graph.facebook.com`, sessão nova e "testa a publicação".
+- **28/09/2026: conexão confirmada (só leitura).** A credencial `META_IG_TOKEN` é aplicada automaticamente nas chamadas a `graph.facebook.com` (não passar `access_token` na URL; a sessão não vê o valor). `GET /me` → Página "Hotel Cabanas" (158244147578036); `instagram_business_account` → 17841403994091310, @hotelcabanasbonito, 483 publicações; limite de publicação: 100 por 24 h, 0 usados. Nada foi publicado. Próximo: publicação de teste só com o OK do dono (falta definir a hospedagem pública das imagens, exigida pela API).
