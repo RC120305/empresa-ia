@@ -1,16 +1,18 @@
 """Robô "comente RESERVA e receba o link no direct" (Hotel Cabanas).
 
 Uso:
-  python3 ferramentas/robo-comentarios/robo.py            # TESTE: só lista o que faria (padrão)
-  python3 ferramentas/robo-comentarios/robo.py --enviar   # envia de verdade (só com o robô ligado pelo dono)
+  python3 ferramentas/robo-comentarios/robo.py                       # TESTE: lista o que faria (últimas 24 h)
+  python3 ferramentas/robo-comentarios/robo.py --horas 48            # TESTE com outra janela
+  python3 ferramentas/robo-comentarios/robo.py --agendado --enviar   # a rotina: envia de verdade
 
 Regras (aprovadas pelo dono em 28/09/2026, ver social/publicacao/robo-comentarios.md):
 - Olha os posts do @hotelcabanasbonito dos últimos 7 dias (o Instagram só aceita resposta
   privada a comentários de até 7 dias).
 - Responde só a comentários curtos (até 4 palavras) com a palavra-chave (RESERVA, sem diferenciar
   maiúsculas nem acento), nunca a comentários do próprio hotel.
-- Uma resposta privada por comentário, e no máximo uma por pessoa em cada post.
-- Guarda só os IDs dos comentários já respondidos (sem nomes) em respondidos.txt.
+- No máximo uma resposta por pessoa em cada post (só o 1º comentário dela com a palavra).
+- Sem arquivo de estado: cada rodada agendada cuida só dos comentários que chegaram desde o
+  horário anterior da rotina (janelas que não se sobrepõem), então ninguém recebe duas respostas.
 A chave da Meta é aplicada pelo ambiente nas chamadas a graph.facebook.com (não vai no código).
 """
 import datetime, json, os, sys, unicodedata, urllib.parse, urllib.request
@@ -19,7 +21,6 @@ API = "https://graph.facebook.com/v21.0"
 PAGINA, IG = "158244147578036", "17841403994091310"
 PALAVRA = "reserva"
 AQUI = os.path.dirname(os.path.abspath(__file__))
-ESTADO = os.path.join(AQUI, "respondidos.txt")
 MOTOR = "https://sbreserva.silbeck.com.br/hotelcabanas?utm_source=instagram&utm_medium=direct&utm_campaign=comente-reserva"
 WHATS = "https://wa.me/5567991171648?text=" + urllib.parse.quote("Olá! Vim pelo Instagram e quero saber das datas.")
 
@@ -71,37 +72,60 @@ def responder(cid, nome):
     return ok2, (r2 if ok2 else {"botoes": r, "texto": r2}), "texto"
 
 
+# horários da rotina (hora de Campo Grande, UTC-4, sem horário de verão): 7h52, 9h52, ..., 21h52
+HORARIOS = [(h, 52) for h in range(7, 22, 2)]
+FUSO = datetime.timezone(datetime.timedelta(hours=-4))
+
+
+def janela(agora):
+    """Janela da rodada agendada: do horário anterior até o horário atual da rotina.
+    Cada comentário cai em uma janela só, então ninguém recebe duas respostas."""
+    local = agora.astimezone(FUSO)
+    slots = []
+    for d in (-1, 0):
+        dia = (local + datetime.timedelta(days=d)).date()
+        slots += [datetime.datetime(dia.year, dia.month, dia.day, h, m, tzinfo=FUSO) for h, m in HORARIOS]
+    passados = [x for x in slots if x <= local]
+    return passados[-2], passados[-1]
+
+
+def quando(ts):
+    return datetime.datetime.fromisoformat(ts.replace("+0000", "+00:00"))
+
+
 def main():
     enviar = "--enviar" in sys.argv
-    feitos = set(open(ESTADO).read().split()) if os.path.exists(ESTADO) else set()
-    limite = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=7)
-    midias = get(f"{IG}/media", fields="id,timestamp,permalink", limit=25).get("data", [])
+    agora = datetime.datetime.now(datetime.timezone.utc)
+    limite = agora - datetime.timedelta(days=7)
+    if "--agendado" in sys.argv:
+        ini, fim = janela(agora)
+    else:  # rodada manual: últimas N horas (padrão 24)
+        horas = int(sys.argv[sys.argv.index("--horas") + 1]) if "--horas" in sys.argv else 24
+        ini, fim = agora - datetime.timedelta(hours=horas), agora
+    ini = max(ini, limite)
+    midias = [m for m in get(f"{IG}/media", fields="id,timestamp,permalink", limit=25).get("data", []) if quando(m["timestamp"]) >= limite]
     novos, erros = [], []
     for m in midias:
-        if datetime.datetime.fromisoformat(m["timestamp"].replace("+0000", "+00:00")) < limite:
-            continue
-        pessoas = set()
+        # 1º comentário com a palavra de cada pessoa neste post (nos últimos 7 dias)
+        primeiro = {}
         for c in get(f"{m['id']}/comments", fields="id,text,timestamp,username", limit=100).get("data", []):
             quem = c.get("username", "")
-            if c["id"] in feitos or quem == "hotelcabanasbonito" or not tem_palavra(c.get("text", "")):
+            if quem == "hotelcabanasbonito" or not tem_palavra(c.get("text", "")) or quando(c["timestamp"]) < limite:
                 continue
-            if datetime.datetime.fromisoformat(c["timestamp"].replace("+0000", "+00:00")) < limite or quem in pessoas:
-                continue
-            pessoas.add(quem)
+            if quem not in primeiro or quando(c["timestamp"]) < quando(primeiro[quem]["timestamp"]):
+                primeiro[quem] = c
+        for quem, c in primeiro.items():
+            if not (ini <= quando(c["timestamp"]) < fim):
+                continue  # já foi atendido numa rodada anterior, ou fica para a próxima
             if not enviar:
                 novos.append((m["permalink"], c["id"], "(teste: não enviado)"))
                 continue
             ok, r, forma = responder(c["id"], quem)
-            if ok:
-                feitos.add(c["id"]); novos.append((m["permalink"], c["id"], f"enviado ({forma})"))
-            else:
-                erros.append((c["id"], r))
-    if enviar:
-        open(ESTADO, "w").write("\n".join(sorted(feitos)) + "\n")
-    print(f"{'ENVIO' if enviar else 'TESTE'} · posts dos últimos 7 dias: "
-          f"{sum(1 for m in midias if m['timestamp'] >= limite.strftime('%Y-%m-%dT%H:%M:%S'))} · respostas: {len(novos)} · erros: {len(erros)}")
-    for p, cid, st in novos:
-        print(" ", p, cid, st)
+            (novos.append((m["permalink"], c["id"], f"enviado ({forma})")) if ok else erros.append((c["id"], r)))
+    print(f"{'ENVIO' if enviar else 'TESTE'} · janela {ini.astimezone(FUSO):%d/%m %H:%M} a {fim.astimezone(FUSO):%d/%m %H:%M} (Campo Grande) · "
+          f"posts dos últimos 7 dias: {len(midias)} · respostas: {len(novos)} · erros: {len(erros)}")
+    for p_, cid, st in novos:
+        print(" ", p_, cid, st)
     for cid, r in erros:
         print("  ERRO", cid, json.dumps(r)[:300])
 

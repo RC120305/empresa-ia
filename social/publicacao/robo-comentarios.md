@@ -32,6 +32,6 @@ Frase do dono: **"Reservando direto, garantimos o melhor preço."** Ela vale par
 - Vale para **todos os posts dos últimos 7 dias**; nunca responde ao próprio hotel; uma resposta por pessoa por post.
 - Nome na saudação: o @ da pessoa (é o que o Instagram informa).
 - Tenta primeiro a mensagem com os 2 botões; se o Instagram não aceitar botões na resposta privada, manda o mesmo texto com os 2 links escritos.
-- Estado: `ferramentas/robo-comentarios/respondidos.txt` guarda só os IDs dos comentários respondidos.
+- Sem arquivo de estado: cada rodada agendada cuida só dos comentários que chegaram desde o horário anterior da rotina (janelas que não se sobrepõem; a da noite vai de 21h52 a 7h52). Só o 1º comentário de cada pessoa em cada post recebe resposta.
 - Teste feito em 28/09 (modo teste): 1 post nos últimos 7 dias, nenhum comentário com a palavra, nada enviado.
-- **Falta para ligar:** (1) teste real com o dono: ele comenta RESERVA num post, pela conta pessoal, e o robô responde; (2) a rotina que roda o robô de tempos em tempos (frequência a definir pelo dono); (3) os posts passarem a pedir "comente RESERVA".
+- **Falta para ligar:** (1) teste real com o dono: ele comenta RESERVA num post, pela conta pessoal, e o robô responde; (2) ~~a rotina~~ **frequência escolhida pelo dono em 28/09: a cada 2 horas, das 8h às 22h** (rotina às 7h52, 9h52, ..., 21h52, hora de Campo Grande); (3) os posts passarem a pedir "comente RESERVA".
