@@ -9,8 +9,10 @@
 - ID da Página do Facebook: 158244147578036 (facebook.com/hotelcabanasms; ligada ao @hotelcabanasbonito)
 - Limite de gastos da conta (trava definida pelo dono no Gerenciador de Anúncios): [pendente]
 - Proporção 3:4 aceita pela API? [validar no teste]
-- App: "Cabanas Publicação", ID 1825674138454665, no portfólio "Hotel Cabanas" (27/09/2026)
+- App: "Cabanas Publicação", **ID 1043672718685119** (é o app da chave gerada em 28/09/2026; antes estava anotado o 1825674138454665, uma das cópias com o mesmo nome)
 - Usuário do sistema: "Publicador Cabanas" (função Employee, ID 61577402477573), com Controle total só no app; Página, Instagram e conta de anúncios atribuídos pelo dono (anúncios: Gerenciar campanhas, sem pagamentos)
 - Caminho adotado (27/09/2026): **plano B**. A Página e a conta de anúncios (432014510158521) estão na conta pessoal do dono, não no portfólio "Hotel Cabanas"; mover foi adiado até a verificação da empresa sair. A chave de publicação é uma **chave de Página que não expira**, gerada pela conta do dono (administrador) no app Cabanas Publicação, e fica só na variável `META_IG_TOKEN` do ambiente.
 - Anúncios pela API: pendentes (decidir depois da verificação: mover a conta de anúncios e a Página para o portfólio, ou usar chave de usuário de 60 dias).
-- Arrumação pendente: há 3 apps "Cabanas Publicação" (o certo é 1825674138454665; os outros são tentativas repetidas); o app foi removido do portfólio e pode ser reconectado em Apps → Adicionar → Conectar um ID do app.
+- Arrumação pendente: há 3 apps "Cabanas Publicação" (o certo agora é **1043672718685119**, NÃO apagar; os outros são tentativas repetidas); o app foi removido do portfólio e pode ser reconectado em Apps → Adicionar → Conectar um ID do app.
+
+- 28/09/2026: dono refez a chave no Explorer (app 1043672718685119, token de usuário estendido: "Expira: Nunca", escopos pages_show_list, pages_manage_posts, pages_read_engagement, instagram_basic, instagram_content_publish, business_management; acesso aos dados expira em ~3 meses). Próximo: chave da Página (me/accounts) em `META_IG_TOKEN`, liberar `graph.facebook.com`, sessão nova e "testa a publicação".
