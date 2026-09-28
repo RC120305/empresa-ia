@@ -3,12 +3,13 @@
 > **Autor:** Especialista em Marketing e Anúncios · **Data:** 28/09/2026 · **Skill:** `campanha-anuncios`, Fase 2 · **Status:** RASCUNHO para a sua aprovação. Nada foi subido, ativado nem publicado.
 > **Base:** `textos-v2.md` + o seu pedido de 28/09/2026 ("o tema de domingo a quinta está muito exagerado... explore menos isso e substitua por outros"), `plano.md` v2.4, `matriz-criativos.md`, `meta-ads.md`, `perfil-cabanas.md`, `hotel-operacional.md`, `hotel-cabanas.md` §9, `cultura.md` §8, `destino-bonito.md` §3 e §5.
 > **Lote 1:** M1 a M4 (MS, + roteiro do vídeo do M3) · V1 a V5 · P01, P02, P04, P05, P10 (Fora do estado) · R1 a R4 (Remarketing). **18 anúncios.**
+> **Acréscimo de 28/09/2026 (pedido do dono):** PR1 e PR2, grupo próprio **Paraná de carro** (oeste e norte do PR, o ano todo). **Total: 20 anúncios.**
 
 **Como ler as contagens:** contei letras, espaços e pontuação. No texto principal, a contagem é da **1ª linha** (o que aparece antes do "ver mais", meta de ~125). As marcas entre colchetes (`[confirmar ...]`, `[nova, validar com o dono]`) **saem antes da subida** e não entram na contagem.
 
 **Fotos:** usei as da **matriz** (que já tem as correções de repetição). Em M1, V1, V3, V4 e V5 elas diferem da tabela do `plano.md` §5 e §6 (ver "Ainda em aberto").
 
-**Meio de semana na v3:** só em **M1, V1, P04 e R3**, com **uma** menção no texto principal. Nesses 4, o título, o gancho da arte e a mensagem pronta carregam o mesmo gancho (é a frase do anúncio, não uma repetição nova). Nos outros 14, nenhuma menção a dias da semana nem a "o hotel fica mais tranquilo".
+**Meio de semana na v3:** só em **M1, V1, P04 e R3**, com **uma** menção no texto principal. Nesses 4, o título, o gancho da arte e a mensagem pronta carregam o mesmo gancho (é a frase do anúncio, não uma repetição nova). Nos outros 14, nenhuma menção a dias da semana nem a "o hotel fica mais tranquilo". **PR2** tem uma única menção, só no corpo do texto principal (nem título, nem arte, nem mensagem pronta): são 5 de 20 anúncios, dentro da regra de 1 em cada 4. PR1 não cita dias.
 
 ---
 
@@ -34,6 +35,8 @@
 | R2 | O que já *vem* na **sua** diária | Melhor custo-benefício de Bonito (32) | O que está incluído na diária |
 | R3 | E se a **viagem** fosse numa *terça*? | E se a viagem fosse numa terça? (31) | **Meio de semana (Remarketing):** "não acho vaga no fim de semana" |
 | R4 | Baixa temporada, **reserva** *sem aperto* | Parcele em até 6x no cartão (27) | Reserva direta com desconto + até 6x no cartão |
+| PR1 | Do *Paraná* a Bonito, de **carro** | Do Paraná a Bonito, de carro (28) | **Paraná de carro (Famílias):** cidades e km, o hotel é o passeio (dois rios, 40 ha, programação inclusa), Cabana Master com estacionamento coberto para 2 carros, carro livre para os passeios, 6 km no asfalto |
+| PR2 | Estrada *longa*, **estadia** longa | 4 ou 5 noites entre dois rios (29) | **Paraná de carro (55+):** vale ficar 4 ou 5 noites: programação inclusa todo dia, piscina, hidro e sauna, e os passeios da cidade (1 menção ao meio de semana, só no corpo) |
 
 ---
 
@@ -591,3 +594,86 @@
 **Mensagens prontas:** "de domingo a quinta/terça" ficou só em M1, V1 e P04 (R3 pede "datas no meio da semana"); as outras 14 são neutras ou ligadas ao ângulo do anúncio.
 
 **Resultado:** de cerca de 70 menções ao tema na v2, a v3 tem uma por anúncio no texto principal de 4 anúncios (M1, V1, P04 e R3), mais o título, o gancho da arte e a mensagem pronta desses mesmos 4.
+
+---
+
+# 4. Paraná de carro · grupo próprio (oeste e norte do PR, o ano todo; pedido do dono em 28/09/2026)
+
+**Regras deste grupo:** distâncias do dono, exatamente como informadas (Umuarama 548 km · Cascavel 670 km · Maringá 690 km · Londrina 780 km), **sem tempo de viagem**; nunca voo, avião ou aeroporto; **nenhuma** expressão regional de MS ("Bonito fica logo ali", tereré, "Bora pro Cabanas", "Pega a estrada que o rio espera" etc.); só expressões leves de estrada ("de carro", "roda", "pé na estrada", "estacionou"); sem preço, feriado, mês, temporada, urgência nem "água cristalina" (o grupo roda o ano todo); opcionais marcados; reserva direta com desconto e até 6x no cartão.
+
+**Segmentação sugerida [validar com o Estrategista]:** conjunto próprio com Umuarama, Cascavel, Maringá e Londrina + raio do entorno (oeste e norte do PR); Advantage+ de posicionamentos; o ano todo, sem pausa nas férias (nenhum texto cita época). Verba e raio: decisão do Estrategista e do dono.
+
+## PR1 · Famílias · carrossel (5) · "Bonito de carro"
+**Justificativa:** o PR é o 2º mercado de fora do estado, depois de SP (`perfil-cabanas.md`), e o oeste e o norte do PR vêm de carro (dono, 28/09/2026); família na estrada viaja com mais gente e bagagem, e o Cabanas responde com a Cabana Master (até 5 pessoas, aceita crianças menores de 5 anos, estacionamento coberto para 2 carros) e com a programação inclusa sem idade mínima. Grupo o ano todo: sem mês, temporada nem dia da semana.
+
+**Texto principal (variação A)**
+> Do Paraná para Bonito, de carro: Umuarama 548 km, Cascavel 670 km, Maringá 690 km, Londrina 780 km.
+>
+> Chegou, estacionou, e o passeio começa aqui dentro: 40 hectares entre o Rio Formoso e o Rio Formosinho, no único hotel de Bonito cercado por dois rios.
+> Programação diária inclusa com monitor, sem idade mínima: arco e flecha, trilhas com tirolesa, caiaque e stand up paddle (os horários podem variar conforme a temporada). Boia cross e arvorismo (opcionais), a partir de 5 anos e com pelo menos 1,15 m.
+> A Cabana Master recebe até 5 pessoas, aceita crianças pequenas e tem estacionamento coberto para 2 carros.
+> E o carro fica à mão para os passeios de Bonito: o hotel está a 6 km do centro, com todo o acesso em asfalto.
+> [CTA padrão]
+
+- 1ª linha: **99** caracteres.
+
+**Variação B da 1ª linha:** "Pé na estrada, família: de Maringá a Bonito são 690 km, e o passeio começa na chegada." (**86**) [nova, validar com o dono; cita só uma cidade, as outras ficam na arte]
+
+- **Título:** Do Paraná a Bonito, de carro (**28**)
+- **Descrição:** 6 km do centro, no asfalto (**26**)
+- **Botão:** Enviar mensagem
+- **Mensagem pronta:** "Olá! Vou de carro do Paraná e quero ver as datas. #PR1"
+
+**Briefing de arte (pilar 4, aventura de dia, com capa de chegada; carrossel de 5 telas, cada tela em 4:5 e 9:16)**
+| Card | Foto (banco: nome + ID) | Texto da arte |
+|---|---|---|
+| 1 (capa) | `placa_hotel_com_logo` (`1TOVBB5QeY_RwZnF1ltOmmPTg7oKvakOs`) | Do *Paraná* a Bonito, de **carro** (6 palavras) · fato em 4 linhas, sem serifa: "Umuarama 548 km · Cascavel 670 km · Maringá 690 km · Londrina 780 km" |
+| 2 | `cabana_master_externa` (`1GEFSq-_uYF-mhU0IbOtGde-eqlZma27T`); reserva: `cabana_master_externa` (`14YYl5CnuAWRUuSAXKShtoYWluPriTCaI`) | Espaço para a *família* e para o **carro** (7 palavras) · fato: "Cabana Master · até 5 pessoas · estacionamento coberto para 2 carros" |
+| 3 | `imagem_area_balneario_formosinho` (`1Ja3KhCG-JFQ1iw2c4FvsINxG8KWx3hM_`) | O *passeio* começa na **chegada** (5 palavras) · fato: "40 hectares entre o Formoso e o Formosinho" |
+| 4 | `imagem_caiaques_sem_pessoas` (`11CIuu6LBKe4V94tj0GL8Tu8JYDdZxIQ8`) | Caiaque e SUP, **inclusos**, com *monitor* (6 palavras) · rodapé: "Horários podem variar conforme a temporada" |
+| 5 | `recepcao_lago` (`15DZs9Kqhtddk6C_TSvPG_NaYpPhW5ou9`) | A *6 km* do centro, no **asfalto** (7 palavras) · apoio: "Seu carro, seu roteiro em Bonito" · CTA laranja: "Chame no WhatsApp" · assinatura |
+
+- **Designer:** abrir cada foto antes de montar. Card 2: usar a externa da Master que mostre a cabana elevada e, se possível, o estacionamento coberto; se nenhuma das duas mostrar, manter o texto (o fato está confirmado) e registrar "cena a fotografar: carro no estacionamento coberto da Cabana Master". Card 5: `recepcao_lago` é a reserva do P10; se o P10 trocar para ela, usar `recepcao` (`1l3xlmm7E05VPQRETqUG_HZv1zPoas9-A`).
+- Card 4 sem pessoas de propósito (não depende de autorização de imagem). Se usar foto com crianças, só com autorização [confirmar autorização de imagem].
+- Nunca Cabana Casal ou Tripla neste anúncio (não aceitam menores de 5 anos); nada de recreação infantil, almoço, transfer ou "não precisa sair do hotel"; sem foto de estrada de banco ou de IA.
+
+## PR2 · 55+ (2ª: Casais) · imagem única · "Vale ficar mais"
+**Justificativa:** quem roda de 548 a 780 km não vem para uma estadia curta, e o 55+ (O Refúgio da Alma) pode escolher o dia e busca bem-estar; a curva de valor do hotel está na programação inclusa todo dia e na estrutura de piscina, hidro e sauna, e o meio de semana é o gargalo (dono, 27/09/2026), por isso entra uma única vez, só no corpo do texto.
+
+**Texto principal (variação A)**
+> Quem roda de 548 a 780 km até Bonito merece ficar mais: 4 ou 5 noites, sem pressa.
+>
+> Todo dia tem programação inclusa, com monitor: arco e flecha às 8h30, trilha no Rio Formosinho com tirolesa e stand up paddle às 14h e trilha no Rio Formoso com caiaque e stand up paddle às 15h30 (os horários podem variar conforme a temporada).
+> No fim da tarde, piscina climatizada, hidromassagem aquecida e sauna a vapor, abertas das 7h às 22h. Café da manhã incluso.
+> E ainda sobra tempo para os passeios de Bonito: o hotel fica a 6 km do centro, com todo o acesso em asfalto.
+> Se puder escolher o dia, venha de domingo a quinta.
+> Reserve direto e parcele em até 6x no cartão.
+> [CTA padrão]
+
+- 1ª linha: **82** caracteres.
+
+**Variação B da 1ª linha:** "4 ou 5 noites entre o Formoso e o Formosinho: tempo para o hotel e para Bonito." (**79**) [nova, validar com o dono]
+
+- **Título:** 4 ou 5 noites entre dois rios (**29**)
+- **Descrição:** Programação inclusa todo dia (**28**)
+- **Botão:** Enviar mensagem
+- **Mensagem pronta:** "Olá! Vou de carro do Paraná e quero datas para 4 ou 5 noites. #PR2"
+
+**Briefing de arte (pilar 1, contemplação; imagem única em 4:5 e 9:16; pessoas, se houver, de costas ou em silhueta)**
+- **Foto:** `piscina` (`1VxqQZTb6HMvbSLB8PQ-vUfIcXVsiFb2s`), ainda não usada no lote. **Reserva:** `espaco_relaxamento_spa_hidro_externa` (`132BgBrhMCYMXAozw0BTbNoynveivU-n3`), também inédita no lote (é a hidro externa: não dizer que fica na acomodação).
+- **Texto da arte:** Estrada *longa*, **estadia** longa (4 palavras) · fato: "4 ou 5 noites · programação inclusa todo dia" · rodapé pequeno: "Piscina climatizada, hidro aquecida e sauna, das 7h às 22h".
+- Sem dia da semana na arte, no título e na mensagem pronta (a única menção fica no corpo do texto).
+- **Não** chamar de pacote, estadia mínima ou tarifa especial: pacote de 4 noites só existe no Réveillon e no Carnaval, e o hotel não tem tarifa para longa estadia (`hotel-operacional.md` §9). "4 ou 5 noites" é sugestão, não condição.
+- Nada de acessibilidade, "desconto para a terceira idade", promessa de saúde ou almoço.
+
+## Checklist do grupo Paraná (autorrevisão)
+- [x] 1 persona por anúncio (PR1 Famílias; PR2 55+) e justificativa com dado (PR 2º mercado de fora; público do PR vem de carro, dono 28/09; meio de semana é o gargalo, dono 27/09)
+- [x] Fatos exclusivos: único hotel de Bonito cercado por dois rios, 40 hectares, programação diária inclusa com monitor, Cabana Master (até 5, crianças pequenas, estacionamento coberto para 2 carros), 6 km no asfalto, bem-estar das 7h às 22h
+- [x] Distâncias exatamente as do dono; nenhum tempo de viagem; nenhum voo ou aeroporto
+- [x] Nenhuma expressão regional de MS
+- [x] Meio de semana: PR1 nenhuma; PR2 uma, só no corpo (total do lote: 5 de 20)
+- [x] Limites: 1ª linha 99 e 82 (B: 86 e 79); títulos 28 e 29; descrições 26 e 28; textos da arte de 4 a 7 palavras
+- [x] Opcionais marcados (boia cross e arvorismo, com idade e altura mínimas); sem preço, feriado, mês, urgência, "água cristalina"
+- [x] Reserva direta com desconto (CTA padrão) + motor + WhatsApp; até 6x no cartão no PR2; mensagem pronta com código (#PR1, #PR2)
+
+**A confirmar com o dono:** as variações B de PR1 e PR2 (frases novas); se o card 2 do PR1 deve mostrar o carro no estacionamento da Master (se nenhuma foto mostrar, é cena a fotografar). **Com o Estrategista:** raio, verba e data de estreia do grupo PR.
