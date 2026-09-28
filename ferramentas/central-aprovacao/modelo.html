@@ -190,8 +190,13 @@ details summary{cursor:pointer;padding:4px 0}
 .pk-foot .btn{flex:1 1 auto}
 @media (min-width:640px){.pk-foot span{flex:1 1 auto}.pk-foot .btn{flex:0 0 auto}}
 .chat{display:flex;flex-direction:column;gap:14px;max-width:760px}
-.chips{display:flex;gap:6px;flex-wrap:wrap}
-.msgs{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px;min-height:220px;max-height:60vh;overflow-y:auto}
+.chips{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips .sbtn{white-space:nowrap}
+.crow{display:flex;gap:8px;align-items:flex-end}
+.crow textarea{flex:1}
+.crow .btn{flex:0 0 auto;border-radius:18px;padding:11px 16px}
+.anexos{display:flex;gap:14px;flex-wrap:wrap}
+.msgs{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;height:clamp(300px,calc(100dvh - 330px),640px);overflow-y:auto;overscroll-behavior:contain}
 .bub{max-width:88%;padding:9px 12px;border-radius:10px;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
 .bub.dono{align-self:flex-end;background:var(--brown);color:var(--brown-ink);border-bottom-right-radius:3px}
 .bub.claude{align-self:flex-start;background:var(--chip);color:var(--ink);border-bottom-left-radius:3px}
@@ -200,7 +205,9 @@ details summary{cursor:pointer;padding:4px 0}
 .bub a{color:inherit}
 .typing{align-self:flex-start;font-size:13px;color:var(--muted);font-style:italic}
 .composer{display:flex;flex-direction:column;gap:8px}
-.composer textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px;min-height:90px;resize:vertical}
+.composer{padding:0}
+.composer textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px 14px;min-height:46px;max-height:180px;resize:none}
+.dia{align-self:center;font-size:11px;color:var(--muted);background:var(--chip);padding:2px 10px;border-radius:10px}
 .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--fix);vertical-align:middle;margin-left:4px}
 footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:14px;max-width:72ch}
 </style>
@@ -238,8 +245,9 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   <section id="sec-chat" class="chat" hidden aria-labelledby="chat-t">
     <div>
       <h2 id="chat-t">Conversa com a equipe</h2>
-      <p class="note">Peça aqui o que quiser: posts novos com o tema que você escolher, séries programadas (ex.: "um carrossel de acomodações a cada 15 dias"), trocar o post de um dia, ajustes, dúvidas. A mensagem chega ao Claude, que aciona a equipe (Estrategista, Marketing, Designer) e responde aqui. Nada é publicado sem o seu "Aprovado".</p>
+      <details><summary class="note">Como funciona</summary><p class="note">Peça aqui o que quiser: posts novos com o tema que você escolher, séries programadas (ex.: "um carrossel de acomodações a cada 15 dias"), trocar o post de um dia, ajustes, dúvidas. A mensagem chega ao Claude, que aciona a equipe (Estrategista, Marketing, Designer) e responde aqui. Nada é publicado sem o seu "Aprovado".</p></details>
     </div>
+    <div class="msgs" id="chat-msgs" aria-live="polite"></div>
     <div class="chips" id="chat-sugs">
       <button type="button" class="sbtn" data-sug="Quero um post novo sobre: ">Post novo</button>
       <button type="button" class="sbtn" data-sug="Quero um carrossel de 5 a 8 fotos sobre: ">Carrossel</button>
@@ -247,14 +255,15 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
       <button type="button" class="sbtn" data-sug="Quero uma série fixa: um post sobre ____ a cada ___ dias, começando em __/__.">Série programada</button>
       <button type="button" class="sbtn" data-sug="Ajuste no post __: ">Ajuste</button>
     </div>
-    <div class="msgs" id="chat-msgs" aria-live="polite"></div>
     <form class="composer" id="chat-form">
-      <label for="chat-txt" class="flabel">Sua mensagem</label>
-      <textarea id="chat-txt" name="txt" placeholder="Ex.: crie um post simples com uma foto de casal na cabana e coloque no lugar do post do dia 22/10" required></textarea>
-      <div class="up">
-        <button class="btn ghost" type="button" id="chat-banco">Anexar do banco de imagens</button>
-        <label class="btn ghost filebtn" id="chat-upl">Anexar foto de fora<input type="file" id="chat-file" accept="image/jpeg,image/png,image/webp" multiple aria-label="Anexar foto de fora"></label>
-        <button class="btn ok" type="submit" id="chat-send" style="flex:0 0 auto">Enviar</button>
+      <label for="chat-txt" class="flabel" style="position:absolute;left:-9999px">Sua mensagem</label>
+      <div class="crow">
+        <textarea id="chat-txt" name="txt" rows="1" placeholder="Escreva sua mensagem…" required></textarea>
+        <button class="btn ok" type="submit" id="chat-send">Enviar</button>
+      </div>
+      <div class="anexos">
+        <button class="linkbtn" type="button" id="chat-banco">+ Foto do banco</button>
+        <label class="linkbtn filebtn" id="chat-upl">+ Foto de fora<input type="file" id="chat-file" accept="image/jpeg,image/png,image/webp" multiple aria-label="Anexar foto de fora"></label>
       </div>
       <div class="thumbs" id="chat-thumbs"></div>
       <p class="msg" id="chat-msg"></p>
@@ -733,13 +742,14 @@ const ABAS = ["org", "ads", "chat"];
 function showTab(k){
   if (k === true) k = "ads"; if (k === false) k = "org";
   ABAS.forEach(a => { document.getElementById("sec-" + a).hidden = a !== k; document.getElementById("tab-" + a).setAttribute("aria-selected", String(a === k)); });
-  if (k === "chat") { chatVisto(); const m = document.getElementById("chat-msgs"); m.scrollTop = m.scrollHeight; }
+  if (k === "chat") { chatVisto(); const m = document.getElementById("chat-msgs"); m.scrollTop = m.scrollHeight; if (showTab.pronto) document.querySelector(".tabsbar").scrollIntoView({block: "start"}); }
   try { localStorage.setItem("central-aba", k); } catch {}
 }
 ABAS.forEach(a => document.getElementById("tab-" + a).addEventListener("click", () => showTab(a)));
 try { const a = localStorage.getItem("central-aba"); if (ABAS.includes(a)) showTab(a); } catch {}
 if (location.hash === "#anuncios") showTab("ads");
 if (location.hash === "#conversa") showTab("chat");
+showTab.pronto = true;
 
 // ---------- aba Conversa ----------
 let chatMsgs = [], chatBanco = [], chatImgs = [];
@@ -749,11 +759,13 @@ function chatVisto(){ try { localStorage.setItem("chat-visto", String(chatMsgs.f
 function renderChat(){
   const box = document.getElementById("chat-msgs"), perto = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
   if (!chatMsgs.length) { box.innerHTML = '<p class="muted">Nenhuma mensagem ainda. Escreva abaixo ou toque numa sugestão.</p>'; return; }
-  box.innerHTML = chatMsgs.map(m => `<div class="bub ${m.autor === "claude" ? "claude" : "dono"}">${fmtTexto(m.texto || "")}` +
+  let ultDia = "";
+  box.innerHTML = chatMsgs.map(m => { const dia = (() => { try { return new Date(m.criadoEm).toLocaleDateString("pt-BR", {day:"2-digit", month:"long"}); } catch { return ""; } })(); const sep = dia && dia !== ultDia ? `<span class="dia">${esc(dia)}</span>` : ""; ultDia = dia || ultDia; return sep + `<div class="bub ${m.autor === "claude" ? "claude" : "dono"}">${fmtTexto(m.texto || "")}` +
     ((m.banco||[]).length || (m.imagens||[]).length ? `<div class="thumbs">${(m.banco||[]).map(b => `<span class="pk-img th-img" role="img" aria-label="${esc(nomeFoto(b.nome))}" style="${esc(sprite(BANCO_ID[b.id] || {thumb:""}))}"></span>`).join("")}${(m.imagens||[]).map(i => `<img src="/_blob/${esc(i.id)}" alt="${esc(i.nome||"foto")}">`).join("")}</div>` : "") +
-    `<small>${m.autor === "claude" ? "Claude" : "Você"} · ${fmtHora(m.criadoEm)}${m.autor !== "claude" && m.situacao === "salvo" ? " · salvo (avise o Claude na conversa)" : ""}</small></div>`).join("") +
+    `<small>${m.autor === "claude" ? "Claude" : "Você"} · ${fmtHora(m.criadoEm)}${m.autor !== "claude" && m.situacao === "salvo" ? " · salvo (avise o Claude na conversa)" : ""}</small></div>`; }).join("") +
     (chatMsgs.length && chatMsgs[chatMsgs.length - 1].autor !== "claude" && chatMsgs[chatMsgs.length - 1].situacao !== "salvo" ? '<p class="typing">A equipe recebeu e está trabalhando. A resposta aparece aqui.</p>' : "");
-  if (perto || document.getElementById("sec-chat").hidden === false) box.scrollTop = box.scrollHeight;
+  if (perto || chatMsgs.length !== (renderChat.n || 0)) box.scrollTop = box.scrollHeight;
+  renderChat.n = chatMsgs.length;
   let visto = 0; try { visto = +localStorage.getItem("chat-visto") || 0; } catch {}
   const novas = chatMsgs.filter(m => m.autor === "claude").length;
   if (document.getElementById("sec-chat").hidden) document.getElementById("chat-dot").hidden = novas <= visto; else chatVisto();
@@ -763,6 +775,9 @@ function drawChatThumbs(){
   chatBanco.forEach((b, i) => { const x = document.createElement("button"); x.type = "button"; x.className = "th"; x.title = "Tocar para remover"; x.setAttribute("aria-label", "Remover " + nomeFoto(b.nome)); x.innerHTML = `<span class="pk-img th-img" style="${esc(sprite(b))}"></span><span>banco</span>`; x.addEventListener("click", () => { chatBanco.splice(i, 1); drawChatThumbs(); }); t.appendChild(x); });
   chatImgs.forEach((b, i) => { const x = document.createElement("button"); x.type = "button"; x.className = "th"; x.title = "Tocar para remover"; x.setAttribute("aria-label", "Remover " + b.nome); x.innerHTML = `<img src="/_blob/${esc(b.id)}" alt=""><span>nova</span>`; x.addEventListener("click", () => { chatImgs.splice(i, 1); drawChatThumbs(); }); t.appendChild(x); });
 }
+const chatTxt = document.getElementById("chat-txt");
+chatTxt.addEventListener("input", () => { chatTxt.style.height = "auto"; chatTxt.style.height = Math.min(chatTxt.scrollHeight, 180) + "px"; });
+chatTxt.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing && matchMedia("(pointer:fine)").matches) { e.preventDefault(); document.getElementById("chat-form").requestSubmit(); } });
 document.querySelectorAll("[data-sug]").forEach(b => b.addEventListener("click", () => { const t = document.getElementById("chat-txt"); t.value = b.dataset.sug; t.focus(); }));
 document.getElementById("chat-banco").addEventListener("click", () => openPicker(sel => { chatBanco = [...chatBanco, ...sel.filter(x => !chatBanco.some(y => y.id === x.id))]; drawChatThumbs(); }));
 document.getElementById("chat-file").addEventListener("change", async e => {
@@ -1015,7 +1030,12 @@ tally();
   if (!assets) document.querySelectorAll("[data-up]").forEach(u => u.hidden = true);
   document.querySelectorAll("[data-edit]").forEach(b => b.hidden = false);
   POSTS.forEach(p => { if (p.pecas) document.querySelector("#post-" + p.n + " [data-art]").hidden = false; });
-  db.collection("chat").onSnapshot(snap => { chatMsgs = snap.docs.map(d => d.data()).filter(m => m && m.texto).sort((a, b) => String(a.criadoEm).localeCompare(String(b.criadoEm))); renderChat(); }, () => {});
+  db.collection("chat").onSnapshot(snap => {
+    const docs = snap.docs.map(d => ({...d.data(), _id: d.id})).filter(m => m && m.texto);
+    const porId = Object.fromEntries(docs.map(m => [m._id, m]));
+    const t = m => { let x = Date.parse(m.criadoEm) || 0; const q = m.respondeA && porId[m.respondeA]; if (q) x = Math.max(x, (Date.parse(q.criadoEm) || 0) + 1); return x; };
+    chatMsgs = docs.sort((a, b) => t(a) - t(b)); renderChat();
+  }, () => {});
   if (!assets) document.getElementById("chat-upl").hidden = true;
   db.collection("banco").onSnapshot(snap => { bancoNovas = snap.docs.map(d => d.data()).filter(Boolean); }, () => {});
   if (ANUNCIOS) db.collection("anuncios").doc(ANUNCIOS.id).onSnapshot(s => { adsState = s.exists ? {...s.data()} : {}; renderAds(); }, () => {});
