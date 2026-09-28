@@ -944,7 +944,8 @@ function renderAds(){
   const ap = box.querySelector("#ads-aprovar");
   if (ap) ap.addEventListener("click", async () => {
     const msg = box.querySelector("#ads-msg");
-    if (!(adsState.decisoes||{}).excecao2026) { msg.className = "msg err"; msg.textContent = "Responda a primeira decisão (feriados de 2026) antes de aprovar."; return; }
+    const faltam = (A.decisoes || []).filter(q => q.tipo === "escolha" && !(adsState.decisoes || {})[q.k]);
+    if (faltam.length) { msg.className = "msg err"; msg.textContent = "Responda as decisões acima antes de aprovar (" + faltam.length + " em aberto)."; return; }
     ap.disabled = true;
     let aviso = false;
     if (comments) {
@@ -952,7 +953,8 @@ function renderAds(){
         if (await comments.canSendToClaude() === "available") {
           const d = adsState.decisoes||{}, cortados = Object.entries(adsState.ads||{}).filter(([,v])=>v==="cortar").map(([k])=>k);
           const regs = A.publico ? A.publico.regioes.map(r => r.id + "=" + ((d.regioes||{})[r.id] || r.padrao)).join(", ") : "-";
-          const txt = `Plano de anúncios APROVADO na Central (${A.id}). Exceção 2026 (MS sem pausar em Finados/Consciência Negra): ${d.excecao2026||"-"}. Férias: ${d.ferias||"-"}. Regiões: ${regs}. Réveillon: ${d.reveillon||"sem dados ainda"}. Medição: ${d.medicao||"-"}. Limite da conta: ${d.limite||"-"}. Cortados: ${cortados.join(", ")||"nenhum"}. Obs.: ${(obs&&obs.value.trim())||"-"}. Seguir para a Fase 2 (textos).`;
+          const resp = (A.decisoes || []).map(q => `${q.k}: ${typeof d[q.k] === "object" ? JSON.stringify(d[q.k]) : (d[q.k] || "-")}`).join(" · ");
+          const txt = `Plano de anúncios APROVADO na Central (${A.id}, verba ${A.verba}). Decisões: ${resp}. Regiões: ${regs}. Cortados: ${cortados.join(", ")||"nenhum"}. Obs.: ${(obs&&obs.value.trim())||"-"}.`;
           await comments.sendToClaude({anchor: await comments.anchorFor(ap), text: txt.slice(0,3900)});
           aviso = true;
         }

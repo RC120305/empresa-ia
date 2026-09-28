@@ -482,6 +482,60 @@
      "texto": "Baixa temporada, reserva sem aperto (5 palavras) · fato: \"Em até 6x no cartão\"."
     }
    ]
+  },
+  {
+   "cod": "PR1",
+   "cab": "Famílias · carrossel (5) · \"Bonito de carro\"",
+   "texto": "Do Paraná para Bonito, de carro: Umuarama 548 km, Cascavel 670 km, Maringá 690 km, Londrina 780 km.\n\nChegou, estacionou, e o passeio começa aqui dentro: 40 hectares entre o Rio Formoso e o Rio Formosinho, no único hotel de Bonito cercado por dois rios.\nProgramação diária inclusa com monitor, sem idade mínima: arco e flecha, trilhas com tirolesa, caiaque e stand up paddle (os horários podem variar conforme a temporada). Boia cross e arvorismo (opcionais), a partir de 5 anos e com pelo menos 1,15 m.\nA Cabana Master recebe até 5 pessoas, aceita crianças pequenas e tem estacionamento coberto para 2 carros.\nE o carro fica à mão para os passeios de Bonito: o hotel está a 6 km do centro, com todo o acesso em asfalto.",
+   "variacaoB": "\"Pé na estrada, família: de Maringá a Bonito são 690 km, e o passeio começa na chegada.\" (**86**) [nova, validar com o dono; cita só uma cidade, as outras ficam na arte]",
+   "titulo": "Do Paraná a Bonito, de carro (**28**)",
+   "descricao": "6 km do centro, no asfalto (**26**)",
+   "botao": "Enviar mensagem",
+   "mensagem": "\"Olá! Vou de carro do Paraná e quero ver as datas. #PR1\"",
+   "arte": [
+    {
+     "card": "1 (capa)",
+     "foto": "placa_hotel_com_logo (1TOVBB5QeY_RwZnF1ltOmmPTg7oKvakOs)",
+     "texto": "Do Paraná a Bonito, de carro (6 palavras) · fato em 4 linhas, sem serifa: \"Umuarama 548 km · Cascavel 670 km · Maringá 690 km · Londrina 780 km\""
+    },
+    {
+     "card": "2",
+     "foto": "cabana_master_externa (1GEFSq-_uYF-mhU0IbOtGde-eqlZma27T); reserva: cabana_master_externa (14YYl5CnuAWRUuSAXKShtoYWluPriTCaI)",
+     "texto": "Espaço para a família e para o carro (7 palavras) · fato: \"Cabana Master · até 5 pessoas · estacionamento coberto para 2 carros\""
+    },
+    {
+     "card": "3",
+     "foto": "imagem_area_balneario_formosinho (1Ja3KhCG-JFQ1iw2c4FvsINxG8KWx3hM_)",
+     "texto": "O passeio começa na chegada (5 palavras) · fato: \"40 hectares entre o Formoso e o Formosinho\""
+    },
+    {
+     "card": "4",
+     "foto": "imagem_caiaques_sem_pessoas (11CIuu6LBKe4V94tj0GL8Tu8JYDdZxIQ8)",
+     "texto": "Caiaque e SUP, inclusos, com monitor (6 palavras) · rodapé: \"Horários podem variar conforme a temporada\""
+    },
+    {
+     "card": "5",
+     "foto": "recepcao_lago (15DZs9Kqhtddk6C_TSvPG_NaYpPhW5ou9)",
+     "texto": "A 6 km do centro, no asfalto (7 palavras) · apoio: \"Seu carro, seu roteiro em Bonito\" · CTA laranja: \"Chame no WhatsApp\" · assinatura"
+    }
+   ]
+  },
+  {
+   "cod": "PR2",
+   "cab": "55+ (2ª: Casais) · imagem única · \"Vale ficar mais\"",
+   "texto": "Quem roda de 548 a 780 km até Bonito merece ficar mais: 4 ou 5 noites, sem pressa.\n\nTodo dia tem programação inclusa, com monitor: arco e flecha às 8h30, trilha no Rio Formosinho com tirolesa e stand up paddle às 14h e trilha no Rio Formoso com caiaque e stand up paddle às 15h30 (os horários podem variar conforme a temporada).\nNo fim da tarde, piscina climatizada, hidromassagem aquecida e sauna a vapor, abertas das 7h às 22h. Café da manhã incluso.\nE ainda sobra tempo para os passeios de Bonito: o hotel fica a 6 km do centro, com todo o acesso em asfalto.\nSe puder escolher o dia, venha de domingo a quinta.\nReserve direto e parcele em até 6x no cartão.",
+   "variacaoB": "\"4 ou 5 noites entre o Formoso e o Formosinho: tempo para o hotel e para Bonito.\" (**79**) [nova, validar com o dono]",
+   "titulo": "4 ou 5 noites entre dois rios (**29**)",
+   "descricao": "Programação inclusa todo dia (**28**)",
+   "botao": "Enviar mensagem",
+   "mensagem": "\"Olá! Vou de carro do Paraná e quero datas para 4 ou 5 noites. #PR2\"",
+   "arte": [
+    {
+     "card": "1",
+     "foto": "piscina (1VxqQZTb6HMvbSLB8PQ-vUfIcXVsiFb2s), ainda não usada no lote. Reserva: espaco_relaxamento_spa_hidro_externa (132BgBrhMCYMXAozw0BTbNoynveivU-n3), também inédita no lote (é a hidro externa: não dizer que fica na acomodação).",
+     "texto": "Estrada longa, estadia longa (4 palavras) · fato: \"4 ou 5 noites · programação inclusa todo dia\" · rodapé pequeno: \"Piscina climatizada, hidro aquecida e sauna, das 7h às 22h\"."
+    }
+   ]
   }
  ]
 }

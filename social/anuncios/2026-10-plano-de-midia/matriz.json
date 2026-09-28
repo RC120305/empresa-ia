@@ -1,8 +1,8 @@
 {
  "id": "2026-10-plano-de-midia-matriz",
- "titulo": "Matriz de criativos · Meta Ads (plano v2.3)",
- "data": "2026-09-27",
- "autor": "Especialista em Marketing e Anúncios",
+ "titulo": "Matriz de criativos · Meta Ads (plano v2.5)",
+ "data": "2026-09-28",
+ "autor": "Especialista em Marketing e Anúncios (grupo Paraná de carro, PR1 e PR2 acrescentados pelo Estrategista de Social Media e Tráfego em 28/09/2026)",
  "status": "rascunho para aprovação do dono",
  "personas": [
   {
@@ -61,17 +61,17 @@
    "nome": "MS (Campo Grande, Dourados e entorno; sem Bonito e vizinhas)",
    "situacao": "40% a 60% dos hóspedes; vem de carro, fica no máximo 2 noites, geralmente no fim de semana, e aproveita muito o hotel; o fim de semana com tempo bom já enche; gargalo de domingo a quinta; piores meses: maio e junho (frio)",
    "argumento": "O hotel é o passeio + esticar o fim de semana até terça; em maio e junho, estrutura aquecida; em novembro, a 1ª quinzena de dezembro",
-   "linguagem": "De igual para igual: “você que é daqui”, “Bonito fica logo ali, 260 km de Campo Grande”, “Leva a garrafa de tereré”, “Partiu Hotel Cabanas”, “Bora pro Cabanas”, “Sai sexta depois do trabalho e chega para o jantar” (aprovadas pelo dono; novas passam pela aprovação dos textos); voz “nós”",
+   "linguagem": "De igual para igual: “você que é daqui”, “Bonito fica logo ali, 260 km de Campo Grande”, “Leva a garrafa de tereré”, “Partiu Hotel Cabanas”, “Bora pro Cabanas”, “Sai sexta depois do trabalho e chega para o jantar” (aprovadas pelo dono; só para a MS; novas passam pela aprovação dos textos); voz “nós”",
    "antecedencia": "15 a 20 dias; pausa quando a estadia vendida cai em feriado ou férias",
    "nunca": "voo, avião, aeroporto, “8 km do aeroporto”, companhias aéreas (inclusive “sem pegar avião”); estadia longa; tempo de viagem; feriado; “últimas vagas”; mês nos M1 a M4"
   },
   {
-   "nome": "Fora do estado (SP, PR, RJ, RS, SC e MG, conjunto 1)",
-   "situacao": "SP ~30% dos turistas de Bonito, depois PR 7,3%, RJ 6,7%, RS 6,2%, SC 5,7% e MG 4,9% (OTEB, jan a ago/2026 [confirmar fonte atual]); fica mais noites e combina os passeios da cidade com o hotel; sobe em janeiro e julho",
+   "nome": "Fora do estado (SP, RJ, RS, SC e MG, conjunto 1; sem MS e sem PR a partir da v2.5)",
+   "situacao": "SP ~30% dos turistas de Bonito, depois RJ 6,7%, RS 6,2%, SC 5,7% e MG 4,9% (OTEB, jan a ago/2026 [confirmar fonte atual]); o PR (7,3%) passou para a campanha Paraná de carro; fica mais noites e combina os passeios da cidade com o hotel; sobe em janeiro e julho",
    "argumento": "Base entre dois rios + dias de hotel entre os passeios; domingo a quinta na baixa; janelas de ouro (seca + baixa, fato do destino); férias em família",
    "linguagem": "Apresenta Bonito e o hotel: “o único hotel de Bonito cercado por dois rios”, “a 6 km do centro, todo em asfalto”, “8 km do Aeroporto de Bonito”; voz “nós”",
    "antecedencia": "45 a 50 dias (conversão paga forte de ~60 a ~45 dias); nunca pausa",
-   "nunca": "“fim de semana curto”, “2 noites”, “Bonito fica logo ali”, “você que é daqui”, transfer, atrativos da cidade como do hotel, “baixa” em janeiro ou julho, água cristalina de dezembro a março"
+   "nunca": "“fim de semana curto”, “2 noites”, “Bonito fica logo ali”, “você que é daqui”, cidades do Paraná, transfer, atrativos da cidade como do hotel, “baixa” em janeiro ou julho, água cristalina de dezembro a março"
   },
   {
    "nome": "Fora do estado · subgrupo voo SP/Campinas (V1 a V5; conjunto 2 nas pausas longas da MS)",
@@ -82,12 +82,20 @@
    "nunca": "preço de passagem, “voo incluso”, parceria, logos, transfer, foto de avião, “voo todo dia”, “as 3 companhias voltam na quinta”"
   },
   {
+   "nome": "Paraná de carro (campanha própria perm-parana-de-carro: Umuarama, Cascavel, Maringá e Londrina, raio de 40 km cada)",
+   "situacao": "Oeste e norte do PR, que vem de carro (dono, 28/09/2026). Distâncias informadas pelo dono: Umuarama 548 km · Cascavel 670 km · Maringá 690 km · Londrina 780 km. Viagem planejada; 2 noites é pouco para tanta estrada. PR = 7,3% dos turistas de Bonito (OTEB, jan a ago/2026) e 8,8% em 2025. Roda o ano todo, R$ 20/dia no mínimo",
+   "argumento": "Bonito de carro (as cidades e os km; hotel a 6 km do centro, todo o acesso em asfalto; garagem privativa nas Cabanas Casal e Tripla e garagem em frente aos Bangalôs; entre dois rios) + vale ficar mais (mais noites: passeio da cidade de manhã, rio do hotel à tarde; café e programação inclusos; check-out até 13h com a estrutura liberada para aproveitar o último dia)",
+   "linguagem": "Apresenta Bonito e o hotel para quem vem de longe, de carro, citando as cidades e os km exatos do dono; voz “nós”; neutra de estação (roda o ano todo)",
+   "antecedencia": "45 a 50 dias [antecedência do PR a medir]; nunca pausa",
+   "nunca": "voo, avião, aeroporto, “8 km do aeroporto”, companhias aéreas; as expressões regionais da MS (“Bonito fica logo ali”, “você que é daqui”, “Leva a garrafa de tereré”, “Partiu Hotel Cabanas”, “Bora pro Cabanas”, “Sai sexta depois do trabalho e chega para o jantar”); tempo de viagem ou horas de estrada; condição das rodovias; km diferentes dos informados; “fim de semana curto”; preço; feriado; mês; estação; “baixa”; cor da água; transfer; exagerar em “domingo a quinta” (no máximo 1 menção)"
+  },
+  {
    "nome": "Remarketing (Brasil, quem já interagiu)",
-   "situacao": "Mistura MS e fora do estado; já conhece o hotel",
+   "situacao": "Mistura MS, fora do estado e Paraná; já conhece o hotel",
    "argumento": "Decisão: prova social, o que vem na diária, “não acho vaga” e condições de reserva",
    "linguagem": "Neutra de região; só fotos neutras",
    "antecedencia": "Todas as datas",
-   "nunca": "voo, “logo ali”, “2 noites”, “fim de semana curto”"
+   "nunca": "voo, “logo ali”, km do Paraná, “2 noites”, “fim de semana curto”"
   }
  ],
  "fotos": {
@@ -136,7 +144,8 @@
    "Dois anúncios ligados na mesma campanha não abrem com a mesma cena (capa).",
    "O mesmo anúncio não sobe em dois conjuntos da mesma campanha ao mesmo tempo (no conjunto 2, versões -SP com outras fotos).",
    "Foto exclusiva só em anúncio cuja persona principal ou secundária seja a dona dela.",
-   "Entre campanhas diferentes (MS × Fora) pode repetir foto; o Remarketing usa só neutras."
+   "Entre campanhas diferentes (MS × Fora × Paraná de carro) pode repetir foto, porque os públicos não se cruzam; o Remarketing usa só neutras.",
+   "PR1 e PR2 usam só fotos neutras (as personas incluem Famílias)."
   ]
  },
  "matriz": [
@@ -173,6 +182,8 @@
   {"ad": "J3", "campanha": "Fora (conj. 1: idem J1; conj. 2, versão J3-SP: 29/11 a 16/12/26)", "persona": "Famílias", "foto": "conj. 1: bangalo_especial_area_com_rede (1xXd9J) · bangalo_especial_interna (1Ro_o5) · conjugado_externa (1jPdT5) · conjugado_interna_piso_inferior_solteiro (1K7sJz) · cabana_master_interna_ambiente_camas_solteiro (1z_82u) | J3-SP: conjugado_interna_piso_superior_varanda (11qZ8J) · bangalo_especial_area_com _rede (1E3lim) · bangalo_especial_interno (1fpuRY) · conjugado_interna_piso_inferior_solteiro (1flNT7) · cabana_master_interna_ambiente_camas_solteiro (1MD-8a)", "tipo": "exclusivas Famílias", "gancho": "A família toda, no mesmo lugar", "argumento": "Bangalô Especial (2 camas king) para até 4; Cabana Master (a única cabana que aceita menores de 5 anos) e Conjugado (dois pisos) para até 5; crianças até 5 anos não pagam na cama dos pais; berço mediante agendamento", "cta": "Enviar mensagem · “…para a família. #J3”", "nunca": "Cabana Casal ou Tripla, “camas extras” (não há), banheira da Master como argumento"},
   {"ad": "J4", "campanha": "Fora · conj. 1 (01/11 a 16/12/26 e 16/05 a 15/06/27)", "persona": "Famílias com filhos a partir de 5 anos (2ª: Aventureiros)", "foto": "arvorismo_condutor_equipando_cliente (1T_TCt) · arvorismo_estacao_crianca (1654o4) · boia_briefing_inicial (1IPZ-w) · boia_close_crianca (1Z_Vrc)", "tipo": "mista: 2 exclusivas Famílias + 2 neutras (segurança)", "gancho": "Com 5 anos e 1,15 m, já dá", "argumento": "Arvorismo e boia cross (opcionais), com guias treinados; a partir de 5 anos e 1,15 m; segurança em primeiro lugar", "cta": "Enviar mensagem · “…para a família. #J4”", "nunca": "flexibilizar, “segurança absoluta”, flutuação para menores de 7 anos"},
   {"ad": "J5", "campanha": "Fora (conj. 1: idem J1; conj. 2, versão J5-SP: 29/11 a 16/12/26)", "persona": "Famílias (2ª: Casais)", "foto": "conj. 1: imagem_area_balneario_formosinho (16xoP5) (reserva: recepcao_lago (15DZs9)) | J5-SP: imagem_balneario_formosinho_mulher (10J-TN)", "tipo": "neutra", "gancho": "Passeio de manhã, rio do hotel à tarde", "argumento": "Base para as férias: 6 km do centro, todo em asfalto, e 8 km do aeroporto; passeios da cidade de manhã e o balneário privativo do hotel à tarde", "cta": "Enviar mensagem · “…para a família. #J5”", "nunca": "atrativos da cidade como do hotel, transfer, venda de passeios pelo hotel"},
+  {"ad": "PR1", "campanha": "Paraná de carro (o ano todo, a partir de 06/10/26)", "persona": "Todas (Casais, 55+ e Famílias)", "foto": "imagem_drone_caiaque_rio_formoso (10EvC_) (reserva: recepcao_lago (15DZs9)) [sugestão do Estrategista; o Designer abre e confirma]", "tipo": "neutra", "gancho": "Do Paraná a Bonito, de carro (sugestão; a Marketing fecha em textos-v3.md)", "argumento": "“Bonito de carro”: Umuarama 548 km, Cascavel 670 km, Maringá 690 km, Londrina 780 km (dono, 28/09/2026); o hotel fica a 6 km do centro, todo o acesso em asfalto; garagem privativa nas Cabanas Casal e Tripla e garagem em frente aos Bangalôs; o único hotel de Bonito cercado por dois rios, 40 hectares; café e programação diária inclusos com monitor", "cta": "Enviar mensagem · “Olá! Sou de [cidade] (PR), vou de carro e quero ver datas. #PR1”", "nunca": "voo, avião, aeroporto, “8 km do aeroporto”; expressões regionais da MS (“Bonito fica logo ali”, “você que é daqui”, tereré, “Partiu Hotel Cabanas”, “Bora pro Cabanas”, “Sai sexta depois do trabalho”); tempo de viagem ou horas de estrada; condição das rodovias; km diferentes dos informados; mês, estação, “baixa”, cor da água; preço; feriado"},
+  {"ad": "PR2", "campanha": "Paraná de carro (o ano todo, a partir de 06/10/26)", "persona": "Casais e 55+ (2ª: Famílias)", "foto": "imagem_area_balneario_formosinho (1Ja3Kh) · casal_cafe_manha (1JrEIf) · imagem_caiaque_rio_formoso (1VLR1u) · piscina (1hkm1s) · imagem_redario_balneario_rio_formosinho (1jimO_) [sugestão do Estrategista; o Designer abre e confirma]", "tipo": "neutras", "gancho": "Tanta estrada pede mais dias de rio (sugestão; a Marketing fecha em textos-v3.md)", "argumento": "“Vale ficar mais”: depois de 548 a 780 km, 2 noites é pouco; com mais noites, passeio da cidade de manhã e o rio do hotel à tarde; café da manhã e programação diária inclusos com monitor (os horários podem variar conforme a temporada); piscina climatizada; check-out até 13h, com a estrutura liberada para aproveitar o último dia antes da estrada", "cta": "Enviar mensagem · “Olá! Sou de [cidade] (PR) e quero ver datas com mais noites. #PR2”", "nunca": "voo ou avião; expressões regionais da MS; tempo de viagem; “fim de semana curto”; preço ou desconto por noites (não existe condição [a confirmar com o dono]); atrativos da cidade como do hotel; mês, estação, “baixa”, cor da água; Cabana Casal ou Tripla (Famílias é 2ª persona); exagerar em “domingo a quinta”"},
   {"ad": "R1", "campanha": "Remarketing (Brasil, ano todo)", "persona": "Todas", "foto": "imagem_redario_casal_sorrindo (1EkScr)", "tipo": "neutra", "gancho": "4,7 no Google, com mais de mil avaliações", "argumento": "Google 4,7 (1.015) · Booking 9,3 (318) · TripAdvisor 4,5 (349), set/2026", "cta": "Enviar mensagem · “Olá! Quero ver as datas disponíveis. #R1”", "nunca": "nota sem fonte e mês, comparação com concorrentes, voo, “logo ali”"},
   {"ad": "R2", "campanha": "Remarketing (Brasil, ano todo)", "persona": "Todas", "foto": "casal_cafe_manha (12qEQI) · piscina (1JLKLY) · imagem_arco_flecha_casal (1sO8Ca) · imagem_caiaque_rio_formoso_mulher (1EGIkZ) · area_espaco_relaxamento_academia (1iqJ9n)", "tipo": "neutras", "gancho": "O que já vem na sua diária", "argumento": "Café da manhã, piscina climatizada, hidromassagem aquecida, sauna, academia e programação inclusa com monitor; valores com desconto para quem reserva direto", "cta": "Enviar mensagem · “…datas disponíveis. #R2”", "nunca": "“tudo incluso” ou “Está tudo na diária”, almoço, opcional como incluso"},
   {"ad": "R3", "campanha": "Remarketing (Brasil, ano todo)", "persona": "Casais e 55+", "foto": "imagem_balneario_formosinho_deck_rede (1zW97n)", "tipo": "neutra", "gancho": "E se a viagem fosse numa terça?", "argumento": "Não achou vaga no fim de semana? De domingo a quinta o hotel fica mais tranquilo", "cta": "Enviar mensagem · “…datas de domingo a quinta. #R3”", "nunca": "prometer vaga, “últimas vagas”, voo, “2 noites”"},
@@ -193,7 +204,8 @@
   "Capas com a mesma cena na mesma campanha: M1 × M2 (varanda da Master) → M1 abre com o redário 1EkScr; V1 × V4 (varanda da Master) → V4 abre com imagem_casal_observando_natureza; V5 × V3 (SUP) e V5 × P09 (boia) → V5 abre com o caiaque 1EGIkZ.",
   "MS sem avião: saiu “sem pegar avião” (plano §5.1). Fica “Bonito fica logo ali”.",
   "V1: na pesquisa de 27/09, só a Azul (Viracopos) voa às quintas; o texto não pode dar a entender que as 3 companhias voltam na quinta [confirmar malha vigente].",
-  "Para o Estrategista atualizar no central.json: M5 e M6 ainda com “tempo ruim” (saiu na v2.3); gancho do R2 “Está tudo na diária” é exagero (usar “O que já vem na sua diária”); gancho do R1 deve ser o do plano, com fonte e mês; persona do R4 = Todas; V4 “domingo tem voo das 3 companhias” precisa de [confirmar malha vigente].",
-  "Verificado, sem conflito: nenhuma foto de criança fora de anúncio de família; nenhuma Cabana Casal ou Tripla em anúncio de família; nenhum anúncio de MS com voo; nenhum anúncio da Fora com “2 noites” ou “fim de semana curto”."
+  "Pendências do central.json resolvidas pelo Estrategista: R2 com “O que já vem na sua diária”; R1 com nota, fonte e mês; R4 = Todas; V1 e V4 com [confirmar malha vigente].",
+  "v2.5 (Estrategista, 28/09/2026): nova campanha Paraná de carro com PR1 e PR2 (só fotos neutras; dentro da campanha, nenhuma foto repetida e capas diferentes: drone × balneário). PR1 e PR2 repetem fotos de outras campanhas (P05, J5, P12, M3/P03/J1-SP, M4/V1), o que é permitido porque o PR saiu da Fora do estado e os públicos não se cruzam. A Fora do estado deixa de incluir o PR.",
+  "Verificado, sem conflito: nenhuma foto de criança fora de anúncio de família; nenhuma Cabana Casal ou Tripla em anúncio de família; nenhum anúncio de MS com voo; nenhum anúncio da Fora com “2 noites” ou “fim de semana curto”; nenhum anúncio do Paraná com voo ou expressão regional da MS."
  ]
 }
