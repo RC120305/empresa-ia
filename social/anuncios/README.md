@@ -20,3 +20,4 @@ A equipe sobe as campanhas pela API da Meta, **pausadas**, e só ativa com o OK 
 
 - **Decisão do dono (2026-09-28):** antes de gerar os criativos (artes), a equipe avisa o dono e só começa com o OK dele, mesmo depois de os textos estarem aprovados.
 - **Decisão do dono (2026-09-28): verba sobe de R$ 1.500 para R$ 2.000 por mês**, para incluir o grupo **Paraná de carro** (Umuarama, Cascavel, Maringá, Londrina e raio) o ano todo, com mínimo de R$ 20/dia, sem enfraquecer MS, Fora do estado e Remarketing. O limite de gastos da conta na Meta é ajustado pelo próprio dono.
+- **Decisão do dono (2026-09-28):** criativos dos anúncios só no **estilo 1 (sem faixa)**, em 4:5 e 9:16, para não gastar à toa; outros estilos só quando o dono pedir para um anúncio específico. OK do dono para gerar os criativos do lote (textos v3, 20 anúncios) dado em 28/09.
