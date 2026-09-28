@@ -25,3 +25,13 @@ Frase do dono: **"Reservando direto, garantimos o melhor preço."** Ela vale par
 - Permissões já testadas em 28/09: `instagram_manage_comments`, `instagram_manage_messages`, `pages_manage_metadata` (ver `config.md`).
 - Resposta privada: `POST /{ig-user-id}/messages` com `recipient: {comment_id}` e modelo de botões (até 3 URLs). Só vale para comentários de até 7 dias.
 - Sem servidor próprio para webhooks, a opção é uma rotina que confere os comentários novos a cada hora e responde; guardar os IDs já respondidos para não repetir.
+
+## Montagem (28/09/2026)
+- Programa: `ferramentas/robo-comentarios/robo.py`. Sem `--enviar` ele só **lista** o que faria (teste); com `--enviar` responde de verdade.
+- Regra da palavra-chave: comentário **curto (até 4 palavras)** com "reserva" ou "reservas", sem diferenciar maiúsculas nem acento ("RESERVA", "quero reserva!", "reserva 🙌"). Comentários longos que só citam a palavra ("fiz uma reserva ano passado") não recebem direct.
+- Vale para **todos os posts dos últimos 7 dias**; nunca responde ao próprio hotel; uma resposta por pessoa por post.
+- Nome na saudação: o @ da pessoa (é o que o Instagram informa).
+- Tenta primeiro a mensagem com os 2 botões; se o Instagram não aceitar botões na resposta privada, manda o mesmo texto com os 2 links escritos.
+- Estado: `ferramentas/robo-comentarios/respondidos.txt` guarda só os IDs dos comentários respondidos.
+- Teste feito em 28/09 (modo teste): 1 post nos últimos 7 dias, nenhum comentário com a palavra, nada enviado.
+- **Falta para ligar:** (1) teste real com o dono: ele comenta RESERVA num post, pela conta pessoal, e o robô responde; (2) a rotina que roda o robô de tempos em tempos (frequência a definir pelo dono); (3) os posts passarem a pedir "comente RESERVA".
