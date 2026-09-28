@@ -67,11 +67,23 @@ if ads:
     anuncios = json.dumps(A, ensure_ascii=False).replace("</", "<\\/")
 bdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "banco")
 banco = json.load(open(f"{bdir}/banco.json", encoding="utf-8"))
-os.makedirs(f"{out}/banco/mini", exist_ok=True)
-for b in banco:  # miniaturas do banco de imagens (seletor "Escolher do banco")
-    src = f"{bdir}/mini/{b['id']}.jpg"
-    if os.path.exists(src) and not os.path.exists(f"{out}/banco/mini/{b['id']}.jpg"):
-        shutil.copy(src, f"{out}/banco/mini/{b['id']}.jpg")
+# miniaturas do banco em folhas (sprites): 8 arquivos em vez de 380 (limite de arquivos da página)
+COLS, ROWS, CEL = 10, 5, 200
+os.makedirs(f"{out}/banco", exist_ok=True)
+com = [b for b in banco if os.path.exists(f"{bdir}/mini/{b['id']}.jpg")]
+for k in range(0, len(com), COLS * ROWS):
+    folha = Image.new("RGB", (COLS * CEL, ROWS * CEL), (236, 229, 216))
+    for i, b in enumerate(com[k:k + COLS * ROWS]):
+        im = Image.open(f"{bdir}/mini/{b['id']}.jpg").convert("RGB")
+        w, h = im.size; m = min(w, h)
+        im = im.crop(((w - m) // 2, (h - m) // 2, (w - m) // 2 + m, (h - m) // 2 + m)).resize((CEL, CEL))
+        folha.paste(im, ((i % COLS) * CEL, (i // COLS) * CEL))
+        b["f"], b["c"], b["r"] = k // (COLS * ROWS), i % COLS, i // COLS
+    nome = f"banco/folha-{k // (COLS * ROWS)}.jpg"
+    folha.save(f"{out}/{nome}", quality=72, optimize=True, progressive=True)
+    for b in com[k:k + COLS * ROWS]:
+        b["f"] = f"{nome}?v={hashlib.md5(open(f'{out}/{nome}', 'rb').read()).hexdigest()[:8]}"
+banco = [dict(b, cols=COLS, rows=ROWS) for b in com]
 bjs = json.dumps(banco, ensure_ascii=False).replace("</", "<\\/")
 open(f"{out}/index.html", "w").write(tpl.replace("__BANCO__", bjs).replace("__DATA__", data).replace("__MES__", mes).replace("__ANUNCIOS__", anuncios))
 print(f"{len(posts)} posts -> {out}/index.html")
