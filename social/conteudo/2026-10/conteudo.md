@@ -425,3 +425,40 @@ Manda para quem vai com você. E reserve direto: nossos valores já têm descont
 sbreserva.silbeck.com.br/hotelcabanas · WhatsApp (67) 99117-1648
 
 #hotelcabanasbonito #bonitoms #matogrossodosul #turismodenatureza #viagemadois
+
+---
+
+## POST 14 · 11/10 (domingo) 18h · carrossel 6 telas · extra pedido pelo dono
+- Data: 11/10 (domingo) · 18h · Pilar: 1 (Contemplação), com uma tela de aventura de dia · Persona: público amplo (Casais, Famílias e 55+) · Objetivo: considerar e reservar
+- Status: texto final (pedido do dono pela Central em 28/09/2026; estrutura e fotos definidas pelo dono)
+- Justificativa: o meio de semana é o gargalo do hotel (perfil-cabanas, "Prioridade comercial"); publicado em 11/10, alcança quem reserva de 45 a 50 dias antes (fim de novembro, baixa temporada em Bonito; destino-bonito §3). Um post "resumo" com os 5 diferenciais responde às objeções "está caro" (o que está na diária) e "fica longe" (6 km em asfalto). Sem citar feriado.
+- Cuidados: a tela 3 mostra uma Cabana Casal, mas o público inclui famílias; a legenda diz que a Casal e a Tripla não acomodam menores de 5 anos e que a Master aceita. Nenhum atributo generalizado como "nossas cabanas".
+
+### Briefing de arte
+Feed 3:4 (1080 × 1440). Um só layout em todas as telas (o Designer escolhe pela luz das fotos; o dono prefere sem faixa). Título com a palavra em *itálico* marcada; apoio em caixa alta espaçada.
+- TELA 1 (capa): apoio "DE DOMINGO A QUINTA · BONITO/MS" · "5 motivos para *desacelerar* aqui" (5) (foto: drone do Rio Formoso com caiaques, escolhida pelo dono)
+- TELA 2: apoio "MOTIVO 1 · FORMOSO E FORMOSINHO" · "Um hotel *abraçado* por dois rios" (6) (foto: deck de madeira do balneário à beira do rio, escolhida pelo dono)
+- TELA 3: apoio "MOTIVO 2 · CABANAS SUSPENSAS" · "Dormir na altura das *árvores*" (5) (foto: externa da Cabana Casal, elevada, com escada, escolhida pelo dono)
+- TELA 4: apoio "MOTIVO 3 · INCLUSO, COM MONITOR" · "A *aventura* já vem na diária" (6) (foto: casal no stand up paddle no Rio Formosinho, escolhida pelo dono)
+- TELA 5: apoio "MOTIVO 4 · PISCINA, HIDRO E SAUNA" · "Descanso de *verdade*" (3) (foto: piscina, escolhida pelo dono)
+- TELA 6: apoio "MOTIVO 5 · DESDE 2001" · "Há 25 anos, *em família*" (5) + linha de CTA: "RESERVE DIRETO · sbreserva.silbeck.com.br/hotelcabanas · WHATSAPP (67) 99117-1648" (foto: casal no café da manhã, escolhida pelo dono)
+
+### Legenda
+5 motivos para desacelerar no Hotel Cabanas, em Bonito/MS. Salva para a sua próxima viagem.
+
+1. Entre dois rios: somos o único hotel de Bonito cercado por dois rios, o Formoso e o Formosinho, em 40 hectares de área verde. Trilhas e decks de banho à margem dos dois rios, dentro do hotel, com acesso livre o dia todo.
+
+2. Na altura das árvores: as cabanas suspensas de madeira são o cartão-postal do hotel. A Cabana Casal e a Tripla ficam elevadas a 3 m do solo, com varanda privativa com rede. A Cabana Master, também elevada, tem 85 m², banheira de hidromassagem para 2 e é a cabana que recebe crianças menores de 5 anos (a Casal e a Tripla não acomodam).
+
+3. A aventura vem na diária: arco e flecha e trilhas com tirolesa, stand up paddle e caiaque, com monitor, inclusos para os hóspedes. Os horários podem variar conforme a temporada.
+
+4. Descanso de verdade: piscina climatizada, hidromassagem aquecida e sauna a vapor, das 7h às 22h, todos os dias.
+
+5. 25 anos de família: o hotel nasceu em 2001, com Gilberto e Cleodete, e hoje é cuidado pela segunda geração, Renata e Ricardo. Ficamos a 6 km do centro, com todo o acesso em asfalto, e o café da manhã está incluso (das 6h30 às 9h30).
+
+De domingo a quinta, o hotel fica mais tranquilo: um bom jeito de viver tudo isso sem pressa.
+
+Reserve direto: nossos valores já têm desconto para quem reserva direto.
+sbreserva.silbeck.com.br/hotelcabanas · WhatsApp (67) 99117-1648
+
+#hotelcabanasbonito #bonitoms #bonitomatogrossodosul #turismodenatureza #natureza
