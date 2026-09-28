@@ -1,8 +1,8 @@
 # Configuração da publicação automática
 
 - ID da conta do Instagram (@hotelcabanasbonito): 17841403994091310 (confirmado pela API em 27/09/2026)
-- Chave: variável de ambiente `META_IG_TOKEN` (criada pelo dono; nunca registrar o valor aqui)
-- Rede: `graph.facebook.com` liberado? [pendente]
+- Chave: chave da Página guardada pelo dono em **Credenciais de API** do ambiente, nome `META_IG_TOKEN` (28/09/2026; as sessões usam sem ver o valor; nunca registrar o valor aqui). Só vale em sessão nova.
+- Rede: `graph.facebook.com` liberado (confirmado em 28/09/2026: a API responde)
 - Hospedagem das imagens (URL pública exigida pela Meta): [a definir no teste: (a) Drive com link público; (b) outro serviço de hospedagem indicado pelo dono]
 - Horário padrão das postagens: [definido pelo Estrategista na pauta; fuso America/Campo_Grande]
 - ID da conta de anúncios (act_…): [descobrir no primeiro teste]
