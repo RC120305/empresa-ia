@@ -1,0 +1,300 @@
+{
+ "1": {
+  "titulo": "Como **chegar** até *nós*",
+  "apoio": "Avião, carro e os últimos 6 km",
+  "apoio_cc": "Avião, carro e os últimos 6 km",
+  "pos": "0% center",
+  "sf_sombras": [
+   [
+    -170,
+    900,
+    1100,
+    440,
+    0.7
+   ],
+   [
+    470,
+    1200,
+    760,
+    330,
+    0.55
+   ]
+  ],
+  "cc_topo": 860,
+  "cc_sombras": [
+   [
+    200,
+    990,
+    680,
+    150,
+    0.8
+   ],
+   [
+    290,
+    1215,
+    500,
+    250,
+    0.55
+   ],
+   [
+    900,
+    25,
+    200,
+    120,
+    0.55
+   ]
+  ]
+ },
+ "2": {
+  "titulo": "De **avião**, direto até *Bonito*",
+  "apoio": "Azul · Gol · Latam · aeroporto a 8 km",
+  "apoio_cc": "Azul, Gol e Latam · aeroporto a 8 km",
+  "pos": "45% center",
+  "sf_sombras": [
+   [
+    -200,
+    880,
+    1300,
+    480,
+    0.82
+   ],
+   [
+    470,
+    1200,
+    760,
+    330,
+    0.6
+   ],
+   [
+    860,
+    10,
+    320,
+    190,
+    0.5
+   ]
+  ],
+  "cc_topo": 960,
+  "cc_sombras": [
+   [
+    140,
+    1060,
+    800,
+    150,
+    0.85
+   ],
+   [
+    290,
+    1215,
+    500,
+    250,
+    0.6
+   ],
+   [
+    900,
+    25,
+    200,
+    120,
+    0.55
+   ]
+  ]
+ },
+ "3": {
+  "titulo": "Voou para **Campo Grande**?\n*Siga* de estrada",
+  "apoio": "Aeroporto a 280 km · vans, ônibus ou locação",
+  "apoio_cc": "Aeroporto a 280 km · vans, ônibus ou locação",
+  "pos": "50% center",
+  "cc_duas": true,
+  "sf_sombras": [
+   [
+    -220,
+    820,
+    1380,
+    580,
+    0.82
+   ],
+   [
+    470,
+    1200,
+    760,
+    330,
+    0.55
+   ],
+   [
+    860,
+    10,
+    320,
+    190,
+    0.5
+   ]
+  ],
+  "cc_topo": 860,
+  "cc_sombras": [
+   [
+    60,
+    1070,
+    960,
+    150,
+    0.9
+   ],
+   [
+    290,
+    1215,
+    500,
+    250,
+    0.55
+   ],
+   [
+    900,
+    25,
+    200,
+    120,
+    0.55
+   ]
+  ],
+  "sf_bloco": "max-width: 960px; bottom: 220px"
+ },
+ "4": {
+  "titulo": "A **estrada** já é *viagem*",
+  "apoio": "De Campo Grande ou Dourados: cerca de 260 km",
+  "apoio_cc": "De Campo Grande ou Dourados: cerca de 260 km",
+  "pos": "50% center",
+  "sf_sombras": [
+   [
+    -260,
+    880,
+    1480,
+    540,
+    0.95
+   ],
+   [
+    -40,
+    1060,
+    1080,
+    120,
+    0.45
+   ],
+   [
+    470,
+    1200,
+    760,
+    330,
+    0.6
+   ],
+   [
+    860,
+    10,
+    320,
+    190,
+    0.5
+   ]
+  ],
+  "cc_topo": 860,
+  "cc_sombras": [
+   [
+    40,
+    980,
+    1000,
+    150,
+    0.95
+   ],
+   [
+    290,
+    1215,
+    500,
+    250,
+    0.6
+   ],
+   [
+    900,
+    25,
+    200,
+    120,
+    0.55
+   ]
+  ],
+  "sf_bloco": "max-width: 960px; bottom: 220px"
+ },
+ "5": {
+  "titulo": "Os **últimos** 6 km, *no asfalto*",
+  "apoio": "Do centro ao hotel · táxi ou locadora",
+  "apoio_cc": "Do centro ao hotel · táxi ou locadora",
+  "pos": "50% center",
+  "sf_sombras": [
+   [
+    -170,
+    900,
+    1150,
+    460,
+    0.7
+   ],
+   [
+    470,
+    1200,
+    760,
+    330,
+    0.55
+   ],
+   [
+    860,
+    10,
+    320,
+    190,
+    0.5
+   ]
+  ],
+  "cc_topo": 860,
+  "cc_sombras": [
+   [
+    140,
+    985,
+    800,
+    150,
+    0.9
+   ],
+   [
+    290,
+    1215,
+    500,
+    250,
+    0.55
+   ],
+   [
+    900,
+    25,
+    200,
+    120,
+    0.55
+   ]
+  ]
+ },
+ "6": {
+  "titulo": "Dúvida no **caminho**?\n*Fala* conosco",
+  "apoio": "Reserve direto",
+  "apoio_cc": "Reserve direto",
+  "contato": [
+   "(67) 99117-1648",
+   "sbreserva.silbeck.com.br/hotelcabanas"
+  ],
+  "pos": "50% center",
+  "sf_sombras": [
+   [
+    860,
+    10,
+    320,
+    190,
+    0.5
+   ]
+  ],
+  "cc_topo": 850,
+  "cc_sombras": [
+   [
+    900,
+    25,
+    200,
+    120,
+    0.55
+   ]
+  ],
+  "sf_bloco": "bottom: 200px"
+ }
+}

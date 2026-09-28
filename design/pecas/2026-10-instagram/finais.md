@@ -13,6 +13,7 @@ Os arquivos de cada `POST-NN/final/` (`POST-NN-1.png`, `-2.png`…) são **cópi
 | POST-09 | Sem faixa | Texto sobre a mata da margem, rio e caiaques sem véu, verde só no detalhe: leitura boa. | `POST-09/final/POST-09-1.png` (de `POST-09-sem-faixa-1.png`) |
 | POST-10 | Sem faixa (v2) | As telas fracas foram resolvidas sem faixa: na 3 o título subiu para a mata escura, e na 6 a sombra ficou mais firme atrás dos contatos e a numeração ficou marrom sobre a parede clara. | `POST-10/final/POST-10-1.png` a `-6.png` (de `POST-10-sem-faixa-N-v2.png`) |
 | POST-12 | Sem faixa | Texto sobre a camiseta azul, bem abaixo do rosto, e logo sobre o cascalho escuro: leitura boa. | `POST-12/final/POST-12-1.png` (de `POST-12-sem-faixa-1.png`) |
+| POST-15 | Sem faixa | As 6 telas leem bem sem faixa (sombra localizada mais firme nas telas 3 e 4; na 6 o texto e os contatos ficam sobre o azul da piscina, sem véu); na caixa central o apoio ficava fraco sobre a madeira clara (telas 3 a 5). | `POST-15/final/POST-15-1.png` a `-6.png` (de `POST-15/estilos/estilo-1/`) |
 
 ## Fontes editáveis
 - Telas v2: `POST-NN/peca-sem-faixa-N-v2.html` + `carrossel-sem-faixa.css` da pasta. Os HTML originais (sem `-v2`) continuam intactos.
