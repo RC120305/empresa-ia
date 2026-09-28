@@ -18,7 +18,9 @@ _chave_pagina = None  # None = ainda não verificado; "" = a credencial já é a
 def _abrir(req):
     try:
         with urllib.request.urlopen(req, timeout=60) as r:
-            return True, json.load(r)
+            resp = json.load(r)
+            # a Meta às vezes devolve erro com HTTP 200 (ex.: "Autentique sua conta", código 31)
+            return "error" not in resp, resp
     except urllib.error.HTTPError as e:
         try:
             return False, json.loads(e.read() or b"{}")
