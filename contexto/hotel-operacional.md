@@ -97,6 +97,7 @@
 - **Site oficial (usar em anúncios):** **https://hotelcabanas.com.br/** (confirmado pelo dono em 2026-09-26) · Outro endereço informado, que **não** deve ser usado em anúncios: hotelcabanasbonito.ai.studio
 - **WhatsApp de reservas:** +55 67 99117-1648 · **Telefone:** +55 67 99110-7635 · **E-mail:** contato@hotelcabanas.com.br
 - **Instagram:** https://www.instagram.com/hotelcabanasbonito/ · **Facebook:** https://www.facebook.com/hotelcabanasms · **YouTube:** https://www.youtube.com/@hotelcabanasbonitoms
+- **Bio do Instagram (dono, 28/09/2026):** um **Linktree** com site, motor de reservas, WhatsApp, tour virtual e acomodações. Nas legendas, "link na bio" leva a ele. Link clicável dentro do Instagram orgânico só existe na bio, na figurinha de link dos stories e no botão de WhatsApp do perfil.
 - **Tour virtual:** https://tourmkr.com/F1pLPbag9x/44517615p&357.7h&29.11t · **Google Maps:** http://bit.ly/2PfI7Am
 - **Agência parceira:** Portal Ecotrip, https://bonitoecotrip.com.br/, telefone 67 99341-4734
 

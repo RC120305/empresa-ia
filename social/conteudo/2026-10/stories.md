@@ -9,6 +9,8 @@
 > - WhatsApp: `https://wa.me/5567991171648`
 > **Fotos:** entre parênteses, do inventário (pasta / arquivo, início do ID). Todas as fotos do banco são autorizadas (dono, 27/09). Vídeos novos gravados no dia com hóspedes: pedir a autorização de quem aparecer.
 
+> **Complemento (28/09):** além desta pauta, 2 ou 3 stories por semana feitos com as **artes dos posts** e figurinha de link (motor ou WhatsApp): ver `stories-com-link.md`. Nos dias em que os dois coincidirem, o de link entra como mais uma tela da sequência.
+
 ---
 
 ## Semana 1 (06 a 10/10): lançar o meio de semana
