@@ -462,3 +462,50 @@ Reserve direto: nossos valores já têm desconto para quem reserva direto.
 sbreserva.silbeck.com.br/hotelcabanas · WhatsApp (67) 99117-1648
 
 #hotelcabanasbonito #bonitoms #bonitomatogrossodosul #turismodenatureza #natureza
+
+---
+
+## POST 15 (11/10, domingo 18h): Como chegar até nós
+- Data: 11/10 (domingo) · 18h · Formato: carrossel 6 telas, feed 3:4 (1080 × 1440), layout caixa central · Pilar: post de utilidade, com fotos de apoio do pilar 1 (Contemplação) · Persona: Casais de SP, "Os Namorados do Paraíso" (2ª: 55+, "O Refúgio da Alma", que também está no Facebook) · Objetivo: salvamento e envio; secundário, conversa no WhatsApp
+- Status: texto final, aguardando o OK do dono (Opção 3 de `proposta-11-10.md`, escolhida pelo dono em 28/09/2026; ocupa o horário de 11/10 às 18h, que ficou livre com a publicação antecipada do POST 14 em 28/09)
+- Justificativa: SP é o 1º mercado de fora do estado e tem voos diretos das 3 companhias para Bonito (destino-bonito.md); quem vem de fora reserva de 45 a 50 dias antes, então o post de 11/10 alcança estadias do fim de novembro, baixa temporada em Bonito e já com chuvas (destino-bonito §3). Responde à objeção "fica longe" (perfil-cabanas, "Provas sociais e objeções") com fatos práticos.
+- Cuidados: distâncias só pelos números do dono (não os "cerca de 300 km" de `destino-bonito.md`); dias de voo só na legenda, com confirmação; nenhuma expressão regional de MS; nenhum preço; não temos transfer próprio (a equipe indica quem faça); sem o ângulo "domingo a quinta".
+
+### Briefing de arte
+Detalhes para o Designer (fotos com ID completo, cuidados e texto alternativo): `design/pecas/2026-10-instagram/POST-15/briefing.md`. Layout caixa central em todas as telas; o Designer abre as fotos antes (há três fotos chamadas `recepcao`).
+- TELA 1 (capa): apoio "AVIÃO, CARRO E OS ÚLTIMOS 6 KM" · "Como **chegar** até *nós*" (4) (foto: `Infraestrutura / recepcao_lago` (15DZs9))
+- TELA 2: apoio "AZUL · GOL · LATAM · AEROPORTO A 8 KM" · "De **avião**, direto até *Bonito*" (5) (foto: `Boia Cross / boia_drone` (1Vfyl9); só clima, sem sugerir que é a vista do avião)
+- TELA 3: apoio "AEROPORTO A 280 KM · VANS, ÔNIBUS OU LOCAÇÃO" · "Voou para **Campo Grande**? *Siga* de estrada" (7) (foto: `Infraestrutura / recepcao` (1l3xlm))
+- TELA 4: apoio "DE CAMPO GRANDE OU DOURADOS: CERCA DE 260 KM" · "A **estrada** já é *viagem*" (5) (foto: `Infraestrutura / placa_hotel_com_logo` (1TOVBB); também está no POST 10, alternativa `recepcao` (1btXrx))
+- TELA 5: apoio "DO CENTRO AO HOTEL · TÁXI OU LOCADORA" · "Os **últimos** 6 km, *no asfalto*" (6) (foto: `Infraestrutura / recepcao` (15P_kj))
+- TELA 6: apoio "WHATSAPP (67) 99117-1648 · RESERVE DIRETO: sbreserva.silbeck.com.br/hotelcabanas" · "Dúvida no **caminho**? *Fala* conosco" (5) (foto: `Infraestrutura / piscina` (1hkm1s))
+
+### Legenda
+Avião, carro e os últimos 6 km em asfalto: o caminho até o Hotel Cabanas, em Bonito/MS. Salva este guia.
+
+De avião: há voos diretos da região de São Paulo para o Aeroporto de Bonito, que fica a 8 km do hotel.
+Azul, de Viracopos (Campinas): terça, quinta e domingo.
+Gol, de Congonhas (São Paulo): terça, sábado e domingo.
+Latam, de Guarulhos (São Paulo): quarta, sexta e domingo.
+Aos domingos, dá para chegar a tempo do check-in. [confirmar dias e horários vigentes]
+
+Pelo Aeroporto de Campo Grande: ficamos a 280 km dele. De lá, há vans, carros privativos, ônibus e locação de carros.
+
+De carro: Campo Grande e Dourados ficam a cerca de 260 km de Bonito. Do Paraná, são 548 km de Umuarama, 670 km de Cascavel, 690 km de Maringá e 780 km de Londrina.
+
+Os últimos 6 km: do centro de Bonito até o hotel, todo o acesso é em asfalto. Do aeroporto ou da rodoviária, você chega de táxi (todos os taxistas nos conhecem) ou de carro alugado, com locadora na cidade e no aeroporto. Não temos transfer próprio, mas nossa equipe indica quem faça.
+
+Na chegada: check-in a partir das 15h. Enviamos o check-in online na véspera, e a recepção funciona 24h.
+
+E, depois de chegar, o resto está aqui dentro: trilhas e decks de banho à margem do Rio Formoso e do Rio Formosinho, e a programação diária com monitor, inclusa na diária. Somos o único hotel de Bonito cercado por dois rios.
+
+Manda para quem vai com você. Nossos valores já têm desconto para quem reserva direto.
+Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648
+
+#hotelcabanasbonito #bonitoms #bonitomatogrossodosul #turismobrasil #viagemadois
+
+*1ª linha: 105 caracteres (até "Salva este guia."). Hashtags: 5, da lista oficial.*
+
+### A confirmar com o dono
+- **Dias dos voos:** reconfirmar a malha na semana da publicação e tirar a marca "[confirmar dias e horários vigentes]" (a Latam passa a 3 voos por semana a partir de 25/10/2026, segundo `destino-bonito.md`). Se algum dia mudar, ajustar só a legenda (a arte não cita dias).
+- **Link na bio:** o Linktree está com o motor de reservas e o WhatsApp em destaque no dia 11/10?
