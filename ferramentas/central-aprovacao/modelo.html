@@ -853,7 +853,8 @@ function openPicker(cb){
   pickCb = cb; pickSel = new Map(); pickLast = document.activeElement;
   const sel = document.getElementById("pk-pasta");
   const pastas = [...new Set(bancoItens().map(b => b.pasta))];
-  sel.innerHTML = `<option value="">Todas as pastas (${bancoItens().length})</option>` + pastas.map(x => `<option>${esc(x)}</option>`).join("");
+  const recentes = bancoItens().filter(b => b.novaEm).length;
+  sel.innerHTML = `<option value="">Todas as pastas (${bancoItens().length})</option>` + (recentes ? `<option value="__novas">Novas no Drive (${recentes})</option>` : "") + pastas.map(x => `<option>${esc(x)}</option>`).join("");
   document.getElementById("pk-q").value = "";
   document.getElementById("picker").hidden = false; document.body.style.overflow = "hidden";
   drawPicker(); sel.focus();
@@ -866,11 +867,11 @@ function closePicker(ok){
 function drawPicker(){
   const pasta = document.getElementById("pk-pasta").value, q = document.getElementById("pk-q").value.trim().toLowerCase();
   const g = document.getElementById("pk-grid"); g.innerHTML = "";
-  const itens = bancoItens().filter(b => (!pasta || b.pasta === pasta) && (!q || nomeFoto(b.nome).toLowerCase().includes(q) || b.pasta.toLowerCase().includes(q)));
+  const itens = bancoItens().filter(b => (!pasta || (pasta === "__novas" ? b.novaEm : b.pasta === pasta)) && (!q || nomeFoto(b.nome).toLowerCase().includes(q) || b.pasta.toLowerCase().includes(q)));
   itens.forEach(b => {
     const it = document.createElement("button"); it.type = "button"; it.className = "pk-item";
     it.setAttribute("aria-pressed", pickSel.has(b.id) ? "true" : "false");
-    it.innerHTML = `<span class="pk-img" role="img" aria-label="${esc(nomeFoto(b.nome))}" style="${esc(sprite(b))}"></span>${b.nova ? '<span class="nova">NOVA · falta subir no Drive</span>' : ""}<small>${esc(nomeFoto(b.nome))}${pasta ? "" : " · " + esc(b.pasta)}</small>`;
+    it.innerHTML = `<span class="pk-img" role="img" aria-label="${esc(nomeFoto(b.nome))}" style="${esc(sprite(b))}"></span>${b.nova ? '<span class="nova">NOVA · falta subir no Drive</span>' : b.novaEm ? '<span class="nova" style="color:var(--green)">NOVA no Drive</span>' : ""}<small>${esc(nomeFoto(b.nome))}${pasta && pasta !== "__novas" ? "" : " · " + esc(b.pasta)}</small>`;
     it.addEventListener("click", () => {
       if (pickSel.has(b.id)) pickSel.delete(b.id); else pickSel.set(b.id, {id: b.id, nome: b.nome, pasta: b.pasta, thumb: b.thumb, f: b.f, c: b.c, r: b.r, cols: b.cols, rows: b.rows});
       it.setAttribute("aria-pressed", pickSel.has(b.id) ? "true" : "false");
