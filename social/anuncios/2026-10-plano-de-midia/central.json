@@ -1,51 +1,62 @@
 {
  "id": "2026-10-plano-de-midia",
- "titulo": "Plano de mídia paga · Meta Ads (v2.3)",
- "verba": 1500,
+ "titulo": "Plano de mídia paga · Meta Ads (v2.5: verba R$ 2.000 aprovada pelo dono em 28/09; aguardando o OK do dono na nova divisão)",
+ "verba": 2000,
  "decisoes": [
   {
-   "k": "excecao2026",
-   "q": "Em 2026, a campanha de MS roda direto nos feriados ou para em todos? (respondido: para em todos)",
+   "k": "divisao",
+   "q": "Divisão típica da v2.5: MS R$ 20 + Fora do estado R$ 20 + Paraná de carro R$ 20 + Remarketing R$ 4 = R$ 64/dia (R$ 1.984 em mês de 31 dias). Manter a v2.4 intacta e somar o Paraná daria R$ 68/dia = R$ 2.108, acima do teto. Aprova?",
    "tipo": "escolha",
    "opcoes": [
     {
      "v": "sim",
-     "t": "Sim, rodar direto em 2026 (recomendado)",
-     "d": "Outubro fica em R$ 1.248 e novembro em R$ 1.440, abaixo do teto. A regra de pausa volta a valer a partir de dezembro."
+     "t": "Sim, R$ 20 + 20 + 20 + 4 (recomendado)",
+     "d": "Todos os grupos de venda no piso de R$ 20/dia; Remarketing em R$ 4 (público pequeno). Nenhum mês passa de R$ 2.000 (máximo R$ 1.984)."
     },
     {
-     "v": "nao",
-     "t": "Não, parar em todos os feriados",
-     "d": "Pausas: 11 a 18/10 (Finados) e 25/10 a 07/11 (15/11 e Consciência Negra). A MS estreia em 08/11. Outubro R$ 702, novembro R$ 1.293."
+     "v": "teto",
+     "t": "Não; manter MS 21, Fora 21, Remarketing 6 e subir o teto para ~R$ 2.110",
+     "d": "Decisão sua de verba; o limite de gastos da conta também teria de subir."
     }
    ]
   },
   {
-   "k": "ferias",
-   "q": "O calendário de férias usado é: 19/12/2026 a 31/01/2027 e 01 a 31/07/2027. Está certo para o público de MS? (Carnaval, Páscoa, Corpus Christi, 7 de Setembro e 11–12/10 também pausam MS; e, por decisão sua, também Tiradentes, 1º de maio, 15/11 e o aniversário de Campo Grande.)",
-   "tipo": "texto",
-   "ph": "Ex.: sim; ou as férias em MS vão de ... a ..."
-  },
-  {
-   "k": "medicao",
-   "q": "A recepção pode anotar, em cada conversa: código do anúncio, cidade, noites, dias da semana, antecedência e se virou reserva?",
+   "k": "estrutura_pr",
+   "q": "O Paraná de carro fica como campanha própria ou como 3º conjunto dentro da Fora do estado?",
    "tipo": "escolha",
    "opcoes": [
     {
-     "v": "sim",
-     "t": "Sim, vamos anotar",
-     "d": "Assim sabemos quanto custa cada reserva e quais públicos vendem."
+     "v": "campanha",
+     "t": "Campanha própria (recomendado)",
+     "d": "Mensagem diferente (carro e km × voo); R$ 20/dia garantidos sem mexer na Fora; resultado separado; pode usar fotos que já estão na Fora."
     },
     {
-     "v": "nao",
-     "t": "Ainda não",
-     "d": "Medimos só o custo por conversa no WhatsApp."
+     "v": "conjunto",
+     "t": "Conjunto dentro da Fora do estado",
+     "d": "Mesma verba e mesmas datas; uma campanha a menos, mas a leitura e a regra de fotos ficam misturadas com a Fora."
+    }
+   ]
+  },
+  {
+   "k": "pr_fora",
+   "q": "O Paraná inteiro sai da Fora do estado (Curitiba e o leste do PR ficam sem anúncio de prospecção) ou só os 4 raios do Paraná de carro?",
+   "tipo": "escolha",
+   "opcoes": [
+    {
+     "v": "estado",
+     "t": "O estado inteiro sai (como você pediu)",
+     "d": "Zero sobreposição. Revisamos em 30 dias."
+    },
+    {
+     "v": "raios",
+     "t": "Só os 4 raios saem",
+     "d": "Curitiba e o leste do PR continuam recebendo os anúncios da Fora (voo e prospecção)."
     }
    ]
   },
   {
    "k": "limite",
-   "q": "Você vai definir o limite de gastos da conta em R$ 1.500 por mês (trava no Gerenciador de Anúncios)?",
+   "q": "Você vai ajustar o limite de gastos da conta para R$ 2.000 por mês (trava no Gerenciador de Anúncios)?",
    "tipo": "escolha",
    "opcoes": [
     {
@@ -65,20 +76,26 @@
   [
    "Permanente",
    "MS · o hotel é o passeio (Campo Grande, Dourados e entorno; sem Bonito e vizinhas) · vende 15 a 20 dias à frente",
-   "ano todo, pausa em feriados e férias",
+   "ano todo, pausa em feriados e férias; estreia em 08/11",
    "M1–M6 + D1–D5 em novembro"
   ],
   [
    "Permanente",
-   "Fora do estado (SP, PR, RJ, RS, SC e MG) · vende 45 a 50 dias à frente · inclui os anúncios de voo direto",
+   "Fora do estado (SP, RJ, RS, SC e MG; sem MS e sem PR) · vende 45 a 50 dias à frente · inclui os anúncios de voo direto",
    "ano todo, nunca pausa",
    "P01–P12, V1–V5, J1–J5 (nov/dez)"
   ],
   [
    "Permanente",
    "Fora do estado · conjunto extra SP/Campinas (voo direto)",
-   "só quando MS pausa por 14 dias ou mais (férias)",
-   "V1–V5 e J"
+   "só nas pausas longas da MS (férias), com a verba dela",
+   "V1–V5 e J-SP"
+  ],
+  [
+   "Permanente",
+   "Paraná de carro (nova) · Umuarama 548 km, Cascavel 670 km, Maringá 690 km e Londrina 780 km, raio de 40 km cada · vende 45 a 50 dias à frente [a medir]",
+   "ano todo, nunca pausa; mínimo R$ 20/dia",
+   "PR1–PR2"
   ],
   [
    "Permanente",
@@ -88,82 +105,126 @@
   ]
  ],
  "regras": [
-  "Três campanhas sempre ligadas: MS + Fora do estado + Remarketing. Sem campanhas de feriado.",
-  "Divisão típica: MS R$ 21 + Fora R$ 21 + Remarketing R$ 6 por dia (≈ R$ 1.440 a R$ 1.488/mês). Maio e junho: MS R$ 25/dia com M5 e M6.",
-  "MS pausa quando as estadias que ela venderia (15 a 20 dias à frente) caem em feriado ou férias: 11–18/10/26 · 31/10–07/11/26 · 29/11/26–26/01/27 · 06–13/03/27 · 07–15/05/27 · 11/06–16/07/27 · 15–23/08/27 · 19–27/09/27.",
-  "Pausa curta de MS (feriado): a verba fica sem gastar. Pausa longa (férias): vai para o conjunto SP/Campinas da Fora do estado.",
+  "Quatro campanhas sempre ligadas: MS + Fora do estado + Paraná de carro + Remarketing. Sem campanhas de feriado.",
+  "Divisão típica: MS R$ 20 + Fora R$ 20 + Paraná R$ 20 + Remarketing R$ 4 por dia = R$ 64 (R$ 1.920 a R$ 1.984/mês). Maio e junho: MS R$ 24/dia com M5 e M6 (16/05 a 10/06).",
+  "Nenhum mês passa de R$ 2.000 (maior mês: R$ 1.984). Ano: R$ 21.868.",
+  "MS pausa quando as estadias que ela venderia (15 a 20 dias à frente) caem em feriado ou férias: 29/11/26–26/01/27 · 06–13/03/27 · 01–06/04/27 · 11–16/04/27 · 07–15/05/27 · 11/06–16/07/27 · 06–11/08/27 · 15–23/08/27 · 19–27/09/27.",
+  "Pausa longa da MS (férias): os R$ 20 dela vão para o conjunto SP/Campinas da Fora. Pausa de 7 dias ou mais: Fora e Paraná sobem de R$ 20 para R$ 24 (+20%) e o resto fica sem gastar. Pausa de menos de 7 dias: a verba da MS fica sem gastar.",
+  "Paraná sai da Fora do estado (sem sobreposição). Anúncios do Paraná: carro, cidades e km; nunca voo; nunca as expressões regionais da MS.",
   "Antigas campanhas de dezembro, janeiro e janelas de ouro viram troca de anúncios dentro das permanentes."
  ],
  "sessenta": [
   [
    "Outubro",
    "MS",
-   "pausada (feriados); estreia em 08/11",
+   "pausada; estreia em 08/11",
    0,
    0
   ],
   [
    "Outubro",
    "Fora do estado",
-   "06 a 31/10",
-   21,
-   546
+   "06 a 31/10 (MS fora do ar: +20%)",
+   24,
+   624
+  ],
+  [
+   "Outubro",
+   "Paraná de carro (PR1, PR2)",
+   "06 a 31/10 (MS fora do ar: +20%)",
+   24,
+   624
   ],
   [
    "Outubro",
    "Remarketing",
    "06 a 31/10",
-   6,
-   156
-  ],
-  [
-   "Novembro",
-   "MS (mensagem: 1ª quinzena de dezembro)",
-   "08 a 28/11",
-   21,
-   441
+   4,
+   104
   ],
   [
    "Novembro",
    "Fora do estado (mensagem: férias de janeiro)",
-   "01 a 30/11",
-   21,
-   630
+   "01 a 07/11 (MS fora do ar: +20%)",
+   24,
+   168
+  ],
+  [
+   "Novembro",
+   "Fora do estado (mensagem: férias de janeiro)",
+   "08 a 30/11",
+   20,
+   460
+  ],
+  [
+   "Novembro",
+   "Paraná de carro",
+   "01 a 07/11 (MS fora do ar: +20%)",
+   24,
+   168
+  ],
+  [
+   "Novembro",
+   "Paraná de carro",
+   "08 a 30/11",
+   20,
+   460
+  ],
+  [
+   "Novembro",
+   "MS (mensagem: 1ª quinzena de dezembro a partir de 11/11)",
+   "08 a 28/11",
+   20,
+   420
   ],
   [
    "Novembro",
    "Fora do estado · SP/Campinas",
    "29 e 30/11",
-   21,
-   42
+   20,
+   40
   ],
   [
    "Novembro",
    "Remarketing",
    "01 a 30/11",
-   6,
-   180
+   4,
+   120
   ],
   [
    "Dezembro",
    "Fora do estado",
    "01 a 31/12",
-   21,
-   651
+   20,
+   620
   ],
   [
    "Dezembro",
    "Fora do estado · SP/Campinas",
    "01 a 31/12",
-   21,
-   651
+   20,
+   620
   ],
   [
    "Dezembro",
-   "Remarketing",
+   "Paraná de carro",
    "01 a 31/12",
-   6,
-   186
+   20,
+   620
+  ],
+  [
+   "Dezembro",
+   "MS",
+   "pausada (férias)",
+   0,
+   0
+  ],
+  [
+   "Dezembro",
+   "Remarketing (R4 pausado)",
+   "01 a 31/12",
+   4,
+   124
   ]
  ],
  "grupos": [
@@ -173,7 +234,7 @@
     [
      "M1",
      "55+",
-     "Esticar: vem no domingo, volta na terça; mais tranquilo de domingo a quinta; piscina climatizada, hidro e sauna",
+     "Esticar: vem no domingo, volta na terça; piscina climatizada, hidro e sauna",
      "carrossel",
      "Domingo a terça, sem pressa de voltar"
     ],
@@ -250,12 +311,12 @@
    ]
   },
   {
-   "nome": "Campanha Fora do estado (inclui voo direto)",
+   "nome": "Campanha Fora do estado (SP, RJ, RS, SC e MG; inclui voo direto)",
    "ads": [
     [
      "V1",
      "Casais (2ª: 55+)",
-     "Roteiro: voo de domingo → 4 noites → voo de quinta",
+     "Roteiro: voo de domingo → 4 noites → voo de quinta [confirmar malha vigente]",
      "carrossel",
      "Domingo a quinta, voando direto"
     ],
@@ -276,7 +337,7 @@
     [
      "V4",
      "55+ (2ª: Casais)",
-     "Quem pode escolher evita o fim de semana; domingo tem voo das 3 companhias; mais tranquilo de domingo a quinta",
+     "Quem pode escolher evita o fim de semana; domingo tem voo das 3 companhias [confirmar malha vigente]",
      "carrossel",
      "Quem pode escolher, vem no domingo"
     ],
@@ -409,6 +470,25 @@
    ]
   },
   {
+   "nome": "Campanha Paraná de carro (Umuarama, Cascavel, Maringá e Londrina + raio de 40 km)",
+   "ads": [
+    [
+     "PR1",
+     "Todas (só fotos neutras)",
+     "Bonito de carro: Umuarama 548 km, Cascavel 670 km, Maringá 690 km, Londrina 780 km; hotel a 6 km do centro, todo o acesso em asfalto; garagem na acomodação; entre dois rios",
+     "imagem",
+     "Do Paraná a Bonito, de carro (sugestão; texto final da Marketing)"
+    ],
+    [
+     "PR2",
+     "Casais e 55+ (2ª: Famílias; só fotos neutras)",
+     "Vale ficar mais: depois de tanta estrada, 2 noites é pouco; passeio de manhã e rio do hotel à tarde; café e programação inclusos; check-out até 13h com a estrutura liberada",
+     "carrossel",
+     "Tanta estrada pede mais dias de rio (sugestão; texto final da Marketing)"
+    ]
+   ]
+  },
+  {
    "nome": "Campanha Remarketing",
    "ads": [
     [
@@ -435,7 +515,7 @@
     [
      "R4",
      "Todas",
-     "Baixa temporada, reserva sem aperto: desconto direto, 50% de sinal, até 6x no cartão, reembolso integral com 30 dias",
+     "Baixa temporada, reserva sem aperto: desconto direto, 50% de sinal, até 6x no cartão, reembolso integral com 30 dias [confirmar política vigente]",
      "imagem",
      "Baixa temporada, reserva sem aperto"
     ]
@@ -450,10 +530,10 @@
   "Ativar campanha",
   "Resultados"
  ],
- "titulo60": "Próximos 90 dias (MS para em todos os feriados)",
+ "titulo60": "Próximos 90 dias (v2.5: com o Paraná de carro; MS para em todos os feriados)",
  "publico": {
-  "fonte": "Base: 40% a 60% dos hóspedes do Cabanas são de MS (dado seu) + origem dos turistas de Bonito (OTEB, ago/2026) para o público de fora. Personas: separadas pelos anúncios dentro de cada campanha (o Meta entrega cada anúncio a quem tem o perfil). Ajustamos com os números depois de 30 dias.",
-  "idade": "25 a 65+ anos, público amplo (o anúncio escolhe a pessoa); famílias só nas férias de janeiro.",
+  "fonte": "Base: 40% a 60% dos hóspedes do Cabanas são de MS (dado seu) + origem dos turistas de Bonito (OTEB) para o público de fora + Paraná de carro (decisão sua de 28/09/2026, distâncias informadas por você). Personas: separadas pelos anúncios dentro de cada campanha. Ajustamos com os números depois de 30 dias.",
+  "idade": "25 a 65+ anos, público amplo (o anúncio escolhe a pessoa); famílias só nas férias.",
   "regioes": [
    {
     "id": "ms",
@@ -478,10 +558,17 @@
    },
    {
     "id": "pr",
-    "nome": "Paraná",
-    "dado": "7,3%",
-    "campanha": "Fora do estado",
+    "nome": "Paraná de carro · Umuarama (548 km), Cascavel (670 km), Maringá (690 km) e Londrina (780 km), raio de 40 km cada",
+    "dado": "PR: 7,3% dos turistas (OTEB, jan a ago/2026); 8,8% em 2025",
+    "campanha": "Paraná de carro (campanha própria, R$ 20/dia, o ano todo)",
     "padrao": "sim"
+   },
+   {
+    "id": "pr-resto",
+    "nome": "Resto do Paraná (Curitiba e leste)",
+    "dado": "sai da Fora do estado na v2.5, para não sobrepor ao Paraná de carro",
+    "campanha": "—",
+    "padrao": "nao"
    },
    {
     "id": "rj",
@@ -515,8 +602,8 @@
     "id": "df-go-es",
     "nome": "Distrito Federal, Goiás e Espírito Santo",
     "dado": "3,7% somados",
-    "campanha": "Fora do estado",
-    "padrao": "testar"
+    "campanha": "—",
+    "padrao": "nao"
    },
    {
     "id": "ne-no",
