@@ -80,9 +80,14 @@ def checar_conta():
 
 
 def geo(nome, uf, tipo="city"):
-    r = meta.get("search", type="adgeolocation", location_types=json.dumps([tipo]), q=nome, country_code="BR", limit=10).get("data", [])
+    """Chave da Meta para a cidade (no estado certo: há Cascavel no PR e no MS) ou para o estado."""
+    r = meta.get("search", type="adgeolocation", location_types=json.dumps([tipo]), q=nome, country_code="BR", limit=25).get("data", [])
     for x in r:
-        if x.get("type") == tipo and (tipo != "city" or uf.lower() in (x.get("region", "") + x.get("region_code", "")).lower() or x.get("region") in (UF.get(uf, ""),)):
+        if x.get("type") != tipo:
+            continue
+        if tipo == "region" and x.get("name") == nome:
+            return x["key"]
+        if tipo == "city" and x.get("region") == UF[uf] and (x.get("name") == nome or x.get("name", "").startswith((nome + " (", nome + ","))):
             return x["key"]
     raise SystemExit(f"PARADO: não achei a localização {nome} ({uf}) na Meta. Resultado: {json.dumps(r, ensure_ascii=False)[:300]}")
 
