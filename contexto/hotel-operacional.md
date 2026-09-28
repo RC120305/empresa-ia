@@ -119,3 +119,4 @@
 - **Tereré:** o hóspede pode levar a garrafa de tereré; esse tipo de bebida não tem problema.
 - **Parcelamento:** a reserva pode ser parcelada em **até 6x no cartão**. Nos anúncios e posts, **não** citar sinal nem regras de cancelamento.
 - **Voos diretos:** malha das 3 companhias confirmada pelo dono (Azul/Viracopos, Gol/Congonhas, Latam/Guarulhos, conforme `destino-bonito.md`); o voo de domingo chega a tempo do check-in.
+- **Distâncias de carro do Paraná até Bonito (dono, 28/09/2026):** Umuarama 548 km · Cascavel 670 km · Maringá 690 km · Londrina 780 km. Público do oeste e norte do PR vem de carro (nicho aprovado para anúncios).
