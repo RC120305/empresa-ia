@@ -172,3 +172,13 @@
   1. **Revisão de conversas:** escolher uma conversa atendida pelo agente e, em cada resposta, **✅ Aprovar · ✏️ Corrigir · ❌ Reprovar** (com motivo). A resposta corrigida vira **resposta de referência** e é **incorporada** ao agente para as próximas conversas.
   2. **Fonte de conhecimento:** lugar para **subir material de apoio** (arquivos, textos e links) e ir incluindo, organizado por tema: política de cancelamento, horários de funcionamento, atividades oferecidas, link do cardápio, link de localização, distâncias entre cidades, passeios de Bonito, transporte etc. Cada item mostra quem incluiu, a data e se está em uso. Ponto de partida: os arquivos que a equipe já mantém (`contexto/hotel-operacional.md`, `contexto/destino-bonito.md`, `marketing/2026-09-banco-de-objecoes.md` depois de revisado).
   3. **Regras do agente:** horários, liga/desliga e o que sempre vai para uma pessoa.
+
+### P22. O protótipo não é final; observações do Funil (29/09/2026)
+- Esclarecido ao dono: o protótipo é **rascunho visual** (nada ligado ao WhatsApp nem ao Silbeck). Caminho: protótipo → especificação → construção por fases → testes → saída da Asksuite.
+- **Funil: o dono sentiu falta de muita coisa.** Pedidos:
+  - **Clicar no card abre a ficha completa do cliente** numa área própria (painel/aba), com **edição dos dados** do cliente.
+  - **Agendar atividades/tarefas** no lead (ex.: ligar, enviar proposta, lembrete de follow-up).
+  - **Trocar o responsável** (qual usuário assume o lead).
+  - **Mudar a etapa dentro do card**, e o card **se move sozinho** para a coluna nova.
+  - **Arrastar e soltar** os cards com o mouse entre as etapas.
+- Não estava previsto no protótipo v1/v2 (a ficha existia só na tela de Conversas). Para não depender da memória do dono, a equipe montou a lista completa de funcionalidades em `crm/funcionalidades.md` para ele marcar.
