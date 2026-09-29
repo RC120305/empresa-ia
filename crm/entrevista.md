@@ -262,3 +262,15 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 - Com isso, pelo WhatsApp o cliente escolhe: **Pix (API do BB)** ou **cartão por link (Cielo)**; o link do motor da Silbeck fica como alternativa.
 - **A verificar com a Cielo:** se o link de pagamento/e-commerce está habilitado no contrato, credenciais de API, taxas do link × maquininha, parcelamento e prazo de recebimento.
 - **Confirmado pelo dono (29/09/2026):** o **link de pagamento da Cielo já está habilitado** e é usado **todos os dias, de forma manual**. O dono **sabe gerar as credenciais no portal developer da Cielo**; elas serão cadastradas direto no cofre de segredos na fase de construção (nunca no chat).
+
+### P33. Reservas que chegam pelo motor da Silbeck (29/09/2026)
+- Lembrete do dono: reservas também chegam **direto pelo motor da Silbeck**, com pagamento **no próprio motor** (cartão confirma na hora; Pix gera QR e fica pendente). O CRM precisa **sincronizar** e mostrar o lead como **pago** ou **pendente de pagamento**.
+**Desenho da sincronização:**
+1. **Leitura periódica** (a cada ~5 min) de `GET /v1/ListaReserva` (a API não tem aviso automático): toda reserva nova entra no CRM.
+2. **Casamento com o lead:** procura pelo telefone/e-mail. Se a pessoa já conversou no WhatsApp/direct, a reserva entra **no mesmo card** (mantém a origem real: anúncio, Instagram…). Se não existe, cria o contato com origem **Site/motor** (ou a origem do link rastreável, se veio por um link do CRM).
+3. **Status de pagamento:**
+   - **Cartão** → card direto em **Reservado · pago**.
+   - **Pix** → card em **Aguardando pagamento · Pix do motor**, com prazo. O CRM lê os **Pix recebidos no BB** e confirma sozinho quando o casamento é único (valor + data + nome/identificador); se houver dúvida, sugere e a equipe confirma com 1 clique. Confere o saldo em `GET /v1/ExtratoConta`.
+   - Sem pagamento no prazo → **lembrete pelo WhatsApp** com o QR/copia-e-cola; vencido o prazo final → alerta para a equipe decidir (cancelar é manual no Silbeck, sem endpoint).
+4. **Reservas do Booking e das agências** entram pela mesma sincronização (via channel manager → Silbeck), com origem OTA/agência, para o pré-chegada e o pós-estadia.
+- **A confirmar na documentação:** campo de canal/origem e status (confirmada, pré-reserva, pendente) no `ListaReserva`; filtros por data de criação; se o Pix do motor usa a chave da conta do BB e se traz identificador.

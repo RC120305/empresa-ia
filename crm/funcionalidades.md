@@ -104,5 +104,6 @@
 | 9.1 | Cobrança **Pix dinâmica pela API do Banco do Brasil** enviada no WhatsApp, com confirmação automática | 🆕 | 3 |
 | 9.2 | Ao confirmar o Pix: criar/atualizar a reserva e **lançar o adiantamento no Silbeck**; avisar o cliente; card em Reservado | 🆕 | 3 |
 | 9.3 | **Cartão por link da Cielo** gerado pelo CRM (até 6x), com confirmação automática e lançamento no Silbeck; link do motor da Silbeck como alternativa | 🆕 | 3 |
-| 9.4 | Casar os Pix do motor com as reservas pendentes (1 clique da equipe) | 💡 | 3 |
+| 9.4 | **Sincronizar as reservas do motor da Silbeck** (e do Booking/agências): entram no CRM, casam com o lead existente e ficam como **pago** (cartão) ou **aguardando pagamento** (Pix) | 🆕 | 3 |
+| 9.6 | Confirmar sozinho o **Pix do motor** pelos Pix recebidos no BB (1 clique quando houver dúvida); lembrete ao cliente e alerta de vencido | 🆕 | 3 |
 | 9.5 | Etapa "Aguardando pagamento" com prazo e lembrete (A1) | ✅ | 1 |
