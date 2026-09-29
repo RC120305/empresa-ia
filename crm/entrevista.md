@@ -84,3 +84,14 @@
 - **Massagem:** pode ser vendida **antecipadamente**; o hóspede escolhe **um tipo avulso** ou **monta um pacote**. Serviço terceirizado: o CRM tenta **integrar ao sistema de agenda do terceiro**; se não houver integração, gera uma **tarefa para a equipe agendar manualmente** e confirmar ao hóspede.
 - **Decoração especial:** só com **no mínimo 3 dias de antecedência** do check-in (tempo para encomendar os itens). O agente não oferece se faltarem menos de 3 dias.
 - Flutuação (R$ 100) e upgrade/noite extra: seguem como upsell, sem prioridade definida.
+
+### P12. Follow-up de quem pediu preço e sumiu (29/09/2026)
+**Decisão do dono: no máximo 2 tentativas** (cada disparo fora da janela é pago à Meta).
+1. **1ª tentativa: dentro da janela de 24 horas** da última mensagem do cliente. Dentro da janela a mensagem é livre (texto do agente, sem modelo aprovado) e **não é cobrada** como disparo de marketing.
+2. **2ª tentativa: 3 dias depois**, já fora da janela: exige **modelo (template) aprovado pela Meta**, categoria marketing (**pago**). Vai com **imagem convidativa escolhida pelo perfil do lead**. Ex.: casal → foto de casal na hidromassagem; família → crianças na boia cross ou no rio; 55+ → deck e rede à beira do rio.
+3. **Depois disso, para.** Marca como "perdido" com o motivo e guarda o contato para campanhas futuras (só com consentimento).
+
+**Consequências:**
+- O agente precisa **classificar o perfil do lead** na conversa (casal, família, grupo de amigos, 55+, observador de aves etc.; personas de `hotel-cabanas.md`).
+- Um **kit de modelos de follow-up por persona** (texto do Marketing + foto real do banco de imagens escolhida pelo Designer), submetido à Meta com antecedência. Só fotos reais do banco.
+- O painel mostra o **custo dos disparos** e quantas reservas vieram do follow-up.
