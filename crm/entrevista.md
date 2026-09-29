@@ -230,3 +230,8 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 - **A2 (orçamento):** puxar do **motor de reservas do Silbeck**, que já tem os apartamentos, os valores e as imagens. Checar na documentação da Silbeck.
 - **A3 (lista de espera):** aprovado; exige acesso prático ao **mapa de vagas** (A4).
 - **A7, B1, B2:** o dono pediu **explicação com exemplos** antes de decidir.
+
+### P29. Tentativa de ler a documentação da Silbeck (29/09/2026)
+- A rede do ambiente já alcança o domínio, mas o site `developers.silbeck.com.br` fica atrás do **Cloudflare, que bloqueia acesso vindo de servidores de nuvem** (HTTP 403 "Attention Required"), inclusive por navegador automatizado e pela busca. Não é problema de permissão do ambiente.
+- Alternativas pedidas ao dono: salvar a documentação em PDF no PC (Ctrl+P → Salvar como PDF) e colocar no Google Drive ou anexar no chat; ou pedir à Silbeck o arquivo Swagger/OpenAPI ou a coleção do Postman.
+- **Perguntas a responder com a documentação:** (1) disponibilidade por data e tipo de acomodação; (2) tarifas por data/ocupação; (3) cadastro de acomodações com fotos (motor); (4) criar, consultar, alterar e cancelar reserva; (5) consultar reserva por telefone/e-mail do hóspede (conciliação com o lead); (6) lançar pagamento/sinal na conta do cliente; (7) status do hóspede (hospedado, check-in, check-out); (8) campo de origem/segmento da reserva; (9) avisos automáticos (webhooks) ou só consulta periódica; (10) histórico de hóspedes para importação; (11) link do motor com datas e acomodação preenchidas e se o motor cobra só o sinal; (12) unidade do `expires_in` e quais endpoints estão liberados para o hotel.
