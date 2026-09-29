@@ -49,6 +49,11 @@ O hotel tem um **sistema interno de reservas da boia cross e do arvorismo que ac
 2. O CRM envia ao **parceiro** (cadastro de parceiros: nome e WhatsApp) uma mensagem pelo número oficial do hotel: "Massagem relaxante 16/11 às 15h para hóspede do Hotel Cabanas. Confirma?" com botões **[Confirmo] [Não posso] [Outro horário]** (modelo de utilidade aprovado pela Meta).
 3. **Confirmo** → o CRM confirma ao hóspede sozinho, registra na reserva e cria a cobrança/lançamento. **Não posso / Outro horário** → o agente oferece outra opção ao hóspede. **Sem resposta em 2 h** (horário comercial) → alerta para a equipe.
 
+### Cadastro de parceiros
+| Parceiro | Serviço | WhatsApp |
+|---|---|---|
+| **Natália** | Massoterapia (massagem avulsa e pacotes) | +55 67 99228-6365 |
+
 ## 3. Pagamento e lançamento no Silbeck
 - Pagamento pelo mesmo caminho da hospedagem: **Pix BB** ou **link Cielo**, com confirmação automática.
 - Adiantamento lançado no Silbeck (`POST /v1/Adiantamento`).

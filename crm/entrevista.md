@@ -341,3 +341,7 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 - **O agente pode confirmar sozinho:** **decoração, boia cross e arvorismo**.
 - **Massagem (terceiro):** o CRM **envia uma mensagem no WhatsApp do parceiro** pedindo o horário, com botões [Confirmo] [Não posso] [Outro horário]; quando o parceiro responde, **o agente/sistema confirma ao hóspede** sozinho. Sem resposta → alerta para a equipe. Desenho em `crm/upsell-catalogo.md` (2b).
 - **Protótipo v12:** Cabana Master no painel de vagas; flutuação inativa; na conversa, massagem com "Pedir horário ao parceiro" e simulação da resposta.
+
+### P40. Códigos das acomodações validados e parceira da massagem (29/09/2026)
+- **Códigos validados pelo dono:** CBD cabana duplo (3) · CBT cabana tripla (1) · CBM Cabana Master (1) · BG bangalô (2) · BGE bangalô especial (1) · STD apto standard duplo/triplo (6) · CST duplo casa standard (1) · SUP duplo/triplo superior (2) · CJ conjugado (1) · QST quádruplo standard (2) · QES quádruplo especial (1). **Total: 21.** Na integração, mapear cada código ao tipo correspondente do Silbeck (`GET /v1/TipoApartamento`).
+- **Parceira da massagem:** **Natália**, massoterapeuta, WhatsApp **+55 67 99228-6365** (cadastro de parceiros em `crm/upsell-catalogo.md`). Antes de ligar o fluxo automático, avisar a Natália de que passará a receber pedidos do número oficial do hotel com botões.
