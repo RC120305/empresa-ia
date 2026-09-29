@@ -546,7 +546,7 @@ Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648
 
 ### Briefing de arte
 Feed 3:4 (1080 × 1440). Um só layout em todas as telas (o dono prefere **sem faixa**; faixa discreta marrom `#847059` se a foto for clara demais). Título serifado com a palavra em **negrito** e a palavra em *itálico* marcadas; apoio em sem serifa, caixa alta espaçada; linha fina laranja `#F58634` + "BONITO / MS" na assinatura. **Fotos abertas e conferidas pelo Designer em 29/09/2026** (arte pronta em `design/pecas/2026-10-instagram/POST-16/final/`, layout sem faixa; detalhes em `POST-16/entrega.md`). Trocas: tela 5 e tela 6 (abaixo).
-- TELA 1 (capa): apoio "BANGALÔ · 40 M² · 2 A 4 PESSOAS" · "Espaço para **quatro**, *natureza* em volta" (6) (foto: `Bangalô / bangalo_triplo_externa` (1bcxsg), https://drive.google.com/file/d/1bcxsgpVwVIjIhTqakffLIPrF3pDZvUEi/view; alternativa: `bangalo_triplo_externa` (1wbIC8))
+- TELA 1 (capa): apoio "BANGALÔ · 40 M² · 2 A 4 PESSOAS" · "Espaço para **quatro**, em meio à *natureza*" (7) (texto editado pelo dono na Central em 29/09) (foto: `Bangalô / bangalo_triplo_externa` (1bcxsg), https://drive.google.com/file/d/1bcxsgpVwVIjIhTqakffLIPrF3pDZvUEi/view; alternativa: `bangalo_triplo_externa` (1wbIC8))
 - TELA 2: apoio "ACOMODAÇÃO SEM VIZINHOS" · "Privacidade **aqui** é *garantida*" (4) (texto editado pelo dono na Central em 29/09) (foto: `Bangalô / bangalo_externa` (1Ys225), https://drive.google.com/file/d/1Ys2258SPxaO5ah1XvSLWK8IqAGOCrx3C/view; já confirmada como Bangalô no POST 07)
 - TELA 3: apoio "VARANDA PRIVATIVA COM REDE" · "A **rede** *espera* depois da trilha" (6) (foto: `Bangalô / bangalo_triplo_varanda_com _rede` (1YJx7o), https://drive.google.com/file/d/1YJx7oxm9B2-6m2riSvdhQfWdUVgpsyNo/view; alternativa: `bangalo_quadruplo_varanda_com_rede` (1c3Ru5), já usada no POST 07)
 - TELA 4: apoio "VARANDA PRIVATIVA" · "Conversa **longa**, *vista* para *natureza*" (5) (texto editado pelo dono na Central em 29/09) (foto: `Bangalô / bangalo_triplo_varanda` (1WZSUd), https://drive.google.com/file/d/1WZSUdBcTUezcjnZwCvvxPKNRDwHXxKRA/view)
@@ -579,7 +579,7 @@ Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648.
 
 ### Texto alternativo (alt text)
 Ajustadas pelo Designer ao que as fotos mostram (29/09/2026).
-- TELA 1: "Bangalô do Hotel Cabanas, de alvenaria em tom creme e telhado de telhas, elevado do chão sobre pilares, com escada de madeira, cercado de árvores. Texto: Espaço para quatro, natureza em volta."
+- TELA 1: "Bangalô do Hotel Cabanas, de alvenaria em tom creme e telhado de telhas, elevado do chão sobre pilares, com escada de madeira, cercado de árvores. Texto: Espaço para quatro, em meio à natureza."
 - TELA 2: "Bangalô visto de frente, sozinho entre palmeiras e árvores, elevado do chão, com escada e varanda de madeira. Texto: Privacidade aqui é garantida."
 - TELA 3: "Varanda do Bangalô com uma rede colorida armada, piso de madeira e a mata ao fundo. Texto: A rede espera depois da trilha."
 - TELA 4: "Varanda do Bangalô com mesa de madeira, banco com almofadas e vista para a mata. Texto: Conversa longa, vista para natureza."
