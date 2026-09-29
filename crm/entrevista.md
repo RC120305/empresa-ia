@@ -261,3 +261,4 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 - Dados do cartão **nunca** passam pelo CRM (página da própria Cielo). Credenciais da Cielo no cofre de segredos.
 - Com isso, pelo WhatsApp o cliente escolhe: **Pix (API do BB)** ou **cartão por link (Cielo)**; o link do motor da Silbeck fica como alternativa.
 - **A verificar com a Cielo:** se o link de pagamento/e-commerce está habilitado no contrato, credenciais de API, taxas do link × maquininha, parcelamento e prazo de recebimento.
+- **Confirmado pelo dono (29/09/2026):** o **link de pagamento da Cielo já está habilitado** e é usado **todos os dias, de forma manual**. O dono **sabe gerar as credenciais no portal developer da Cielo**; elas serão cadastradas direto no cofre de segredos na fase de construção (nunca no chat).
