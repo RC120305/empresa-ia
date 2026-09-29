@@ -297,3 +297,4 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
   - Painel lateral **"Reservas nesta conversa"** com **"Registrar reserva"**.
   - Alternância **lista × modo Kanban**.
 - Aguardando mais telas e explicações do dono.
+- **Modo Kanban da Asksuite (inspiração):** funil e conversa **na mesma tela** (colunas à esquerda, a conversa aberta num painel à direita, sem trocar de página); filtros no topo (empresa, atendentes, etiquetas, canais, busca); abas de status (**Aberto, Resolvido, Arquivado**) e atalhos (Atribuídos a mim, Não respondidos, Não lidos), período e **Exportar**; colunas com **quantidade e valor total** (ex.: "32 · R$ 77 mil"); no card, a **data da última mensagem**, contador de não lidas e o aviso **"A janela de 24h expirou"** (lembra que ali só sai mensagem paga, por modelo aprovado).
