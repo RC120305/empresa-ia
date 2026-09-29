@@ -418,6 +418,23 @@ button,input,select{font:inherit;color:inherit}
 .testar input{flex:1;min-width:0;min-height:44px}
 @media (max-width:1250px){.cx{grid-template-columns:300px minmax(0,1fr)}.cx-lateral{grid-column:1/-1}}
 @media (max-width:900px){.cx,.q-layout{grid-template-columns:minmax(0,1fr)}.cx-lista{max-height:320px}.cx-chat{min-height:0}}
+
+/* v5: painel lateral "Testar o agente" */
+.aj{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;align-items:start}
+.aj.fechado{grid-template-columns:minmax(0,1fr)}.aj.fechado .aj-teste{display:none}
+.aj-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.aj-linha{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.aj-teste{position:sticky;top:12px}
+.aj-teste .testar{height:calc(100vh - 120px);min-height:460px}
+.teste-cab{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--cor-borda)}
+.teste-cab strong{flex:1;font-size:16px}
+.teste-hero{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px;background:var(--ia-s);text-align:center}
+.teste-hero .av{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--ia);color:#fff}
+.teste-hero .av svg{width:28px;height:28px}
+.teste-hero b{font-size:15px}.teste-hero span{font-size:13px;color:var(--cor-texto-sec)}
+.sem-fontes .fonte-resp{display:none}
+#bt-teste[aria-expanded=true]{background:var(--ia-s);border-color:var(--ia);color:var(--ia)}
+@media (max-width:1100px){.aj{grid-template-columns:minmax(0,1fr)}.aj-teste{position:static}.aj-teste .testar{height:520px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -589,14 +606,18 @@ button,input,select{font:inherit;color:inherit}
     </section>
 
     <!-- AJUSTES DO AGENTE -->
-    <section data-painel="ajustes" hidden style="display:flex;flex-direction:column;gap:14px">
+    <section data-painel="ajustes" hidden>
+     <div class="aj" id="aj">
+      <div class="aj-main">
       <div class="pub-barra" id="pub-barra" hidden><span id="pub-n">0 alterações</span><button class="btn btn-editar" type="button" id="pub-descartar">Descartar</button><button class="btn btn-destaque" type="button" id="pub-publicar">Publicar alterações</button></div>
+      <div class="aj-linha">
       <div class="segmento" role="tablist" aria-label="Ajustes do agente">
         <button role="tab" aria-selected="true" data-sub="rev">Revisão de conversas</button>
         <button role="tab" aria-selected="false" data-sub="con">Questionário</button>
         <button role="tab" aria-selected="false" data-sub="bib">Biblioteca de respostas</button>
-        <button role="tab" aria-selected="false" data-sub="tes">Testar o agente</button>
         <button role="tab" aria-selected="false" data-sub="reg">Regras</button>
+      </div>
+      <button class="btn btn-editar" type="button" id="bt-teste" aria-expanded="true" aria-controls="aj-teste">✦ Testar o agente</button>
       </div>
 
       <div data-subpainel="rev" style="display:flex;flex-direction:column;gap:14px">
@@ -641,10 +662,6 @@ button,input,select{font:inherit;color:inherit}
         <div class="cartao rolagem"><table class="bib"><thead><tr><th>Pergunta</th><th>Resposta</th><th>Alterada</th><th></th></tr></thead><tbody id="bib-corpo"></tbody></table></div>
       </div>
 
-      <div data-subpainel="tes" hidden>
-        <div class="cartao testar"><div class="cx-topo"><strong>Testar o agente</strong><span class="canal">Pergunte como um cliente. A resposta mostra a fonte usada. Nada é enviado a clientes.</span></div><div class="mensagens" id="t-msgs"></div><form id="t-form"><input id="t-inp" placeholder="Ex.: criança de 6 anos faz boia cross?" aria-label="Pergunta de teste"><button class="btn btn-enviar" type="submit">Perguntar</button></form></div>
-      </div>
-
       <div data-subpainel="reg" hidden>
         <div class="regras">
           <div class="cartao bloco"><h3>Quando o agente atende sozinho</h3>
@@ -667,6 +684,16 @@ button,input,select{font:inherit;color:inherit}
           </div>
         </div>
       </div>
+      </div>
+      <aside class="aj-teste" id="aj-teste" aria-label="Testar o agente">
+        <div class="cartao testar" id="t-caixa">
+          <div class="teste-cab"><strong>✦ Testar o agente</strong><button class="btn-mini" type="button" id="t-fontes" aria-pressed="true">Ocultar fontes</button><button class="btn-mini" type="button" id="t-limpar">Limpar</button><button class="fechar" type="button" id="t-fechar" aria-label="Esconder o teste"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+          <div class="teste-hero"><span class="av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg></span><b>Olá, eu sou o Agente Cabanas</b><span>Pergunte como um cliente. Testa a versão em edição, antes de publicar. Nada é enviado a clientes.</span></div>
+          <div class="mensagens" id="t-msgs"></div>
+          <form id="t-form"><input id="t-inp" placeholder="Ex.: criança de 6 anos faz boia cross?" aria-label="Pergunta de teste"><button class="btn btn-enviar" type="submit">Perguntar</button></form>
+        </div>
+      </aside>
+     </div>
     </section>
   </main>
 </div>
@@ -1213,6 +1240,16 @@ button,input,select{font:inherit;color:inherit}
   function iniciarV4(){renderInbox();renderVagas();renderPag();renderQuest();renderBiblio();}
 
   $('arquivo').addEventListener('change',e=>{const n=e.target.files.length;e.target.value='';if(n)toast(n+' arquivo(s) enviado(s). O agente lê e sugere respostas para o questionário.');});
+
+  // v5: mostrar/esconder o teste do agente
+  const aj=$('aj'),btT=$('bt-teste');
+  function mostrarTeste(on){aj.classList.toggle('fechado',!on);btT.setAttribute('aria-expanded',String(on));btT.textContent=on?'✦ Esconder teste':'✦ Testar o agente';try{localStorage.setItem('crm-teste',on?'1':'0')}catch(e){}}
+  btT.addEventListener('click',()=>mostrarTeste(aj.classList.contains('fechado')));
+  $('t-fechar').addEventListener('click',()=>mostrarTeste(false));
+  $('t-fontes').addEventListener('click',ev=>{const on=$('t-caixa').classList.toggle('sem-fontes');ev.currentTarget.textContent=on?'Ver fontes':'Ocultar fontes';ev.currentTarget.setAttribute('aria-pressed',String(!on));});
+  $('t-limpar').addEventListener('click',()=>{$('t-msgs').textContent='';});
+  let tIni='1';try{tIni=localStorage.getItem('crm-teste')||'1'}catch(e){}
+  mostrarTeste(tIni==='1');
   renderBoard();renderRegua();iniciarV4();
 })();
 </script>
