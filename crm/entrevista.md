@@ -116,3 +116,9 @@
 2. **Noite (17h–7h30):** o agente responde sozinho no horário definido; Jagles revisa as conversas da noite de manhã.
 3. **Dia inteiro:** só quando as metas forem batidas (ex.: 90% das respostas sem edição, nenhuma informação errada, conversão igual ou maior que a humana). O dono decide cada passo.
 - Regras permanentes: responde só com fatos da base (se não sabe, diz que vai confirmar e passa para a equipe); reclamação, grupo, agência e exceções vão para uma pessoa.
+
+### P15. Histórico para treinar o agente e aprovação das respostas (29/09/2026)
+- **Asksuite (99110):** o dono não sabe se consegue exportar (citou "Silbeck"; entender como Asksuite). **A verificar** com a Asksuite antes de cancelar.
+- **WhatsApp Business (99117):** **dá para exportar** as conversas (uma a uma pelo app). Pedido: 30 a 50 conversas boas, que viraram reserva.
+- **Meta de 90% de acerto: aprovada** como critério para o agente ganhar autonomia.
+- **Aceite prático das respostas (pedido do dono):** na conversa, a resposta sugerida pelo agente aparece com **3 botões**: **✅ Enviar** (conta como acerto) · **✏️ Editar e enviar** (conta como correção; o CRM guarda o antes e o depois para o agente aprender) · **❌ Descartar** (com motivo de 1 toque: informação errada, tom, faltou vender, outro). Funciona no celular. Para as conversas da noite, uma tela de **revisão da manhã** com 👍/👎 por resposta. O painel mostra a % de acerto da semana.
