@@ -349,3 +349,14 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 ### P41. Nome do agente (29/09/2026)
 - **Decisão do dono:** o agente se chama **Gilberto** (mesmo nome usado na Asksuite, em homenagem ao fundador). Protótipo atualizado.
 - Regra de honestidade mantida (P3): o Gilberto escreve com naturalidade, mas **se o cliente perguntar se está falando com uma pessoa, diz que é o assistente virtual do hotel** e oferece a equipe.
+
+### P42. Cadastro de agências e operadoras sincronizado com o Silbeck (29/09/2026)
+- **Pedido do dono:** um lugar para cadastrar agências e operadoras, **sincronizado com o Silbeck**, para que reservas feitas pelo CRM (equipe ou Gilberto) saiam com a empresa certa.
+- **Desenho:**
+  - **O Silbeck é a fonte do cadastro** (razão social, CNPJ, código da empresa). O CRM lê com `GET /v1/Empresa` a cada hora e no botão "Sincronizar", e guarda o **ID do Silbeck** em cada agência. A ligação entre os dois é pelo **CNPJ**.
+  - **O CRM guarda o que o Silbeck não tem:** contatos (WhatsApp e e-mail de cada pessoa da agência), comissão combinada, código do link rastreável (AG-…), observações, histórico de conversas e reservas.
+  - **Agência nova:** a API vista **só lê empresas** (não há POST Empresa). O CRM faz um **pré-cadastro** e cria a **tarefa "cadastrar no Silbeck"**; na próxima sincronização, liga os dois pelo CNPJ. Até lá, reserva para essa agência **não é enviada** ao Silbeck pela API (fica em tarefa).
+  - **Diferença de dados:** o **Silbeck prevalece**; o CRM mostra o aviso e o botão "Usar dados do Silbeck". CNPJ repetido vira alerta de duplicidade.
+  - **Na reserva via API** (`POST /v1/reserva`), o CRM envia o **ID da empresa do Silbeck** (confirmar na documentação o nome do campo) e a comissão sai certa.
+  - **Mensagem de agência:** os telefones cadastrados identificam a conversa como da agência sozinhos (etiqueta, funil, e o Gilberto passa para a equipe, regra já aprovada).
+- **Protótipo v15:** nova aba **Agências** (status sincronizado / diferença / pendente, CNPJ, contatos, comissão, link rastreável, reservas; "+ Nova agência", "Sincronizar com o Silbeck").

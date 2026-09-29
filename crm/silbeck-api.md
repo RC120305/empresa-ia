@@ -27,7 +27,7 @@
 | `POST /v1/Tarifario` | Tarifário por período (apoio ao orçamento e à demanda não atendida) |
 | `GET /v1/Produto` | Produtos e serviços (boia cross, arvorismo, combo?) com preço para o upsell |
 | `GET /v1/Setor` | Setores do hotel: **encaminhar pedidos de hóspede** ao setor certo (B1) |
-| `GET /v1/Empresa` | Empresas/agências (cadastro de agência, comissão: B4, 2.13) |
+| `GET /v1/Empresa` | **Fonte do cadastro de agências/operadoras**: sincronização a cada hora, ligação por CNPJ, ID usado no `POST reserva` (P42). Sem POST: agência nova é cadastrada no Silbeck pela equipe |
 | `GET /v1/CategoriaHospede`, `/Cidade`, `/Profissao`, `/TipoPensao` | Tabelas de apoio para preencher a ficha e a reserva |
 | `PUT /v1/Apartamento/Limpeza`, `GET /v1/Insumo`, `GET /v1/Fornecedor` | Operação interna; sem uso previsto no CRM |
 

@@ -36,7 +36,7 @@
 | 2.10 | Anotações internas (não vão para o cliente) | 💡 | 1 |
 | 2.11 | Juntar contatos duplicados (mesma pessoa no direct e no WhatsApp) | ✅ | 1 |
 | 2.12 | Consentimento para mensagens de marketing (sim/não, data) — exigência da LGPD e da Meta | 💡 | 1 |
-| 2.13 | Cadastro de **agência** (contatos, comissão, reservas feitas) | ✅ | 2 |
+| 2.13 | Cadastro de **agências e operadoras sincronizado com o Silbeck** (GET Empresa, ligação por CNPJ, Silbeck prevalece; pré-cadastro + tarefa quando a agência ainda não existe no Silbeck; contatos, comissão, link rastreável) | ✅🆕 | 2 |
 
 ## 3. Tarefas e agenda
 | # | Funcionalidade | Status | Fase |

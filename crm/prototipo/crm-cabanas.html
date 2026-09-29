@@ -545,6 +545,8 @@ button,input,select{font:inherit;color:inherit}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tarefas<span class="qtd num" id="qtd-tarefas">0</span></button>
       <button role="tab" aria-selected="false" data-vista="produtos" id="tab-produtos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Produtos</button>
+      <button role="tab" aria-selected="false" data-vista="agencias" id="tab-agencias">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></svg>Agências</button>
       <button role="tab" aria-selected="false" data-vista="vagas" id="tab-vagas">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Vagas</button>
       <button role="tab" aria-selected="false" data-vista="pagamentos" id="tab-pagamentos">
@@ -633,6 +635,18 @@ button,input,select{font:inherit;color:inherit}
         <div class="acoes"><button class="btn btn-enviar" type="button" id="pf-salvar">Salvar produto</button><button class="btn btn-editar" type="button" id="pf-cancelar">Cancelar</button></div>
       </div>
       <div class="prod-grade" id="prod-grade"></div>
+    </section>
+
+    <!-- AGÊNCIAS -->
+    <section data-painel="agencias" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="barra-ferr"><input type="search" id="ag-busca" placeholder="Buscar por nome, CNPJ ou telefone" aria-label="Buscar agência"><button class="btn btn-enviar" type="button" id="ag-nova">+ Nova agência</button><button class="btn btn-editar" type="button" id="ag-sync">Sincronizar com o Silbeck</button></div>
+      <p style="margin:0;font-size:13px;color:var(--cor-texto-sec)" id="ag-ultima">O Silbeck é a fonte do cadastro (razão social, CNPJ, código). O CRM guarda os contatos e os dados comerciais. Última sincronização: hoje, 09:00.</p>
+      <div class="cartao bloco" id="ag-form" hidden>
+        <div class="grade-campos"><label class="campo">Nome fantasia<input id="agf-nome" type="text"></label><label class="campo">CNPJ<input id="agf-cnpj" type="text" placeholder="00.000.000/0000-00"></label><label class="campo">WhatsApp do contato<input id="agf-fone" type="tel"></label><label class="campo">Comissão (%)<input id="agf-com" type="number" value="10"></label></div>
+        <p style="margin:0;font-size:13px;color:var(--cor-texto-sec)">A API da Silbeck só lê empresas. O CRM cria um pré-cadastro e uma tarefa para a equipe cadastrar no Silbeck; na próxima sincronização, os dois se ligam pelo CNPJ.</p>
+        <div class="acoes"><button class="btn btn-enviar" type="button" id="agf-salvar">Salvar pré-cadastro</button><button class="btn btn-editar" type="button" id="agf-cancelar">Cancelar</button></div>
+      </div>
+      <div class="prod-grade" id="ag-grade"></div>
     </section>
 
     <!-- VAGAS -->
@@ -833,7 +847,7 @@ button,input,select{font:inherit;color:inherit}
 
 <script>
 (function(){
-  const titulos={produtos:"Catálogo de produtos",conversas:"Conversas",funil:"Funil de reservas",tarefas:"Tarefas",vagas:"Vagas",pagamentos:"Pagamentos",painel:"Painel",regua:"Régua de mensagens",ajustes:"Ajustes do agente"};
+  const titulos={agencias:"Agências e operadoras",produtos:"Catálogo de produtos",conversas:"Conversas",funil:"Funil de reservas",tarefas:"Tarefas",vagas:"Vagas",pagamentos:"Pagamentos",painel:"Painel",regua:"Régua de mensagens",ajustes:"Ajustes do agente"};
   const tabs=[...document.querySelectorAll('.nav button')];
   const paineis=[...document.querySelectorAll('[data-painel]')];
   function abrir(v){
@@ -1553,6 +1567,37 @@ button,input,select{font:inherit;color:inherit}
         c.msgs.push(['sis','Pedido enviado ao parceiro pelo WhatsApp: “'+c.massagem.txt+' para hóspede do Hotel Cabanas. Confirma?” [Confirmo] [Não posso] [Outro horário]']);
         renderChat();toast('Pedido enviado ao parceiro. Quando ele responder, o CRM confirma ao hóspede.');}}));
   }
-  renderBoard();renderRegua();iniciarV4();renderProdutos();
+
+  // v14: agências e operadoras sincronizadas com o Silbeck
+  const AGENCIAS=[
+    {nome:'Portal Ecotrip',cnpj:'12.345.678/0001-90',silbeck:'EMP-0142',status:'ok',contatos:['WhatsApp (67) 99341-4734'],comissao:10,codigo:'AG-ECOTRIP',reservas:14,valor:31200},
+    {nome:'Ecotur Agência',cnpj:'23.456.789/0001-01',silbeck:'EMP-0187',status:'ok',contatos:['WhatsApp (67) 3xxx-1100','reservas@ecotur.exemplo'],comissao:10,codigo:'AG-ECOTUR',reservas:6,valor:12800},
+    {nome:'Bonito Trips Operadora',cnpj:'34.567.890/0001-12',silbeck:'EMP-0203',status:'diverge',diverge:'Razão social diferente no Silbeck (“Bonito Trips Viagens Ltda”). O Silbeck prevalece.',contatos:['WhatsApp (11) 9xxxx-2200'],comissao:12,codigo:'AG-BTRIPS',reservas:3,valor:5400},
+    {nome:'Viaje Pantanal',cnpj:'45.678.901/0001-23',silbeck:null,status:'pendente',contatos:['WhatsApp (65) 9xxxx-8800'],comissao:10,codigo:'AG-VPANT',reservas:0,valor:0},
+  ];
+  function renderAgencias(){
+    const g=$('ag-grade');g.textContent='';const q=($('ag-busca').value||'').toLowerCase();
+    AGENCIAS.filter(a=>!q||(a.nome+' '+a.cnpj+' '+a.contatos.join(' ')).toLowerCase().includes(q)).forEach(a=>{
+      const st=a.status==='ok'?['t-livre','Sincronizado · Silbeck '+a.silbeck]:a.status==='diverge'?['t-mkt','Diferença com o Silbeck']:['t-erro','Pendente de cadastro no Silbeck'];
+      g.append(el('div',{class:'cartao prod'},
+        el('div',{class:'prod-cab'},el('strong',{text:a.nome})),el('span',{class:'tipo '+st[0],text:st[1]}),
+        a.diverge?el('small',{style:'color:var(--cor-alerta)',text:a.diverge}):null,
+        el('dl',{},el('dt',{text:'CNPJ'}),el('dd',{class:'num',text:a.cnpj}),el('dt',{text:'Contatos'}),el('dd',{text:a.contatos.join(' · ')}),el('dt',{text:'Comissão'}),el('dd',{text:a.comissao+'%'}),
+          el('dt',{text:'Link rastreável'}),el('dd',{text:a.codigo}),el('dt',{text:'Reservas'}),el('dd',{class:'num',text:a.reservas+(a.valor?' · R$ '+a.valor.toLocaleString('pt-BR'):'')})),
+        el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'},
+          a.status==='pendente'?el('button',{class:'btn-mini',type:'button',text:'Já cadastrei no Silbeck',onclick:()=>{a.status='ok';a.silbeck='EMP-0'+(210+AGENCIAS.indexOf(a));renderAgencias();toast('Ligado ao Silbeck pelo CNPJ. Reservas desta agência já saem com a empresa certa.');}}):null,
+          a.status==='diverge'?el('button',{class:'btn-mini',type:'button',text:'Usar dados do Silbeck',onclick:()=>{a.status='ok';a.diverge=null;renderAgencias();toast('Cadastro do CRM atualizado com os dados do Silbeck.');}}):null,
+          el('button',{class:'btn-mini',type:'button',text:'Copiar link',onclick:()=>toast('Link wa.me com o código '+a.codigo+' copiado.')}))));
+    });
+  }
+  $('ag-busca').addEventListener('input',renderAgencias);
+  $('ag-nova').addEventListener('click',()=>{$('ag-form').hidden=false;$('agf-nome').focus();});
+  $('agf-cancelar').addEventListener('click',()=>$('ag-form').hidden=true);
+  $('agf-salvar').addEventListener('click',()=>{const n=$('agf-nome').value.trim();if(!n){$('agf-nome').focus();return;}
+    AGENCIAS.unshift({nome:n,cnpj:$('agf-cnpj').value||'—',silbeck:null,status:'pendente',contatos:[$('agf-fone').value?'WhatsApp '+$('agf-fone').value:'—'],comissao:+$('agf-com').value||0,codigo:'AG-'+n.replace(/[^A-Za-z]/g,'').slice(0,6).toUpperCase(),reservas:0,valor:0});
+    const l=leadPor(4);if(l){l.tarefas.push({t:'Outro',d:'Cadastrar a agência '+n+' no Silbeck',q:dia(0,'17:00'),r:'jagles',f:false});renderBoard();}
+    $('ag-form').hidden=true;renderAgencias();toast('Pré-cadastro salvo e tarefa criada: cadastrar no Silbeck.');});
+  $('ag-sync').addEventListener('click',()=>{$('ag-ultima').textContent='O Silbeck é a fonte do cadastro (razão social, CNPJ, código). O CRM guarda os contatos e os dados comerciais. Última sincronização: agora.';toast('Sincronizado: 4 empresas lidas do Silbeck (GET Empresa); 1 diferença e 1 pendente.');});
+  renderBoard();renderRegua();iniciarV4();renderProdutos();renderAgencias();
 })();
 </script>
