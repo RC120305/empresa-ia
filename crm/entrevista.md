@@ -192,3 +192,9 @@
   - **Envio pelo agente:** quando o cliente pergunta de uma acomodação ou atividade, o agente envia 2 ou 3 fotos certas (ex.: pergunta da Cabana Master → fotos da Master). Também alimenta a 2ª tentativa do follow-up (foto por perfil).
   - Marcar as mídias **favoritas** por tema, para o agente usar primeiro; e poder desativar uma mídia sem apagar.
   - Limites do WhatsApp: vídeo até **16 MB** e imagem até **5 MB** por envio; o CRM guarda uma versão leve de cada vídeo para envio.
+
+### P24. Banco de dados e hospedagem (29/09/2026)
+- **Recomendação da equipe:** banco **PostgreSQL no Supabase** (região São Paulo) + aplicativo na **Vercel** (região São Paulo) + **ponte com o Silbeck** por um conector no hotel que só faz conexões de saída (ex.: Cloudflare Tunnel, sem abrir portas). App web instalável no celular (sem loja). Endereço sugerido: `crm.hotelcabanas.com.br`.
+- Custo estimado da infraestrutura: Supabase Pro ~US$ 25 + Vercel Pro ~US$ 20 ≈ R$ 250/mês (confirmar preços atuais); sobra ~R$ 550 do teto de R$ 800 para Meta e IA.
+- O banco do CRM **não substitui o Silbeck**: guarda o vínculo com a reserva e os números do painel.
+- **O dono já tem conta no Supabase.** Recomendação: criar um **projeto novo e exclusivo** para o CRM, na **região São Paulo** (a região não muda depois de criado). Chaves e senhas **nunca no chat**: vão direto nas configurações seguras.
