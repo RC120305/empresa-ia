@@ -65,3 +65,8 @@
 - **Hoje não se registra** a origem, e o dono **quer passar a ter**.
 - O **Silbeck tem um campo de origem** na reserva (nome exato do campo e se aparece na API: a confirmar na documentação).
 - Direção: o CRM descobre a origem na conversa (automaticamente quando possível) e **grava no campo de origem do Silbeck** ao criar a reserva; o faturamento por origem sai do Silbeck.
+
+### P9. Lista de canais de entrada e origens reais (29/09/2026)
+**Aprovada pelo dono como está.**
+- **Canal de entrada:** WhatsApp 99110 · WhatsApp 99117 · telefone · motor de reservas (site) · Booking · Airbnb · Expedia · Decolar · agência/operadora · direct do Instagram · e-mail.
+- **Origem real → como é descoberta:** Anúncio Meta (qual campanha; automático pelo dado de referência do anúncio de clique para WhatsApp) · Instagram orgânico (mensagem pronta do link e robô de comentários) · Google busca/Maps/Hotel (links com UTM; senão o agente pergunta) · Site (botão de WhatsApp com rastreamento) · Hóspede que volta (automático: telefone já no histórico do Silbeck) · Indicação, de quem (o agente pergunta) · Agência X / operadora X (número cadastrado) · OTA (canal da reserva no Silbeck).
