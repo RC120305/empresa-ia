@@ -157,3 +157,7 @@
 - Base técnica: a chave da Meta do hotel já tem `instagram_manage_messages` (direct listado em 28/09); falta assinar os webhooks de mensagens da Página/Instagram. O Messenger usa a mesma Página (158244147578036).
 - Regra das duas plataformas: resposta livre dentro de 24 horas da última mensagem do cliente; fora disso, só nos casos permitidos pela Meta (o agente não "persegue" o cliente pelo direct).
 - Identidade única: a mesma pessoa pode falar pelo direct e depois pelo WhatsApp; o CRM tenta juntar os contatos (pelo telefone informado na conversa) para não duplicar o lead e não perder a origem.
+
+### P20. Custo mensal (29/09/2026)
+- A **Asksuite custa cerca de R$ 800/mês** hoje. É o parâmetro de comparação: o custo mensal do CRM (servidor + banco + mensagens pagas da Meta + uso da IA) deve ficar **nessa faixa ou abaixo**, e o painel mostra o custo real do mês.
+- Pedido do dono: um **exemplo visual do layout** para visualizar (protótipo estático com a identidade de `crm/identidade-ui.md`).
