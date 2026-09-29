@@ -318,3 +318,4 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
   3. **Usos e conflitos:** contador de quantas vezes cada resposta foi usada e **alerta de contradição** entre fontes (ex.: dois horários de café diferentes).
 - Protótipo **v7** com as três melhorias na aba Biblioteca de respostas.
 - **Protótipo v8** (29/09/2026): a pedido do dono, o **cabeçalho da conversa** (nome, canal, etiquetas, agente liga/desliga, status, responsável, ficha) saiu da área de rolagem e ficou **fixo no topo**, como na Asksuite. A tela de Conversas ocupa a altura da janela: **só as mensagens rolam** (e a lista de conversas rola à parte); a caixa de resposta fica fixa embaixo; a conversa abre já no fim.
+- **Protótipo v9** (29/09/2026): **barra de rolagem sempre visível** dentro do chat (e na lista de conversas e no painel lateral), mais larga e na cor da marca, e botão **"↓" para ir à última mensagem** quando o atendente sobe na conversa.

@@ -477,6 +477,16 @@ button,input,select{font:inherit;color:inherit}
 .cx-lateral{grid-row:2;min-height:0;max-height:100%;overflow-y:auto}
 .cx-trilho{grid-row:2;align-self:start}
 @media (max-width:900px){.cx{height:auto;grid-template-rows:none}.cx-col,.cx-cab,.cx-chat,.cx-lateral,.cx-trilho{grid-row:auto;grid-column:auto}.cx-chat{height:auto;min-height:480px}.cx-chat .mensagens{max-height:420px}.cx-lista{max-height:320px}}
+
+/* v9: barra de rolagem visível e botão "ir para o fim" */
+.cx-chat{position:relative}
+.cx-chat .mensagens,.cx-lista,.cx-lateral{overflow-y:scroll;scrollbar-width:auto;scrollbar-color:var(--cor-borda-forte) var(--cor-primaria-suave)}
+.cx-chat .mensagens::-webkit-scrollbar,.cx-lista::-webkit-scrollbar,.cx-lateral::-webkit-scrollbar{width:12px}
+.cx-chat .mensagens::-webkit-scrollbar-track,.cx-lista::-webkit-scrollbar-track,.cx-lateral::-webkit-scrollbar-track{background:var(--cor-primaria-suave);border-radius:999px}
+.cx-chat .mensagens::-webkit-scrollbar-thumb,.cx-lista::-webkit-scrollbar-thumb,.cx-lateral::-webkit-scrollbar-thumb{background:var(--cor-borda-forte);border-radius:999px;border:3px solid var(--cor-primaria-suave)}
+.cx-chat .mensagens::-webkit-scrollbar-thumb:hover{background:var(--cor-primaria)}
+.ir-fim{position:absolute;right:28px;bottom:96px;width:40px;height:40px;border-radius:50%;border:1px solid var(--cor-borda);background:var(--cor-superficie);box-shadow:var(--sombra-2);display:grid;place-items:center;cursor:pointer;color:var(--cor-texto);z-index:2}
+.ir-fim:hover{background:var(--cor-primaria-suave)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -1158,7 +1168,11 @@ button,input,select{font:inherit;color:inherit}
       ms.append(el('div',{class:'balao out'+(ia?' ia':'')},el('div',{class:'autor',text:ia?'Agente Cabanas':(m[3]||'Equipe')}),m[1],el('div',{class:'hora num',text:m[2]+' ✓✓'}),
         fonte,ia&&m[3]?el('button',{class:'ver-fonte',type:'button',text:'Ver fonte da resposta',onclick:ev=>{fonte.hidden=!fonte.hidden;ev.currentTarget.textContent=fonte.hidden?'Ver fonte da resposta':'Ocultar fonte';}}):null));
     });
-    box.append(ms);requestAnimationFrame(()=>{ms.scrollTop=ms.scrollHeight;});
+    box.append(ms);
+    const irFim=el('button',{class:'ir-fim',type:'button','aria-label':'Ir para a última mensagem',title:'Ir para a última mensagem',hidden:true,onclick:()=>ms.scrollTo({top:ms.scrollHeight,behavior:'smooth'})},el('span',{text:'↓'}));
+    box.append(irFim);
+    ms.addEventListener('scroll',()=>{irFim.hidden=ms.scrollHeight-ms.scrollTop-ms.clientHeight<60;});
+    requestAnimationFrame(()=>{ms.scrollTop=ms.scrollHeight;});
     // rodapé
     if(c.status!=='aberto'){box.append(el('div',{class:'cx-rodape'},el('span',{text:'Conversa '+c.status+'.'}),el('button',{class:'btn btn-editar',type:'button',text:'Reabrir',onclick:()=>{c.status='aberto';convStatus='aberto';syncStatusTabs();renderInbox();}})));}
     else if(c.agente){box.append(el('div',{class:'cx-rodape'},el('span',{text:'O Agente Cabanas está atendendo esta conversa.'}),el('button',{class:'btn btn-destaque',type:'button',text:'Assumir atendimento',onclick:()=>{c.agente=false;c.resp='voce';c.fila=null;c.msgs.push(['sis','Você assumiu o atendimento']);renderInbox();}})));}
