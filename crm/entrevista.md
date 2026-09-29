@@ -360,3 +360,16 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
   - **Na reserva via API** (`POST /v1/reserva`), o CRM envia o **ID da empresa do Silbeck** (confirmar na documentação o nome do campo) e a comissão sai certa.
   - **Mensagem de agência:** os telefones cadastrados identificam a conversa como da agência sozinhos (etiqueta, funil, e o Gilberto passa para a equipe, regra já aprovada).
 - **Protótipo v15:** nova aba **Agências** (status sincronizado / diferença / pendente, CNPJ, contatos, comissão, link rastreável, reservas; "+ Nova agência", "Sincronizar com o Silbeck").
+
+### P43. Montagem de orçamento (proposta em avaliação, 29/09/2026)
+- **Pergunta do dono:** como montar o orçamento pela equipe e pelo Gilberto.
+- **Proposta (aguardando aprovação):** um único "motor de orçamento" usado pelos dois:
+  1. **Dados de entrada:** datas, adultos, crianças com idades, preferências (casal, acomodação desejada) — vindos da conversa/ficha.
+  2. **Busca no Silbeck:** `GET Disponibilidade` + `POST Tarifario/Valor` para cada tipo que **comporta o grupo** (capacidade por código: CBD, CBT, CBM, BG, BGE, STD, CST, SUP, CJ, QST, QES).
+  3. **Até 3 opções**, da mais indicada ao perfil; sem vaga no fim de semana → sugere datas de domingo a quinta.
+  4. **Cada opção:** acomodação + foto, noites, valor total e por noite, o que está incluso, opcional sugerido (combo), condições (50% de sinal, cartão até 6x ou Pix, cancelamento) e **validade**.
+  5. **Envio:** mensagem formatada no WhatsApp + fotos; opcional: **página do orçamento** com fotos e botão "Quero reservar".
+  6. **Aceite:** o cliente escolhe → pré-reserva no Silbeck (`POST reserva`) → cobrança (Pix BB ou link Cielo) → etapa "Aguardando pagamento".
+  - **Equipe:** botão "Montar orçamento" na conversa (dados já preenchidos, opções marcáveis, prévia e envio). **Gilberto:** mesmo motor, automático, sempre com preço do Silbeck e sem desconto.
+  - Cada orçamento fica salvo no card (versões), para saber qual opção foi escolhida e medir perdas por preço.
+- **Perguntas ao dono:** validade do orçamento; política de crianças (até que idade não paga); página do orçamento ou só mensagem; tarifa de agência (comissionada ou líquida).
