@@ -333,3 +333,11 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 - Desenho completo em `crm/upsell-catalogo.md` (campos do produto, catálogo inicial, reserva pelo sistema interno, pagamento, regras do agente, métricas e pendências).
 - **Protótipo v11:** nova aba **Produtos** (catálogo com preço, tipo de reserva, regras, momento de oferta, prioridade ▲, ativo/inativo, "+ Novo produto", "Importar do Silbeck"); no painel **Reservas e pagamentos** da conversa, **Produtos sugeridos** pelo perfil do cliente com **Oferecer** (cartão com preço e regras), **Reservar horário** (data, pessoas e horários com vagas vindos do sistema interno; lotado riscado; combo pede os dois horários) e, para a massagem, **Criar tarefa de agendamento**.
 - **Pendências:** o agente pode **confirmar a reserva do horário sozinho** ou só propõe? · documentação da **API do sistema interno** · horários/capacidade por saída e se a flutuação está no sistema · preços da decoração e da massagem · lançar o consumo no Silbeck pela API (até agora só leitura: tarefa de 1 clique).
+
+### P39. Cabana Master, atividades e massagem (29/09/2026)
+- **Cabana Master** entra na lista de acomodações: **1 unidade** (código proposto **CBM**). Total do inventário: **21 acomodações**.
+- A **API do sistema interno** das atividades é com o **Márcio**; o sistema **já controla horários e limite de pessoas por horário**.
+- **Flutuação: o hotel não oferece mais.** Atualizado em `contexto/hotel-operacional.md` e no catálogo (inativa). ⚠️ Materiais de marketing antigos que citam flutuação precisam de revisão antes de publicar.
+- **O agente pode confirmar sozinho:** **decoração, boia cross e arvorismo**.
+- **Massagem (terceiro):** o CRM **envia uma mensagem no WhatsApp do parceiro** pedindo o horário, com botões [Confirmo] [Não posso] [Outro horário]; quando o parceiro responde, **o agente/sistema confirma ao hóspede** sozinho. Sem resposta → alerta para a equipe. Desenho em `crm/upsell-catalogo.md` (2b).
+- **Protótipo v12:** Cabana Master no painel de vagas; flutuação inativa; na conversa, massagem com "Pedir horário ao parceiro" e simulação da resposta.

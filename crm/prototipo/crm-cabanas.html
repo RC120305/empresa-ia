@@ -1308,7 +1308,7 @@ button,input,select{font:inherit;color:inherit}
   // ================= Vagas (mapa dos próximos 60 dias) =================
 
   // v10: vagas por tipo de acomodação (painel lateral da conversa)
-  const TIPOS_AC=[['CBD','Cabana duplo',3],['CBT','Cabana tripla',1],['BG','Bangalô',2],['BGE','Bangalô especial',1],['STD','Apto standard duplo/triplo',6],['CST','Duplo casa standard',1],['SUP','Duplo/triplo superior',2],['CJ','Conjugado',1],['QST','Quádruplo standard',2],['QES','Quádruplo especial',1]];
+  const TIPOS_AC=[['CBD','Cabana duplo',3],['CBT','Cabana tripla',1],['BG','Bangalô',2],['BGE','Bangalô especial',1],['STD','Apto standard duplo/triplo',6],['CST','Duplo casa standard',1],['SUP','Duplo/triplo superior',2],['CJ','Conjugado',1],['QST','Quádruplo standard',2],['QES','Quádruplo especial',1],['CBM','Cabana Master',1]];
   const TOT_AC=TIPOS_AC.reduce((a,t)=>a+t[2],0);
   function livres(cod,total,iso){const d=new Date(iso+'T12:00:00');const dw=d.getDay();const n=[...cod].reduce((a,ch)=>a+ch.charCodeAt(0),0)+d.getDate();
     const fer={'2026-10-10':1,'2026-10-11':1,'2026-10-12':1,'2026-11-01':1,'2026-11-02':1,'2026-11-20':1,'2026-11-21':1};
@@ -1472,12 +1472,12 @@ button,input,select{font:inherit;color:inherit}
     {cod:'COMBO',nome:'Combo boia cross + arvorismo',preco:170,tipo:'ativ',regras:'A partir de 5 anos e 1,15 m; sem gestantes; sem álcool',quando:'Cotação e estadia',ant:0,prio:1,ativo:true,perfis:'Família, grupo, casal',idade:5},
     {cod:'BOIA',nome:'Boia cross',preco:100,tipo:'ativ',regras:'A partir de 5 anos e 1,15 m; sem gestantes; sem álcool',quando:'Cotação e estadia',ant:0,prio:2,ativo:true,perfis:'Família, grupo',idade:5},
     {cod:'ARVO',nome:'Arvorismo',preco:120,tipo:'ativ',regras:'A partir de 5 anos e 1,15 m; 18 obstáculos + tirolesa aquática',quando:'Cotação e estadia',ant:0,prio:3,ativo:true,perfis:'Família, grupo, casal',idade:5},
-    {cod:'FLUT',nome:'Flutuação',preco:100,tipo:'ativ',regras:'A partir de 7 anos; sem gestantes',quando:'Durante a estadia',ant:0,prio:4,ativo:true,perfis:'Todos',idade:7},
-    {cod:'MASS',nome:'Massagem (avulsa ou pacote)',preco:null,tipo:'terc',regras:'Terceirizada; agendar com o parceiro',quando:'3 dias antes da chegada',ant:1,prio:5,ativo:true,perfis:'Casal, 55+',idade:0},
+    {cod:'FLUT',nome:'Flutuação',preco:null,tipo:'simples',regras:'Não oferecemos mais (dono, 29/09/2026)',quando:'—',ant:0,prio:8,ativo:false,perfis:'—',idade:7},
+    {cod:'MASS',nome:'Massagem (avulsa ou pacote)',preco:null,tipo:'terc',regras:'Terceirizada: o CRM pede o horário ao parceiro pelo WhatsApp e confirma ao hóspede quando ele responder',quando:'3 dias antes da chegada',ant:1,prio:5,ativo:true,perfis:'Casal, 55+',idade:0},
     {cod:'DECO',nome:'Decoração especial',preco:null,tipo:'simples',regras:'Encomendar os itens',quando:'Na cotação',ant:3,prio:6,ativo:true,perfis:'Casal',idade:0},
     {cod:'PIQ',nome:'Piquenique Sunset',preco:null,tipo:'simples',regras:'Retirado da oferta',quando:'—',ant:0,prio:9,ativo:false,perfis:'Casal',idade:0},
   ];
-  const TIPO_RES={ativ:'Atividade com horário · sistema interno',terc:'Terceiro · tarefa de agendamento',simples:'Simples, sem horário'};
+  const TIPO_RES={ativ:'Atividade com horário · sistema interno · o agente confirma sozinho',terc:'Terceiro · pedido ao parceiro pelo WhatsApp',simples:'Simples, sem horário · o agente confirma sozinho'};
   const brlP=v=>v==null?'a confirmar':'R$ '+v.toLocaleString('pt-BR');
   function renderProdutos(){
     const g=$('prod-grade');g.textContent='';
@@ -1500,7 +1500,7 @@ button,input,select{font:inherit;color:inherit}
     $('prod-form').hidden=true;renderProdutos();toast('Produto salvo. O agente já pode oferecer.');});
   $('prod-importar').addEventListener('click',()=>toast('Importação do Silbeck (GET Produto): nomes e preços atualizados; complete regras e fotos dos novos.'));
   // horários do sistema interno (exemplo)
-  const HORARIOS={BOIA:[['09:00',12],['10:30',0],['14:00',5],['15:30',9]],ARVO:[['09:30',6],['11:00',2],['14:30',0],['16:00',8]],FLUT:[['08:30',4],['10:00',6],['15:00',3]]};
+  const HORARIOS={BOIA:[['09:00',12],['10:30',0],['14:00',5],['15:30',9]],ARVO:[['09:30',6],['11:00',2],['14:30',0],['16:00',8]]};
   let resAberta=null;
   function renderProdutosConversa(c,lat){
     lat.append(el('div',{class:'lat-sec'},el('span',{class:'rotulo',style:'color:var(--cor-secundaria-texto)',text:'Produtos sugeridos'}),el('button',{class:'btn-mini',type:'button',text:'Catálogo',onclick:()=>abrir('produtos')})));
@@ -1511,7 +1511,8 @@ button,input,select{font:inherit;color:inherit}
         el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'},
           el('button',{class:'btn-mini',type:'button',text:'Oferecer',onclick:()=>{c.msgs.push(['eq','[Cartão do produto] '+p.nome+' · '+brlP(p.preco)+(p.preco!=null?' por pessoa':'')+' · '+p.regras,'agora',USUARIOS[c.resp==='agente'?'voce':c.resp]||'Você']);renderChat();toast('Oferta enviada com foto e preço.');}}),
           p.tipo==='ativ'?el('button',{class:'btn-mini',type:'button',text:resAberta===p.cod?'Fechar':'Reservar horário',onclick:()=>{resAberta=resAberta===p.cod?null:p.cod;renderLateral(c);}}):
-          p.tipo==='terc'?el('button',{class:'btn-mini',type:'button',text:'Criar tarefa de agendamento',onclick:()=>{const [lista]=tarefasDe(c);lista.push({t:'Agendar massagem',d:'Agendar '+p.nome+' com o parceiro',q:dia(1,'10:00'),r:'jagles',f:false});renderBoard();renderLateral(c);toast('Tarefa criada para agendar com o parceiro.');}}):null));
+          p.tipo==='terc'?el('button',{class:'btn-mini',type:'button',text:resAberta===p.cod?'Fechar':'Pedir horário ao parceiro',onclick:()=>{resAberta=resAberta===p.cod?null:p.cod;renderLateral(c);}}):null));
+      if(resAberta===p.cod&&p.tipo==='terc')box.append(widgetParceiro(c,p));
       if(resAberta===p.cod&&p.tipo==='ativ')box.append(widgetReserva(c,p));
       lat.append(box);
     });
@@ -1529,6 +1530,28 @@ button,input,select{font:inherit;color:inherit}
         const txt=p.nome+' · '+fmtData(data.value)+' · '+cods.map(cd=>escolha[cd]).join(' e ')+' · '+qtd.value+' pessoa(s)';
         c.reservas.push([txt,'Reservado no sistema interno · pagamento pendente','t-mkt']);c.msgs.push(['sis','Atividade reservada pelo CRM: '+txt]);resAberta=null;renderChat();
         toast('Reservado no sistema interno (API). Cobre pelo botão “Cobrar” ou lance na conta do hóspede.');}}));
+  }
+
+  // v12: massagem com parceiro pelo WhatsApp
+  const PARCEIRO={nome:'Massoterapeuta parceira',fone:'(67) 9xxxx-0000'};
+  function widgetParceiro(c,p){
+    c.massagem=c.massagem||null;
+    if(c.massagem){const m=c.massagem;
+      const st=el('div',{class:'lat-card'},el('b',{text:'Pedido ao parceiro: '+m.txt}),el('span',{class:'tipo '+(m.status==='confirmado'?'t-livre':m.status==='recusado'?'t-erro':'t-mkt'),text:m.status==='confirmado'?'Parceiro confirmou · hóspede avisado':m.status==='recusado'?'Parceiro não pode · sugerir outro horário':'Aguardando resposta do parceiro'}));
+      if(m.status==='aguardando')st.append(el('small',{text:'Exemplo: simular a resposta do parceiro'}),el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'},
+        el('button',{class:'btn-mini',type:'button',text:'✓ Confirmo',onclick:()=>{m.status='confirmado';c.reservas.push([m.txt,'Massagem confirmada pelo parceiro','t-livre']);c.msgs.push(['sis','Parceiro respondeu “Confirmo” · CRM confirmou ao hóspede automaticamente']);c.msgs.push(['ia','Tudo certo! Sua massagem está confirmada: '+m.txt+'. 🌿','agora','Resposta do parceiro recebida pelo CRM (botão “Confirmo”)']);renderChat();toast('Parceiro confirmou. O hóspede recebeu a confirmação.');}}),
+        el('button',{class:'btn-mini',type:'button',text:'✕ Não posso',onclick:()=>{m.status='recusado';c.msgs.push(['sis','Parceiro respondeu “Não posso” · o agente vai oferecer outro horário ao hóspede']);renderChat();}}),
+        el('button',{class:'btn-mini',type:'button',text:'Outro horário',onclick:()=>{m.status='recusado';c.msgs.push(['sis','Parceiro sugeriu 16:00 · o agente pergunta ao hóspede se serve']);renderChat();}})));
+      return el('div',{class:'res-hor'},st,m.status!=='aguardando'?el('button',{class:'btn-mini',type:'button',text:'Novo pedido',onclick:()=>{c.massagem=null;renderLateral(c);}}):null);
+    }
+    const data=el('input',{type:'date',value:c.datas?c.datas[0]:isoMais(hoje.toISOString().slice(0,10),1),'aria-label':'Data'});
+    const hora=el('input',{type:'time',value:'15:00','aria-label':'Horário'});
+    const tipo=el('select',{'aria-label':'Tipo'},['Relaxante 50 min','Relaxante à beira do rio','Pacote casal (2 pessoas)'].map(t=>el('option',{value:t,text:t})));
+    return el('div',{class:'res-hor'},el('small',{text:'Parceiro: '+PARCEIRO.nome+' · '+PARCEIRO.fone}),el('div',{style:'display:flex;gap:8px;flex-wrap:wrap'},el('label',{class:'campo'},'Data',data),el('label',{class:'campo'},'Horário',hora)),el('label',{class:'campo'},'Tipo',tipo),
+      el('button',{class:'btn btn-enviar',type:'button',text:'Enviar pedido ao parceiro',onclick:()=>{
+        c.massagem={txt:tipo.value+' · '+fmtData(data.value)+' às '+hora.value,status:'aguardando'};
+        c.msgs.push(['sis','Pedido enviado ao parceiro pelo WhatsApp: “'+c.massagem.txt+' para hóspede do Hotel Cabanas. Confirma?” [Confirmo] [Não posso] [Outro horário]']);
+        renderChat();toast('Pedido enviado ao parceiro. Quando ele responder, o CRM confirma ao hóspede.');}}));
   }
   renderBoard();renderRegua();iniciarV4();renderProdutos();
 })();

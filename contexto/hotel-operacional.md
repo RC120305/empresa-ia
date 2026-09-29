@@ -43,7 +43,7 @@
 |---|---|---|---|---|
 | **Boia cross** | Descida em boias individuais por corredeiras e cachoeiras do Rio Formoso, 1.200 m, com guias treinados | 1 h | Gestantes, quem ingeriu álcool, **menores de 5 anos** e altura abaixo de 1,15 m | **R$ 100/pessoa** (dono, 29/09/2026) |
 | **Arvorismo** | **18 obstáculos + 2 tirolesas**, sendo a última uma **tirolesa aquática no Rio Formoso**, com guias treinados | 1 h 15 | Gestantes, quem ingeriu álcool, **menores de 5 anos** e altura abaixo de 1,15 m | **R$ 120/pessoa** (dono, 29/09/2026) |
-| **Flutuação** | **500 m no Rio Formoso**, com guia do hotel; peixes como **dourado, piraputanga e curimbatá** | 1 h | Gestantes, quem ingeriu álcool, **menores de 7 anos** | R$ 100/pessoa |
+| ~~Flutuação~~ | **Não é mais oferecida pelo hotel** (dono, 29/09/2026). Não divulgar nem vender. | — | — | — |
 
 **Combo boia cross + arvorismo: R$ 170/pessoa** (dono, 29/09/2026). Boia cross e arvorismo são a **prioridade de venda** (upsell).
 

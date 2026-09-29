@@ -25,8 +25,8 @@ Um lugar único para tudo o que o hotel vende além da diária. Cada produto tem
 | COMBO | Combo boia cross + arvorismo | R$ 170/pessoa | Atividade com horário (2 horários) | 1 |
 | BOIA | Boia cross | R$ 100/pessoa | Atividade com horário | 2 |
 | ARVO | Arvorismo | R$ 120/pessoa | Atividade com horário | 3 |
-| FLUT | Flutuação | R$ 100/pessoa | Atividade com horário | 4 |
-| MASS | Massagem (avulsa ou pacote) | varia | Terceiro: tarefa de agendamento | 5 |
+| FLUT | Flutuação | — | **Não é mais oferecida** (dono, 29/09) | — |
+| MASS | Massagem (avulsa ou pacote) | varia | Terceiro: pedido ao parceiro pelo WhatsApp | 5 |
 | DECO | Decoração especial | [a confirmar] | Simples, ≥ 3 dias de antecedência | 6 |
 | PIQ | Piquenique Sunset | — | **Inativo** | — |
 
@@ -43,6 +43,11 @@ O hotel tem um **sistema interno de reservas da boia cross e do arvorismo que ac
 - **Agente:** oferece e, se o cliente aceitar, **consulta os horários reais** e propõe ("amanhã às 14h ou 15h30?"). A confirmação da reserva segue a regra definida pelo dono (ver pendência 1).
 
 **Combo:** reserva **dois horários** (boia cross e arvorismo) em sequência compatível, no mesmo dia ou em dias diferentes.
+
+## 2b. Massagem: pedido ao parceiro pelo WhatsApp (decisão do dono, 29/09)
+1. O hóspede escolhe tipo, data e horário (com o agente ou com a equipe).
+2. O CRM envia ao **parceiro** (cadastro de parceiros: nome e WhatsApp) uma mensagem pelo número oficial do hotel: "Massagem relaxante 16/11 às 15h para hóspede do Hotel Cabanas. Confirma?" com botões **[Confirmo] [Não posso] [Outro horário]** (modelo de utilidade aprovado pela Meta).
+3. **Confirmo** → o CRM confirma ao hóspede sozinho, registra na reserva e cria a cobrança/lançamento. **Não posso / Outro horário** → o agente oferece outra opção ao hóspede. **Sem resposta em 2 h** (horário comercial) → alerta para a equipe.
 
 ## 3. Pagamento e lançamento no Silbeck
 - Pagamento pelo mesmo caminho da hospedagem: **Pix BB** ou **link Cielo**, com confirmação automática.
@@ -61,7 +66,7 @@ O hotel tem um **sistema interno de reservas da boia cross e do arvorismo que ac
 Receita de upsell por produto · taxa de aceite por momento (cotação, pré-chegada, estadia) · vendido pelo agente × equipe · upsell por reserva (média) · ocupação dos horários das atividades.
 
 ## 6. Pendências
-1. **O agente pode confirmar a reserva do horário sozinho** (com pagamento na hora ou na conta), ou só propõe e a equipe confirma?
-2. **Documentação da API do sistema interno** das atividades (endpoints, autenticação, quem mantém).
-3. Horários e capacidade por saída de cada atividade, e se a flutuação também está no sistema interno.
+1. ~~O agente pode confirmar sozinho?~~ **Sim** para decoração, boia cross e arvorismo (dono, 29/09). Massagem depende do parceiro (fluxo 2b).
+2. **Documentação da API do sistema interno** das atividades: com o **Márcio**. O sistema **já controla horários e limite por horário**.
+3. ~~Horários e capacidade~~: controlados pelo sistema interno. Flutuação: não existe mais.
 4. Preço da decoração especial e dos pacotes de massagem.
