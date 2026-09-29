@@ -487,6 +487,27 @@ button,input,select{font:inherit;color:inherit}
 .cx-chat .mensagens::-webkit-scrollbar-thumb:hover{background:var(--cor-primaria)}
 .ir-fim{position:absolute;right:28px;bottom:96px;width:40px;height:40px;border-radius:50%;border:1px solid var(--cor-borda);background:var(--cor-superficie);box-shadow:var(--sombra-2);display:grid;place-items:center;cursor:pointer;color:var(--cor-texto);z-index:2}
 .ir-fim:hover{background:var(--cor-primaria-suave)}
+
+/* v10: painel de vagas por tipo */
+.cx.com-painel.painel-largo{grid-template-columns:270px minmax(320px,1fr) 530px 48px}
+@media (max-width:1250px){.cx.com-painel.painel-largo{grid-template-columns:230px minmax(280px,1fr) 470px 48px}}
+.cx-lateral .rolagem{overflow-y:visible}
+.vag-ctrl{display:flex;flex-direction:column;gap:8px}
+.vag-ctrl input{border:1px solid var(--cor-borda-forte);border-radius:8px;padding:6px 8px;background:var(--cor-superficie);color:var(--cor-texto);font:inherit;font-size:14px}
+.vag-tab{border-collapse:collapse;font-size:12.5px;width:100%}
+.vag-tab th,.vag-tab td{padding:5px 4px;border-bottom:1px solid var(--cor-borda);text-align:left;white-space:nowrap}
+.vag-tab th.num,.vag-tab td.num{text-align:center}
+.vag-tab th span{display:block;font-weight:400;color:var(--cor-texto-sec);font-size:11px}
+.vag-tab th b{font-size:11.5px}
+.vag-tab th.fds{background:var(--cor-primaria-suave)}
+.vag-tab .est{background:var(--cor-secundaria-suave)}
+.vag-tab td:nth-child(2){white-space:normal;min-width:110px}
+.vag-tab td small{color:var(--cor-texto-sec)}
+.vag-tab .cod{font-weight:700;font-size:11px;letter-spacing:.04em;background:var(--cor-primaria-suave);color:var(--cor-primaria-texto);border-radius:4px;padding:2px 5px}
+.vag-tab td.vg{font-weight:700;font-variant-numeric:tabular-nums}
+.vag-tab td.vg.zero{color:var(--cor-erro);background:var(--cor-erro-suave)}
+.vag-tab td.vg.cheio{color:var(--cor-sucesso)}
+.vag-tab tr.tot td{font-weight:700;border-bottom:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -549,6 +570,7 @@ button,input,select{font:inherit;color:inherit}
         <nav class="cx-trilho" id="cx-trilho" aria-label="Painéis da conversa">
           <button type="button" data-p="res" aria-pressed="false" title="Reservas e pagamentos" aria-label="Reservas e pagamentos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg></button>
           <button type="button" data-p="his" aria-pressed="false" title="Histórico do cliente e origem" aria-label="Histórico do cliente e origem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></button>
+          <button type="button" data-p="vag" aria-pressed="false" title="Vagas por tipo de acomodação" aria-label="Vagas por tipo de acomodação"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V10l9-6 9 6v11"/><path d="M9 21v-6h6v6"/></svg></button>
           <button type="button" data-p="tar" aria-pressed="false" title="Tarefas" aria-label="Tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="bdg num" id="bdg-tar" hidden>0</span></button>
         </nav>
       </div>
@@ -1200,7 +1222,8 @@ button,input,select{font:inherit;color:inherit}
     const [tfs]=tarefasDe(c);const ab=tfs.filter(t=>!t.f).length;$('bdg-tar').hidden=!ab;$('bdg-tar').textContent=ab;
     document.querySelectorAll('#cx-trilho [data-p]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===painelLat)));
     $('cx').classList.toggle('com-painel',!!painelLat);lat.hidden=!painelLat;if(!painelLat)return;
-    const titulo={res:'Reservas e pagamentos',his:'Histórico do cliente',tar:'Tarefas'}[painelLat];
+    const titulo={res:'Reservas e pagamentos',his:'Histórico do cliente',tar:'Tarefas',vag:'Vagas por acomodação'}[painelLat];
+    $('cx').classList.toggle('painel-largo',painelLat==='vag');
     lat.append(el('div',{class:'lat-cab'},el('h3',{text:titulo}),el('button',{class:'fechar',type:'button','aria-label':'Recolher painel',onclick:()=>{painelLat='';try{localStorage.setItem('crm-painel','')}catch(e){}renderChat();}},el('span',{text:'✕'}))));
     if(painelLat==='res'){
       lat.append(el('div',{class:'lat-sec'},el('span',{class:'rotulo',text:'Reservas nesta conversa'}),el('button',{class:'btn-mini',type:'button',text:'+ Registrar',onclick:()=>{c.reservas.push(['Nova reserva (exemplo)','Pré-reserva · aguardando pagamento','t-mkt']);c.etapa='pag';renderInbox();toast('Reserva criada no Silbeck pela API (POST reserva). Card em “Aguardando pagamento”.');}})));
@@ -1222,6 +1245,7 @@ button,input,select{font:inherit;color:inherit}
       lat.append(el('span',{class:'rotulo',text:'Atendimentos anteriores'}),el('div',{class:'lat-card'},el('b',{text:CANAL[c.canal]+' · 12/05/2026'}),el('span',{text:'Atendido por Jagles · resolvido'})));
       if(c.lead)lat.append(el('button',{class:'btn btn-editar',type:'button',text:'Abrir ficha completa',onclick:()=>abrirFicha(c.lead)}));
     }
+    if(painelLat==='vag'){renderPainelVagas(c,lat);}
     if(painelLat==='tar'){
       const [lista,l]=tarefasDe(c);
       if(!lista.length)lat.append(el('p',{class:'lat-txt',text:'Não há tarefas para este cliente.'}));
@@ -1245,8 +1269,43 @@ button,input,select{font:inherit;color:inherit}
   $('cx-busca').addEventListener('input',renderInbox);
 
   // ================= Vagas (mapa dos próximos 60 dias) =================
+
+  // v10: vagas por tipo de acomodação (painel lateral da conversa)
+  const TIPOS_AC=[['CBD','Cabana duplo',3],['CBT','Cabana tripla',1],['BG','Bangalô',2],['BGE','Bangalô especial',1],['STD','Apto standard duplo/triplo',6],['CST','Duplo casa standard',1],['SUP','Duplo/triplo superior',2],['CJ','Conjugado',1],['QST','Quádruplo standard',2],['QES','Quádruplo especial',1]];
+  const TOT_AC=TIPOS_AC.reduce((a,t)=>a+t[2],0);
+  function livres(cod,total,iso){const d=new Date(iso+'T12:00:00');const dw=d.getDay();const n=[...cod].reduce((a,ch)=>a+ch.charCodeAt(0),0)+d.getDate();
+    const fer={'2026-10-10':1,'2026-10-11':1,'2026-10-12':1,'2026-11-01':1,'2026-11-02':1,'2026-11-20':1,'2026-11-21':1};
+    if(fer[iso])return 0;if(dw===5||dw===6)return n%3===0?Math.min(1,total):0;return Math.max(0,total-(n%3===0?Math.ceil(total/2):n%4===0?1:0));}
+  const isoMais=(iso,k)=>{const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+k);return d.toISOString().slice(0,10);};
+  CONVS.find(x=>x.id===1).datas=['2026-11-16','2026-11-18'];CONVS.find(x=>x.id===2).datas=['2026-10-14','2026-10-16'];CONVS.find(x=>x.id===3).datas=['2027-03-10','2027-03-13'];CONVS.find(x=>x.id===6).datas=['2026-11-03','2026-11-05'];
+  let vagIni=null,vagConv=null;
+  function renderPainelVagas(c,lat){
+    if(vagConv!==c.id){vagConv=c.id;vagIni=c.datas?isoMais(c.datas[0],-2):isoMais(hoje.toISOString().slice(0,10),1);}
+    const dias=[...Array(7)].map((_,k)=>isoMais(vagIni,k));
+    const noEst=iso=>c.datas&&iso>=c.datas[0]&&iso<c.datas[1];
+    const inp=el('input',{type:'date',value:vagIni,'aria-label':'A partir de',onchange:e=>{if(e.target.value){vagIni=e.target.value;renderLateral(c);}}});
+    lat.append(el('div',{class:'vag-ctrl'},el('label',{class:'campo'},'A partir de',inp),
+      el('div',{style:'display:flex;gap:4px;flex-wrap:wrap'},
+        el('button',{class:'btn-mini',type:'button',text:'‹ 7 dias',onclick:()=>{vagIni=isoMais(vagIni,-7);renderLateral(c);}}),
+        el('button',{class:'btn-mini',type:'button',text:'7 dias ›',onclick:()=>{vagIni=isoMais(vagIni,7);renderLateral(c);}}),
+        c.datas?el('button',{class:'btn-mini',type:'button',text:'Datas do cliente',onclick:()=>{vagIni=isoMais(c.datas[0],-2);renderLateral(c);}}):null,
+        el('button',{class:'btn-mini',type:'button',text:'Hoje',onclick:()=>{vagIni=hoje.toISOString().slice(0,10);renderLateral(c);}}))));
+    if(c.datas)lat.append(el('p',{class:'lat-txt'},'Pedido do cliente: ',el('b',{text:fmtData(c.datas[0])+' a '+fmtData(c.datas[1])}),' (colunas destacadas)'));
+    const semana=['dom','seg','ter','qua','qui','sex','sáb'];
+    const thead=el('tr',{},el('th',{text:'Cód.'}),el('th',{text:'Acomodação'}),dias.map(iso=>{const d=new Date(iso+'T12:00:00');return el('th',{class:'num'+(noEst(iso)?' est':'')+([5,6].includes(d.getDay())?' fds':'')},el('span',{text:semana[d.getDay()]}),el('b',{text:String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')}));}),el('th',{text:'Período',class:'num'}));
+    const linhas=TIPOS_AC.map(([cod,nome,tot])=>{const ls=dias.map(iso=>livres(cod,tot,iso));
+      const est=c.datas?[...Array(Math.max(1,(new Date(c.datas[1])-new Date(c.datas[0]))/864e5))].map((_,k)=>livres(cod,tot,isoMais(c.datas[0],k))):null;
+      const minEst=est?Math.min(...est):null;
+      return el('tr',{},el('td',{},el('span',{class:'cod',text:cod})),el('td',{},nome,el('small',{text:' ('+tot+')'})),
+        ls.map((v,k)=>el('td',{class:'num vg '+(v===0?'zero':v===tot?'cheio':'')+(noEst(dias[k])?' est':''),title:v+' de '+tot+' livres',text:String(v)})),
+        el('td',{class:'num'},minEst==null?el('span',{text:'—'}):el('span',{class:'tipo '+(minEst?'t-livre':'t-erro'),text:minEst?minEst+' livre'+(minEst>1?'s':''):'sem vaga'})));});
+    const totais=dias.map(iso=>TIPOS_AC.reduce((a,[cod,,tot])=>a+livres(cod,tot,iso),0));
+    lat.append(el('div',{class:'rolagem'},el('table',{class:'vag-tab'},el('thead',{},thead),el('tbody',{},linhas,
+      el('tr',{class:'tot'},el('td',{}),el('td',{text:'Total livre ('+TOT_AC+')'}),totais.map((v,k)=>el('td',{class:'num'+(noEst(dias[k])?' est':''),text:String(v)})),el('td',{}))))));
+    lat.append(el('p',{class:'lat-txt',style:'font-size:12px',text:'Números = acomodações livres por noite (Silbeck: GET Disponibilidade). Entre parênteses, o total de cada tipo.'}));
+  }
   function renderVagas(){
-    const g=$('vagas-grade');g.textContent='';const tot=21;let vagas=0,vagasDQ=0,ocTot=0;
+    const g=$('vagas-grade');g.textContent='';const tot=TOT_AC;let vagas=0,vagasDQ=0,ocTot=0;
     const ini=new Date(hoje);ini.setDate(ini.getDate()+1);
     for(let i=0;i<(ini.getDay());i++)g.append(el('div',{class:'dia-vazio'}));
     const feriados={'2026-10-10':1,'2026-10-11':1,'2026-10-12':1,'2026-11-01':1,'2026-11-02':1,'2026-11-20':1,'2026-11-21':1};
