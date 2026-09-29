@@ -122,3 +122,13 @@
 - **WhatsApp Business (99117):** **dá para exportar** as conversas (uma a uma pelo app). Pedido: 30 a 50 conversas boas, que viraram reserva.
 - **Meta de 90% de acerto: aprovada** como critério para o agente ganhar autonomia.
 - **Aceite prático das respostas (pedido do dono):** na conversa, a resposta sugerida pelo agente aparece com **3 botões**: **✅ Enviar** (conta como acerto) · **✏️ Editar e enviar** (conta como correção; o CRM guarda o antes e o depois para o agente aprender) · **❌ Descartar** (com motivo de 1 toque: informação errada, tom, faltou vender, outro). Funciona no celular. Para as conversas da noite, uma tela de **revisão da manhã** com 👍/👎 por resposta. O painel mostra a % de acerto da semana.
+
+### P16. Agências, Booking e reservas diretas (29/09/2026)
+- **Agências e operadoras:** contato por **e-mail e WhatsApp**; têm **comissão de venda**; representam **menos de 10%** das vendas.
+- **Booking:** cerca de **20% a 25%** das vendas.
+- **Reservas diretas por WhatsApp** (pelos diferentes canais de origem): o restante, cerca de **65% a 70%**.
+
+**Consequências:**
+- O **WhatsApp é o coração do CRM**: é onde está a maior parte da venda, e é onde o agente mais faz diferença.
+- **Agências:** cadastro de agência (contatos, comissão, reservas) e conversa sempre com a equipe (o agente não negocia com agência). O **e-mail** entra como canal: avaliar trazer a caixa de reservas para dentro do CRM (fase posterior).
+- **Booking (20–25%, com comissão):** a maior oportunidade de margem é o **pós-estadia**: converter o hóspede que veio pelo Booking em **reserva direta na próxima vez** (dentro das regras da Booking e só com consentimento do hóspede).
