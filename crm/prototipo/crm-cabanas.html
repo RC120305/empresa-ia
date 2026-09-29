@@ -1,0 +1,545 @@
+<title>CRM Cabanas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Josefin+Sans:wght@400;600&family=Playfair+Display:ital@1&display=swap">
+<style>
+/* Layout: barra lateral de madeira escura + área de trabalho creme; no celular, barra superior com abas.
+   Tokens vindos de crm/tokens.css (identidade de UI do Designer de Criativos, v1). */
+:root{
+  --cor-fundo:#F7F3EC;--cor-superficie:#FFFFFF;--cor-elevada:#FFFFFF;--cor-borda:#E3DACB;--cor-borda-forte:#9C8C7A;
+  --cor-texto:#2E2620;--cor-texto-sec:#6B5D4F;
+  --cor-primaria:#847059;--cor-primaria-hover:#6E5B47;--cor-primaria-texto:#6E5B47;--cor-primaria-suave:#EEEBE8;--cor-sobre-primaria:#FFFFFF;
+  --cor-secundaria:#90AB49;--cor-secundaria-texto:#5A7026;--cor-secundaria-suave:#EEF3E1;
+  --cor-destaque:#F58634;--cor-sobre-destaque:#2E2620;--cor-destaque-hover:#F79B57;--cor-destaque-texto:#A8520F;--cor-foco:#A8520F;
+  --cor-sucesso:#5A7026;--cor-sucesso-suave:#EEF3E1;--cor-alerta:#8A5A00;--cor-alerta-suave:#FBF1DC;
+  --cor-erro:#B3372B;--cor-erro-suave:#FBEAE7;--cor-info:#2F6B82;--cor-info-suave:#E6F0F3;
+  --lat-fundo:#3B3128;--lat-texto:#F7F1E6;--lat-texto-sec:#BFB3A3;--lat-ativo:#F58634;
+  --cat-novo:#3F7F9A;--cat-novo-s:#E4EDF1;--cat-atend:#C0661E;--cat-atend-s:#F6EAE0;--cat-orc:#8566B0;--cat-orc-s:#EEEAF4;
+  --cat-res:#6E8A2E;--cat-res-s:#EBEFE2;--cat-perd:#8A8078;--cat-perd-s:#EFEDEC;
+  --o-meta:#3B6FB6;--o-meta-s:#E4EBF5;--o-insta:#B0487A;--o-insta-s:#F4E5EC;--o-google:#2E8277;--o-google-s:#E2EEEC;
+  --o-site:#847059;--o-site-s:#EEEBE8;--o-ret:#6E8A2E;--o-ret-s:#EBEFE2;--o-ind:#8566B0;--o-ind-s:#EEEAF4;
+  --o-ag:#9A7B12;--o-ag-s:#F1ECDE;--o-ota:#6B7785;--o-ota-s:#EAECEE;
+  --ia:#6A72BE;--ia-s:#EAEBF6;--pessoa:#C0661E;--pessoa-s:#F6EAE0;
+  --balao-in:#FFFFFF;--balao-out:#EEEBE8;
+  --sombra-1:0 1px 2px rgba(46,38,32,.08);--sombra-2:0 2px 8px rgba(46,38,32,.10);
+  --f-marca:"Josefin Sans","Montserrat",system-ui,sans-serif;
+  --f-texto:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-emo:"Playfair Display",Georgia,serif;
+  --r-sm:6px;--r-md:8px;--r-lg:12px;--r-balao:16px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --cor-fundo:#1E1914;--cor-superficie:#29221B;--cor-elevada:#342B23;--cor-borda:#4A3F34;--cor-borda-forte:#7A6A58;
+  --cor-texto:#F2ECE2;--cor-texto-sec:#BFB3A3;
+  --cor-primaria:#C4A98A;--cor-primaria-hover:#D3BC9F;--cor-primaria-texto:#C4A98A;--cor-primaria-suave:#342B23;--cor-sobre-primaria:#1E1914;
+  --cor-secundaria-texto:#90AB49;--cor-secundaria-suave:#342B23;--cor-sobre-destaque:#1E1914;--cor-destaque-texto:#F58634;--cor-foco:#F58634;
+  --cor-sucesso:#90AB49;--cor-sucesso-suave:#342B23;--cor-alerta:#E8B04A;--cor-alerta-suave:#342B23;--cor-erro:#EF8A7A;--cor-erro-suave:#342B23;--cor-info:#7FB8CC;--cor-info-suave:#342B23;
+  --lat-fundo:#171310;
+  --cat-novo-s:#342B23;--cat-atend-s:#342B23;--cat-orc-s:#342B23;--cat-res-s:#342B23;--cat-perd-s:#342B23;
+  --o-meta-s:#342B23;--o-insta-s:#342B23;--o-google-s:#342B23;--o-site-s:#342B23;--o-ret-s:#342B23;--o-ind-s:#342B23;--o-ag-s:#342B23;--o-ota-s:#342B23;
+  --ia-s:#2F2E45;--pessoa-s:#342B23;--balao-in:#29221B;--balao-out:#3A3027;
+  --sombra-1:0 1px 2px rgba(0,0,0,.4);--sombra-2:0 2px 8px rgba(0,0,0,.45);}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --cor-fundo:#1E1914;--cor-superficie:#29221B;--cor-elevada:#342B23;--cor-borda:#4A3F34;--cor-borda-forte:#7A6A58;
+  --cor-texto:#F2ECE2;--cor-texto-sec:#BFB3A3;
+  --cor-primaria:#C4A98A;--cor-primaria-hover:#D3BC9F;--cor-primaria-texto:#C4A98A;--cor-primaria-suave:#342B23;--cor-sobre-primaria:#1E1914;
+  --cor-secundaria-texto:#90AB49;--cor-secundaria-suave:#342B23;--cor-sobre-destaque:#1E1914;--cor-destaque-texto:#F58634;--cor-foco:#F58634;
+  --cor-sucesso:#90AB49;--cor-sucesso-suave:#342B23;--cor-alerta:#E8B04A;--cor-alerta-suave:#342B23;--cor-erro:#EF8A7A;--cor-erro-suave:#342B23;--cor-info:#7FB8CC;--cor-info-suave:#342B23;
+  --lat-fundo:#171310;
+  --cat-novo-s:#342B23;--cat-atend-s:#342B23;--cat-orc-s:#342B23;--cat-res-s:#342B23;--cat-perd-s:#342B23;
+  --o-meta-s:#342B23;--o-insta-s:#342B23;--o-google-s:#342B23;--o-site-s:#342B23;--o-ret-s:#342B23;--o-ind-s:#342B23;--o-ag-s:#342B23;--o-ota-s:#342B23;
+  --ia-s:#2F2E45;--pessoa-s:#342B23;--balao-in:#29221B;--balao-out:#3A3027;
+  --sombra-1:0 1px 2px rgba(0,0,0,.4);--sombra-2:0 2px 8px rgba(0,0,0,.45);}
+
+*{box-sizing:border-box}
+body{background:var(--cor-fundo);color:var(--cor-texto);font-family:var(--f-texto);font-size:16px;line-height:1.5;margin:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cor-foco);outline-offset:2px}
+.rotulo{font-family:var(--f-marca);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--cor-texto-sec)}
+.num{font-variant-numeric:tabular-nums}
+
+/* Casca */
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+.lateral{background:var(--lat-fundo);color:var(--lat-texto);padding:20px 14px;display:flex;flex-direction:column;gap:20px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh}
+.logo{display:flex;align-items:center;gap:10px;padding:0 6px}
+.logo img{height:44px;width:auto}
+.logo span{font-family:var(--f-marca);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--lat-texto-sec);line-height:1.3}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav button{all:unset;cursor:pointer;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--r-md);color:var(--lat-texto-sec);font-size:15px;font-weight:500;min-height:44px;box-sizing:border-box;border-left:3px solid transparent}
+.nav button svg{width:20px;height:20px;flex:none}
+.nav button:hover{color:var(--lat-texto);background:rgba(255,255,255,.05)}
+.nav button[aria-selected="true"]{color:var(--lat-texto);background:rgba(245,134,52,.12);border-left-color:var(--lat-ativo)}
+.nav .qtd{margin-left:auto;background:var(--lat-ativo);color:#2E2620;font-size:12px;font-weight:700;border-radius:999px;padding:1px 8px}
+.agente-status{margin-top:auto;background:rgba(255,255,255,.06);border-radius:var(--r-lg);padding:12px;display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--lat-texto-sec)}
+.agente-status strong{color:var(--lat-texto);font-weight:600;font-size:14px}
+.chave{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.switch{all:unset;cursor:pointer;width:42px;height:24px;border-radius:999px;background:#6A5E52;position:relative;flex:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#F7F1E6;transition:left .15s}
+.switch[aria-checked="true"]{background:#6A72BE}
+.switch[aria-checked="true"]::after{left:21px}
+
+.principal{min-width:0;padding-block:20px 40px;padding-inline:24px;display:flex;flex-direction:column;gap:18px}
+.topo{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.topo h1{font-size:22px;font-weight:700;margin:0;text-wrap:balance}
+.aviso-exemplo{margin-left:auto;font-size:13px;background:var(--cor-alerta-suave);color:var(--cor-alerta);border:1px solid color-mix(in srgb,var(--cor-alerta) 35%,transparent);padding:4px 10px;border-radius:999px;font-weight:500}
+.tema{all:unset;cursor:pointer;font-size:13px;color:var(--cor-primaria-texto);border:1px solid var(--cor-borda);padding:4px 10px;border-radius:999px;background:var(--cor-superficie)}
+
+/* Etiquetas */
+.pilula{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;line-height:1;padding:5px 10px 5px 8px;border-radius:999px;background:var(--s,var(--cor-primaria-suave));color:var(--cor-texto);white-space:nowrap}
+.pilula::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c,var(--cor-primaria));flex:none}
+.p-novo{--c:var(--cat-novo);--s:var(--cat-novo-s)}.p-atend{--c:var(--cat-atend);--s:var(--cat-atend-s)}.p-orc{--c:var(--cat-orc);--s:var(--cat-orc-s)}.p-res{--c:var(--cat-res);--s:var(--cat-res-s)}.p-perd{--c:var(--cat-perd);--s:var(--cat-perd-s)}
+.o-meta{--c:var(--o-meta);--s:var(--o-meta-s)}.o-insta{--c:var(--o-insta);--s:var(--o-insta-s)}.o-google{--c:var(--o-google);--s:var(--o-google-s)}.o-site{--c:var(--o-site);--s:var(--o-site-s)}.o-ret{--c:var(--o-ret);--s:var(--o-ret-s)}.o-ind{--c:var(--o-ind);--s:var(--o-ind-s)}.o-ag{--c:var(--o-ag);--s:var(--o-ag-s)}.o-ota{--c:var(--o-ota);--s:var(--o-ota-s)}
+.c-ia{--c:var(--ia);--s:var(--ia-s)}.c-pessoa{--c:var(--pessoa);--s:var(--pessoa-s)}
+.canal{font-size:12px;color:var(--cor-texto-sec);display:inline-flex;align-items:center;gap:4px}
+
+.cartao{background:var(--cor-superficie);border:1px solid var(--cor-borda);border-radius:var(--r-lg);box-shadow:var(--sombra-1)}
+
+/* Conversas */
+.conversas{display:grid;grid-template-columns:300px minmax(0,1fr) 280px;gap:16px;align-items:start}
+.lista{padding:8px;display:flex;flex-direction:column;gap:2px}
+.lista .filtros{display:flex;gap:6px;flex-wrap:wrap;padding:6px 6px 10px}
+.chip{all:unset;cursor:pointer;font-size:13px;padding:5px 10px;border-radius:999px;border:1px solid var(--cor-borda);color:var(--cor-texto-sec)}
+.chip[aria-pressed="true"]{background:var(--cor-primaria);border-color:var(--cor-primaria);color:var(--cor-sobre-primaria)}
+.item{all:unset;cursor:pointer;display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;padding:10px;border-radius:var(--r-md);border-left:3px solid transparent;box-sizing:border-box;width:100%}
+.item:hover{background:var(--cor-fundo)}
+.item[aria-selected="true"]{background:var(--cor-primaria-suave);border-left-color:var(--cor-primaria)}
+.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:14px;background:var(--cor-primaria-suave);color:var(--cor-primaria-texto);border:1px solid var(--cor-borda)}
+.item .nome{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .prev{font-size:13px;color:var(--cor-texto-sec);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:12px;color:var(--cor-texto-sec)}
+.bolinha-ia{width:18px;height:18px;border-radius:50%;background:var(--ia);display:grid;place-items:center;color:#fff}
+.bolinha-ia svg{width:11px;height:11px}
+
+.chat{display:flex;flex-direction:column;min-height:640px;overflow:hidden}
+.chat-topo{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--cor-borda);flex-wrap:wrap}
+.chat-topo .quem{min-width:0}
+.chat-topo .quem strong{display:block;font-size:17px}
+.chat-topo .tags{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.mensagens{flex:1;padding:18px 16px;display:flex;flex-direction:column;gap:10px;background:var(--cor-fundo)}
+.dia{align-self:center;font-size:12px;color:var(--cor-texto-sec);background:var(--cor-superficie);border:1px solid var(--cor-borda);padding:2px 10px;border-radius:999px}
+.balao{max-width:78%;padding:10px 14px;border-radius:var(--r-balao);font-size:15px;box-shadow:var(--sombra-1)}
+.balao .hora{display:flex;gap:6px;align-items:center;justify-content:flex-end;font-size:12px;color:var(--cor-texto-sec);margin-top:4px}
+.in{align-self:flex-start;background:var(--balao-in);border:1px solid var(--cor-borda);border-bottom-left-radius:var(--r-sm)}
+.out{align-self:flex-end;background:var(--balao-out);border-bottom-right-radius:var(--r-sm)}
+.out.ia{background:var(--ia-s);border:1px solid color-mix(in srgb,var(--ia) 30%,transparent)}
+.autor{font-size:12px;font-weight:600;margin-bottom:2px;display:flex;align-items:center;gap:5px}
+.out.ia .autor{color:var(--ia)}
+.evento{align-self:center;font-size:13px;color:var(--cor-texto-sec);display:flex;gap:6px;align-items:center;text-align:center}
+.evento svg{width:14px;height:14px;flex:none}
+
+.sugestao{margin:0 16px 16px;border:1.5px dashed var(--ia);background:var(--ia-s);border-radius:var(--r-lg);padding:14px;display:flex;flex-direction:column;gap:10px}
+.sugestao .cab{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ia);flex-wrap:wrap}
+.sugestao .cab .fonte{margin-left:auto;font-weight:400;color:var(--cor-texto-sec)}
+.sugestao p{margin:0;font-size:15px}
+.sugestao textarea{width:100%;min-height:120px;border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:10px;background:var(--cor-superficie);color:var(--cor-texto);font:inherit;font-size:15px;resize:vertical}
+.acoes{display:flex;gap:8px;flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:var(--r-md);font-weight:600;font-size:15px;box-sizing:border-box}
+.btn svg{width:18px;height:18px}
+.btn-enviar{background:var(--cor-primaria);color:var(--cor-sobre-primaria)}
+.btn-enviar:hover{background:var(--cor-primaria-hover)}
+.btn-editar{background:var(--cor-superficie);color:var(--cor-texto);border:1px solid var(--cor-borda-forte)}
+.btn-descartar{color:var(--cor-erro);border:1px solid transparent}
+.btn-descartar:hover{background:var(--cor-erro-suave)}
+.motivos{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--cor-texto-sec)}
+.resultado{font-size:14px;padding:10px 12px;border-radius:var(--r-md);background:var(--cor-sucesso-suave);color:var(--cor-sucesso);font-weight:500}
+.resultado.ruim{background:var(--cor-erro-suave);color:var(--cor-erro)}
+.escrever{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--cor-borda);align-items:center}
+.escrever input{flex:1;min-width:0;border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:10px 12px;background:var(--cor-superficie);min-height:44px}
+
+.ficha{padding:16px;display:flex;flex-direction:column;gap:16px}
+.ficha h3{margin:0}
+.dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;font-size:14px;margin:0}
+.dl dt{color:var(--cor-texto-sec)}
+.dl dd{margin:0;font-weight:500;text-align:right}
+.upsell{border-radius:var(--r-md);background:var(--cor-secundaria-suave);padding:12px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.upsell strong{color:var(--cor-secundaria-texto)}
+.divisor{height:1px;background:var(--cor-borda)}
+.lnk{all:unset;cursor:pointer;color:var(--cor-primaria-texto);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+
+/* Funil */
+.funil{display:grid;grid-template-columns:repeat(5,minmax(220px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
+.coluna{background:color-mix(in srgb,var(--cor-superficie) 55%,var(--cor-fundo));border:1px solid var(--cor-borda);border-radius:var(--r-lg);padding:10px;display:flex;flex-direction:column;gap:8px;border-top:3px solid var(--c)}
+.coluna header{display:flex;align-items:center;justify-content:space-between;padding:2px 4px 6px}
+.coluna header .soma{font-size:12px;color:var(--cor-texto-sec)}
+.card-lead{background:var(--cor-superficie);border:1px solid var(--cor-borda);border-radius:var(--r-md);padding:10px 12px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--sombra-1);font-size:14px}
+.card-lead strong{font-size:15px}
+.card-lead .linha{display:flex;gap:6px;align-items:center;flex-wrap:wrap;color:var(--cor-texto-sec);font-size:13px}
+.alerta-txt{color:var(--cor-alerta);font-weight:600;font-size:13px}
+
+/* Painel */
+.filtro-data{display:flex;gap:10px;align-items:end;flex-wrap:wrap;padding:14px 16px}
+.filtro-data label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--cor-texto-sec)}
+.filtro-data input{border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:8px 10px;background:var(--cor-superficie);min-height:44px}
+.filtro-data .chips{display:flex;gap:6px;flex-wrap:wrap}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.kpi{padding:16px;display:flex;flex-direction:column;gap:6px}
+.kpi .valor{font-size:34px;font-weight:600;line-height:1.1}
+.kpi .var{font-size:13px;font-weight:500}
+.sobe{color:var(--cor-sucesso)}.desce{color:var(--cor-erro)}
+.barra-meta{height:8px;border-radius:999px;background:var(--cor-primaria-suave);overflow:hidden;position:relative}
+.barra-meta i{position:absolute;inset:0 auto 0 0;background:var(--ia);border-radius:999px}
+.barra-meta b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--cor-texto)}
+.grade2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px}
+.bloco{padding:16px;display:flex;flex-direction:column;gap:12px}
+.bloco h3{font-size:17px;margin:0}
+.bloco .sub{font-size:13px;color:var(--cor-texto-sec);margin-top:-8px}
+.tab-origem{width:100%;border-collapse:collapse;font-size:14px}
+.tab-origem th{font-weight:500;color:var(--cor-texto-sec);text-align:right;padding:6px 8px;border-bottom:1px solid var(--cor-borda);font-size:13px}
+.tab-origem th:first-child,.tab-origem td:first-child{text-align:left;padding-left:0}
+.tab-origem td{padding:8px;text-align:right;border-bottom:1px solid var(--cor-borda);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tab-origem .barra{display:inline-block;height:8px;border-radius:999px;background:var(--c);vertical-align:middle;margin-right:8px}
+.rolagem{overflow-x:auto}
+.empilhada{display:flex;height:32px;border-radius:var(--r-md);overflow:hidden}
+.empilhada span{display:grid;place-items:center;font-size:13px;font-weight:600;color:#fff}
+.legenda{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--cor-texto-sec)}
+.legenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.perdas{display:flex;flex-direction:column;gap:8px;font-size:14px}
+.perdas div{display:grid;grid-template-columns:130px minmax(0,1fr) 34px;gap:10px;align-items:center}
+.perdas .trilho{height:10px;border-radius:999px;background:var(--cor-primaria-suave);overflow:hidden}
+.perdas .trilho i{display:block;height:100%;background:var(--cat-perd);border-radius:999px}
+.dias{display:flex;gap:6px;align-items:end;height:120px}
+.dias div{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;font-size:12px;color:var(--cor-texto-sec)}
+.dias div i{width:100%;max-width:36px;border-radius:6px 6px 2px 2px;background:var(--cor-secundaria)}
+.dias div.fds i{background:var(--cor-borda-forte)}
+
+/* Régua */
+.regua{display:flex;flex-direction:column;gap:0}
+.passo{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:16px;padding:16px;border-bottom:1px solid var(--cor-borda);align-items:start}
+.passo:last-child{border-bottom:0}
+.quando{font-weight:600;font-size:14px;display:flex;flex-direction:column;gap:2px}
+.quando small{font-weight:400;color:var(--cor-texto-sec);font-size:13px}
+.passo h4{margin:0 0 4px;font-size:15px}
+.passo p{margin:0;font-size:14px;color:var(--cor-texto-sec)}
+.passo .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tipo{font-size:12px;font-weight:600;padding:3px 8px;border-radius:var(--r-sm)}
+.t-util{background:var(--cor-info-suave);color:var(--cor-info)}
+.t-mkt{background:var(--cor-alerta-suave);color:var(--cor-alerta)}
+.t-livre{background:var(--cor-sucesso-suave);color:var(--cor-sucesso)}
+.estat{display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-size:13px;color:var(--cor-texto-sec);text-align:right}
+.estat .switch{background:var(--cor-borda-forte)}
+.estat .switch[aria-checked="true"]{background:var(--cor-sucesso)}
+
+.boas{font-family:var(--f-emo);font-style:italic;font-size:22px;color:var(--cor-primaria-texto);margin:0}
+
+/* Responsivo */
+@media (max-width:1250px){.conversas{grid-template-columns:280px minmax(0,1fr)}.ficha-wrap{grid-column:1/-1}}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  .lateral{position:sticky;top:env(safe-area-inset-top,0px);height:auto;flex-direction:column;gap:10px;padding:10px 16px;z-index:5}
+  .logo img{height:34px}
+  .nav{flex-direction:row;overflow-x:auto;gap:4px}
+  .nav button{padding:8px 12px;border-left:0;border-bottom:3px solid transparent;border-radius:var(--r-md) var(--r-md) 0 0;white-space:nowrap;font-size:14px}
+  .nav button[aria-selected="true"]{border-bottom-color:var(--lat-ativo)}
+  .agente-status{display:none}
+  .principal{padding-inline:16px}
+  .conversas{grid-template-columns:minmax(0,1fr)}
+  .chat{min-height:0}
+  .grade2{grid-template-columns:minmax(0,1fr)}
+  .passo{grid-template-columns:minmax(0,1fr)}
+  .estat{flex-direction:row;align-items:center;justify-content:space-between;text-align:left}
+  .balao{max-width:90%}
+  .perdas div{grid-template-columns:110px minmax(0,1fr) 30px}
+  .aviso-exemplo{margin-left:0}
+}
+.agente-movel{display:none}
+@media (max-width:900px){.agente-movel{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:10px 14px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <aside class="lateral">
+    <div class="logo"><img src="logo-branco.png" alt="Hotel Cabanas"><span>CRM<br>Reservas</span></div>
+    <nav class="nav" role="tablist" aria-label="Seções">
+      <button role="tab" aria-selected="true" data-vista="conversas" id="tab-conversas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Conversas<span class="qtd num">7</span></button>
+      <button role="tab" aria-selected="false" data-vista="funil" id="tab-funil">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg>Funil</button>
+      <button role="tab" aria-selected="false" data-vista="painel" id="tab-painel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Painel</button>
+      <button role="tab" aria-selected="false" data-vista="regua" id="tab-regua">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Régua de mensagens</button>
+    </nav>
+    <div class="agente-status">
+      <div class="chave"><strong>Agente Cabanas</strong><button class="switch" role="switch" aria-checked="true" aria-label="Agente ligado" id="sw-agente-1"></button></div>
+      <span id="agente-txt-1">Modo treino: sugere, a equipe aprova. Sozinho das 17h às 7h30.</span>
+      <span class="num">Acerto da semana: <b style="color:var(--lat-texto)">87%</b> · meta 90%</span>
+    </div>
+  </aside>
+
+  <main class="principal">
+    <div class="topo">
+      <h1 id="titulo">Conversas</h1>
+      <span class="aviso-exemplo">Exemplo visual · dados fictícios</span>
+      <button class="tema" id="bt-tema" type="button">Tema: automático</button>
+    </div>
+
+    <!-- CONVERSAS -->
+    <section data-painel="conversas">
+      <div class="cartao agente-movel" style="margin-bottom:12px">
+        <span style="font-size:14px"><b>Agente Cabanas</b> · modo treino · 87% de acerto</span>
+        <button class="switch" role="switch" aria-checked="true" aria-label="Agente ligado" id="sw-agente-2"></button>
+      </div>
+      <div class="conversas">
+        <div class="cartao lista" aria-label="Lista de conversas">
+          <div class="filtros">
+            <button class="chip" aria-pressed="true">Todas</button>
+            <button class="chip" aria-pressed="false">Aguardando</button>
+            <button class="chip" aria-pressed="false">Com o agente</button>
+            <button class="chip" aria-pressed="false">Minhas</button>
+          </div>
+          <button class="item" aria-selected="true">
+            <span class="avatar">MS</span>
+            <span style="min-width:0"><span class="nome" style="display:block">Mariana S.</span><span class="prev" style="display:block">Tem vaga de 16 a 18/11 pra dois?</span></span>
+            <span class="meta"><span class="num">21:42</span><span class="bolinha-ia" title="Agente sugerindo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/></svg></span></span>
+          </button>
+          <button class="item">
+            <span class="avatar">RF</span>
+            <span style="min-width:0"><span class="nome" style="display:block">Rafael e família</span><span class="prev" style="display:block">Criança de 6 anos faz boia cross?</span></span>
+            <span class="meta"><span class="num">21:10</span><span class="pilula c-ia" style="font-size:11px;padding:3px 7px 3px 6px">Agente</span></span>
+          </button>
+          <button class="item">
+            <span class="avatar">EA</span>
+            <span style="min-width:0"><span class="nome" style="display:block">Ecotur Agência</span><span class="prev" style="display:block">Grupo de 8 pax em março</span></span>
+            <span class="meta"><span class="num">18:55</span><span class="pilula c-pessoa" style="font-size:11px;padding:3px 7px 3px 6px">Jagles</span></span>
+          </button>
+          <button class="item">
+            <span class="avatar">CL</span>
+            <span style="min-width:0"><span class="nome" style="display:block">Cláudia L.</span><span class="prev" style="display:block">Vi no Instagram a cabana na árvore</span></span>
+            <span class="meta"><span class="num">17:20</span></span>
+          </button>
+          <button class="item">
+            <span class="avatar">JP</span>
+            <span style="min-width:0"><span class="nome" style="display:block">João P.</span><span class="prev" style="display:block">Reserva confirmada, obrigado!</span></span>
+            <span class="meta"><span class="num">ontem</span></span>
+          </button>
+        </div>
+
+        <div class="cartao chat">
+          <div class="chat-topo">
+            <span class="avatar">MS</span>
+            <div class="quem"><strong>Mariana S.</strong><span class="canal">WhatsApp 99117 · (67) 9xxxx-4410</span></div>
+            <div class="tags">
+              <span class="pilula p-orc">Orçamento enviado</span>
+              <span class="pilula o-meta">Anúncio Meta</span>
+            </div>
+          </div>
+          <div class="mensagens">
+            <span class="dia">Hoje</span>
+            <div class="evento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>Chegou pelo anúncio “Casal: domingo a quinta” · origem registrada automaticamente</div>
+            <div class="balao in">Oi! Vi o anúncio da cabana na árvore. Tem vaga de 16 a 18 de novembro pra eu e meu marido?<div class="hora num">21:31</div></div>
+            <div class="balao out ia"><div class="autor"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/></svg>Agente Cabanas · aprovado por Jagles</div>Oi, Mariana! Que bom ter você por aqui. 🌿 Temos sim a Cabana suspensa de 16 a 18/11 (domingo a terça, 2 noites), para vocês dois. Na diária já estão o café da manhã, a piscina climatizada, a sauna e as trilhas com caiaque, SUP e tirolesa com monitor.<div class="hora num">21:33 ✓✓</div></div>
+            <div class="balao in">Qual fica o valor? E vale mais a pena que ir pro centro?<div class="hora num">21:42</div></div>
+          </div>
+
+          <div class="sugestao" id="sugestao">
+            <div class="cab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/></svg>Resposta sugerida pelo Agente Cabanas<span class="fonte">Silbeck: disponível · Banco de argumentos: “Fica longe?”</span></div>
+            <p id="texto-sugestao">Para as duas noites na Cabana suspensa fica R$ 1.480 (valor de exemplo), já com o desconto de quem reserva direto. Sobre o centro: estamos a 6 km, com acesso asfaltado, e aqui dentro vocês têm dois rios, trilhas e as atividades com monitor, então o passeio já começa na porta da cabana. Se quiserem uma dose de aventura, o combo boia cross + arvorismo sai R$ 170 por pessoa. Quer que eu faça a reserva?</p>
+            <div class="acoes" id="acoes">
+              <button class="btn btn-enviar" id="bt-enviar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>Enviar</button>
+              <button class="btn btn-editar" id="bt-editar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Editar e enviar</button>
+              <button class="btn btn-descartar" id="bt-descartar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>Descartar</button>
+            </div>
+            <div class="motivos" id="motivos" hidden>Por quê?
+              <button class="chip" data-motivo="Informação errada">Informação errada</button>
+              <button class="chip" data-motivo="Tom">Tom</button>
+              <button class="chip" data-motivo="Faltou vender">Faltou vender</button>
+              <button class="chip" data-motivo="Outro">Outro</button>
+            </div>
+          </div>
+          <div class="escrever"><input id="campo-msg" placeholder="Escrever como Jagles…" aria-label="Escrever mensagem"><button class="btn btn-enviar" aria-label="Enviar mensagem" style="padding:0 14px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button></div>
+        </div>
+
+        <div class="cartao ficha ficha-wrap">
+          <div><div class="rotulo">Contato</div><h3 style="font-size:18px">Mariana S.</h3></div>
+          <dl class="dl">
+            <dt>Perfil</dt><dd><span class="pilula" style="--c:var(--o-insta);--s:var(--o-insta-s)">Casal</span></dd>
+            <dt>Detectado por</dt><dd>“eu e meu marido”</dd>
+            <dt>Estado</dt><dd>MS · Campo Grande</dd>
+            <dt>Já se hospedou?</dt><dd>Não</dd>
+          </dl>
+          <div class="divisor"></div>
+          <div class="rotulo">Pedido</div>
+          <dl class="dl">
+            <dt>Datas</dt><dd class="num">16 a 18/11 · 2 noites</dd>
+            <dt>Dias</dt><dd><span style="color:var(--cor-secundaria-texto)">Domingo a terça</span></dd>
+            <dt>Hóspedes</dt><dd>2 adultos</dd>
+            <dt>Sugestão</dt><dd>Cabana suspensa</dd>
+            <dt>Silbeck</dt><dd style="color:var(--cor-sucesso)">3 cabanas livres</dd>
+          </dl>
+          <div class="upsell">
+            <span class="rotulo" style="color:var(--cor-secundaria-texto)">Oferta prioritária</span>
+            <strong>Combo boia cross + arvorismo</strong>
+            <span class="num">R$ 170 por pessoa · decoração especial ainda possível (faltam 48 dias)</span>
+          </div>
+          <div class="divisor"></div>
+          <div class="rotulo">Follow-up</div>
+          <p style="margin:0;font-size:14px;color:var(--cor-texto-sec)">Se não responder: 1ª tentativa dentro da janela de 24 h (grátis) · 2ª em 3 dias com a foto “Casal na hidromassagem” (paga).</p>
+          <button class="lnk">Assumir a conversa</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FUNIL -->
+    <section data-painel="funil" hidden>
+      <div class="funil">
+        <div class="coluna" style="--c:var(--cat-novo)"><header><span class="pilula p-novo">Novo</span><span class="soma num">4</span></header>
+          <div class="card-lead"><strong>Cláudia L.</strong><div class="linha"><span class="pilula o-insta">Instagram</span></div><div class="linha num">Dez · 2 adultos</div></div>
+          <div class="card-lead"><strong>Pedro e Ana</strong><div class="linha"><span class="pilula o-google">Google</span></div><div class="linha num">Jan · família (2+2)</div></div>
+        </div>
+        <div class="coluna" style="--c:var(--cat-atend)"><header><span class="pilula p-atend">Em atendimento</span><span class="soma num">6</span></header>
+          <div class="card-lead"><strong>Rafael e família</strong><div class="linha"><span class="pilula o-ret">Hóspede que volta</span></div><div class="linha num">12 a 14/10 · 2+2</div><div class="linha"><span class="pilula c-ia">Agente</span></div></div>
+          <div class="card-lead"><strong>Ecotur Agência</strong><div class="linha"><span class="pilula o-ag">Agência</span></div><div class="linha num">Mar · grupo de 8</div><div class="linha"><span class="pilula c-pessoa">Jagles</span></div></div>
+        </div>
+        <div class="coluna" style="--c:var(--cat-orc)"><header><span class="pilula p-orc">Orçamento enviado</span><span class="soma num">5 · R$ 7,9 mil</span></header>
+          <div class="card-lead"><strong>Mariana S.</strong><div class="linha"><span class="pilula o-meta">Anúncio Meta</span></div><div class="linha num">16 a 18/11 · dom a ter</div></div>
+          <div class="card-lead"><strong>Lúcia M.</strong><div class="linha"><span class="pilula o-ind">Indicação</span></div><div class="linha num">Nov · 55+</div><span class="alerta-txt">Sem resposta há 2 dias · 2ª tentativa amanhã</span></div>
+        </div>
+        <div class="coluna" style="--c:var(--cat-res)"><header><span class="pilula p-res">Reservado</span><span class="soma num">9 · R$ 14,2 mil</span></header>
+          <div class="card-lead"><strong>João P.</strong><div class="linha"><span class="pilula o-site">Site</span></div><div class="linha num">20 a 22/11 · + combo x2</div></div>
+          <div class="card-lead"><strong>Família Souza</strong><div class="linha"><span class="pilula o-meta">Anúncio Meta</span></div><div class="linha num">Finados · Bangalô</div></div>
+        </div>
+        <div class="coluna" style="--c:var(--cat-perd)"><header><span class="pilula p-perd">Perdido</span><span class="soma num">3</span></header>
+          <div class="card-lead"><strong>Carlos T.</strong><div class="linha"><span class="pilula o-google">Google</span></div><div class="linha">Motivo: sem vaga na data</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAINEL -->
+    <section data-painel="painel" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="cartao filtro-data">
+        <label for="d-ini">De<input type="date" id="d-ini" value="2026-09-01"></label>
+        <label for="d-fim">Até<input type="date" id="d-fim" value="2026-09-28"></label>
+        <div class="chips" role="group" aria-label="Períodos rápidos">
+          <button class="chip" aria-pressed="false" data-dias="7">7 dias</button>
+          <button class="chip" aria-pressed="true" data-dias="mes">Este mês</button>
+          <button class="chip" aria-pressed="false" data-dias="90">90 dias</button>
+          <button class="chip" aria-pressed="false" data-dias="ano">2026</button>
+        </div>
+      </div>
+      <div class="kpis">
+        <div class="cartao kpi"><span class="rotulo">Conversas novas</span><span class="valor num">214</span><span class="var sobe num">▲ 18% vs. período anterior</span></div>
+        <div class="cartao kpi"><span class="rotulo">Conversão</span><span class="valor num">23%</span><span class="var sobe num">▲ 3 pontos</span></div>
+        <div class="cartao kpi"><span class="rotulo">Faturamento direto</span><span class="valor num">R$ 92 mil</span><span class="var sobe num">R$ 13,8 mil de comissão poupada</span></div>
+        <div class="cartao kpi"><span class="rotulo">Acerto do agente</span><span class="valor num" style="color:var(--ia)">87%</span><div class="barra-meta" aria-label="87% de 90%"><i style="width:87%"></i><b style="left:90%"></b></div><span class="var num" style="color:var(--cor-texto-sec)">Meta 90% · 412 respostas avaliadas</span></div>
+        <div class="cartao kpi"><span class="rotulo">Custo do mês</span><span class="valor num">R$ 540</span><span class="var num" style="color:var(--cor-texto-sec)">de R$ 800 (referência Asksuite)</span></div>
+      </div>
+      <div class="grade2">
+        <div class="cartao bloco">
+          <h3>Resultado por origem</h3><span class="sub">Conversas, conversão e faturamento (Silbeck) no período</span>
+          <div class="rolagem"><table class="tab-origem">
+            <thead><tr><th>Origem</th><th>Conversas</th><th>Conversão</th><th>Faturamento</th><th>Dom–qui</th></tr></thead>
+            <tbody>
+              <tr><td><span class="barra" style="--c:var(--o-meta);width:62px"></span>Anúncio Meta</td><td>71</td><td>19%</td><td>R$ 24,6 mil</td><td>58%</td></tr>
+              <tr><td><span class="barra" style="--c:var(--o-insta);width:44px"></span>Instagram</td><td>50</td><td>22%</td><td>R$ 18,1 mil</td><td>41%</td></tr>
+              <tr><td><span class="barra" style="--c:var(--o-ret);width:26px"></span>Hóspede que volta</td><td>29</td><td>45%</td><td>R$ 21,3 mil</td><td>52%</td></tr>
+              <tr><td><span class="barra" style="--c:var(--o-google);width:24px"></span>Google</td><td>27</td><td>26%</td><td>R$ 11,2 mil</td><td>37%</td></tr>
+              <tr><td><span class="barra" style="--c:var(--o-ind);width:18px"></span>Indicação</td><td>20</td><td>35%</td><td>R$ 10,4 mil</td><td>30%</td></tr>
+              <tr><td><span class="barra" style="--c:var(--o-site);width:11px"></span>Site</td><td>12</td><td>17%</td><td>R$ 3,9 mil</td><td>25%</td></tr>
+              <tr><td><span class="barra" style="--c:var(--o-ag);width:5px"></span>Agência</td><td>5</td><td>60%</td><td>R$ 6,8 mil</td><td>40%</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div class="cartao bloco">
+            <h3>Reserva direta × OTA</h3><span class="sub">Faturamento do período</span>
+            <div class="empilhada"><span style="width:71%;background:var(--cor-primaria)">71%</span><span style="width:8%;background:var(--o-ag)"></span><span style="width:21%;background:var(--o-ota)">21%</span></div>
+            <div class="legenda"><span><i style="background:var(--cor-primaria)"></i>Direta</span><span><i style="background:var(--o-ag)"></i>Agência 8%</span><span><i style="background:var(--o-ota)"></i>Booking</span></div>
+          </div>
+          <div class="cartao bloco">
+            <h3>Noites vendidas por dia</h3><span class="sub">O gargalo é domingo a quinta</span>
+            <div class="dias" aria-label="Noites por dia da semana">
+              <div><i style="height:40%"></i>dom</div><div><i style="height:28%"></i>seg</div><div><i style="height:30%"></i>ter</div><div><i style="height:34%"></i>qua</div><div><i style="height:46%"></i>qui</div><div class="fds"><i style="height:92%"></i>sex</div><div class="fds"><i style="height:100%"></i>sáb</div>
+            </div>
+          </div>
+          <div class="cartao bloco">
+            <h3>Motivos de perda</h3>
+            <div class="perdas">
+              <div><span>Sem vaga na data</span><span class="trilho"><i style="width:42%"></i></span><span class="num">42%</span></div>
+              <div><span>Preço</span><span class="trilho"><i style="width:27%"></i></span><span class="num">27%</span></div>
+              <div><span>Parou de responder</span><span class="trilho"><i style="width:21%"></i></span><span class="num">21%</span></div>
+              <div><span>Mudou de planos</span><span class="trilho"><i style="width:10%"></i></span><span class="num">10%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RÉGUA -->
+    <section data-painel="regua" hidden style="display:flex;flex-direction:column;gap:12px">
+      <p class="boas">Cada mensagem no momento certo.</p>
+      <div class="cartao regua">
+        <div class="passo"><div class="quando">Reserva confirmada<small>na hora</small></div><div><h4>Boas-vindas e resumo da reserva</h4><p>“Oi, {nome}! Sua {acomodação} está garantida de {entrada} a {saída}…”</p><div class="tags"><span class="tipo t-util">Utilidade</span><span class="pilula">Todos</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">96 envios · R$ 0,00</span></div></div>
+        <div class="passo"><div class="quando">7 dias antes<small>do check-in, 10h</small></div><div><h4>Link do pré-check-in</h4><p>Link do pré-check-in do Silbeck, com prazo e o que vamos pedir.</p><div class="tags"><span class="tipo t-util">Utilidade</span><span class="pilula">Todos</span><span class="pilula" style="--c:var(--cor-sucesso);--s:var(--cor-sucesso-suave)">Aprovado pela Meta</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">88 envios · 74% preencheram</span></div></div>
+        <div class="passo"><div class="quando">3 dias antes<small>do check-in, 10h</small></div><div><h4>Como chegar, o que trazer e aventura</h4><p>Localização, “leve a garrafa de tereré” e oferta do combo boia cross + arvorismo (R$ 170). Decoração especial só aparece se faltarem 3 dias ou mais.</p><div class="tags"><span class="tipo t-util">Utilidade</span><span class="pilula">Todos</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">81 envios · 19 combos vendidos</span></div></div>
+        <div class="passo"><div class="quando">Lead sem resposta<small>dentro de 24 h</small></div><div><h4>1ª tentativa de follow-up</h4><p>Texto livre do agente, retomando a dúvida da conversa.</p><div class="tags"><span class="tipo t-livre">Grátis (janela de 24 h)</span><span class="pilula">Leads</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">63 envios · 14 reservas</span></div></div>
+        <div class="passo"><div class="quando">Lead sem resposta<small>3 dias depois</small></div><div><h4>2ª tentativa com foto do perfil</h4><p>Casal: hidromassagem · Família: boia cross · 55+: deck com rede à beira do rio.</p><div class="tags"><span class="tipo t-mkt">Marketing (pago)</span><span class="pilula" style="--c:var(--o-insta);--s:var(--o-insta-s)">Casal</span><span class="pilula" style="--c:var(--cat-novo);--s:var(--cat-novo-s)">Família</span><span class="pilula">55+</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">41 envios · R$ 16,40 · 6 reservas</span></div></div>
+        <div class="passo"><div class="quando">1 dia depois<small>do check-out</small></div><div><h4>Pesquisa de satisfação (NPS)</h4><p>Nota de 0 a 10. Nota até 6 vira alerta para Renata e Jagles; 9 ou 10 recebe o pedido de avaliação no Google.</p><div class="tags"><span class="tipo t-util">Utilidade</span><span class="pilula">Todos</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">77 envios · NPS 78</span></div></div>
+        <div class="passo"><div class="quando">45 dias depois<small>do check-out</small></div><div><h4>Convite para voltar (domingo a quinta)</h4><p>“Bonito fica logo ali”: convite para uma volta no meio da semana, na baixa temporada.</p><div class="tags"><span class="tipo t-mkt">Marketing (pago)</span><span class="pilula">Hóspedes de MS</span><span class="pilula o-ota">Veio pelo Booking</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="false" aria-label="Mensagem desativada"></button><span>Desligada · aguardando aprovação do texto</span></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+  const titulos={conversas:"Conversas",funil:"Funil de reservas",painel:"Painel",regua:"Régua de mensagens"};
+  const tabs=[...document.querySelectorAll('.nav button')];
+  const paineis=[...document.querySelectorAll('[data-painel]')];
+  function abrir(v){
+    tabs.forEach(t=>t.setAttribute('aria-selected',t.dataset.vista===v));
+    paineis.forEach(p=>p.hidden=p.dataset.painel!==v);
+    document.getElementById('titulo').textContent=titulos[v];
+    try{localStorage.setItem('crm-vista',v)}catch(e){}
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>abrir(t.dataset.vista)));
+  const h=(location.hash||'').slice(1);
+  let ini='conversas';
+  if(titulos[h]) ini=h; else { try{const s=localStorage.getItem('crm-vista'); if(titulos[s]) ini=s;}catch(e){} }
+  abrir(ini);
+
+  // Tema
+  const bt=document.getElementById('bt-tema');const modos=['automático','claro','escuro'];let m=0;
+  bt.addEventListener('click',()=>{m=(m+1)%3;const r=document.documentElement;
+    if(m===0) r.removeAttribute('data-theme'); else r.setAttribute('data-theme',m===1?'light':'dark');
+    bt.textContent='Tema: '+modos[m];});
+
+  // Chaves liga/desliga
+  document.querySelectorAll('.switch').forEach(s=>s.addEventListener('click',()=>{
+    const on=s.getAttribute('aria-checked')!=='true';
+    const grupo=s.id&&s.id.startsWith('sw-agente')?document.querySelectorAll('[id^="sw-agente"]'):[s];
+    grupo.forEach(x=>x.setAttribute('aria-checked',on));
+    if(s.id&&s.id.startsWith('sw-agente')){
+      document.getElementById('agente-txt-1').textContent=on?'Modo treino: sugere, a equipe aprova. Sozinho das 17h às 7h30.':'Desligado: a equipe atende todas as conversas.';
+      document.getElementById('sugestao').hidden=!on;
+    }
+  }));
+
+  // Chips de filtro (visual)
+  document.querySelectorAll('.filtros, .chips').forEach(g=>g.addEventListener('click',e=>{
+    const c=e.target.closest('.chip');if(!c)return;
+    g.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===c));
+  }));
+  // Lista de conversas (visual)
+  document.querySelectorAll('.item').forEach(i=>i.addEventListener('click',()=>{
+    document.querySelectorAll('.item').forEach(x=>x.setAttribute('aria-selected',x===i));
+  }));
+
+  // Resposta sugerida: Enviar / Editar / Descartar
+  const sug=document.getElementById('sugestao'),acoes=document.getElementById('acoes'),mot=document.getElementById('motivos');
+  const txt=document.getElementById('texto-sugestao');
+  function fim(msg,ruim){
+    [...sug.children].forEach(c=>{ if(c.classList.contains('cab')) return; c.hidden=true; });
+    const r=document.createElement('div');r.className='resultado'+(ruim?' ruim':'');r.textContent=msg;sug.appendChild(r);
+  }
+  document.getElementById('bt-enviar').addEventListener('click',()=>fim('Enviada sem edição. Conta como acerto do agente.'));
+  document.getElementById('bt-editar').addEventListener('click',function(){
+    if(this.dataset.modo==='editando'){
+      const t=sug.querySelector('textarea');txt.textContent=t.value;t.remove();txt.hidden=false;
+      fim('Enviada com edição. O CRM guardou o antes e o depois para o agente aprender.');return;
+    }
+    const t=document.createElement('textarea');t.id='edit-sugestao';t.value=txt.textContent;txt.hidden=true;txt.after(t);t.focus();
+    this.dataset.modo='editando';this.lastChild.textContent='Enviar editada';
+  });
+  document.getElementById('bt-descartar').addEventListener('click',()=>{acoes.hidden=true;mot.hidden=false;});
+  mot.addEventListener('click',e=>{const c=e.target.closest('[data-motivo]');if(!c)return;fim('Descartada: '+c.dataset.motivo+'. Jagles responde e o agente aprende com o caso.',true);});
+})();
+</script>

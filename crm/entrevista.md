@@ -161,3 +161,4 @@
 ### P20. Custo mensal (29/09/2026)
 - A **Asksuite custa cerca de R$ 800/mês** hoje. É o parâmetro de comparação: o custo mensal do CRM (servidor + banco + mensagens pagas da Meta + uso da IA) deve ficar **nessa faixa ou abaixo**, e o painel mostra o custo real do mês.
 - Pedido do dono: um **exemplo visual do layout** para visualizar (protótipo estático com a identidade de `crm/identidade-ui.md`).
+- **Protótipo visual v1** (29/09/2026): `crm/prototipo/crm-cabanas.html`, publicado em https://claude.ai/artifact/6Pz2wqMU9oJQYJZZVCN2Uh (privado). Telas: Conversas (resposta sugerida com ✅ ✏️ ❌, ficha do lead com perfil detectado e oferta prioritária), Funil, Painel (filtro por data, resultado por origem, direta × OTA, noites por dia, motivos de perda, acerto do agente, custo × R$ 800) e Régua de mensagens. Dados fictícios.
