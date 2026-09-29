@@ -205,3 +205,8 @@ Honestidade na tela também: o que foi escrito pelo agente fica sempre marcado c
 4. **Modo escuro:** seguir o aparelho automaticamente (recomendado) ou só quando o usuário escolher.
 5. **Logo vetorial:** existe o logo em SVG/AI/PDF e o símbolo (árvore-casa) isolado? E os códigos de cor oficiais? Os hex atuais foram extraídos dos pixels do GIF.
 6. **Palavra "lead" na tela:** manter "lead" (termo que você já usa) ou usar "contato"/"interessado" para a equipe.
+
+---
+
+## Revisão do dono (29/09/2026)
+- **Cor do agente:** o índigo foi **recusado**. O agente passa a usar o **verde folha** da marca: balão `#EEF3E1` com rótulo `#5A7026` (modo claro) e `#90AB49` no escuro, com ícone de folha. `--comando-ia` atualizado em `tokens.css`. As mensagens da equipe seguem no marrom suave, e o nome do autor ("Agente Cabanas" ou o nome da pessoa) aparece sempre em cada balão.
