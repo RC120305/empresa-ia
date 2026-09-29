@@ -146,3 +146,7 @@
 - **Liga/desliga** por mensagem, e o painel mostra envios, custo, respostas e reservas geradas.
 
 **Régua inicial proposta (a validar):** reserva confirmada → boas-vindas + resumo · 7 dias antes → link de pré-check-in · 3 dias antes → como chegar + o que trazer + oferta de boia cross/arvorismo/combo (decoração só até 3 dias antes) · check-out + 1 dia → NPS · nota alta → pedido de avaliação · 30–60 dias depois → convite para voltar (baixa/dom–qui) · hóspede Booking → "na próxima, reserve direto".
+
+### P18. Ordem das fases e identidade visual (29/09/2026)
+- **Ordem aprovada:** (1) caixa de entrada única com os 2 números, origem e funil → (2) agente em modo treino (✅ ✏️ ❌) + painel de métricas → (3) integração Silbeck (disponibilidade e reserva) + régua de mensagens → (4) agente sozinho à noite (17h–7h30) após os 90%.
+- **Antes do layout:** usar a identidade visual do hotel. Ela já existe para o Instagram (`contexto/marca/identidade.md`); o **Designer de Criativos** foi acionado para estendê-la à interface do sistema (`crm/identidade-ui.md` e `crm/tokens.css`).
