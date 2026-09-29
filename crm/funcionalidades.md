@@ -69,6 +69,11 @@
 | 5.7 | **Banco de imagens e vídeos** (importado do Drive, com etiquetas e descrição da cena) | 🆕 | 2 |
 | 5.8 | Agente envia as fotos/vídeos certos conforme a pergunta (acomodação, atividade, perfil) | 🆕 | 2 |
 | 5.9 | Mídias favoritas por tema; desativar sem apagar | 💡 | 2 |
+| 5.10 | **Biblioteca de respostas** (pergunta → resposta), alimentada pelas correções da revisão, cadastro manual e importação da Asksuite | 🆕 | 2 |
+| 5.11 | **Resposta fixa** (o agente envia o texto exatamente igual) | 🆕 | 2 |
+| 5.12 | **Validade** da resposta (deixa de valer depois da data) | 🆕 | 2 |
+| 5.13 | **Contador de usos** e **alerta de conflito** entre respostas e fontes | 🆕 | 2 |
+| 5.14 | Questionário por tópicos com progresso; rascunho × publicado; painel "Testar o agente" | 🆕 | 2 |
 
 ## 6. Painel e relatórios
 | # | Funcionalidade | Status | Fase |

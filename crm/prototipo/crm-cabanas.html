@@ -463,6 +463,7 @@ button,input,select{font:inherit;color:inherit}
 .nav button{position:relative}
 @media (max-width:1250px){.cx{grid-template-columns:280px minmax(0,1fr) 48px}.cx.com-painel{grid-template-columns:280px minmax(0,1fr) 260px 48px}}
 @media (max-width:900px){.cx,.cx.com-painel{grid-template-columns:minmax(0,1fr)}.cx-trilho{flex-direction:row;position:static;order:-1}.recolher{display:none}.app.recolhido{grid-template-columns:1fr}}
+.bib-selos{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}.bib tr.vencida td{opacity:.6}#bib-val{border:1px solid var(--cor-borda-forte);border-radius:8px;padding:8px 10px;background:var(--cor-superficie);color:var(--cor-texto);font:inherit}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -692,8 +693,12 @@ button,input,select{font:inherit;color:inherit}
 
       <div data-subpainel="bib" hidden style="display:flex;flex-direction:column;gap:12px">
         <div class="barra-ferr"><button class="btn btn-enviar" type="button" id="bib-novo">+ Nova resposta</button><span style="font-size:13px;color:var(--cor-texto-sec)">As correções feitas na Revisão de conversas também entram aqui.</span></div>
-        <div class="cartao bloco" id="bib-form" hidden><label class="rotulo" for="bib-p">Quando o cliente perguntar</label><input id="bib-p" type="text"><label class="rotulo" for="bib-r">O agente responde</label><textarea id="bib-r" rows="3"></textarea><div class="acoes"><button class="btn btn-enviar" type="button" id="bib-salvar">Salvar</button><button class="btn btn-editar" type="button" id="bib-cancelar">Cancelar</button></div></div>
-        <div class="cartao rolagem"><table class="bib"><thead><tr><th>Pergunta</th><th>Resposta</th><th>Alterada</th><th></th></tr></thead><tbody id="bib-corpo"></tbody></table></div>
+        <div class="lat-alerta" id="bib-alerta" hidden></div>
+        <div class="cartao bloco" id="bib-form" hidden><label class="rotulo" for="bib-p">Quando o cliente perguntar</label><input id="bib-p" type="text"><label class="rotulo" for="bib-r">O agente responde</label><textarea id="bib-r" rows="3"></textarea>
+          <label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="bib-fixa" style="width:18px;height:18px;accent-color:var(--cor-primaria)"> Resposta fixa: o agente envia exatamente este texto, sem reescrever</label>
+          <label class="rotulo" for="bib-val">Válida até (opcional)</label><input type="date" id="bib-val" style="max-width:220px"><span style="font-size:13px;color:var(--cor-texto-sec)">Depois desta data, o agente deixa de usar a resposta (ex.: pacotes e promoções de data).</span>
+          <div class="acoes"><button class="btn btn-enviar" type="button" id="bib-salvar">Salvar</button><button class="btn btn-editar" type="button" id="bib-cancelar">Cancelar</button></div></div>
+        <div class="cartao rolagem"><table class="bib"><thead><tr><th>Pergunta</th><th>Resposta</th><th>Usos</th><th>Alterada</th><th></th></tr></thead><tbody id="bib-corpo"></tbody></table></div>
       </div>
 
       <div data-subpainel="reg" hidden>
@@ -1260,7 +1265,13 @@ button,input,select{font:inherit;color:inherit}
     {n:'Pré-chegada',q:[['Qual o horário de check-in e check-out?',''],['O que levar durante a estadia?',''],['Como é o clima na cidade?','']]},
     {n:'Atividades',q:[['Criança pode fazer boia cross?','A partir de 5 anos e 1,15 m.'],['Quanto custa o combo?','Boia cross + arvorismo: R$ 170 por pessoa.'],['O que está incluso na diária?','Café da manhã, piscina climatizada, sauna, trilhas com caiaque, SUP e tirolesa com monitor.']]},
   ];
-  const BIBLIO=[['Acabei de efetuar o pagamento, e agora?','Ótimo! Pode enviar o comprovante aqui; confirmamos e mandamos a confirmação da reserva.','27/09 11:02'],['Pode mandar a localização?','Claro! Estamos entre os rios Formoso e Formosinho, a 6 km do centro: bit.ly/2PfI7Am','27/09 11:01'],['Fica longe do centro?','São 6 km de asfalto; aqui dentro vocês têm dois rios e as atividades com monitor, o passeio começa na porta.','26/09 15:40']];
+  const BIBLIO=[
+    ['Acabei de efetuar o pagamento, e agora?','Ótimo! Pode enviar o comprovante aqui; confirmamos e mandamos a confirmação da reserva.','27/09 11:02',false,'',38],
+    ['Pode mandar a localização?','Claro! Estamos entre os rios Formoso e Formosinho, a 6 km do centro: bit.ly/2PfI7Am','27/09 11:01',false,'',112],
+    ['Fica longe do centro?','São 6 km de asfalto; aqui dentro vocês têm dois rios e as atividades com monitor, o passeio começa na porta.','26/09 15:40',false,'',64],
+    ['Qual a política de cancelamento?','Reembolso integral com 30 dias de antecedência; 50% do sinal com 15 dias; dentro de 15 dias, sem reembolso.','25/09 10:00',true,'',41],
+    ['Tem pacote de Réveillon?','Sim! Pacote de 4 noites, de 29/12 a 02/01, com restaurante funcionando normalmente.','28/09 09:30',false,'2027-01-02',17],
+    ['Até que horas é o café da manhã?','O café é servido das 7h às 10h.','20/08 18:12',false,'',9]];
   let topSel=0,pendentes=0;
   function marcarPendente(){pendentes++;$('pub-barra').hidden=false;$('pub-n').textContent=pendentes+(pendentes===1?' alteração não publicada':' alterações não publicadas');}
   function renderQuest(){
@@ -1278,15 +1289,24 @@ button,input,select{font:inherit;color:inherit}
       qb.append(el('div',{class:'q-card'+(q[1].trim()?'':' vazia')},el('div',{class:'q-cab'},el('span',{class:'tipo '+(q[1].trim()?'t-livre':'t-mkt'),text:q[1].trim()?'Respondida':'Falta responder'}),el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{t.q.splice(i,1);marcarPendente();renderQuest();}})),perg,r));});
     qb.append(el('button',{class:'btn btn-editar',type:'button',text:'+ Nova pergunta',onclick:()=>{t.q.push(['Nova pergunta','']);marcarPendente();renderQuest();}}));
   }
+  function conflitos(){const cafe=TOPICOS.flatMap(t=>t.q).find(q=>/café da manhã|horários do restaurante/i.test(q[0]));
+    return BIBLIO.map((b,i)=>[b,i]).filter(([b])=>/café/i.test(b[0])&&/7h às 10h/.test(b[1]));}
   function renderBiblio(){
-    const tb=$('bib-corpo');tb.textContent='';
-    BIBLIO.forEach((b,i)=>tb.append(el('tr',{},el('td',{text:b[0]}),el('td',{text:b[1]}),el('td',{class:'num',text:b[2]}),
-      el('td',{},el('button',{class:'btn-mini',type:'button',text:'Editar',onclick:()=>editarBib(i)}),el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{BIBLIO.splice(i,1);marcarPendente();renderBiblio();}})))));
+    const tb=$('bib-corpo');tb.textContent='';const hojeIso=hoje.toISOString().slice(0,10);
+    const cf=conflitos(),al=$('bib-alerta');al.textContent='';al.hidden=!cf.length;
+    cf.forEach(([b,i])=>al.append(el('div',{},el('b',{text:'Possível conflito: '}),'“'+b[0]+'” diz “'+b[1]+'”, mas o Questionário (Sobre o hotel) diz café das 6h30 às 9h30. ',
+      el('button',{class:'btn-mini',type:'button',text:'Corrigir esta resposta',onclick:()=>editarBib(i)}))));
+    BIBLIO.forEach((b,i)=>{const venc=b[4]&&b[4]<hojeIso;
+      tb.append(el('tr',{class:venc?'vencida':''},
+        el('td',{},el('div',{text:b[0]}),el('div',{class:'bib-selos'},b[3]?el('span',{class:'tipo t-util',text:'Resposta fixa'}):null,b[4]?el('span',{class:'tipo '+(venc?'t-erro':'t-mkt'),text:(venc?'Vencida em ':'Vale até ')+b[4].split('-').reverse().join('/')}):null)),
+        el('td',{text:b[1]}),el('td',{class:'num',text:String(b[5]||0)}),el('td',{class:'num',text:b[2]}),
+        el('td',{},el('button',{class:'btn-mini',type:'button',text:'Editar',onclick:()=>editarBib(i)}),el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{BIBLIO.splice(i,1);marcarPendente();renderBiblio();}}))));});
   }
-  function editarBib(i){const b=BIBLIO[i];const f=$('bib-form');f.hidden=false;$('bib-p').value=b[0];$('bib-r').value=b[1];f.dataset.i=i;$('bib-p').focus();}
-  $('bib-novo').addEventListener('click',()=>{const f=$('bib-form');f.hidden=false;$('bib-p').value='';$('bib-r').value='';f.dataset.i='';$('bib-p').focus();});
+  function editarBib(i){const b=BIBLIO[i];const f=$('bib-form');f.hidden=false;$('bib-p').value=b[0];$('bib-r').value=b[1];$('bib-fixa').checked=!!b[3];$('bib-val').value=b[4]||'';f.dataset.i=i;$('bib-p').focus();}
+  $('bib-novo').addEventListener('click',()=>{const f=$('bib-form');f.hidden=false;$('bib-p').value='';$('bib-r').value='';$('bib-fixa').checked=false;$('bib-val').value='';f.dataset.i='';$('bib-p').focus();});
   $('bib-salvar').addEventListener('click',()=>{const p=$('bib-p').value.trim(),r=$('bib-r').value.trim();if(!p){$('bib-p').focus();return;}const f=$('bib-form');
-    if(f.dataset.i!==''){BIBLIO[+f.dataset.i]=[p,r,'agora'];}else BIBLIO.unshift([p,r,'agora']);f.hidden=true;marcarPendente();renderBiblio();});
+    const novo=[p,r,'agora',$('bib-fixa').checked,$('bib-val').value,0];
+    if(f.dataset.i!==''){novo[5]=BIBLIO[+f.dataset.i][5];BIBLIO[+f.dataset.i]=novo;}else BIBLIO.unshift(novo);f.hidden=true;marcarPendente();renderBiblio();});
   $('bib-cancelar').addEventListener('click',()=>$('bib-form').hidden=true);
   $('pub-descartar').addEventListener('click',()=>{pendentes=0;$('pub-barra').hidden=true;toast('Alterações descartadas (nesta tela de exemplo, os textos não voltam).');});
   $('pub-publicar').addEventListener('click',()=>{const b=$('pub-publicar');b.disabled=true;b.textContent='Testando 30 perguntas…';
@@ -1294,7 +1314,7 @@ button,input,select{font:inherit;color:inherit}
   // Testar conteúdo
   function responderTeste(txt){
     const t=txt.toLowerCase();let best=null,score=0;
-    const todas=[...BIBLIO.map(b=>[b[0],b[1],'Biblioteca: “'+b[0]+'”']),...TOPICOS.flatMap(tp=>tp.q.filter(q=>q[1].trim()).map(q=>[q[0],q[1],'Questionário → '+tp.n+' → “'+q[0]+'”']))];
+    const hj=hoje.toISOString().slice(0,10);const todas=[...BIBLIO.filter(b=>!b[4]||b[4]>=hj).map(b=>[b[0],b[1],'Biblioteca: “'+b[0]+'”'+(b[3]?' (resposta fixa)':'')]),...TOPICOS.flatMap(tp=>tp.q.filter(q=>q[1].trim()).map(q=>[q[0],q[1],'Questionário → '+tp.n+' → “'+q[0]+'”']))];
     todas.forEach(([p,r,f])=>{const s=p.toLowerCase().split(/\W+/).filter(w=>w.length>3&&t.includes(w)).length;if(s>score){score=s;best=[r,f];}});
     return best||['Não tenho essa informação na fonte. Vou confirmar com a equipe e já te respondo. 🌿','Regra: sem resposta na fonte → passar para a equipe'];
   }
