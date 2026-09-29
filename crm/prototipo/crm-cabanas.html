@@ -416,7 +416,7 @@ button,input,select{font:inherit;color:inherit}
 .testar .mensagens{flex:1;overflow-y:auto}
 .testar form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--cor-borda)}
 .testar input{flex:1;min-width:0;min-height:44px}
-@media (max-width:1250px){.cx{grid-template-columns:300px minmax(0,1fr)}.cx-lateral{grid-column:1/-1}}
+
 @media (max-width:900px){.cx,.q-layout{grid-template-columns:minmax(0,1fr)}.cx-lista{max-height:320px}.cx-chat{min-height:0}}
 
 /* v5: painel lateral "Testar o agente" */
@@ -435,11 +435,40 @@ button,input,select{font:inherit;color:inherit}
 .sem-fontes .fonte-resp{display:none}
 #bt-teste[aria-expanded=true]{background:var(--ia-s);border-color:var(--ia);color:var(--ia)}
 @media (max-width:1100px){.aj{grid-template-columns:minmax(0,1fr)}.aj-teste{position:static}.aj-teste .testar{height:520px}}
+
+/* v6: trilho de painéis da conversa + menu lateral recolhível */
+.cx{grid-template-columns:320px minmax(0,1fr) 48px}
+.cx.com-painel{grid-template-columns:320px minmax(0,1fr) 300px 48px}
+.cx-trilho{display:flex;flex-direction:column;gap:6px;padding:6px;background:var(--cor-superficie);border:1px solid var(--cor-borda);border-radius:var(--r-lg);position:sticky;top:12px}
+.cx-trilho button{all:unset;cursor:pointer;width:36px;height:36px;border-radius:var(--r-md);display:grid;place-items:center;color:var(--cor-texto-sec);position:relative}
+.cx-trilho button:hover{background:var(--cor-primaria-suave);color:var(--cor-texto)}
+.cx-trilho button[aria-pressed=true]{background:var(--cor-primaria-suave);color:var(--cor-destaque-texto);box-shadow:inset 3px 0 0 var(--cor-destaque)}
+.cx-trilho svg{width:20px;height:20px}
+.cx-trilho .bdg{position:absolute;top:1px;right:1px;min-width:15px;height:15px;border-radius:999px;background:var(--cor-destaque);color:var(--cor-sobre-destaque);font-size:10px;font-weight:700;display:grid;place-items:center;padding:0 3px}
+.lat-cab{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:-4px 0 4px}
+.lat-cab h3{margin:0;font-size:17px}
+.lat-sec{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}
+.app{transition:grid-template-columns .15s}
+.recolher{all:unset;cursor:pointer;width:32px;height:32px;border-radius:var(--r-md);display:grid;place-items:center;color:var(--lat-texto-sec);align-self:flex-end;margin-bottom:-12px}
+.recolher:hover{background:rgba(255,255,255,.08);color:var(--lat-texto)}
+.recolher svg{width:18px;height:18px;transition:transform .15s}
+.app.recolhido{grid-template-columns:68px minmax(0,1fr)}
+.app.recolhido .lateral{padding:16px 8px}
+.app.recolhido .recolher{align-self:center;margin-bottom:0}
+.app.recolhido .recolher svg{transform:rotate(180deg)}
+.app.recolhido .logo span,.app.recolhido .agente-status,.app.recolhido .nav .rot{display:none}
+.app.recolhido .logo{justify-content:center;padding:0}.app.recolhido .logo img{height:26px}
+.app.recolhido .nav button{justify-content:center;padding:10px 0;border-left-width:3px}
+.app.recolhido .nav .qtd{position:absolute;top:3px;right:6px;font-size:10px;padding:0 5px}
+.nav button{position:relative}
+@media (max-width:1250px){.cx{grid-template-columns:280px minmax(0,1fr) 48px}.cx.com-painel{grid-template-columns:280px minmax(0,1fr) 260px 48px}}
+@media (max-width:900px){.cx,.cx.com-painel{grid-template-columns:minmax(0,1fr)}.cx-trilho{flex-direction:row;position:static;order:-1}.recolher{display:none}.app.recolhido{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
 <div class="app">
   <aside class="lateral">
+    <button class="recolher" id="bt-recolher" type="button" aria-label="Recolher menu" aria-expanded="true" title="Recolher menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
     <div class="logo"><img src="logo-branco.png" alt="Hotel Cabanas"><span>CRM<br>Reservas</span></div>
     <nav class="nav" role="tablist" aria-label="Seções">
       <button role="tab" aria-selected="true" data-vista="conversas" id="tab-conversas">
@@ -491,7 +520,12 @@ button,input,select{font:inherit;color:inherit}
           <div class="cx-lista" id="cx-lista"></div>
         </div>
         <div class="cartao cx-chat" id="cx-chat"></div>
-        <div class="cartao cx-lateral" id="cx-lateral"></div>
+        <div class="cartao cx-lateral" id="cx-lateral" hidden></div>
+        <nav class="cx-trilho" id="cx-trilho" aria-label="Painéis da conversa">
+          <button type="button" data-p="res" aria-pressed="false" title="Reservas e pagamentos" aria-label="Reservas e pagamentos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg></button>
+          <button type="button" data-p="his" aria-pressed="false" title="Histórico do cliente e origem" aria-label="Histórico do cliente e origem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></button>
+          <button type="button" data-p="tar" aria-pressed="false" title="Tarefas" aria-label="Tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="bdg num" id="bdg-tar" hidden>0</span></button>
+        </nav>
       </div>
     </section>
 
@@ -1123,17 +1157,48 @@ button,input,select{font:inherit;color:inherit}
         el('div',{class:'cx-envio'},inp,el('button',{class:'btn btn-enviar',type:'button','aria-label':'Enviar',text:'Enviar',onclick:enviar}))));
       inp.addEventListener('keydown',ev=>{if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();enviar();}});
     }
-    // lateral
-    lat.append(el('div',{class:'rotulo',text:'Origem'}),el('p',{class:'lat-txt',text:c.origemDet}));
-    if(c.fila)lat.append(el('div',{class:'lat-alerta'},el('b',{text:'Aguardando a equipe'}),el('span',{text:c.fila})));
-    lat.append(el('div',{class:'rotulo',text:'Reservas nesta conversa'}));
-    if(!c.reservas.length)lat.append(el('p',{class:'lat-txt',text:'Nenhuma reserva ainda.'}));
-    c.reservas.forEach(r=>lat.append(el('div',{class:'lat-card'},el('b',{text:r[0]}),el('span',{class:'tipo '+r[2],text:r[1]}))));
-    lat.append(el('button',{class:'btn btn-editar',type:'button',text:'Registrar reserva no Silbeck',onclick:()=>{c.reservas.push(['Nova reserva (exemplo)','Pré-reserva · aguardando pagamento','t-mkt']);c.etapa='pag';renderInbox();toast('Reserva criada no Silbeck pela API (POST reserva). Card em “Aguardando pagamento”.');}}));
-    lat.append(el('div',{class:'rotulo',text:'Pagamentos'}));
-    if(!c.pagamentos.length)lat.append(el('p',{class:'lat-txt',text:'Nenhuma cobrança.'}));
-    c.pagamentos.forEach(p=>lat.append(el('div',{class:'lat-card'},el('b',{text:p[0]}),el('span',{class:'tipo '+p[2],text:p[1]}))));
-    if(c.etapa!=='hosp')lat.append(el('div',{class:'upsell'},el('span',{class:'rotulo',style:'color:var(--cor-secundaria-texto)',text:'Oferta prioritária'}),el('strong',{text:'Combo boia cross + arvorismo'}),el('span',{text:'R$ 170 por pessoa'})));
+    renderLateral(c);
+  }
+  let painelLat='';try{painelLat=localStorage.getItem('crm-painel')||''}catch(e){}
+  $('cx-trilho').addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return;painelLat=painelLat===b.dataset.p?'':b.dataset.p;try{localStorage.setItem('crm-painel',painelLat)}catch(err){}renderChat();});
+  function tarefasDe(c){const l=c.lead&&leadPor(c.lead);if(l)return[l.tarefas,l];c.tarefas=c.tarefas||[];return[c.tarefas,{nome:c.nome,hist:[],id:null}];}
+  function renderLateral(c){
+    const lat=$('cx-lateral');lat.textContent='';
+    const [tfs]=tarefasDe(c);const ab=tfs.filter(t=>!t.f).length;$('bdg-tar').hidden=!ab;$('bdg-tar').textContent=ab;
+    document.querySelectorAll('#cx-trilho [data-p]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===painelLat)));
+    $('cx').classList.toggle('com-painel',!!painelLat);lat.hidden=!painelLat;if(!painelLat)return;
+    const titulo={res:'Reservas e pagamentos',his:'Histórico do cliente',tar:'Tarefas'}[painelLat];
+    lat.append(el('div',{class:'lat-cab'},el('h3',{text:titulo}),el('button',{class:'fechar',type:'button','aria-label':'Recolher painel',onclick:()=>{painelLat='';try{localStorage.setItem('crm-painel','')}catch(e){}renderChat();}},el('span',{text:'✕'}))));
+    if(painelLat==='res'){
+      lat.append(el('div',{class:'lat-sec'},el('span',{class:'rotulo',text:'Reservas nesta conversa'}),el('button',{class:'btn-mini',type:'button',text:'+ Registrar',onclick:()=>{c.reservas.push(['Nova reserva (exemplo)','Pré-reserva · aguardando pagamento','t-mkt']);c.etapa='pag';renderInbox();toast('Reserva criada no Silbeck pela API (POST reserva). Card em “Aguardando pagamento”.');}})));
+      if(!c.reservas.length)lat.append(el('p',{class:'lat-txt',text:'Quando uma reserva for registrada, ela aparece aqui.'}));
+      c.reservas.forEach(x=>lat.append(el('div',{class:'lat-card'},el('b',{text:x[0]}),el('span',{class:'tipo '+x[2],text:x[1]}))));
+      lat.append(el('div',{class:'lat-sec'},el('span',{class:'rotulo',text:'Pagamentos'})));
+      if(!c.pagamentos.length)lat.append(el('p',{class:'lat-txt',text:'Nenhuma cobrança. Use “Cobrar” na conversa.'}));
+      c.pagamentos.forEach(x=>lat.append(el('div',{class:'lat-card'},el('b',{text:x[0]}),el('span',{class:'tipo '+x[2],text:x[1]}))));
+      if(c.etapa!=='hosp')lat.append(el('div',{class:'upsell'},el('span',{class:'rotulo',style:'color:var(--cor-secundaria-texto)',text:'Oferta prioritária'}),el('strong',{text:'Combo boia cross + arvorismo'}),el('span',{text:'R$ 170 por pessoa'})));
+    }
+    if(painelLat==='his'){
+      lat.append(el('span',{class:'rotulo',text:'Origem'}),el('p',{class:'lat-txt',text:c.origemDet}));
+      if(c.fila)lat.append(el('div',{class:'lat-alerta'},el('b',{text:'Aguardando a equipe'}),el('span',{text:c.fila})));
+      const cot=c.reservas.filter(x=>/Orçamento/.test(x[1])),est=c.reservas.filter(x=>!/Orçamento/.test(x[1]));
+      lat.append(el('span',{class:'rotulo',text:'Últimas cotações'}));
+      if(!cot.length)lat.append(el('p',{class:'lat-txt',text:'Nenhuma cotação ainda.'}));cot.forEach(x=>lat.append(el('div',{class:'lat-card'},el('b',{text:x[0]}),el('span',{text:x[1]}))));
+      lat.append(el('span',{class:'rotulo',text:'Estadias e reservas'}));
+      if(!est.length)lat.append(el('p',{class:'lat-txt',text:'Nenhuma estadia no Silbeck.'}));est.forEach(x=>lat.append(el('div',{class:'lat-card'},el('b',{text:x[0]}),el('span',{class:'tipo '+x[2],text:x[1]}))));
+      lat.append(el('span',{class:'rotulo',text:'Atendimentos anteriores'}),el('div',{class:'lat-card'},el('b',{text:CANAL[c.canal]+' · 12/05/2026'}),el('span',{text:'Atendido por Jagles · resolvido'})));
+      if(c.lead)lat.append(el('button',{class:'btn btn-editar',type:'button',text:'Abrir ficha completa',onclick:()=>abrirFicha(c.lead)}));
+    }
+    if(painelLat==='tar'){
+      const [lista,l]=tarefasDe(c);
+      if(!lista.length)lat.append(el('p',{class:'lat-txt',text:'Não há tarefas para este cliente.'}));
+      lista.slice().sort((a,b)=>a.q.localeCompare(b.q)).forEach(t=>lat.append(l.id?linhaTarefa(t,l,false):el('div',{class:'tarefa'},el('input',{type:'checkbox',checked:t.f,onchange:ev=>{t.f=ev.target.checked;renderLateral(c);}}),el('div',{},el('b',{text:t.t}),' · ',t.d),el('span'))));
+      const tipo=el('select',{'aria-label':'Tipo da tarefa'},TIPOS_TAREFA.map(t=>el('option',{value:t,text:t})));
+      const quando=el('input',{type:'datetime-local',value:dia(1,'10:00'),'aria-label':'Quando'});
+      const desc=el('input',{type:'text',placeholder:'Descrição (opcional)','aria-label':'Descrição'});
+      lat.append(el('span',{class:'rotulo',text:'Adicionar tarefa'}),el('div',{class:'edit-inline'},tipo,desc,quando,
+        el('button',{class:'btn btn-enviar',type:'button',text:'Adicionar tarefa',onclick:()=>{lista.push({t:tipo.value,d:desc.value||tipo.value,q:quando.value,r:c.resp==='agente'?'jagles':c.resp,f:false});renderBoard();renderLateral(c);toast('Tarefa adicionada. Ela aparece também na aba Tarefas.');}})));
+    }
   }
   function cobrar(c,tipo){
     const val=c.lead&&leadPor(c.lead)?Math.round((leadPor(c.lead).valor||1480)/2):740;
@@ -1250,6 +1315,13 @@ button,input,select{font:inherit;color:inherit}
   $('t-limpar').addEventListener('click',()=>{$('t-msgs').textContent='';});
   let tIni='1';try{tIni=localStorage.getItem('crm-teste')||'1'}catch(e){}
   mostrarTeste(tIni==='1');
+
+  // v6: menu lateral recolhível
+  document.querySelectorAll('.nav button').forEach(b=>{[...b.childNodes].forEach(n=>{if(n.nodeType===3&&n.textContent.trim()){const sp=document.createElement('span');sp.className='rot';sp.textContent=n.textContent;b.replaceChild(sp,n);b.title=n.textContent.trim();}});});
+  const app=document.querySelector('.app'),btR=$('bt-recolher');
+  function recolher(on){app.classList.toggle('recolhido',on);btR.setAttribute('aria-expanded',String(!on));btR.setAttribute('aria-label',on?'Expandir menu':'Recolher menu');btR.title=on?'Expandir menu':'Recolher menu';try{localStorage.setItem('crm-menu',on?'1':'0')}catch(e){}}
+  btR.addEventListener('click',()=>recolher(!app.classList.contains('recolhido')));
+  let mIni='0';try{mIni=localStorage.getItem('crm-menu')||'0'}catch(e){}recolher(mIni==='1');
   renderBoard();renderRegua();iniciarV4();
 })();
 </script>
