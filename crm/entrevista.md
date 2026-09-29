@@ -162,3 +162,13 @@
 - A **Asksuite custa cerca de R$ 800/mês** hoje. É o parâmetro de comparação: o custo mensal do CRM (servidor + banco + mensagens pagas da Meta + uso da IA) deve ficar **nessa faixa ou abaixo**, e o painel mostra o custo real do mês.
 - Pedido do dono: um **exemplo visual do layout** para visualizar (protótipo estático com a identidade de `crm/identidade-ui.md`).
 - **Protótipo visual v1** (29/09/2026): `crm/prototipo/crm-cabanas.html`, publicado em https://claude.ai/artifact/6Pz2wqMU9oJQYJZZVCN2Uh (privado). Telas: Conversas (resposta sugerida com ✅ ✏️ ❌, ficha do lead com perfil detectado e oferta prioritária), Funil, Painel (filtro por data, resultado por origem, direta × OTA, noites por dia, motivos de perda, acerto do agente, custo × R$ 800) e Régua de mensagens. Dados fictícios.
+
+### P21. Ajustes após o protótipo v1 (29/09/2026)
+- **Cor do agente:** o dono **não gostou do azul (índigo)** nos balões do agente. Trocar por uma cor da paleta da marca: **verde folha suave** (balão `#EEF3E1`, texto/rótulo `#5A7026`; no escuro, `#90AB49`). A mensagem da equipe continua no marrom suave.
+- **Fluxo do agente muda:** o agente **responde direto, sem esperar aprovação** (senão a conversa trava e alguém precisa ficar vigiando). A revisão é **depois**, numa aba própria.
+  - Substitui o "modo treino com aprovação antes de enviar" (P14/P15). A meta de **90% de acerto** continua, medida pelas revisões feitas depois.
+  - Mitigação do risco de responder ao vivo: responder só com a fonte de conhecimento; se não souber, dizer que vai confirmar e passar para a equipe; casos sensíveis vão para uma pessoa; horários do agente configuráveis (padrão 17h–7h30, com o dono podendo ampliar).
+- **Nova aba "Ajustes do agente"** com:
+  1. **Revisão de conversas:** escolher uma conversa atendida pelo agente e, em cada resposta, **✅ Aprovar · ✏️ Corrigir · ❌ Reprovar** (com motivo). A resposta corrigida vira **resposta de referência** e é **incorporada** ao agente para as próximas conversas.
+  2. **Fonte de conhecimento:** lugar para **subir material de apoio** (arquivos, textos e links) e ir incluindo, organizado por tema: política de cancelamento, horários de funcionamento, atividades oferecidas, link do cardápio, link de localização, distâncias entre cidades, passeios de Bonito, transporte etc. Cada item mostra quem incluiu, a data e se está em uso. Ponto de partida: os arquivos que a equipe já mantém (`contexto/hotel-operacional.md`, `contexto/destino-bonito.md`, `marketing/2026-09-banco-de-objecoes.md` depois de revisado).
+  3. **Regras do agente:** horários, liga/desliga e o que sempre vai para uma pessoa.
