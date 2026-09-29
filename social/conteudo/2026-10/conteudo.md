@@ -535,3 +535,60 @@ Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648
 ### A confirmar com o dono
 - **Dias dos voos:** reconfirmar a malha na semana da publicação e tirar a marca "[confirmar dias e horários vigentes]" (a Latam passa a 3 voos por semana a partir de 25/10/2026, segundo `destino-bonito.md`). Se algum dia mudar, ajustar só a legenda (a arte não cita dias).
 - **Link na bio:** o Linktree está com o motor de reservas e o WhatsApp em destaque no dia 11/10?
+
+---
+
+## POST 16 · 18/10 (domingo) 18h · carrossel 7 telas · extra pedido pelo dono: o Bangalô
+- Data: 18/10 (domingo) · 18h · Formato: carrossel 7 telas, feed 3:4 (1080 × 1440) · Pilar: 1 (Contemplação) · Persona: Famílias, "Os Aventureiros de Fim de Semana" (2ª: Casais que querem mais espaço) · Objetivo: considerar e reservar
+- Status: texto final, aguardando o OK do dono (pedido avulso do dono em 29/09/2026)
+- Justificativa: o Bangalô recebe de 2 a 4 pessoas e aceita crianças, o que o torna a acomodação da família (hotel-operacional §2 e §8). Publicado em 18/10, o post alcança quem reserva de 45 a 50 dias antes: o fim de novembro e a 1ª quinzena de dezembro (baixa temporada em Bonito, fora os feriados) e as férias de janeiro (alta, quando crescem os hóspedes de fora do estado; destino-bonito §3 e hotel-cabanas §9). Em janeiro, época de chuva, o texto não promete água cristalina.
+- Cuidados: é o **Bangalô de 40 m²**, não a Cabana Tripla nem o Bangalô Especial (as fotos chamadas "triplo" e "quadruplo" são todas do Bangalô de 40 m², segundo o dono em 27/09; ver `contexto/banco-de-imagens.md`). Nada de "2 camas king" (isso é do Bangalô Especial) nem de "madeira" ou "3 m" (isso é das cabanas). O banco na varanda é confirmado só para o Bangalô Especial, por isso a legenda cita só mesa, cadeiras e rede. Não há recreação infantil. Nada de preço, e o texto não usa o ângulo "domingo a quinta", que já está em vários posts do mês (regra do dono de 28/09).
+
+### Briefing de arte
+Feed 3:4 (1080 × 1440). Um só layout em todas as telas (o dono prefere **sem faixa**; faixa discreta marrom `#847059` se a foto for clara demais). Título serifado com a palavra em **negrito** e a palavra em *itálico* marcadas; apoio em sem serifa, caixa alta espaçada; linha fina laranja `#F58634` + "BONITO / MS" na assinatura. **Não consegui abrir as fotos nesta sessão (o Drive entregou só o arquivo bruto): a escolha foi feita pelo nome. O Designer abre cada foto antes de montar e troca pela alternativa indicada se a cena não bater.**
+- TELA 1 (capa): apoio "BANGALÔ · 40 M² · 2 A 4 PESSOAS" · "Espaço para **quatro**, *natureza* em volta" (6) (foto: `Bangalô / bangalo_triplo_externa` (1bcxsg), https://drive.google.com/file/d/1bcxsgpVwVIjIhTqakffLIPrF3pDZvUEi/view; alternativa: `bangalo_triplo_externa` (1wbIC8))
+- TELA 2: apoio "ALVENARIA ELEVADA · NÃO DIVIDE PAREDES" · "Nenhuma **parede** em *comum*" (4) (foto: `Bangalô / bangalo_externa` (1Ys225), https://drive.google.com/file/d/1Ys2258SPxaO5ah1XvSLWK8IqAGOCrx3C/view; já confirmada como Bangalô no POST 07)
+- TELA 3: apoio "VARANDA PRIVATIVA COM REDE" · "A **rede** *espera* depois da trilha" (6) (foto: `Bangalô / bangalo_triplo_varanda_com _rede` (1YJx7o), https://drive.google.com/file/d/1YJx7oxm9B2-6m2riSvdhQfWdUVgpsyNo/view; alternativa: `bangalo_quadruplo_varanda_com_rede` (1c3Ru5), já usada no POST 07)
+- TELA 4: apoio "MESA, CADEIRAS E VISTA PARA A NATUREZA" · "Conversa **longa**, *vista* verde" (4) (foto: `Bangalô / bangalo_triplo_varanda` (1WZSUd), https://drive.google.com/file/d/1WZSUdBcTUezcjnZwCvvxPKNRDwHXxKRA/view)
+- TELA 5: apoio "CAMA DE CASAL + 2 CAMAS DE SOLTEIRO" · "Todos **juntos**, cada um no seu *canto*" (7) (foto: `Bangalô / bangalo_quadruplo_interna` (1Pcz3a), https://drive.google.com/file/d/1Pcz3aX6U-XnlC-PATmWkaWWZo6l2pcTz/view; alternativas: `bangalo_quadruplo_interna` (1r9eJt) e (1d-UlW). Usar a que mostra a cama de casal e as 2 de solteiro no mesmo quadro)
+- TELA 6: apoio "DUCHA COM AQUECIMENTO SOLAR E A GÁS" · "**Banho** quente depois do *rio*" (5) (foto: `Bangalô / bangalo_quadruplo_banheiro` (1L53TA), https://drive.google.com/file/d/1L53TAEEQGM0w_8_HvueIWjjcgsYfZhmV/view; alternativa: `bangalo_triplo_banheiro` (1DpWTs))
+- TELA 7 (CTA): apoio "RESERVE DIRETO · sbreserva.silbeck.com.br/hotelcabanas · WHATSAPP (67) 99117-1648" · "Seu **lugar** de *conexão*, em família" (6) (foto: `Bangalô / bangalo_triplo_externa` (1wbIC8), https://drive.google.com/file/d/1wbIC8lY9OGlS36Qu_9X8BpDYg7b9TqvS/view; se for quase igual à da capa, usar `bangalo_externa` (1Ys225) numa versão com outro recorte, ou a foto da varanda com rede que não entrar na tela 3)
+- Fora do carrossel: `bangalo_quadruplo_clouset` (1fEZoM, 1HQIwo), `bangalo_triplo_clouset` (1kp8SE, 1Jggn8) e `bangalo_triplo_interna` (1Kemg6, 1PmfzQ, 19qZPQ) ficam como reserva.
+- Se alguma foto mostrar pétalas, rosa ou plaquinha "LOVE", ela sai do carrossel (este post não fala da decoração especial).
+
+### Legenda
+40 m², rede na varanda e nenhuma parede dividida com o vizinho: este é o Bangalô do Hotel Cabanas.
+
+O Bangalô é de alvenaria, elevado do chão, e não divide paredes com outra acomodação. São 40 m² para 2 a 4 pessoas, com cama de casal e 2 camas de solteiro. A varanda é privativa, com mesa, cadeiras, rede e vista para a natureza, e a garagem fica em frente.
+No quarto: Smart TV de 40", ar-condicionado quente e frio, frigobar, Wi-Fi e ducha com aquecimento solar e a gás.
+
+O Bangalô recebe crianças, e as de até 5 anos não pagam, dormindo na cama dos pais. Berço mediante agendamento.
+
+Na diária: café da manhã (das 6h30 às 9h30), piscina climatizada, hidromassagem aquecida e sauna (das 7h às 22h), playground e a programação diária com monitor: arco e flecha e trilhas com tirolesa, caiaque e stand up paddle, sem idade mínima. Os horários podem variar conforme a temporada.
+Boia cross e arvorismo são opcionais (a partir de 5 anos e 1,15 m).
+
+Tudo isso no único hotel de Bonito cercado por dois rios, o Formoso e o Formosinho.
+No fim de novembro e na 1ª quinzena de dezembro, Bonito está na baixa temporada (fora os feriados). Para as férias de janeiro, vale reservar com antecedência.
+
+Nossos valores já têm desconto para quem reserva direto: sbreserva.silbeck.com.br/hotelcabanas
+Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648.
+
+#hotelcabanasbonito #bonitoms #bonitomatogrossodosul #turismodenatureza #viagememfamilia
+
+*1ª linha: 98 caracteres. Hashtags: 5, da lista oficial (1 marca + 2 destino + 1 segmento + 1 tema).*
+
+### Texto alternativo (alt text)
+Descrições feitas pelo nome da foto: o Designer ajusta cada uma ao abrir a imagem.
+- TELA 1: "Fachada do Bangalô do Hotel Cabanas, de alvenaria e elevado do chão, cercado de vegetação. Texto: Espaço para quatro, natureza em volta."
+- TELA 2: "Vista externa do Bangalô, uma construção isolada que não divide paredes com outras acomodações, em meio às árvores. Texto: Nenhuma parede em comum."
+- TELA 3: "Varanda privativa do Bangalô com uma rede armada e a vegetação ao fundo. Texto: A rede espera depois da trilha."
+- TELA 4: "Varanda do Bangalô com mesa e cadeiras, com vista para a natureza. Texto: Conversa longa, vista verde."
+- TELA 5: "Quarto do Bangalô com uma cama de casal e duas camas de solteiro arrumadas. Texto: Todos juntos, cada um no seu canto."
+- TELA 6: "Banheiro do Bangalô com ducha. Texto: Banho quente depois do rio."
+- TELA 7: "Área externa do Bangalô do Hotel Cabanas, em Bonito, Mato Grosso do Sul. Texto: Seu lugar de conexão, em família. Reserve direto em sbreserva.silbeck.com.br/hotelcabanas ou pelo WhatsApp (67) 99117-1648."
+
+### A confirmar com o dono
+- **Fotos:** não consegui abrir as imagens nesta sessão. O Designer confere se a `bangalo_quadruplo_interna` escolhida mostra a cama de casal e as 2 de solteiro juntas e se as duas `bangalo_triplo_externa` não são quase iguais (se forem, a tela 7 muda como indicado).
+- **Nome "triplo" nas fotos:** você confirmou em 27/09 que todas as fotos da pasta são do Bangalô de 40 m². Se as fotos "triplo" mostrarem uma arrumação para 3 pessoas (casal + 1 solteiro), a tela 5 continua com uma foto "quadruplo" e a legenda não muda.
+- **Banco na varanda:** o `banco-de-imagens.md` diz que a foto `bangalo_quadruplo_varanda_com_rede` mostra rede **e banco**, mas o `hotel-operacional.md` lista o banco só no Bangalô Especial. Por enquanto a legenda não cita o banco. O Bangalô de 40 m² tem banco na varanda? [a confirmar com o dono]
+- **Janeiro:** o texto só diz "vale reservar com antecedência", sem prometer vaga nem citar o pacote de Réveillon. Se você quiser citar o Réveillon (29/12 a 02/01, 4 noites), é preciso confirmar que há vaga no Bangalô.
