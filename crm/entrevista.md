@@ -218,3 +218,6 @@ Comentários do dono:
 - **7.2** Régua: **cada mensagem com seu campo de edição** e possibilidade de **cadastrar outras** (comentário cortado no fim).
 Próximo passo: protótipo v3 com a lista validada (funil completo com arrastar e soltar, ficha do cliente, tarefas, etc.).
 - **Protótipo v3** (29/09/2026), mesmo link: Funil com arrastar e soltar, etapa mudada no card, motivo obrigatório ao ir para Perdido, busca e filtros, alerta de lead parado, soma por coluna, "Novo lead"; **ficha do cliente** em gaveta com abas Dados (tudo editável, inclusive responsável), Atividades (agendar com tipo, data e responsável) e Histórico; aba **Tarefas** (atrasadas, hoje, próximas); **fonte de conhecimento editável** (editar/excluir itens, adicionar informação no tema, criar e renomear temas); **régua editável** (editar cada mensagem e criar novas).
+
+### P27. Análise crítica pedida pelo dono (29/09/2026)
+- A equipe fez a análise crítica do CRM v3: `crm/analise-critica.md` (18 pontos: venda e receita, operação, riscos, implantação). Aguardando o dono escolher o que entra.
