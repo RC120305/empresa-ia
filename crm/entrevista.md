@@ -221,3 +221,4 @@ Próximo passo: protótipo v3 com a lista validada (funil completo com arrastar 
 
 ### P27. Análise crítica pedida pelo dono (29/09/2026)
 - A equipe fez a análise crítica do CRM v3: `crm/analise-critica.md` (18 pontos: venda e receita, operação, riscos, implantação). Aguardando o dono escolher o que entra.
+- Página para aprovar a análise crítica: `crm/prototipo/analise-critica.html`, publicada em https://claude.ai/artifact/Ddk3P3MPsVBMRHugViZU5g (botões Aprova/Reprova/Ajusta + observação; gravados internamente como mantem/corta/muda nas coleções `respostas` e `faltas`).
