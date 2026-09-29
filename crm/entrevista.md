@@ -298,3 +298,11 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
   - Alternância **lista × modo Kanban**.
 - Aguardando mais telas e explicações do dono.
 - **Modo Kanban da Asksuite (inspiração):** funil e conversa **na mesma tela** (colunas à esquerda, a conversa aberta num painel à direita, sem trocar de página); filtros no topo (empresa, atendentes, etiquetas, canais, busca); abas de status (**Aberto, Resolvido, Arquivado**) e atalhos (Atribuídos a mim, Não respondidos, Não lidos), período e **Exportar**; colunas com **quantidade e valor total** (ex.: "32 · R$ 77 mil"); no card, a **data da última mensagem**, contador de não lidas e o aviso **"A janela de 24h expirou"** (lembra que ali só sai mensagem paga, por modelo aprovado).
+- **Alimentação do agente na Asksuite ("Data hub", inspiração):**
+  - Três abas: **Fonte de dados**, **Questionário** e **Ensinar robô**.
+  - **Questionário por tópicos** (Configurações, Reservas, Sobre o hotel, Localização, **Pré-chegada**, Atividades, Respostas especiais) com **barra de progresso** (ex.: 97%), perguntas-padrão com campo de resposta e "marcar como respondido" (ex.: "O que levar durante a estadia?", "Como é o tempo e a temperatura na cidade?").
+  - **Ensinar robô / biblioteca de ensinamentos:** tabela **pergunta → resposta**, com data da última alteração, editar e excluir; botão "Novo treinamento".
+  - **Rascunho × publicado:** "Descartar alterações" e **"Publicar alterações"** (mudança só vale depois de publicada).
+  - **"Testar conteúdo":** chat de teste ao lado, com **"Ver fontes"**, para conferir a resposta antes de publicar.
+  - O robô se apresenta como **"Gilberto"** (nome do fundador do hotel).
+  - **Ação:** exportar/copiar as respostas do questionário e a biblioteca de ensinamentos da Asksuite antes de cancelar: elas preenchem lacunas da nossa fonte (ex.: "o que trazer", clima, check-in/check-out).
