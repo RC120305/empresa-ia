@@ -132,3 +132,17 @@
 - O **WhatsApp é o coração do CRM**: é onde está a maior parte da venda, e é onde o agente mais faz diferença.
 - **Agências:** cadastro de agência (contatos, comissão, reservas) e conversa sempre com a equipe (o agente não negocia com agência). O **e-mail** entra como canal: avaliar trazer a caixa de reservas para dentro do CRM (fase posterior).
 - **Booking (20–25%, com comissão):** a maior oportunidade de margem é o **pós-estadia**: converter o hóspede que veio pelo Booking em **reserva direta na próxima vez** (dentro das regras da Booking e só com consentimento do hóspede).
+
+### P17. Pós-estadia e pré-chegada (29/09/2026)
+- **Pós-estadia: fazer tudo** (organizar como disparos programados): pedido de avaliação (Google/TripAdvisor, só para satisfeitos) · NPS (nota baixa vira alerta) · convite para voltar (baixa temporada e domingo a quinta, foco no hóspede de MS) · converter o hóspede do Booking em reserva direta.
+- **Pré-chegada: necessário.** Hoje o hotel envia um **link de pré-check-in**, **localização/como chegar** e **o que trazer**.
+- **Pedido do dono:** um **lugar para cadastrar todos os tipos de mensagem** e **configurar o momento de envio** de cada uma.
+
+**Desenho: "Régua de mensagens" (tela do CRM)** — cada mensagem cadastrada tem:
+- **Gatilho/momento:** evento da reserva no Silbeck (reserva confirmada, X dias antes do check-in, dia do check-in, check-out, X dias depois do check-out) ou evento do lead (sem resposta há X horas/dias).
+- **Público:** filtros por perfil (casal, família...), origem (Booking, direto, agência), estado (MS/fora), acomodação.
+- **Conteúdo:** texto com campos automáticos (nome, datas, acomodação), imagem/link opcional; número de envio (99110 ou 99117).
+- **Tipo na Meta:** utilidade (pré-check-in, instruções: mais barato) ou marketing (convite para voltar, follow-up: mais caro e exige consentimento); o CRM mostra o status de aprovação do modelo na Meta.
+- **Liga/desliga** por mensagem, e o painel mostra envios, custo, respostas e reservas geradas.
+
+**Régua inicial proposta (a validar):** reserva confirmada → boas-vindas + resumo · 7 dias antes → link de pré-check-in · 3 dias antes → como chegar + o que trazer + oferta de boia cross/arvorismo/combo (decoração só até 3 dias antes) · check-out + 1 dia → NPS · nota alta → pedido de avaliação · 30–60 dias depois → convite para voltar (baixa/dom–qui) · hóspede Booking → "na próxima, reserve direto".
