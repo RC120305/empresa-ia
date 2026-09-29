@@ -151,3 +151,9 @@
 - **Ordem aprovada:** (1) caixa de entrada única com os 2 números, origem e funil → (2) agente em modo treino (✅ ✏️ ❌) + painel de métricas → (3) integração Silbeck (disponibilidade e reserva) + régua de mensagens → (4) agente sozinho à noite (17h–7h30) após os 90%.
 - **Antes do layout:** usar a identidade visual do hotel. Ela já existe para o Instagram (`contexto/marca/identidade.md`); o **Designer de Criativos** foi acionado para estendê-la à interface do sistema (`crm/identidade-ui.md` e `crm/tokens.css`).
 - **Prazo:** não há data de saída da Asksuite definida; **há tempo para trabalhar**. A Asksuite segue ativa até o CRM passar pelos testes (sem corrida; migração do 99110 só no fim).
+
+### P19. Direct do Instagram e Messenger na caixa de entrada (29/09/2026)
+- **Sim, já na fase 1**: a caixa de entrada única recebe **WhatsApp 99110 + WhatsApp 99117 + direct do Instagram + Messenger do Facebook**, com origem, funil e agente.
+- Base técnica: a chave da Meta do hotel já tem `instagram_manage_messages` (direct listado em 28/09); falta assinar os webhooks de mensagens da Página/Instagram. O Messenger usa a mesma Página (158244147578036).
+- Regra das duas plataformas: resposta livre dentro de 24 horas da última mensagem do cliente; fora disso, só nos casos permitidos pela Meta (o agente não "persegue" o cliente pelo direct).
+- Identidade única: a mesma pessoa pode falar pelo direct e depois pelo WhatsApp; o CRM tenta juntar os contatos (pelo telefone informado na conversa) para não duplicar o lead e não perder a origem.
