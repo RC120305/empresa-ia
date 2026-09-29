@@ -150,3 +150,4 @@
 ### P18. Ordem das fases e identidade visual (29/09/2026)
 - **Ordem aprovada:** (1) caixa de entrada única com os 2 números, origem e funil → (2) agente em modo treino (✅ ✏️ ❌) + painel de métricas → (3) integração Silbeck (disponibilidade e reserva) + régua de mensagens → (4) agente sozinho à noite (17h–7h30) após os 90%.
 - **Antes do layout:** usar a identidade visual do hotel. Ela já existe para o Instagram (`contexto/marca/identidade.md`); o **Designer de Criativos** foi acionado para estendê-la à interface do sistema (`crm/identidade-ui.md` e `crm/tokens.css`).
+- **Prazo:** não há data de saída da Asksuite definida; **há tempo para trabalhar**. A Asksuite segue ativa até o CRM passar pelos testes (sem corrida; migração do 99110 só no fim).
