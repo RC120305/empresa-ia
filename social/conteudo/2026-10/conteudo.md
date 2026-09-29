@@ -552,7 +552,7 @@ Feed 3:4 (1080 × 1440). Um só layout em todas as telas (o dono prefere **sem f
 - TELA 4: apoio "VARANDA PRIVATIVA" · "Conversa **longa**, *vista* para *natureza*" (5) (texto editado pelo dono na Central em 29/09) (foto: `Bangalô / bangalo_triplo_varanda` (1WZSUd), https://drive.google.com/file/d/1WZSUdBcTUezcjnZwCvvxPKNRDwHXxKRA/view)
 - TELA 5: apoio "CAMA DE CASAL + 2 CAMAS DE SOLTEIRO" · "Espaço **amplo**, e *confortável*" (4) (texto editado pelo dono na Central em 29/09) (foto: `Bangalô / bangalo_quadruplo_interna` (1d-UlW), https://drive.google.com/file/d/1d-UlWVw-I06W9AND9MgIZklVzv3hHUTl/view; **trocada pelo Designer**: é a única que mostra a cama de casal e as 2 de solteiro no mesmo quadro; a 1Pcz3a e a 1r9eJt cortam uma das camas de solteiro)
 - TELA 6: apoio "DUCHA COM AQUECIMENTO SOLAR E A GÁS" · "**Banho** quente depois do *rio*" (5) (foto: `Bangalô / bangalo_triplo_banheiro` (1DpWTs), https://drive.google.com/file/d/1DpWTsbU7sOQrbOwTkBesdXu2QEsdEPLn/view; **trocada pelo Designer**: na 1L53TA o vaso sanitário fica em primeiro plano no recorte vertical; na 1DpWTs aparecem o box, o chuveiro e a janela)
-- TELA 7 (CTA): apoio "RESERVE DIRETO · sbreserva.silbeck.com.br/hotelcabanas · WHATSAPP (67) 99117-1648" · "Seu **lugar** de *conexão*, em família" (6) (foto: `Bangalô / bangalo_triplo_externa` (1wbIC8), https://drive.google.com/file/d/1wbIC8lY9OGlS36Qu_9X8BpDYg7b9TqvS/view; mantida: mostra o mesmo bangalô de outro ângulo, a lateral com a janela ampla, e não é quase igual à da capa)
+- TELA 7 (CTA): apoio "RESERVE DIRETO · sbreserva.silbeck.com.br/hotelcabanas · WHATSAPP (67) 99117-1648" · "Seu **lugar** de *conexão*, em família" (6) (foto: `Bangalô / bangalo_triplo_interna` (1PmfzQ), https://drive.google.com/file/d/1PmfzQ7cebMpdsT_UvalwFbQvqDEf-uh2/view; **trocada pelo dono na Central em 29/09**; texto no alto, sobre o forro)
 - Fora do carrossel: `bangalo_quadruplo_clouset` (1fEZoM, 1HQIwo), `bangalo_triplo_clouset` (1kp8SE, 1Jggn8) e `bangalo_triplo_interna` (1Kemg6, 1PmfzQ, 19qZPQ) ficam como reserva.
 - Se alguma foto mostrar pétalas, rosa ou plaquinha "LOVE", ela sai do carrossel (este post não fala da decoração especial).
 
@@ -585,7 +585,7 @@ Ajustadas pelo Designer ao que as fotos mostram (29/09/2026).
 - TELA 4: "Varanda do Bangalô com mesa de madeira, banco com almofadas e vista para a mata. Texto: Conversa longa, vista para natureza."
 - TELA 5: "Quarto do Bangalô com uma cama de casal ao centro e duas camas de solteiro, uma de cada lado, com toalhas dobradas e forro de madeira. Texto: Espaço amplo e confortável."
 - TELA 6: "Banheiro do Bangalô com box de vidro, chuveiro e parede de ladrilhos estampados. Texto: Banho quente depois do rio."
-- TELA 7: "Bangalô do Hotel Cabanas visto de lado, elevado do chão, com janela ampla e escada de madeira, entre árvores e palmeiras. Texto: Seu lugar de conexão, em família. Reserve direto em sbreserva.silbeck.com.br/hotelcabanas ou pelo WhatsApp (67) 99117-1648."
+- TELA 7: "Quarto do Bangalô com forro de madeira, duas camas arrumadas, porta e janela para a mata. Texto: Seu lugar de conexão, em família. Reserve direto em sbreserva.silbeck.com.br/hotelcabanas ou pelo WhatsApp (67) 99117-1648."
 
 ### A confirmar com o dono
 - **Fotos:** conferidas pelo Designer em 29/09/2026. As telas 5 (1d-UlW) e 6 (1DpWTs) foram trocadas, e a tela 7 foi mantida (ver `design/pecas/2026-10-instagram/POST-16/entrega.md`).
