@@ -1,0 +1,219 @@
+/* Tokens de interface do CRM do Hotel Cabanas (modo claro e escuro).
+   Destino: crm/tokens.css. Documentação e contrastes: crm/identidade-ui.md.
+   Base: contexto/marca/identidade.md (marrom #847059, verde #90AB49, laranja #F58634).
+   Contrastes calculados pela fórmula WCAG 2.x; validar de novo se algum hex mudar. */
+
+/* ---------- Fontes ----------
+   Josefin Sans: já está no repositório (licença OFL). Caminho relativo a crm/.
+   Inter: licença OFL (Google Fonts). Baixar os .woff2 (400, 500, 600, 700) para crm/fontes/
+   ao montar o projeto; até lá, cai na fonte do sistema. */
+@font-face { font-family: "Josefin Sans"; font-weight: 400; font-display: swap; src: url("../contexto/marca/fontes/josefin-sans-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Josefin Sans"; font-weight: 600; font-display: swap; src: url("../contexto/marca/fontes/josefin-sans-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Playfair Display"; font-weight: 400; font-style: italic; font-display: swap; src: url("../contexto/marca/fontes/playfair-display-latin-400-italic.woff2") format("woff2"); }
+/* @font-face { font-family: "Inter"; font-weight: 400 700; font-display: swap; src: url("fontes/InterVariable.woff2") format("woff2"); } */
+
+:root {
+  color-scheme: light;
+
+  /* ---------- Marca (valores originais; não usar como cor de texto sobre claro, exceto o marrom sobre branco) ---------- */
+  --marca-marrom: #847059;   /* branco sobre ele 4,73:1 (AA) */
+  --marca-verde: #90AB49;    /* branco sobre ele 2,59:1: NUNCA texto branco sobre verde */
+  --marca-laranja: #F58634;  /* branco sobre ele 2,52:1: texto escuro por cima (5,90:1) */
+  --marca-creme: #F7F1E6;
+
+  /* ---------- Neutros ---------- */
+  --cor-fundo: #F7F3EC;              /* fundo da aplicação (creme mais claro) */
+  --cor-superficie: #FFFFFF;         /* cartões, painéis, balões recebidos */
+  --cor-superficie-elevada: #FFFFFF; /* menus e modais (diferenciar pela sombra) */
+  --cor-borda: #E3DACB;              /* divisórias (decorativa) */
+  --cor-borda-forte: #9C8C7A;        /* contorno de campos: 3,26:1 sobre branco */
+  --cor-texto: #2E2620;              /* 14,85:1 no branco; 13,42:1 no fundo */
+  --cor-texto-secundario: #6B5D4F;   /* 6,36:1 no branco; 5,75:1 no fundo; também placeholder */
+  --cor-texto-inverso: #FFFFFF;
+
+  /* ---------- Primária (marrom madeira) ---------- */
+  --cor-primaria: #847059;           /* fundo de botão com texto branco (4,73:1) */
+  --cor-primaria-hover: #6E5B47;     /* branco sobre ele 6,46:1 */
+  --cor-primaria-texto: #6E5B47;     /* links e texto marrom: 6,46:1 no branco; 5,84:1 no fundo */
+  --cor-primaria-suave: #EEEBE8;     /* item de menu ativo, seleção */
+  --cor-sobre-primaria: #FFFFFF;
+
+  /* ---------- Secundária (verde folha) ---------- */
+  --cor-secundaria: #90AB49;         /* detalhes, ícones grandes, barras de gráfico; texto por cima: #2E2620 (5,73:1) */
+  --cor-secundaria-texto: #5A7026;   /* texto verde: 5,55:1 no branco; 5,02:1 no fundo */
+  --cor-secundaria-suave: #EEF3E1;
+
+  /* ---------- Destaque / CTA (laranja janela: uma chamada por tela) ---------- */
+  --cor-destaque: #F58634;           /* fundo do botão de destaque */
+  --cor-sobre-destaque: #2E2620;     /* 5,90:1 */
+  --cor-destaque-hover: #F79B57;     /* mais claro: o contraste com o texto escuro só aumenta */
+  --cor-destaque-texto: #A8520F;     /* laranja como texto: 5,41:1 no branco; 4,89:1 no fundo */
+  --cor-foco: #A8520F;               /* anel de foco (o laranja original tem só 2,52:1 no branco) */
+
+  /* ---------- Estados (texto/ícone + fundo suave) ---------- */
+  --cor-sucesso: #5A7026;  --cor-sucesso-suave: #EEF3E1;  /* 5,55 no branco; 4,90 no suave */
+  --cor-alerta:  #8A5A00;  --cor-alerta-suave:  #FBF1DC;  /* 5,93 no branco; 5,28 no suave */
+  --cor-erro:    #B3372B;  --cor-erro-suave:    #FBEAE7;  /* 6,00 no branco; 5,15 no suave */
+  --cor-info:    #2F6B82;  --cor-info-suave:    #E6F0F3;  /* 5,92 no branco; 5,11 no suave */
+
+  /* ---------- Barra lateral (marrom escuro, igual nos dois modos) ---------- */
+  --cor-lateral-fundo: #3B3128;
+  --cor-lateral-texto: #F7F1E6;       /* 11,28:1 */
+  --cor-lateral-texto-sec: #BFB3A3;   /* 6,15:1 */
+  --cor-lateral-ativo: #F58634;       /* o laranja original passa aqui: 5,04:1 */
+
+  /* ---------- Categorias do CRM ----------
+     --cat-*: marca (bolinha, borda, barra de gráfico). Contraste ≥ 3:1 no branco e na superfície escura.
+     --cat-*-suave: fundo da etiqueta no modo claro. O texto da etiqueta é sempre --cor-texto (≥ 12:1).
+     Nunca só a cor: sempre com o nome escrito (e ícone quando houver). */
+  /* Funil */
+  --cat-novo: #3F7F9A;          --cat-novo-suave: #E4EDF1;
+  --cat-atendimento: #C0661E;   --cat-atendimento-suave: #F6EAE0;
+  --cat-orcamento: #8566B0;     --cat-orcamento-suave: #EEEAF4;
+  --cat-reservado: #6E8A2E;     --cat-reservado-suave: #EBEFE2;
+  --cat-perdido: #8A8078;       --cat-perdido-suave: #EFEDEC;
+  /* Origem */
+  --origem-meta: #3B6FB6;       --origem-meta-suave: #E4EBF5;
+  --origem-instagram: #B0487A;  --origem-instagram-suave: #F4E5EC;
+  --origem-google: #2E8277;     --origem-google-suave: #E2EEEC;
+  --origem-site: #847059;       --origem-site-suave: #EEEBE8;
+  --origem-retorno: #6E8A2E;    --origem-retorno-suave: #EBEFE2;
+  --origem-indicacao: #8566B0;  --origem-indicacao-suave: #EEEAF4;
+  --origem-agencia: #9A7B12;    --origem-agencia-suave: #F1ECDE;
+  --origem-ota: #6B7785;        --origem-ota-suave: #EAECEE;
+  /* Comando da conversa */
+  --comando-ia: #6A72BE;        --comando-ia-suave: #EAEBF6;
+  --comando-pessoa: #C0661E;    --comando-pessoa-suave: #F6EAE0;
+
+  /* ---------- Tipografia ---------- */
+  --fonte-marca: "Josefin Sans", "Montserrat", system-ui, sans-serif;  /* rótulos em caixa alta, títulos de seção, logotipo */
+  --fonte-texto: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; /* corpo, conversas, tabelas, números */
+  --fonte-emocional: "Playfair Display", Georgia, serif;  /* só boas-vindas e telas vazias, nunca em operação */
+
+  --texto-xs: 12px;   /* hora da mensagem, legenda de gráfico (mínimo absoluto) */
+  --texto-sm: 14px;   /* tabelas, metadados, etiquetas */
+  --texto-md: 16px;   /* corpo e balões de conversa (padrão, também no celular) */
+  --texto-lg: 18px;   /* título de cartão */
+  --texto-xl: 22px;   /* título de página */
+  --texto-2xl: 28px;  /* número do painel no celular */
+  --texto-3xl: 36px;  /* número do painel no computador */
+
+  --peso-normal: 400; --peso-medio: 500; --peso-forte: 600; --peso-titulo: 700;
+  --altura-linha: 1.5; --altura-linha-compacta: 1.3;
+  --espacamento-rotulo: 0.1em; /* caixa alta em Josefin Sans */
+
+  /* ---------- Espaço, forma e sombra ---------- */
+  --esp-1: 4px; --esp-2: 8px; --esp-3: 12px; --esp-4: 16px; --esp-5: 24px; --esp-6: 32px; --esp-7: 48px;
+  --alvo-toque: 44px;           /* altura mínima de botão/linha tocável no celular */
+
+  --raio-sm: 6px;               /* etiquetas retangulares, campos pequenos */
+  --raio-md: 8px;               /* botões e campos */
+  --raio-lg: 12px;              /* cartões, painel da resposta sugerida */
+  --raio-balao: 16px;           /* balão de conversa (canto do remetente: --raio-sm) */
+  --raio-pilula: 999px;         /* etiquetas de etapa e origem */
+
+  --sombra-1: 0 1px 2px rgba(46, 38, 32, .08);
+  --sombra-2: 0 2px 8px rgba(46, 38, 32, .10);
+  --sombra-3: 0 8px 24px rgba(46, 38, 32, .14);   /* menus e modais */
+
+  --icone-traco: 1.75px;        /* ícones de contorno (Lucide) */
+  --icone-sm: 16px; --icone-md: 20px; --icone-lg: 24px;
+  --logo-altura-topo: 36px;     /* logo colorido no topo (computador) */
+  --logo-altura-login: 96px;
+}
+
+/* ---------- Modo escuro ----------
+   Ativa pelo sistema do aparelho ou por escolha do usuário (data-tema="escuro"). */
+:root[data-tema="escuro"] {
+  color-scheme: dark;
+
+  --cor-fundo: #1E1914;
+  --cor-superficie: #29221B;
+  --cor-superficie-elevada: #342B23;
+  --cor-borda: #4A3F34;
+  --cor-borda-forte: #7A6A58;        /* 3,01:1 na superfície */
+  --cor-texto: #F2ECE2;              /* 14,84 no fundo; 13,35 na superfície; 11,79 na elevada */
+  --cor-texto-secundario: #BFB3A3;   /* 7,61 na superfície; 6,72 na elevada */
+  --cor-texto-inverso: #1E1914;
+
+  --cor-primaria: #C4A98A;           /* botão claro com texto escuro: 7,80:1 */
+  --cor-primaria-hover: #D3BC9F;
+  --cor-primaria-texto: #C4A98A;     /* 7,01 na superfície (o #847059 teria só 3,32) */
+  --cor-primaria-suave: #342B23;
+  --cor-sobre-primaria: #1E1914;
+
+  --cor-secundaria: #90AB49;
+  --cor-secundaria-texto: #90AB49;   /* o verde original passa no escuro: 6,06 na superfície */
+  --cor-secundaria-suave: #342B23;
+
+  --cor-destaque: #F58634;
+  --cor-sobre-destaque: #1E1914;     /* 6,93:1 */
+  --cor-destaque-hover: #F79B57;
+  --cor-destaque-texto: #F58634;     /* 6,23 na superfície */
+  --cor-foco: #F58634;
+
+  /* Estados: fundo suave = superfície elevada + borda esquerda na cor do estado */
+  --cor-sucesso: #90AB49;  --cor-sucesso-suave: #342B23;  /* 6,06 / 5,35 */
+  --cor-alerta:  #E8B04A;  --cor-alerta-suave:  #342B23;  /* 8,02 / 7,09 */
+  --cor-erro:    #EF8A7A;  --cor-erro-suave:    #342B23;  /* 6,41 / 5,66 */
+  --cor-info:    #7FB8CC;  --cor-info-suave:    #342B23;  /* 7,19 / 6,35 */
+
+  --cor-lateral-fundo: #171310;
+
+  /* Categorias: as cores --cat-* e --origem-* continuam as mesmas (≥ 3:1 na superfície escura).
+     As etiquetas usam fundo --cor-superficie-elevada, bolinha colorida e texto --cor-texto. */
+  --cat-novo-suave: #342B23; --cat-atendimento-suave: #342B23; --cat-orcamento-suave: #342B23;
+  --cat-reservado-suave: #342B23; --cat-perdido-suave: #342B23;
+  --origem-meta-suave: #342B23; --origem-instagram-suave: #342B23; --origem-google-suave: #342B23;
+  --origem-site-suave: #342B23; --origem-retorno-suave: #342B23; --origem-indicacao-suave: #342B23;
+  --origem-agencia-suave: #342B23; --origem-ota-suave: #342B23;
+  --comando-ia-suave: #342B23; --comando-pessoa-suave: #342B23;
+
+  --sombra-1: 0 1px 2px rgba(0, 0, 0, .40);
+  --sombra-2: 0 2px 8px rgba(0, 0, 0, .45);
+  --sombra-3: 0 8px 24px rgba(0, 0, 0, .55);
+}
+
+/* Segue o sistema do aparelho quando o usuário não escolheu. Mantenha igual ao bloco acima. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="claro"]) {
+    color-scheme: dark;
+    --cor-fundo: #1E1914; --cor-superficie: #29221B; --cor-superficie-elevada: #342B23;
+    --cor-borda: #4A3F34; --cor-borda-forte: #7A6A58;
+    --cor-texto: #F2ECE2; --cor-texto-secundario: #BFB3A3; --cor-texto-inverso: #1E1914;
+    --cor-primaria: #C4A98A; --cor-primaria-hover: #D3BC9F; --cor-primaria-texto: #C4A98A;
+    --cor-primaria-suave: #342B23; --cor-sobre-primaria: #1E1914;
+    --cor-secundaria: #90AB49; --cor-secundaria-texto: #90AB49; --cor-secundaria-suave: #342B23;
+    --cor-destaque: #F58634; --cor-sobre-destaque: #1E1914; --cor-destaque-hover: #F79B57;
+    --cor-destaque-texto: #F58634; --cor-foco: #F58634;
+    --cor-sucesso: #90AB49; --cor-sucesso-suave: #342B23;
+    --cor-alerta: #E8B04A;  --cor-alerta-suave: #342B23;
+    --cor-erro: #EF8A7A;    --cor-erro-suave: #342B23;
+    --cor-info: #7FB8CC;    --cor-info-suave: #342B23;
+    --cor-lateral-fundo: #171310;
+    --cat-novo-suave: #342B23; --cat-atendimento-suave: #342B23; --cat-orcamento-suave: #342B23;
+    --cat-reservado-suave: #342B23; --cat-perdido-suave: #342B23;
+    --origem-meta-suave: #342B23; --origem-instagram-suave: #342B23; --origem-google-suave: #342B23;
+    --origem-site-suave: #342B23; --origem-retorno-suave: #342B23; --origem-indicacao-suave: #342B23;
+    --origem-agencia-suave: #342B23; --origem-ota-suave: #342B23;
+    --comando-ia-suave: #342B23; --comando-pessoa-suave: #342B23;
+    --sombra-1: 0 1px 2px rgba(0, 0, 0, .40);
+    --sombra-2: 0 2px 8px rgba(0, 0, 0, .45);
+    --sombra-3: 0 8px 24px rgba(0, 0, 0, .55);
+  }
+}
+
+/* ---------- Base mínima ---------- */
+body {
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  font-family: var(--fonte-texto);
+  font-size: var(--texto-md);
+  line-height: var(--altura-linha);
+}
+.rotulo { /* títulos de seção e rótulos: identidade do logo */
+  font-family: var(--fonte-marca); font-weight: var(--peso-forte);
+  font-size: var(--texto-sm); letter-spacing: var(--espacamento-rotulo); text-transform: uppercase;
+}
+.numero { font-variant-numeric: tabular-nums; } /* números do painel e tabelas alinhados */
+:focus-visible { outline: 2px solid var(--cor-foco); outline-offset: 2px; }
