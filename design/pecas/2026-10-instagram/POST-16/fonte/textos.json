@@ -147,9 +147,9 @@
   ]
  },
  "4": {
-  "titulo": "Conversa **longa**, *vista* verde",
-  "apoio": "Mesa, cadeiras e vista para a natureza",
-  "apoio_cc": "Mesa, cadeiras e vista para a natureza",
+  "titulo": "Conversa **longa**, *vista* para *natureza*",
+  "apoio": "Varanda privativa",
+  "apoio_cc": "Varanda privativa",
   "pos": "35% center",
   "sf_lado": "cima",
   "sf_sombras": [
@@ -201,7 +201,7 @@
   ]
  },
  "5": {
-  "titulo": "Todos **juntos**,\ncada um no seu *canto*",
+  "titulo": "Espaço **amplo**,\ne *confortável*",
   "apoio": "Cama de casal + 2 camas de solteiro",
   "apoio_cc": "Cama de casal + 2 camas de solteiro",
   "pos": "50% center",
