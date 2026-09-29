@@ -274,3 +274,12 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
    - Sem pagamento no prazo → **lembrete pelo WhatsApp** com o QR/copia-e-cola; vencido o prazo final → alerta para a equipe decidir (cancelar é manual no Silbeck, sem endpoint).
 4. **Reservas do Booking e das agências** entram pela mesma sincronização (via channel manager → Silbeck), com origem OTA/agência, para o pré-chegada e o pós-estadia.
 - **A confirmar na documentação:** campo de canal/origem e status (confirmada, pré-reserva, pendente) no `ListaReserva`; filtros por data de criação; se o Pix do motor usa a chave da conta do BB e se traz identificador.
+
+### P34. Reservas do Booking: cobrança (29/09/2026)
+- Reservas do **Booking entram no Silbeck como não pagas**; a equipe **cobra manualmente no cartão**, com os **dados do cartão que o Booking disponibiliza** ao hotel.
+**Decisão de desenho (segurança):** o CRM **não recebe, não mostra e não guarda dados de cartão** (nem o agente de IA). Guardar ou trafegar número de cartão exige certificação PCI e cria risco de vazamento e fraude. A cobrança continua **no ambiente atual** (extranet do Booking + maquininha/terminal da Cielo ou Silbeck).
+**O que o CRM faz:**
+- Reserva do Booking sincronizada → card em **Reservado · a cobrar (Booking)** + **tarefa "Cobrar reserva do Booking"** com prazo (conforme a política da tarifa no Booking) e responsável.
+- Painel/lista **"Cobranças do Booking pendentes"** (hoje, atrasadas).
+- Quando o pagamento aparece no Silbeck (`GET /v1/ExtratoConta`), a tarefa fecha sozinha e o card vira **pago**. Cartão recusado → a equipe marca e o CRM registra o prazo que o Booking dá para o hotel pedir outro cartão.
+- A avaliar depois: **pagamentos pelo próprio Booking** (Payments by Booking.com / cartão virtual), que tira a cobrança manual do hotel.

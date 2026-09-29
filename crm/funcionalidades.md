@@ -107,3 +107,4 @@
 | 9.4 | **Sincronizar as reservas do motor da Silbeck** (e do Booking/agências): entram no CRM, casam com o lead existente e ficam como **pago** (cartão) ou **aguardando pagamento** (Pix) | 🆕 | 3 |
 | 9.6 | Confirmar sozinho o **Pix do motor** pelos Pix recebidos no BB (1 clique quando houver dúvida); lembrete ao cliente e alerta de vencido | 🆕 | 3 |
 | 9.5 | Etapa "Aguardando pagamento" com prazo e lembrete (A1) | ✅ | 1 |
+| 9.7 | Reservas do **Booking**: card "a cobrar", tarefa de cobrança com prazo, lista de pendentes e baixa automática quando o pagamento aparece no Silbeck. **Sem dados de cartão no CRM** | 🆕 | 3 |
