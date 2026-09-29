@@ -95,3 +95,12 @@
 - O agente precisa **classificar o perfil do lead** na conversa (casal, família, grupo de amigos, 55+, observador de aves etc.; personas de `hotel-cabanas.md`).
 - Um **kit de modelos de follow-up por persona** (texto do Marketing + foto real do banco de imagens escolhida pelo Designer), submetido à Meta com antecedência. Só fotos reais do banco.
 - O painel mostra o **custo dos disparos** e quantas reservas vieram do follow-up.
+
+### P13. O que o agente pode oferecer para fechar; comando do agente; perfil do lead (29/09/2026)
+- **Sem descontos.** O hotel não trabalha com desconto; o agente usa só o argumento de sempre ("valores com desconto para quem reserva direto" é o preço do canal direto, não uma oferta) e o valor do que está incluso.
+- **Biblioteca de mensagens editável:** um lugar no CRM onde a equipe **cadastra e edita as mensagens** (follow-up, ofertas de upsell, respostas padrão) que o agente dispara **quando estiver no comando**. Nada fica "escondido" no código.
+- **Liga/desliga do agente:**
+  - **manual**, a qualquer momento, por qualquer usuário autorizado (por conversa e geral);
+  - **por horários pré-definidos** em que o agente assume sozinho (ex.: noite, madrugada, fim de semana).
+  - Quando o agente está desligado, a conversa fica com a equipe; quando uma pessoa assume uma conversa, o agente não interfere nela.
+- **Identificação automática do perfil pela fala do cliente:** "somos em 2", "eu e minha esposa/namorado" → **casal**; "2 adultos e 2 crianças", idades → **família com filhos**; "vamos em 6", "turma" → **grupo**; menções a idade 55+, aves, bike, sustentabilidade → personas específicas. O perfil fica no cadastro do lead (editável pela equipe) e alimenta a acomodação sugerida, o upsell e a imagem do follow-up.
