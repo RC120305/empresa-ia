@@ -283,3 +283,5 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 - Painel/lista **"Cobranças do Booking pendentes"** (hoje, atrasadas).
 - Quando o pagamento aparece no Silbeck (`GET /v1/ExtratoConta`), a tarefa fecha sozinha e o card vira **pago**. Cartão recusado → a equipe marca e o CRM registra o prazo que o Booking dá para o hotel pedir outro cartão.
 - A avaliar depois: **pagamentos pelo próprio Booking** (Payments by Booking.com / cartão virtual), que tira a cobrança manual do hotel.
+- **Confirmado (29/09/2026):** (1) o Pix do motor **cai na mesma conta do Banco do Brasil**; (2) a reserva do motor com Pix fica no Silbeck como **"pré-reserva aguardando pagamento"**. O CRM usa esse status para pôr o card em "Aguardando pagamento · Pix do motor".
+- **A confirmar na documentação:** como passar a pré-reserva para **confirmada** pela API depois do Pix (se o `POST /v1/Adiantamento` já confirma ou se há outro passo). Se não houver, o CRM lança o adiantamento e cria uma tarefa de 1 clique para a equipe confirmar no Silbeck.
