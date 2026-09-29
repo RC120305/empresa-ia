@@ -222,3 +222,11 @@ Próximo passo: protótipo v3 com a lista validada (funil completo com arrastar 
 ### P27. Análise crítica pedida pelo dono (29/09/2026)
 - A equipe fez a análise crítica do CRM v3: `crm/analise-critica.md` (18 pontos: venda e receita, operação, riscos, implantação). Aguardando o dono escolher o que entra.
 - Página para aprovar a análise crítica: `crm/prototipo/analise-critica.html`, publicada em https://claude.ai/artifact/Ddk3P3MPsVBMRHugViZU5g (botões Aprova/Reprova/Ajusta + observação; gravados internamente como mantem/corta/muda nas coleções `respostas` e `faltas`).
+
+### P28. Resultado da análise crítica (29/09/2026)
+Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Ajusta"** (A1, A7, B1, B2), nenhum reprovado, nada acrescentado.
+- **Aprovados:** A2, A3, A4, A5, A6, A8, B3, B4, C1, C2, C3, C4, D1, D2.
+- **A1 (Aguardando pagamento):** o hotel **lança o pagamento da reserva no Silbeck**; hoje os **links de pagamento são feitos à mão**. Pergunta do dono: dá para automatizar os links com segurança e **lançar o pagamento na conta do cliente no Silbeck pela API**? → respondido no chat (P29); depende da documentação da Silbeck.
+- **A2 (orçamento):** puxar do **motor de reservas do Silbeck**, que já tem os apartamentos, os valores e as imagens. Checar na documentação da Silbeck.
+- **A3 (lista de espera):** aprovado; exige acesso prático ao **mapa de vagas** (A4).
+- **A7, B1, B2:** o dono pediu **explicação com exemplos** antes de decidir.
