@@ -25,6 +25,8 @@ cal = sorted(glob.glob(f"social/conteudo/{mes}/calendario-v*.csv"))[-1]
 dias = {"0": "domingo", "1": "segunda", "2": "terça", "3": "quarta", "4": "quinta", "5": "sexta", "6": "sábado"}
 posts = []
 for r in csv.DictReader(open(cal)):
+    if r["Status"].startswith("Publicado"):
+        continue  # já está no Instagram: sai da Central (poupa arquivos)
     nn = r["Post"].split()[1]
     base = f"design/pecas/{mes}-instagram/POST-{nn}"
     finals = sorted(glob.glob(f"{base}/final/*.png"))

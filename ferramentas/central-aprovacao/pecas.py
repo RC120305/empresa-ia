@@ -58,8 +58,13 @@ def copy_asset(path):
 
 
 res = {}
+import csv  # noqa: E402
+cal = sorted(glob.glob(f"social/conteudo/{mes}/calendario-v*.csv"))
+publicados = {r["Post"].split()[1] for r in csv.DictReader(open(cal[-1])) if r["Status"].startswith("Publicado")} if cal else set()
 for d in sorted(glob.glob(f"{base}/POST-*/estilos")):
     post = d.split("POST-")[1][:2]
+    if post in publicados:
+        continue  # já está no Instagram: sai da Central
     n_telas = len(glob.glob(f"{d}/estilo-1/*.png"))
     res[post] = {}
     for k in "123":
