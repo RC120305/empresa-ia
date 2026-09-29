@@ -198,3 +198,12 @@
 - Custo estimado da infraestrutura: Supabase Pro ~US$ 25 + Vercel Pro ~US$ 20 ≈ R$ 250/mês (confirmar preços atuais); sobra ~R$ 550 do teto de R$ 800 para Meta e IA.
 - O banco do CRM **não substitui o Silbeck**: guarda o vínculo com a reserva e os números do painel.
 - **O dono já tem conta no Supabase.** Recomendação: criar um **projeto novo e exclusivo** para o CRM, na **região São Paulo** (a região não muda depois de criado). Chaves e senhas **nunca no chat**: vão direto nas configurações seguras.
+
+### P25. Decisão de infraestrutura (29/09/2026)
+**Decisão do dono: Supabase + Google Cloud Run.**
+- **Aplicativo, recebimento de mensagens da Meta e agente:** **Google Cloud Run**, região **São Paulo** (`southamerica-east1`). O dono tem **Google AI Ultra**, que inclui **US$ 100/mês em créditos do Google Cloud** (benefício do Google Developer Program, ativar no painel do programa); o Cloud Run do CRM deve ficar coberto pelos créditos. O projeto do Google Cloud exige conta de faturamento com cartão.
+- **Banco, login, arquivos (banco de imagens e vídeos) e tempo real:** **Supabase** (PostgreSQL + pgvector), projeto novo e exclusivo, região **São Paulo**; plano gratuito para construir, **Pro (~US$ 25/mês)** antes de ir para produção. O dono já tem conta.
+- **Ponte com o Silbeck:** conector no hotel só com conexões de saída (ex.: Cloudflare Tunnel), montado pelo Márcio.
+- Alternativas avaliadas e descartadas: Vercel, Railway, Render, Netlify, Cloudflare (tudo), Cloud SQL e Firestore (relatórios exigiriam BigQuery como peça extra).
+- Custo estimado da infraestrutura: **~US$ 25/mês (~R$ 140)**; o resto do teto de R$ 800 fica para mensagens da Meta e IA do agente.
+- **Pendente:** o projeto do Google Cloud fica na conta pessoal do Ultra ou numa conta do hotel (recomendação: conta do hotel, com dono, Renata e Márcio como administradores; os créditos do Ultra só valem na conta do assinante).
