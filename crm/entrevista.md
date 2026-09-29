@@ -208,3 +208,12 @@
 - Custo estimado da infraestrutura: **~US$ 25/mês (~R$ 140)**; o resto do teto de R$ 800 fica para mensagens da Meta e IA do agente.
 - **Pendente:** o projeto do Google Cloud fica na conta pessoal do Ultra ou numa conta do hotel (recomendação: conta do hotel, com dono, Renata e Márcio como administradores; os créditos do Ultra só valem na conta do assinante).
 - **Página de validação** (29/09/2026): `crm/prototipo/validacao-funcionalidades.html`, publicada em https://claude.ai/artifact/Su6tvj37TXkJ4wjoievfSq. O dono marca Mantém/Corta/Muda + comentário em cada item e adiciona o que falta; as respostas ficam no banco da página (coleções `respostas` e `faltas`) e a equipe lê de lá.
+
+### P26. Validação da lista de funcionalidades (29/09/2026)
+Respostas lidas da página de validação: **62 de 62 itens avaliados** — **61 mantidos**, **1 cortado** (1.12, funis separados); nenhum item novo em "O que está faltando".
+Comentários do dono:
+- **1.6** Integração pela API: quando o usuário faz a reserva no Silbeck, o sistema busca os dados e **concilia com o lead do CRM**.
+- **5.2** Fonte de conhecimento: **todos os campos editáveis**, poder **acrescentar informações dentro de cada tema** e **criar novos temas**.
+- **5.5** Reserva pelo agente: "via a[PI]" (comentário cortado; entendido como via API da Silbeck).
+- **7.2** Régua: **cada mensagem com seu campo de edição** e possibilidade de **cadastrar outras** (comentário cortado no fim).
+Próximo passo: protótipo v3 com a lista validada (funil completo com arrastar e soltar, ficha do cliente, tarefas, etc.).

@@ -2,7 +2,7 @@
 
 > Versão 1, 29/09/2026. Junta o que já foi decidido na entrevista (`entrevista.md`), os pedidos do dono sobre o protótipo e o que um CRM de hotel costuma ter.
 > **Legenda:** ✅ decidido na entrevista · 🆕 pedido do dono no protótipo · 💡 sugestão da equipe (o dono aprova ou corta) · Fase = ordem de construção aprovada (1 a 4).
-> Como usar: marque o que **corta**, o que **muda** e o que **falta**. Tudo o que ficar aqui entra na especificação.
+> **Validada pelo dono em 29/09/2026** (página de validação): **61 itens mantidos, 1 cortado (1.12)**, nenhum item novo em "falta". Comentários do dono incorporados abaixo (💬).
 
 ## 1. Funil de vendas
 | # | Funcionalidade | Status | Fase |
@@ -12,13 +12,13 @@
 | 1.3 | **Mudar a etapa dentro do card** (o card se move sozinho) | 🆕 | 1 |
 | 1.4 | **Clicar no card abre a ficha completa** do cliente | 🆕 | 1 |
 | 1.5 | Ao mover para **Perdido**, pedir o **motivo** (lista fixa + outro) | ✅ | 1 |
-| 1.6 | Ao mover para **Reservado**, ligar ao número da reserva no Silbeck (automático na fase 3) | ✅ | 1/3 |
+| 1.6 | Ao mover para **Reservado**, ligar ao número da reserva no Silbeck (automático na fase 3). 💬 *Integração pela API: quando a reserva é feita no Silbeck, o sistema busca os dados e concilia com o lead do CRM.* | ✅ | 1/3 |
 | 1.7 | Filtros do funil: responsável, origem, perfil, datas da estadia, canal | 💡 | 1 |
 | 1.8 | Busca por nome, telefone ou e-mail | 💡 | 1 |
 | 1.9 | Valor previsto por card e soma por coluna | 💡 | 1 |
 | 1.10 | Alerta visual de lead parado (ex.: sem resposta há 24 h) | 💡 | 1 |
 | 1.11 | Etapas editáveis (criar, renomear, reordenar) | 💡 | 2 |
-| 1.12 | Funis separados (ex.: Hospedagem × Agências × Eventos/grupos) | 💡 | 2 |
+| ~~1.12~~ | ~~Funis separados (ex.: Hospedagem × Agências × Eventos/grupos)~~ **Cortado pelo dono** | 💡 | — |
 | 1.13 | Visão em lista/tabela, além das colunas | 💡 | 2 |
 
 ## 2. Ficha do cliente (lead / contato)
@@ -61,10 +61,10 @@
 | # | Funcionalidade | Status | Fase |
 |---|---|---|---|
 | 5.1 | Revisão depois: Aprovar / Corrigir / Reprovar; correção vira resposta de referência | 🆕 | 2 |
-| 5.2 | Fonte de conhecimento (arquivos, textos, links por tema) | 🆕 | 2 |
+| 5.2 | Fonte de conhecimento (arquivos, textos, links por tema). 💬 *Todos os campos editáveis; poder acrescentar informações dentro de cada tema e criar novos temas.* | 🆕 | 2 |
 | 5.3 | Regras: horários, o que passa para pessoa, o que nunca faz | ✅ | 2 |
 | 5.4 | Identificação automática do perfil pela fala | ✅ | 2 |
-| 5.5 | Consulta de disponibilidade e **reserva no Silbeck** | ✅ | 3 |
+| 5.5 | Consulta de disponibilidade e **reserva no Silbeck**. 💬 *Via API da Silbeck.* | ✅ | 3 |
 | 5.6 | % de acerto e meta de 90% | ✅ | 2 |
 | 5.7 | **Banco de imagens e vídeos** (importado do Drive, com etiquetas e descrição da cena) | 🆕 | 2 |
 | 5.8 | Agente envia as fotos/vídeos certos conforme a pergunta (acomodação, atividade, perfil) | 🆕 | 2 |
@@ -85,7 +85,7 @@
 | # | Funcionalidade | Status | Fase |
 |---|---|---|---|
 | 7.1 | Cadastro de mensagens com gatilho, público, conteúdo e número de envio | ✅ | 3 |
-| 7.2 | Pré-chegada (pré-check-in, localização, o que trazer, upsell) e pós-estadia (NPS, avaliação, volta, Booking → direto) | ✅ | 3 |
+| 7.2 | Pré-chegada (pré-check-in, localização, o que trazer, upsell) e pós-estadia (NPS, avaliação, volta, Booking → direto). 💬 *Cada mensagem com seu campo de edição e possibilidade de cadastrar outras.* | ✅ | 3 |
 | 7.3 | Follow-up: 1ª tentativa na janela de 24 h, 2ª em 3 dias com foto do perfil | ✅ | 2 |
 | 7.4 | Campanhas avulsas para uma lista filtrada (ex.: hóspedes de MS para um feriado com vagas) | 💡 | 3 |
 
