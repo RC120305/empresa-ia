@@ -182,3 +182,13 @@
   - **Mudar a etapa dentro do card**, e o card **se move sozinho** para a coluna nova.
   - **Arrastar e soltar** os cards com o mouse entre as etapas.
 - Não estava previsto no protótipo v1/v2 (a ficha existia só na tela de Conversas). Para não depender da memória do dono, a equipe montou a lista completa de funcionalidades em `crm/funcionalidades.md` para ele marcar.
+
+### P23. Banco de imagens e vídeos na fonte de conhecimento (29/09/2026)
+- **Pedido do dono:** a fonte de conhecimento precisa de um **banco de imagens e vídeos para enviar aos clientes**.
+- **Base que já existe:** as pastas do Google Drive "Imagens do hotel cabanas" (por acomodação, atividade, infraestrutura, café) e "Vídeos do hotel cabanas" (mapa em `contexto/banco-de-imagens.md`). Só fotos e vídeos reais, todos autorizados.
+- **Desenho proposto:**
+  - Importar do Drive para o CRM, organizado pelas mesmas pastas, com **etiquetas** (acomodação, atividade, perfil: casal, família, 55+) e uma **descrição da cena** (os nomes dos arquivos hoje não dizem o que aparece).
+  - **Envio manual:** na conversa, botão "Enviar foto/vídeo do banco" com busca por etiqueta.
+  - **Envio pelo agente:** quando o cliente pergunta de uma acomodação ou atividade, o agente envia 2 ou 3 fotos certas (ex.: pergunta da Cabana Master → fotos da Master). Também alimenta a 2ª tentativa do follow-up (foto por perfil).
+  - Marcar as mídias **favoritas** por tema, para o agente usar primeiro; e poder desativar uma mídia sem apagar.
+  - Limites do WhatsApp: vídeo até **16 MB** e imagem até **5 MB** por envio; o CRM guarda uma versão leve de cada vídeo para envio.

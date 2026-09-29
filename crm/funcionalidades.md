@@ -54,6 +54,7 @@
 | 4.3 | Transferir conversa para outro usuário | 💡 | 1 |
 | 4.4 | Respostas rápidas (atalhos de texto da equipe) | 💡 | 1 |
 | 4.5 | Enviar foto, PDF, áudio e localização; ouvir áudio do cliente (e transcrição) | 💡 | 1 |
+| 4.7 | Botão "Enviar do banco de imagens e vídeos" na conversa, com busca por etiqueta | 🆕 | 2 |
 | 4.6 | Filtros: aguardando, com o agente, minhas, por canal | ✅ | 1 |
 
 ## 5. Agente de IA (aba Ajustes do agente)
@@ -65,6 +66,9 @@
 | 5.4 | Identificação automática do perfil pela fala | ✅ | 2 |
 | 5.5 | Consulta de disponibilidade e **reserva no Silbeck** | ✅ | 3 |
 | 5.6 | % de acerto e meta de 90% | ✅ | 2 |
+| 5.7 | **Banco de imagens e vídeos** (importado do Drive, com etiquetas e descrição da cena) | 🆕 | 2 |
+| 5.8 | Agente envia as fotos/vídeos certos conforme a pergunta (acomodação, atividade, perfil) | 🆕 | 2 |
+| 5.9 | Mídias favoritas por tema; desativar sem apagar | 💡 | 2 |
 
 ## 6. Painel e relatórios
 | # | Funcionalidade | Status | Fase |
