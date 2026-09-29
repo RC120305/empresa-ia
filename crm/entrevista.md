@@ -285,3 +285,15 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 - A avaliar depois: **pagamentos pelo próprio Booking** (Payments by Booking.com / cartão virtual), que tira a cobrança manual do hotel.
 - **Confirmado (29/09/2026):** (1) o Pix do motor **cai na mesma conta do Banco do Brasil**; (2) a reserva do motor com Pix fica no Silbeck como **"pré-reserva aguardando pagamento"**. O CRM usa esse status para pôr o card em "Aguardando pagamento · Pix do motor".
 - **A confirmar na documentação:** como passar a pré-reserva para **confirmada** pela API depois do Pix (se o `POST /v1/Adiantamento` já confirma ou se há outro passo). Se não houver, o CRM lança o adiantamento e cria uma tarefa de 1 clique para a equipe confirmar no Silbeck.
+
+### P35. A7, B1 e B2 aprovados; inspiração nas telas da Asksuite (29/09/2026)
+- **Aprovados pelo dono:** **A7** (links rastreáveis, alimentando as etiquetas coloridas de origem; etiqueta manual com 1 toque quando não houver código), **B1** (hóspede durante a estadia) e **B2** (passagem da madrugada com aviso às 7h30 e escalonamento). Análise crítica: **18 de 18 aprovados** (A1 com o desenho de pagamentos de P31–P34).
+- O dono enviou prints do **LiveChat da Asksuite** como **inspiração, não para copiar** (os prints têm dados de hóspedes: não guardados no repositório). Pontos observados:
+  - Lista de atendimentos com filtros rápidos (**Atribuídos, Não respondidos, Não lidos**), filtro de período, busca, contador de mensagens não lidas, ícone do canal, etiquetas coloridas no card (ex.: Cotação, Solicitado atendimento, Follow-up) e avatar de quem atende.
+  - Cabeçalho da conversa com **Etiquetas**, **Robô ativo** (liga/desliga por conversa), **status do atendimento**, **responsável**, **Histórico** e busca.
+  - Botão **"Assumir atendimento"** quando o robô está no comando.
+  - Robô com nome (**"Sophia"**) e link **"Ver fonte da resposta"** em cada mensagem do robô.
+  - **Formulário dentro do chat** (nome, e-mail, telefone, datas, interesse em passeio) e **botões de resposta rápida** (Quero comprar, Localização, Perguntas frequentes).
+  - Painel lateral **"Reservas nesta conversa"** com **"Registrar reserva"**.
+  - Alternância **lista × modo Kanban**.
+- Aguardando mais telas e explicações do dono.
