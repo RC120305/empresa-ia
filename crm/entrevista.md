@@ -60,3 +60,8 @@
 ### P7. Quem responde o 99117-1648 (WhatsApp Business) (29/09/2026)
 - **Respondido manualmente**: por Jagles e, quando Jagles não está, **por outras pessoas da equipe** (mesmo aparelho/app).
 - Consequência: a caixa de entrada do CRM precisa de **vários usuários** (cada um com seu login), com registro de **quem respondeu** cada conversa e passagem de turno sem perder o fio.
+
+### P8. A origem do hóspede é registrada hoje? (29/09/2026)
+- **Hoje não se registra** a origem, e o dono **quer passar a ter**.
+- O **Silbeck tem um campo de origem** na reserva (nome exato do campo e se aparece na API: a confirmar na documentação).
+- Direção: o CRM descobre a origem na conversa (automaticamente quando possível) e **grava no campo de origem do Silbeck** ao criar a reserva; o faturamento por origem sai do Silbeck.
