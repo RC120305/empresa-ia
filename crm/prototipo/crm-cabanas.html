@@ -336,6 +336,88 @@ button,input,select{font:inherit;color:inherit}
 .tema-k h3 input{font:inherit;font-weight:600;border:1px solid var(--cor-borda-forte);border-radius:var(--r-sm);padding:4px 6px;background:var(--cor-superficie);color:var(--cor-texto);min-width:0;flex:1}
 .passo .msg{margin-top:8px;font-size:14px;background:var(--cor-fundo);border:1px solid var(--cor-borda);border-radius:var(--r-md);padding:8px 10px;color:var(--cor-texto)}
 @media (max-width:600px){.grade-campos{grid-template-columns:1fr}}
+
+/* v4: caixa de entrada inspirada no LiveChat, vagas, pagamentos, questionário */
+.p-pag{--c:var(--cor-alerta);--s:var(--cor-alerta-suave)}.p-hosp{--c:var(--cor-info);--s:var(--cor-info-suave)}
+.t-erro{background:var(--cor-erro-suave);color:var(--cor-erro)}
+.btn-destaque{background:var(--cor-destaque);color:var(--cor-sobre-destaque)}.btn-destaque:hover{background:var(--cor-destaque-hover)}
+.cx{display:grid;grid-template-columns:320px minmax(0,1fr) 280px;gap:12px;align-items:start}
+.cx-col{display:flex;flex-direction:column;gap:8px;min-width:0}
+.cx-abas{display:flex;gap:4px;border-bottom:1px solid var(--cor-borda)}
+.cx-abas button{all:unset;cursor:pointer;padding:8px 10px;font-size:14px;font-weight:500;color:var(--cor-texto-sec);border-bottom:3px solid transparent}
+.cx-abas button[aria-selected=true]{color:var(--cor-texto);border-bottom-color:var(--cor-destaque)}
+.cx-lista{display:flex;flex-direction:column;gap:6px;max-height:640px;overflow-y:auto;padding:2px}
+.cx-item{all:unset;cursor:pointer;display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:var(--cor-superficie);border:1px solid var(--cor-borda);border-left:3px solid transparent;border-radius:var(--r-md);box-sizing:border-box}
+.cx-item:hover{border-color:var(--cor-borda-forte)}
+.cx-item[aria-selected=true]{border-left-color:var(--cor-destaque);background:var(--cor-primaria-suave)}
+.cx-l1{display:flex;align-items:center;gap:8px;min-width:0}
+.cx-l1 strong{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15px}
+.cx-hora{font-size:12px;color:var(--cor-texto-sec)}
+.cx-nl{background:var(--cor-destaque);color:var(--cor-sobre-destaque);font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px}
+.cx-l2{display:flex;gap:4px;flex-wrap:wrap}
+.cx-l2 .pilula{font-size:12px;padding:3px 8px 3px 6px}
+.cx-l3{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--cor-texto-sec)}
+.cx-janela{font-size:12px;color:var(--cor-alerta);font-weight:600}
+.canal-ic{font-size:10px;font-weight:700;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;flex:none;color:#fff;background:#2E7D4F}
+.canal-ic.ig{background:#B0487A}.canal-ic.fb{background:#3B6FB6}
+.cx-chat{display:flex;flex-direction:column;min-height:640px;overflow:hidden}
+.cx-topo{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-bottom:1px solid var(--cor-borda)}
+.cx-quem strong{font-size:17px;display:block}
+.cx-ctrl{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.cx-ctrl select{font-size:13px;border:1px solid var(--cor-borda-forte);border-radius:var(--r-sm);padding:5px 6px;background:var(--cor-superficie);color:var(--cor-texto)}
+.cx-sw{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500}
+.cx-sw .switch{background:var(--cor-borda-forte)}.cx-sw .switch[aria-checked=true]{background:var(--ia)}
+.cx-chat .mensagens{flex:1;overflow-y:auto;max-height:470px}
+.fonte-resp{font-size:12px;color:var(--cor-texto-sec);border-top:1px dashed var(--cor-borda-forte);margin-top:6px;padding-top:6px}
+.ver-fonte{all:unset;cursor:pointer;font-size:12px;font-weight:600;color:var(--ia);margin-top:4px;display:block;text-decoration:underline;text-underline-offset:3px}
+.cx-rodape{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 14px;border-top:1px solid var(--cor-borda);background:var(--cor-superficie);font-size:14px;color:var(--cor-texto-sec)}
+.cx-compor{position:relative;border-top:1px solid var(--cor-borda);padding:8px 12px 12px;display:flex;flex-direction:column;gap:6px;background:var(--cor-superficie)}
+.cx-ferr{display:flex;gap:4px;flex-wrap:wrap}
+.cx-envio{display:flex;gap:8px;align-items:flex-end}
+.cx-envio textarea{flex:1;min-width:0;border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:10px;background:var(--cor-superficie);font:inherit;font-size:15px;color:var(--cor-texto);resize:vertical;min-height:44px}
+.cx-menu{position:absolute;bottom:100%;left:12px;right:12px;background:var(--cor-elevada);border:1px solid var(--cor-borda);border-radius:var(--r-md);box-shadow:var(--sombra-2);display:flex;flex-direction:column;max-height:240px;overflow-y:auto;z-index:3}
+.cx-menu button{all:unset;cursor:pointer;padding:10px 12px;font-size:14px;border-bottom:1px solid var(--cor-borda)}
+.cx-menu button:hover{background:var(--cor-primaria-suave)}
+.cx-lateral{padding:14px;display:flex;flex-direction:column;gap:8px}
+.lat-txt{margin:0;font-size:14px;color:var(--cor-texto-sec)}
+.lat-card{border:1px solid var(--cor-borda);border-radius:var(--r-md);padding:8px 10px;display:flex;flex-direction:column;gap:4px;font-size:14px;background:var(--cor-superficie)}
+.lat-card .tipo{align-self:flex-start}
+.lat-alerta{border-radius:var(--r-md);padding:8px 10px;background:var(--cor-alerta-suave);color:var(--cor-alerta);display:flex;flex-direction:column;gap:2px;font-size:14px}
+.vagas-grade{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.vagas-sem{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;font-size:12px;color:var(--cor-texto-sec);text-align:center}
+.dia{all:unset;cursor:pointer;border-radius:var(--r-sm);padding:6px;min-height:52px;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box;border:1px solid var(--cor-borda)}
+.dia .dn{font-weight:600;font-size:14px}.dia .dp{font-size:11px}
+.dia.n1{background:var(--cor-secundaria-suave)}.dia.n2{background:color-mix(in srgb,var(--cor-secundaria) 35%,var(--cor-superficie))}
+.dia.n3{background:color-mix(in srgb,var(--cor-primaria) 30%,var(--cor-superficie))}.dia.n4{background:var(--cor-primaria);color:var(--cor-sobre-primaria)}
+.dia.fds{outline:2px solid var(--cor-borda-forte);outline-offset:-2px}
+.dia-vazio{min-height:52px}
+.pag-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;align-items:start}
+.q-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:12px;align-items:start}
+.q-topicos{display:flex;flex-direction:column;gap:2px;padding:8px}
+.q-topicos button{all:unset;cursor:pointer;display:flex;justify-content:space-between;gap:8px;padding:10px 12px;border-radius:var(--r-md);font-size:14px}
+.q-topicos button[aria-selected=true]{background:var(--cor-primaria-suave);font-weight:600}
+.q-topicos .ok{color:var(--cor-sucesso);font-weight:700}.q-topicos .falta{color:var(--cor-alerta);font-weight:600}
+.q-topicos .novo{color:var(--cor-primaria-texto);font-weight:600}
+.q-prog{height:8px;border-radius:999px;background:var(--cor-primaria-suave);overflow:hidden}.q-prog i{display:block;height:100%;background:var(--cor-destaque);border-radius:999px}
+.q-perguntas{padding:14px;display:flex;flex-direction:column;gap:10px}
+.q-nome{font:inherit;font-weight:700;font-size:17px;border:1px solid transparent;border-radius:var(--r-sm);padding:4px 6px;background:transparent;color:var(--cor-texto)}
+.q-nome:hover,.q-nome:focus{border-color:var(--cor-borda-forte)}
+.q-card{border:1px solid var(--cor-borda);border-radius:var(--r-md);padding:10px;display:flex;flex-direction:column;gap:6px}
+.q-card.vazia{border-color:color-mix(in srgb,var(--cor-alerta) 45%,var(--cor-borda))}
+.q-cab{display:flex;justify-content:space-between;align-items:center}
+.q-card input,.q-card textarea,#bib-form input,#bib-form textarea,#t-inp{border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:8px 10px;background:var(--cor-superficie);font:inherit;font-size:14px;color:var(--cor-texto)}
+.q-card input{font-weight:600}.q-card textarea{min-height:64px;resize:vertical}
+.bib{width:100%;border-collapse:collapse;font-size:14px}
+.bib th{text-align:left;font-weight:500;color:var(--cor-texto-sec);border-bottom:1px solid var(--cor-borda);padding:8px}
+.bib td{border-bottom:1px solid var(--cor-borda);padding:8px;vertical-align:top}
+.pub-barra{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-radius:var(--r-md);background:var(--cor-alerta-suave);color:var(--cor-alerta);font-weight:500}
+.pub-barra span{flex:1}
+.testar{display:flex;flex-direction:column;height:460px}
+.testar .mensagens{flex:1;overflow-y:auto}
+.testar form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--cor-borda)}
+.testar input{flex:1;min-width:0;min-height:44px}
+@media (max-width:1250px){.cx{grid-template-columns:300px minmax(0,1fr)}.cx-lateral{grid-column:1/-1}}
+@media (max-width:900px){.cx,.q-layout{grid-template-columns:minmax(0,1fr)}.cx-lista{max-height:320px}.cx-chat{min-height:0}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -344,11 +426,15 @@ button,input,select{font:inherit;color:inherit}
     <div class="logo"><img src="logo-branco.png" alt="Hotel Cabanas"><span>CRM<br>Reservas</span></div>
     <nav class="nav" role="tablist" aria-label="Seções">
       <button role="tab" aria-selected="true" data-vista="conversas" id="tab-conversas">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Conversas<span class="qtd num">7</span></button>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Conversas<span class="qtd num" id="qtd-conv">0</span></button>
       <button role="tab" aria-selected="false" data-vista="funil" id="tab-funil">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg>Funil</button>
       <button role="tab" aria-selected="false" data-vista="tarefas" id="tab-tarefas">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tarefas<span class="qtd num" id="qtd-tarefas">0</span></button>
+      <button role="tab" aria-selected="false" data-vista="vagas" id="tab-vagas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Vagas</button>
+      <button role="tab" aria-selected="false" data-vista="pagamentos" id="tab-pagamentos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>Pagamentos</button>
       <button role="tab" aria-selected="false" data-vista="painel" id="tab-painel">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Painel</button>
       <button role="tab" aria-selected="false" data-vista="regua" id="tab-regua">
@@ -372,94 +458,23 @@ button,input,select{font:inherit;color:inherit}
 
     <!-- CONVERSAS -->
     <section data-painel="conversas">
-      <div class="cartao agente-movel" style="margin-bottom:12px">
-        <span style="font-size:14px"><b>Agente Cabanas</b> · 17h às 7h30 · 87% de acerto</span>
-        <button class="switch" role="switch" aria-checked="true" aria-label="Agente ligado" id="sw-agente-2"></button>
-      </div>
-      <div class="conversas">
-        <div class="cartao lista" aria-label="Lista de conversas">
-          <div class="filtros">
-            <button class="chip" aria-pressed="true">Todas</button>
-            <button class="chip" aria-pressed="false">Aguardando</button>
-            <button class="chip" aria-pressed="false">Com o agente</button>
-            <button class="chip" aria-pressed="false">Minhas</button>
+      <div class="cx" id="cx">
+        <div class="cx-col">
+          <div class="cx-abas" id="cx-status" role="tablist"><button role="tab" aria-selected="true" data-st="aberto">Abertas</button><button role="tab" aria-selected="false" data-st="resolvido">Resolvidas</button><button role="tab" aria-selected="false" data-st="arquivado">Arquivadas</button></div>
+          <input type="search" id="cx-busca" placeholder="Buscar conversa" aria-label="Buscar conversa" style="border:1px solid var(--cor-borda-forte);border-radius:8px;padding:8px 10px;background:var(--cor-superficie);min-height:40px;font:inherit;color:var(--cor-texto)">
+          <div class="filtros" id="cx-filtros" style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="chip" aria-pressed="true" data-f="todas">Todas</button>
+            <button class="chip" aria-pressed="false" data-f="fila">Aguardando a equipe <b class="num" id="n-fila">0</b></button>
+            <button class="chip" aria-pressed="false" data-f="naolidas">Não lidas</button>
+            <button class="chip" aria-pressed="false" data-f="minhas">Minhas</button>
+            <button class="chip" aria-pressed="false" data-f="agente">Com o agente</button>
+            <button class="chip" aria-pressed="false" data-f="hosp">Hospedados</button>
+            <button class="chip" aria-pressed="false" data-f="janela">Janela 24 h expirada</button>
           </div>
-          <button class="item" aria-selected="true">
-            <span class="avatar">MS</span>
-            <span style="min-width:0"><span class="nome" style="display:block">Mariana S.</span><span class="prev" style="display:block">Agente: Quer que eu faça a reserva?</span></span>
-            <span class="meta"><span class="num">21:42</span><span class="bolinha-ia" title="Atendida pelo agente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg></span></span>
-          </button>
-          <button class="item">
-            <span class="avatar">RF</span>
-            <span style="min-width:0"><span class="nome" style="display:block">Rafael e família</span><span class="prev" style="display:block">Criança de 6 anos faz boia cross?</span></span>
-            <span class="meta"><span class="num">21:10</span><span class="pilula c-ia" style="font-size:11px;padding:3px 7px 3px 6px">Agente</span></span>
-          </button>
-          <button class="item">
-            <span class="avatar">EA</span>
-            <span style="min-width:0"><span class="nome" style="display:block">Ecotur Agência</span><span class="prev" style="display:block">Grupo de 8 pax em março</span></span>
-            <span class="meta"><span class="num">18:55</span><span class="pilula c-pessoa" style="font-size:11px;padding:3px 7px 3px 6px">Jagles</span></span>
-          </button>
-          <button class="item">
-            <span class="avatar">CL</span>
-            <span style="min-width:0"><span class="nome" style="display:block">Cláudia L.</span><span class="prev" style="display:block">Vi no Instagram a cabana na árvore</span></span>
-            <span class="meta"><span class="num">17:20</span></span>
-          </button>
-          <button class="item">
-            <span class="avatar">JP</span>
-            <span style="min-width:0"><span class="nome" style="display:block">João P.</span><span class="prev" style="display:block">Reserva confirmada, obrigado!</span></span>
-            <span class="meta"><span class="num">ontem</span></span>
-          </button>
+          <div class="cx-lista" id="cx-lista"></div>
         </div>
-
-        <div class="cartao chat">
-          <div class="chat-topo">
-            <span class="avatar">MS</span>
-            <div class="quem"><strong>Mariana S.</strong><span class="canal">WhatsApp 99117 · (67) 9xxxx-4410</span></div>
-            <div class="tags">
-              <span class="pilula p-orc">Orçamento enviado</span>
-              <span class="pilula o-meta">Anúncio Meta</span>
-            </div>
-          </div>
-          <div class="mensagens">
-            <span class="dia">Hoje</span>
-            <div class="evento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>Chegou pelo anúncio “Casal: domingo a quinta” · origem registrada automaticamente</div>
-            <div class="balao in">Oi! Vi o anúncio da cabana na árvore. Tem vaga de 16 a 18 de novembro pra eu e meu marido?<div class="hora num">21:31</div></div>
-            <div class="balao out ia"><div class="autor"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>Agente Cabanas</div>Oi, Mariana! Que bom ter você por aqui. 🌿 Temos sim a Cabana suspensa de 16 a 18/11 (domingo a terça, 2 noites), para vocês dois. Na diária já estão o café da manhã, a piscina climatizada, a sauna e as trilhas com caiaque, SUP e tirolesa com monitor.<div class="hora num">21:33 ✓✓</div></div>
-            <div class="balao in">Qual fica o valor? E vale mais a pena que ir pro centro?<div class="hora num">21:42</div></div>
-            <div class="balao out ia"><div class="autor"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>Agente Cabanas</div>Para as duas noites na Cabana suspensa fica R$ 1.480 (valor de exemplo), já com o desconto de quem reserva direto. Estamos a 6 km do centro, com acesso asfaltado, e aqui dentro vocês têm dois rios, trilhas e as atividades com monitor: o passeio começa na porta da cabana. Se quiserem uma dose de aventura, o combo boia cross + arvorismo sai R$ 170 por pessoa. Quer que eu faça a reserva? 😊<div class="hora num">21:42 ✓✓</div></div>
-            <div class="evento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span>Respostas do agente aguardando revisão em <button class="lnk" data-ir="ajustes" style="font-size:13px">Ajustes do agente</button></span></div>
-          </div>
-
-          <div class="escrever"><input id="campo-msg" placeholder="Escrever como Jagles…" aria-label="Escrever mensagem"><button class="btn btn-enviar" aria-label="Enviar mensagem" style="padding:0 14px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button></div>
-        </div>
-
-        <div class="cartao ficha ficha-wrap">
-          <div><div class="rotulo">Contato</div><h3 style="font-size:18px">Mariana S.</h3></div>
-          <dl class="dl">
-            <dt>Perfil</dt><dd><span class="pilula" style="--c:var(--o-insta);--s:var(--o-insta-s)">Casal</span></dd>
-            <dt>Detectado por</dt><dd>“eu e meu marido”</dd>
-            <dt>Estado</dt><dd>MS · Campo Grande</dd>
-            <dt>Já se hospedou?</dt><dd>Não</dd>
-          </dl>
-          <div class="divisor"></div>
-          <div class="rotulo">Pedido</div>
-          <dl class="dl">
-            <dt>Datas</dt><dd class="num">16 a 18/11 · 2 noites</dd>
-            <dt>Dias</dt><dd><span style="color:var(--cor-secundaria-texto)">Domingo a terça</span></dd>
-            <dt>Hóspedes</dt><dd>2 adultos</dd>
-            <dt>Sugestão</dt><dd>Cabana suspensa</dd>
-            <dt>Silbeck</dt><dd style="color:var(--cor-sucesso)">3 cabanas livres</dd>
-          </dl>
-          <div class="upsell">
-            <span class="rotulo" style="color:var(--cor-secundaria-texto)">Oferta prioritária</span>
-            <strong>Combo boia cross + arvorismo</strong>
-            <span class="num">R$ 170 por pessoa · decoração especial ainda possível (faltam 48 dias)</span>
-          </div>
-          <div class="divisor"></div>
-          <div class="rotulo">Follow-up</div>
-          <p style="margin:0;font-size:14px;color:var(--cor-texto-sec)">Se não responder: 1ª tentativa dentro da janela de 24 h (grátis) · 2ª em 3 dias com a foto “Casal na hidromassagem” (paga).</p>
-          <button class="lnk">Assumir a conversa</button>
-        </div>
+        <div class="cartao cx-chat" id="cx-chat"></div>
+        <div class="cartao cx-lateral" id="cx-lateral"></div>
       </div>
     </section>
 
@@ -483,6 +498,27 @@ button,input,select{font:inherit;color:inherit}
         <div class="chips" role="group" aria-label="Mostrar"><button class="chip" aria-pressed="true" data-t="abertas">Abertas</button><button class="chip" aria-pressed="false" data-t="feitas">Concluídas</button></div>
       </div>
       <div id="lista-tarefas" style="display:flex;flex-direction:column;gap:14px"></div>
+    </section>
+
+    <!-- VAGAS -->
+    <section data-painel="vagas" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="kpis" id="vagas-resumo"></div>
+      <div class="cartao bloco">
+        <h3>Próximos 60 dias</h3><span class="sub">Dados do Silbeck (Ocupação). Quanto mais claro, mais vagas. Contorno = sexta e sábado. Toque num dia para ver a lista de espera ou criar uma campanha.</span>
+        <div class="vagas-sem"><span>dom</span><span>seg</span><span>ter</span><span>qua</span><span>qui</span><span>sex</span><span>sáb</span></div>
+        <div class="vagas-grade" id="vagas-grade"></div>
+        <div class="legenda"><span><i style="background:var(--cor-secundaria-suave);border:1px solid var(--cor-borda)"></i>Muitas vagas</span><span><i style="background:color-mix(in srgb,var(--cor-secundaria) 35%,var(--cor-superficie))"></i>Vagas</span><span><i style="background:color-mix(in srgb,var(--cor-primaria) 30%,var(--cor-superficie))"></i>Quase cheio</span><span><i style="background:var(--cor-primaria)"></i>Lotado</span></div>
+        <div id="vagas-det" style="font-size:14px"></div>
+      </div>
+    </section>
+
+    <!-- PAGAMENTOS -->
+    <section data-painel="pagamentos" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="pag-grade">
+        <div class="cartao bloco"><h3>Pix do motor aguardando</h3><span class="sub">O CRM lê os Pix recebidos no Banco do Brasil e casa com as pré-reservas do motor.</span><div id="pag-pix" style="display:flex;flex-direction:column;gap:8px"></div></div>
+        <div class="cartao bloco"><h3>Cobranças do Booking</h3><span class="sub">Tarefas de cobrança com prazo. Baixa automática quando o pagamento aparece no Silbeck.</span><div id="pag-booking" style="display:flex;flex-direction:column;gap:8px"></div></div>
+        <div class="cartao bloco"><h3>Cobranças enviadas pelo CRM</h3><span class="sub">Pix do Banco do Brasil e links da Cielo, com confirmação automática.</span><div id="pag-env" style="display:flex;flex-direction:column;gap:8px"></div></div>
+      </div>
     </section>
 
     <!-- PAINEL -->
@@ -554,9 +590,12 @@ button,input,select{font:inherit;color:inherit}
 
     <!-- AJUSTES DO AGENTE -->
     <section data-painel="ajustes" hidden style="display:flex;flex-direction:column;gap:14px">
+      <div class="pub-barra" id="pub-barra" hidden><span id="pub-n">0 alterações</span><button class="btn btn-editar" type="button" id="pub-descartar">Descartar</button><button class="btn btn-destaque" type="button" id="pub-publicar">Publicar alterações</button></div>
       <div class="segmento" role="tablist" aria-label="Ajustes do agente">
         <button role="tab" aria-selected="true" data-sub="rev">Revisão de conversas</button>
-        <button role="tab" aria-selected="false" data-sub="con">Fonte de conhecimento</button>
+        <button role="tab" aria-selected="false" data-sub="con">Questionário</button>
+        <button role="tab" aria-selected="false" data-sub="bib">Biblioteca de respostas</button>
+        <button role="tab" aria-selected="false" data-sub="tes">Testar o agente</button>
         <button role="tab" aria-selected="false" data-sub="reg">Regras</button>
       </div>
 
@@ -590,24 +629,20 @@ button,input,select{font:inherit;color:inherit}
         </div>
       </div>
 
-      <div data-subpainel="con" hidden style="display:flex;flex-direction:column;gap:14px">
-        <div class="envio">
-          <p><b style="color:var(--cor-texto)">Adicionar material de apoio</b><br>PDF, Word, texto ou link. O agente passa a usar depois que você confirmar o tema.</p>
-          <div class="acoes">
-            <label class="btn btn-enviar" for="arquivo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Enviar arquivo</label>
-            <input type="file" id="arquivo" hidden multiple accept=".pdf,.doc,.docx,.txt,.md,.png,.jpg">
-            <button class="btn btn-editar" type="button" id="bt-texto"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Escrever texto</button>
-            <button class="btn btn-editar" type="button" id="bt-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Adicionar link</button>
-          </div>
-          <div id="novo-item" hidden style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:8px;text-align:left">
-            <label class="rotulo" for="novo-tema">Tema</label><select id="novo-tema" style="border:1px solid var(--cor-borda-forte);border-radius:8px;padding:10px;background:var(--cor-superficie);min-height:44px"></select>
-            <label class="rotulo" for="novo-titulo">Título</label><input id="novo-titulo" style="border:1px solid var(--cor-borda-forte);border-radius:8px;padding:10px;background:var(--cor-superficie);min-height:44px" placeholder="Ex.: Horário do check-in e check-out">
-            <label class="rotulo" for="novo-texto">Conteúdo</label><textarea id="novo-texto" style="border:1px solid var(--cor-borda-forte);border-radius:8px;padding:10px;background:var(--cor-superficie);min-height:90px;font:inherit" placeholder="Escreva aqui o que o agente precisa saber"></textarea>
-            <div class="acoes"><button class="btn btn-enviar" type="button" id="bt-salvar-novo">Salvar na fonte</button></div>
-          </div>
-        </div>
-        <div class="barra-ferr"><button class="btn btn-editar" type="button" id="bt-novo-tema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Novo tema</button></div>
-        <div class="conhecimento" id="conhecimento"></div>
+      <div data-subpainel="con" hidden style="display:flex;flex-direction:column;gap:12px">
+        <div class="cartao bloco" style="gap:8px"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><strong>Tudo o que o agente sabe responder</strong><span class="num" id="q-prog-txt" style="font-size:14px;color:var(--cor-texto-sec)"></span></div><div class="q-prog"><i id="q-prog"></i></div>
+          <div class="acoes"><label class="btn btn-editar" for="arquivo">Enviar arquivo de apoio (PDF, Word)</label><input type="file" id="arquivo" hidden multiple accept=".pdf,.doc,.docx,.txt"></div></div>
+        <div class="q-layout"><div class="cartao q-topicos" id="q-topicos"></div><div class="cartao q-perguntas" id="q-perguntas"></div></div>
+      </div>
+
+      <div data-subpainel="bib" hidden style="display:flex;flex-direction:column;gap:12px">
+        <div class="barra-ferr"><button class="btn btn-enviar" type="button" id="bib-novo">+ Nova resposta</button><span style="font-size:13px;color:var(--cor-texto-sec)">As correções feitas na Revisão de conversas também entram aqui.</span></div>
+        <div class="cartao bloco" id="bib-form" hidden><label class="rotulo" for="bib-p">Quando o cliente perguntar</label><input id="bib-p" type="text"><label class="rotulo" for="bib-r">O agente responde</label><textarea id="bib-r" rows="3"></textarea><div class="acoes"><button class="btn btn-enviar" type="button" id="bib-salvar">Salvar</button><button class="btn btn-editar" type="button" id="bib-cancelar">Cancelar</button></div></div>
+        <div class="cartao rolagem"><table class="bib"><thead><tr><th>Pergunta</th><th>Resposta</th><th>Alterada</th><th></th></tr></thead><tbody id="bib-corpo"></tbody></table></div>
+      </div>
+
+      <div data-subpainel="tes" hidden>
+        <div class="cartao testar"><div class="cx-topo"><strong>Testar o agente</strong><span class="canal">Pergunte como um cliente. A resposta mostra a fonte usada. Nada é enviado a clientes.</span></div><div class="mensagens" id="t-msgs"></div><form id="t-form"><input id="t-inp" placeholder="Ex.: criança de 6 anos faz boia cross?" aria-label="Pergunta de teste"><button class="btn btn-enviar" type="submit">Perguntar</button></form></div>
       </div>
 
       <div data-subpainel="reg" hidden>
@@ -649,7 +684,7 @@ button,input,select{font:inherit;color:inherit}
 
 <script>
 (function(){
-  const titulos={conversas:"Conversas",funil:"Funil de reservas",tarefas:"Tarefas",painel:"Painel",regua:"Régua de mensagens",ajustes:"Ajustes do agente"};
+  const titulos={conversas:"Conversas",funil:"Funil de reservas",tarefas:"Tarefas",vagas:"Vagas",pagamentos:"Pagamentos",painel:"Painel",regua:"Régua de mensagens",ajustes:"Ajustes do agente"};
   const tabs=[...document.querySelectorAll('.nav button')];
   const paineis=[...document.querySelectorAll('[data-painel]')];
   function abrir(v){
@@ -735,7 +770,7 @@ button,input,select{font:inherit;color:inherit}
   const hoje=new Date('2026-09-29T09:00:00');
   const dia=(d,h='10:00')=>{const x=new Date(hoje);x.setDate(x.getDate()+d);return x.toISOString().slice(0,10)+'T'+h;};
 
-  const ETAPAS=[['novo','Novo','p-novo','--cat-novo'],['atend','Em atendimento','p-atend','--cat-atend'],['orc','Orçamento enviado','p-orc','--cat-orc'],['res','Reservado','p-res','--cat-res'],['perd','Perdido','p-perd','--cat-perd']];
+  const ETAPAS=[['novo','Novo','p-novo','--cat-novo'],['atend','Em atendimento','p-atend','--cat-atend'],['orc','Orçamento enviado','p-orc','--cat-orc'],['pag','Aguardando pagamento','p-pag','--cor-alerta'],['res','Reservado','p-res','--cat-res'],['perd','Perdido','p-perd','--cat-perd']];
   const ORIGENS={meta:['Anúncio Meta','o-meta'],insta:['Instagram','o-insta'],google:['Google','o-google'],site:['Site','o-site'],ret:['Hóspede que volta','o-ret'],ind:['Indicação','o-ind'],ag:['Agência','o-ag'],ota:['Booking','o-ota']};
   const PERFIS=['Casal','Família com filhos','Grupo de amigos','55+','Observador de aves','Ciclista','Agência'];
   const USUARIOS={voce:'Você',renata:'Renata',jagles:'Jagles',marcio:'Márcio',agente:'Agente Cabanas'};
@@ -790,6 +825,8 @@ button,input,select{font:inherit;color:inherit}
       el('div',{class:'linha num',text:(l.entrada?fmtData(l.entrada)+' a '+fmtData(l.saida)+' · ':'')+l.hosp}),
       el('div',{class:'linha num'},el('span',{text:brl(l.valor)}),pend?el('span',{text:'· '+pend+' tarefa'+(pend>1?'s':'')}):null),
       l.motivo?el('div',{class:'linha',text:'Motivo: '+l.motivo}):null,
+      l.pag?el('div',{class:'linha'},el('span',{class:'tipo '+(l.pagCls||'t-util'),text:l.pag})):null,
+      l.janela===false?el('div',{class:'cx-janela',text:'A janela de 24 h expirou'}):null,
       alerta,
       el('div',{class:'rodape'},sel,el('span',{class:'resp'+(l.resp==='agente'?' ia':''),title:USUARIOS[l.resp],text:l.resp==='agente'?'IA':inic(USUARIOS[l.resp])})));
   }
@@ -925,52 +962,6 @@ button,input,select{font:inherit;color:inherit}
     if(!box.children.length)box.append(el('div',{class:'vazio',text:'Nenhuma tarefa aqui.'}));
   }
 
-  // ================= Fonte de conhecimento (editável) =================
-  const TEMAS=[
-    {n:'Políticas',i:[['Cancelamento e reembolso','30 dias: reembolso integral · 15 dias: 50% do sinal · dentro de 15 dias: sem reembolso'],['Pagamento','50% antecipado · cartão até 6x, débito ou depósito · sem boleto'],['Pets','Não são permitidos, por causa dos animais silvestres'],['Descontos','Não damos desconto; o preço direto já é o melhor']]},
-    {n:'Horários',i:[['Café da manhã','6h30 às 9h30'],['Restaurante e lanchonete','Jantar seg. a sáb. 19h–21h · lanchonete 11h–21h (dom. até 17h)'],['Programação inclusa','Arco e flecha 8h30 · trilhas com tirolesa, caiaque e SUP à tarde'],['Check-in e check-out','[a preencher]']]},
-    {n:'Atividades e preços',i:[['Boia cross','R$ 100 por pessoa · a partir de 5 anos e 1,15 m'],['Arvorismo','R$ 120 por pessoa · 18 obstáculos + tirolesa aquática'],['Combo boia cross + arvorismo','R$ 170 por pessoa · prioridade de venda'],['Flutuação','R$ 100 · a partir de 7 anos'],['Massagem e decoração','Massagem avulsa ou pacote · decoração com 3 dias de antecedência']]},
-    {n:'Links',i:[['Cardápio','cabanasaventura.com.br/cardapio'],['Localização (Google Maps)','bit.ly/2PfI7Am'],['Motor de reservas','sbreserva.silbeck.com.br/hotelcabanas'],['Tour virtual 360°','tourmkr.com/…']]},
-    {n:'Como chegar e distâncias',i:[['Centro de Bonito','6 km, acesso asfaltado, com ciclovia'],['Aeroporto de Bonito','8 km · táxi ou carro alugado'],['Campo Grande','cerca de 260 km de estrada'],['Transporte','Não temos transfer próprio; indicamos táxi, vans e a Localiza']]},
-    {n:'Passeios de Bonito',i:[['Guia do destino','Voucher único, capacidade de carga, melhores meses'],['Agência parceira','Portal Ecotrip para passeios fora do hotel']]},
-    {n:'O que trazer',i:[['Lista para o hóspede','[a preencher: roupa de banho, repelente, protetor solar, garrafa de tereré…]']]},
-  ];
-  const kBox=$('conhecimento');
-  function renderTemas(){
-    kBox.textContent='';$('novo-tema').textContent='';
-    TEMAS.forEach((tm,ti)=>{
-      $('novo-tema').append(el('option',{value:ti,text:tm.n}));
-      const h=el('h3',{},tm.n,el('small',{class:'num',text:tm.i.length+' '+(tm.i.length===1?'item':'itens')}));
-      const card=el('div',{class:'cartao tema-k'},h);
-      tm.i.forEach((it,ii)=>card.append(itemFonte(tm,ti,it,ii)));
-      card.append(el('div',{style:'display:flex;gap:4px;flex-wrap:wrap'},
-        el('button',{class:'btn-mini',type:'button',text:'+ Adicionar informação',onclick:()=>{tm.i.push(['Nova informação','']);renderTemas();editarItem(ti,tm.i.length-1);}}),
-        el('button',{class:'btn-mini',type:'button',text:'Renomear tema',onclick:()=>{h.textContent='';const inp=el('input',{type:'text',value:tm.n,'aria-label':'Nome do tema'});
-          const ok=()=>{tm.n=inp.value.trim()||tm.n;renderTemas();};inp.addEventListener('keydown',e=>{if(e.key==='Enter')ok();});inp.addEventListener('blur',ok);h.append(inp);inp.focus();}})));
-      kBox.append(card);
-    });
-  }
-  let editando=null;
-  function itemFonte(tm,ti,it,ii){
-    if(editando&&editando[0]===ti&&editando[1]===ii){
-      const t=el('input',{type:'text',value:it[0],'aria-label':'Título'}),d=el('textarea',{'aria-label':'Conteúdo'});d.value=it[1];
-      return el('div',{class:'edit-inline'},t,d,el('div',{style:'display:flex;gap:4px'},
-        el('button',{class:'btn-mini',type:'button',text:'Salvar',onclick:()=>{it[0]=t.value.trim()||it[0];it[1]=d.value;editando=null;renderTemas();toast('Informação salva. O agente já usa a versão nova.');}}),
-        el('button',{class:'btn-mini',type:'button',text:'Cancelar',onclick:()=>{editando=null;renderTemas();}}),
-        el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{tm.i.splice(ii,1);editando=null;renderTemas();}})));
-    }
-    return el('div',{class:'fonte-item'},el('span',{class:'ic',text:'i'}),el('div',{},el('strong',{text:it[0]}),el('span',{text:it[1]||'—'}),
-      el('div',{class:'acoes-item'},el('button',{class:'btn-mini',type:'button',text:'Editar',onclick:()=>editarItem(ti,ii)}))));
-  }
-  function editarItem(ti,ii){editando=[ti,ii];renderTemas();}
-  $('bt-novo-tema').addEventListener('click',()=>{TEMAS.push({n:'Novo tema',i:[]});renderTemas();toast('Tema criado. Use "Renomear tema" para dar o nome.');});
-  const novo=$('novo-item');
-  $('arquivo').addEventListener('change',e=>{const ti=TEMAS.length-1;[...e.target.files].forEach(f=>TEMAS[0].i.push([f.name,'Arquivo enviado agora · confira o tema']));e.target.value='';renderTemas();toast('Arquivo adicionado em "'+TEMAS[0].n+'". Edite para mudar de tema.');});
-  $('bt-texto').addEventListener('click',()=>{novo.hidden=false;$('novo-texto').placeholder='Escreva aqui o que o agente precisa saber';$('novo-titulo').focus();});
-  $('bt-link').addEventListener('click',()=>{novo.hidden=false;$('novo-texto').placeholder='Cole o link e diga para que serve';$('novo-titulo').focus();});
-  $('bt-salvar-novo').addEventListener('click',()=>{const t=$('novo-titulo'),c=$('novo-texto');if(!t.value.trim()){t.focus();return;}
-    const tm=TEMAS[+$('novo-tema').value];tm.i.push([t.value.trim(),c.value.trim()]);t.value='';c.value='';novo.hidden=true;renderTemas();toast('Salvo em "'+tm.n+'".');});
-
   // ================= Régua (editável) =================
   const REGUA=[
     {q:'Reserva confirmada',s:'na hora',t:'Boas-vindas e resumo da reserva',m:'Oi, {nome}! Sua {acomodação} está garantida de {entrada} a {saída}. Qualquer dúvida, é só chamar aqui. 🌿',tipo:'util',pub:'Todos',on:true,e:'96 envios · R$ 0,00'},
@@ -1007,6 +998,221 @@ button,input,select{font:inherit;color:inherit}
   }
   $('bt-nova-msg').addEventListener('click',()=>{REGUA.push({q:'Escolha o momento',s:'',t:'',m:'',tipo:'util',pub:'Todos',on:false,e:'Nova'});rEdit=REGUA.length-1;renderRegua();});
 
-  renderBoard();renderTemas();renderRegua();
+  // ================= v4: dados extras do funil =================
+  LEADS.push({id:10,nome:'Ana P. Souza',tel:'(67) 9xxxx-1180',email:'ana@exemplo.com',cidade:'Campo Grande/MS',nasc:'',etapa:'pag',origem:'site',perfil:'Família com filhos',resp:'jagles',entrada:'2026-10-18',saida:'2026-10-20',hosp:'2 adultos + 1 criança (8)',acom:'Bangalô',valor:1120,parado:5,tags:[],notas:'',tarefas:[],hist:[['Pré-reserva #48231 pelo motor · Pix aguardando pagamento','hoje, 13:40']],pag:'Pix do motor · aguardando',pagCls:'t-mkt'});
+  leadPor(7).pag='Pago · cartão (motor)';leadPor(7).pagCls='t-livre';
+  leadPor(8).pag='Booking · a cobrar';leadPor(8).pagCls='t-mkt';leadPor(8).origem='ota';
+  leadPor(6).janela=false;
+
+  // ================= Conversas (caixa de entrada) =================
+  const CANAL={w99117:'WhatsApp 99117',w99110:'WhatsApp 99110',ig:'Direct Instagram',fb:'Messenger'};
+  const RAPIDAS=['Oi! Aqui é a equipe do Hotel Cabanas. Como posso ajudar? 🌿','Estamos a 6 km do centro, com acesso asfaltado. Localização: bit.ly/2PfI7Am','Na diária já estão o café da manhã, a piscina climatizada, a sauna e as trilhas com caiaque, SUP e tirolesa com monitor.'];
+  const MIDIAS=['Cabana suspensa · varanda','Cabana Master · hidromassagem','Bangalô · área externa','Boia cross no Rio Formoso','Arvorismo · tirolesa aquática','Café da manhã','Deck do Rio Formosinho'];
+  const CONVS=[
+    {id:1,lead:5,nome:'Mariana S.',canal:'w99117',origem:'meta',origemDet:'Anúncio Meta · campanha “Casal: domingo a quinta” (código ADS-CASAL)',etapa:'orc',perfil:'Casal',agente:true,resp:'agente',status:'aberto',naoLidas:0,hora:'21:42',janela:true,
+      reservas:[['Cabana suspensa · 16 a 18/11','Orçamento enviado · R$ 1.480','t-util']],pagamentos:[],
+      msgs:[['sis','Chegou pelo anúncio “Casal: domingo a quinta” · origem registrada automaticamente'],['cli','Oi! Vi o anúncio da cabana na árvore. Tem vaga de 16 a 18 de novembro pra eu e meu marido?','21:31'],
+        ['ia','Oi, Mariana! Que bom ter você por aqui. 🌿 Temos sim a Cabana suspensa de 16 a 18/11 (domingo a terça, 2 noites). Na diária já estão o café da manhã, a piscina climatizada, a sauna e as trilhas com caiaque, SUP e tirolesa com monitor.','21:33','Silbeck: GET Disponibilidade (3 cabanas livres) · Fonte: Atividades e preços → “Programação inclusa”'],
+        ['cli','Qual fica o valor? E vale mais a pena que ir pro centro?','21:42'],
+        ['ia','Para as duas noites fica R$ 1.480, já com o desconto de quem reserva direto. Estamos a 6 km do centro, com acesso asfaltado, e aqui dentro vocês têm dois rios e as atividades com monitor. Se quiserem aventura, o combo boia cross + arvorismo sai R$ 170 por pessoa. Quer que eu faça a reserva? 😊','21:42','Silbeck: POST Tarifario/Valor (R$ 740/noite) · Biblioteca: “Fica longe do centro?” · Fonte: Atividades e preços → “Combo”']]},
+    {id:2,lead:3,nome:'Rafael e família',canal:'w99110',origem:'ret',origemDet:'Hóspede que volta (3ª estadia · telefone no histórico do Silbeck)',etapa:'atend',perfil:'Família com filhos',agente:true,resp:'agente',status:'aberto',naoLidas:2,hora:'21:10',janela:true,
+      reservas:[['Bangalô · nov/2025','Hospedou-se · R$ 2.090','t-livre']],pagamentos:[],
+      msgs:[['cli','Oi! Queremos voltar no feriado de 12/10. Criança de 6 anos faz boia cross?','21:05'],['ia','Que alegria ter vocês de volta, Rafael! A boia cross é a partir de 5 anos e 1,15 m de altura, então dá sim, se ela tiver essa altura. Para 12 a 14/10 o feriado está lotado; posso ver 14 a 16/10 (terça a quinta), bem mais tranquilo?','21:06','Fonte: Atividades e preços → “Boia cross” · Silbeck: GET Disponibilidade (sem vaga 12–14/10)'],['cli','Pode ver sim','21:09'],['cli','E tem berço?','21:10']]},
+    {id:3,lead:null,nome:'Thiago B.',canal:'w99117',origem:'google',origemDet:'Google (link rastreável GOOGLE-HOTEL)',etapa:'novo',perfil:'Grupo de amigos',agente:false,resp:'jagles',status:'aberto',naoLidas:1,hora:'01:14',janela:true,fila:'Grupo de 12, 10 a 13/03, quer valor especial',
+      reservas:[],pagamentos:[],
+      msgs:[['cli','Boa noite! Vocês fazem um valor especial para um grupo de 12 pessoas de 10 a 13 de março?','01:12'],['ia','Ótima pergunta, Thiago! Grupos são com a nossa equipe, que responde a partir das 7h30. Já deixei o seu pedido anotado e amanhã cedo alguém fala com você. 🌿','01:14','Regra: grupo acima de 8 pessoas → passar para a equipe'],['sis','Passada para a equipe às 01:14 · aviso para Jagles às 7h30 · sobe para Renata às 9h se ninguém responder']]},
+    {id:4,lead:null,nome:'Paula R. · Bangalô 3',canal:'w99117',origem:'site',origemDet:'Hospedada agora (Silbeck: estadia 28/09 a 30/09)',etapa:'hosp',perfil:'Casal',agente:true,resp:'agente',status:'aberto',naoLidas:0,hora:'20:58',janela:true,hospedado:'Bangalô 3 · sai em 30/09',
+      reservas:[['Bangalô 3 · 28 a 30/09','Hospedada · pago','t-livre']],pagamentos:[],
+      msgs:[['cli','Oi, o chuveiro do bangalô não está esquentando','20:55'],['ia','Poxa, Paula, sinto muito! Já avisei a manutenção e alguém passa aí em alguns minutos. Se precisar de mais alguma coisa, é só chamar. 🌿','20:56','Regra: hóspede hospedado → pedido para o setor · Silbeck: GET Setor (Manutenção)'],['sis','Chamado aberto para Manutenção: “Chuveiro sem água quente · Bangalô 3” · plantão avisado']]},
+    {id:5,lead:4,nome:'Ecotur Agência',canal:'w99110',origem:'ag',origemDet:'Agência Ecotur (link rastreável AG-ECOTUR)',etapa:'atend',perfil:'Agência',agente:false,resp:'jagles',status:'aberto',naoLidas:0,hora:'18:55',janela:true,
+      reservas:[],pagamentos:[],
+      msgs:[['cli','Boa tarde! Temos um grupo de 8 pax para 10 a 13/03. Podem mandar proposta com a comissão?','18:40'],['eq','Boa tarde! Mando ainda hoje, com a comissão de 10%.','18:55','Jagles']]},
+    {id:6,lead:6,nome:'Lúcia M.',canal:'w99117',origem:'ind',origemDet:'Indicação de hóspede (a equipe marcou a etiqueta)',etapa:'orc',perfil:'55+',agente:true,resp:'renata',status:'aberto',naoLidas:0,hora:'27/09',janela:false,
+      reservas:[['Apartamento Superior · 03 a 05/11','Orçamento enviado · R$ 1.320','t-util']],pagamentos:[],
+      msgs:[['eq','Lúcia, segue o orçamento do Apartamento Superior, térreo como pediu: R$ 1.320 para as 2 noites.','27/09 14:10','Renata'],['ia','Oi, Lúcia! Passando para saber se ficou alguma dúvida sobre o orçamento. Posso segurar o térreo para vocês?','28/09 10:00','Régua: 1ª tentativa de follow-up (dentro da janela de 24 h)'],['sis','A janela de 24 h expirou · 2ª tentativa (modelo com foto do deck) agendada para amanhã, 10:00']]},
+    {id:7,lead:1,nome:'Cláudia L.',canal:'ig',origem:'insta',origemDet:'Instagram · post “Cabana na árvore” (código IG-CABANA)',etapa:'novo',perfil:'Casal',agente:true,resp:'agente',status:'aberto',naoLidas:1,hora:'17:20',janela:true,
+      reservas:[],pagamentos:[],msgs:[['cli','Oi! Quanto é a cabana na árvore em dezembro? É nosso aniversário de casamento 💕','17:20']]},
+    {id:8,lead:7,nome:'João P.',canal:'w99117',origem:'site',origemDet:'Site (botão de WhatsApp · código SITE)',etapa:'res',perfil:'Casal',agente:false,resp:'jagles',status:'resolvido',naoLidas:0,hora:'ontem',janela:true,
+      reservas:[['Cabana Master · 20 a 22/11','Reservado · pago · #48213','t-livre']],pagamentos:[['Link Cielo · R$ 1.490 (sinal, 3x)','Pago','t-livre']],
+      msgs:[['eq','Link de pagamento enviado.','ontem 22:30','Jagles'],['sis','Pagamento aprovado pela Cielo · adiantamento lançado no Silbeck · reserva #48213 confirmada'],['cli','Reserva confirmada, obrigado!','ontem 22:40']]},
+  ];
+  const ETQ_ETAPA={novo:['Novo','p-novo'],atend:['Em atendimento','p-atend'],orc:['Orçamento enviado','p-orc'],pag:['Aguardando pagamento','p-pag'],res:['Reservado','p-res'],perd:['Perdido','p-perd'],hosp:['Hospedado','p-hosp']};
+  let convSel=1,convStatus='aberto',convFiltro='todas';
+  const cx=$('cx');
+  function renderInbox(){
+    const lista=$('cx-lista');lista.textContent='';
+    const fila=CONVS.filter(c=>c.fila&&c.status==='aberto').length;$('n-fila').textContent=fila;
+    const nl=CONVS.filter(c=>c.naoLidas).length;$('qtd-conv').textContent=nl;
+    let ls=CONVS.filter(c=>c.status===convStatus);
+    const q=$('cx-busca').value.trim().toLowerCase();if(q)ls=ls.filter(c=>c.nome.toLowerCase().includes(q));
+    if(convFiltro==='fila')ls=ls.filter(c=>c.fila);if(convFiltro==='naolidas')ls=ls.filter(c=>c.naoLidas);
+    if(convFiltro==='minhas')ls=ls.filter(c=>c.resp==='voce'||c.resp==='jagles');if(convFiltro==='agente')ls=ls.filter(c=>c.agente);
+    if(convFiltro==='hosp')ls=ls.filter(c=>c.hospedado);if(convFiltro==='janela')ls=ls.filter(c=>!c.janela);
+    if(!ls.length)lista.append(el('div',{class:'vazio',text:'Nenhuma conversa aqui.'}));
+    ls.forEach(c=>{const o=ORIGENS[c.origem],e=ETQ_ETAPA[c.etapa];
+      lista.append(el('button',{class:'cx-item',type:'button','aria-selected':String(c.id===convSel),onclick:()=>{convSel=c.id;c.naoLidas=0;renderInbox();}},
+        el('div',{class:'cx-l1'},el('span',{class:'canal-ic '+c.canal,title:CANAL[c.canal],text:c.canal==='ig'?'IG':c.canal==='fb'?'FB':'WA'}),el('strong',{text:c.nome}),el('span',{class:'cx-hora num',text:c.hora}),c.naoLidas?el('span',{class:'cx-nl num',text:c.naoLidas}):null),
+        el('div',{class:'cx-l2'},el('span',{class:'pilula '+o[1],text:o[0]}),el('span',{class:'pilula '+e[1],text:e[0]}),c.fila?el('span',{class:'tipo t-mkt',text:'Aguardando a equipe'}):null),
+        !c.janela?el('div',{class:'cx-janela',text:'A janela de 24 h expirou'}):null,
+        el('div',{class:'cx-l3'},el('span',{class:'resp'+(c.agente?' ia':''),text:c.agente?'IA':inic(USUARIOS[c.resp])}),el('span',{text:c.agente?'Agente no comando':USUARIOS[c.resp]}))));
+    });
+    renderChat();
+  }
+  function renderChat(){
+    const c=CONVS.find(x=>x.id===convSel);const box=$('cx-chat'),lat=$('cx-lateral');box.textContent='';lat.textContent='';if(!c)return;
+    const o=ORIGENS[c.origem],e=ETQ_ETAPA[c.etapa];
+    const swA=el('button',{class:'switch',role:'switch','aria-checked':String(c.agente),'aria-label':'Agente ativo nesta conversa',onclick:()=>{c.agente=!c.agente;if(!c.agente&&c.resp==='agente')c.resp='voce';renderInbox();toast(c.agente?'O agente voltou a atender esta conversa.':'Você assumiu a conversa. O agente não responde mais aqui.');}});
+    const stSel=el('select',{'aria-label':'Status',onchange:ev=>{c.status=ev.target.value;renderInbox();toast(c.status==='resolvido'?'Conversa marcada como resolvida.':'Conversa reaberta.');}},[['aberto','Aberto'],['resolvido','Resolvido'],['arquivado','Arquivado']].map(([v,t])=>el('option',{value:v,text:t,selected:v===c.status})));
+    const rSel=el('select',{'aria-label':'Responsável',onchange:ev=>{c.resp=ev.target.value;c.agente=c.resp==='agente';renderInbox();toast('Conversa transferida para '+USUARIOS[c.resp]+'.');}},Object.entries(USUARIOS).map(([k,v])=>el('option',{value:k,text:v,selected:k===c.resp})));
+    box.append(el('div',{class:'cx-topo'},
+      el('div',{class:'cx-quem'},el('strong',{text:c.nome}),el('span',{class:'canal',text:CANAL[c.canal]+(c.hospedado?' · '+c.hospedado:'')})),
+      el('div',{class:'cx-ctrl'},el('span',{class:'pilula '+o[1],text:o[0]}),el('span',{class:'pilula '+e[1],text:e[0]}),el('span',{class:'pilula',text:c.perfil}),
+        el('label',{class:'cx-sw'},swA,'Agente'),stSel,rSel,
+        c.lead?el('button',{class:'btn-mini',type:'button',text:'Ficha e histórico',onclick:()=>abrirFicha(c.lead)}):null)));
+    const ms=el('div',{class:'mensagens'});
+    c.msgs.forEach(m=>{
+      if(m[0]==='sis'){ms.append(el('div',{class:'evento',text:m[1]}));return;}
+      if(m[0]==='cli'){ms.append(el('div',{class:'balao in'},m[1],el('div',{class:'hora num',text:m[2]})));return;}
+      const ia=m[0]==='ia';
+      const fonte=ia&&m[3]?el('div',{class:'fonte-resp',hidden:true,text:'Fonte: '+m[3]}):null;
+      ms.append(el('div',{class:'balao out'+(ia?' ia':'')},el('div',{class:'autor',text:ia?'Agente Cabanas':(m[3]||'Equipe')}),m[1],el('div',{class:'hora num',text:m[2]+' ✓✓'}),
+        fonte,ia&&m[3]?el('button',{class:'ver-fonte',type:'button',text:'Ver fonte da resposta',onclick:ev=>{fonte.hidden=!fonte.hidden;ev.currentTarget.textContent=fonte.hidden?'Ver fonte da resposta':'Ocultar fonte';}}):null));
+    });
+    box.append(ms);
+    // rodapé
+    if(c.status!=='aberto'){box.append(el('div',{class:'cx-rodape'},el('span',{text:'Conversa '+c.status+'.'}),el('button',{class:'btn btn-editar',type:'button',text:'Reabrir',onclick:()=>{c.status='aberto';convStatus='aberto';syncStatusTabs();renderInbox();}})));}
+    else if(c.agente){box.append(el('div',{class:'cx-rodape'},el('span',{text:'O Agente Cabanas está atendendo esta conversa.'}),el('button',{class:'btn btn-destaque',type:'button',text:'Assumir atendimento',onclick:()=>{c.agente=false;c.resp='voce';c.fila=null;c.msgs.push(['sis','Você assumiu o atendimento']);renderInbox();}})));}
+    else if(!c.janela){box.append(el('div',{class:'cx-rodape'},el('span',{text:'A janela de 24 h expirou: só dá para enviar um modelo aprovado pela Meta (mensagem paga).'}),el('button',{class:'btn btn-editar',type:'button',text:'Enviar modelo',onclick:()=>{c.msgs.push(['eq','[Modelo “2ª tentativa · 55+” com foto do deck e rede]','agora','Você']);renderChat();toast('Modelo enviado (mensagem de marketing, paga).');}})));}
+    else{
+      const inp=el('textarea',{rows:'1',placeholder:'Escrever como '+USUARIOS[c.resp==='agente'?'voce':c.resp]+'…','aria-label':'Mensagem'});
+      const enviar=()=>{const t=inp.value.trim();if(!t)return;c.msgs.push(['eq',t,'agora',USUARIOS[c.resp]||'Você']);c.fila=null;renderInbox();};
+      const menu=el('div',{class:'cx-menu',hidden:true});
+      const abrirMenu=(itens)=>{menu.textContent='';itens.forEach(([t,f])=>menu.append(el('button',{type:'button',text:t,onclick:()=>{menu.hidden=true;f();}})));menu.hidden=false;};
+      box.append(el('div',{class:'cx-compor'},menu,
+        el('div',{class:'cx-ferr'},
+          el('button',{class:'btn-mini',type:'button',text:'Respostas rápidas',onclick:()=>abrirMenu(RAPIDAS.map(r=>[r.slice(0,60)+'…',()=>{inp.value=r;inp.focus();}]))}),
+          el('button',{class:'btn-mini',type:'button',text:'Banco de fotos e vídeos',onclick:()=>abrirMenu(MIDIAS.map(m=>[m,()=>{c.msgs.push(['eq','[Foto: '+m+']','agora',USUARIOS[c.resp]||'Você']);renderChat();}]))}),
+          el('button',{class:'btn-mini',type:'button',text:'Cobrar',onclick:()=>abrirMenu([['Pix (Banco do Brasil) · sinal de 50%',()=>cobrar(c,'Pix BB')],['Link de cartão (Cielo) · até 6x',()=>cobrar(c,'Link Cielo')],['Link do motor da Silbeck',()=>cobrar(c,'Motor Silbeck')]])})),
+        el('div',{class:'cx-envio'},inp,el('button',{class:'btn btn-enviar',type:'button','aria-label':'Enviar',text:'Enviar',onclick:enviar}))));
+      inp.addEventListener('keydown',ev=>{if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();enviar();}});
+    }
+    // lateral
+    lat.append(el('div',{class:'rotulo',text:'Origem'}),el('p',{class:'lat-txt',text:c.origemDet}));
+    if(c.fila)lat.append(el('div',{class:'lat-alerta'},el('b',{text:'Aguardando a equipe'}),el('span',{text:c.fila})));
+    lat.append(el('div',{class:'rotulo',text:'Reservas nesta conversa'}));
+    if(!c.reservas.length)lat.append(el('p',{class:'lat-txt',text:'Nenhuma reserva ainda.'}));
+    c.reservas.forEach(r=>lat.append(el('div',{class:'lat-card'},el('b',{text:r[0]}),el('span',{class:'tipo '+r[2],text:r[1]}))));
+    lat.append(el('button',{class:'btn btn-editar',type:'button',text:'Registrar reserva no Silbeck',onclick:()=>{c.reservas.push(['Nova reserva (exemplo)','Pré-reserva · aguardando pagamento','t-mkt']);c.etapa='pag';renderInbox();toast('Reserva criada no Silbeck pela API (POST reserva). Card em “Aguardando pagamento”.');}}));
+    lat.append(el('div',{class:'rotulo',text:'Pagamentos'}));
+    if(!c.pagamentos.length)lat.append(el('p',{class:'lat-txt',text:'Nenhuma cobrança.'}));
+    c.pagamentos.forEach(p=>lat.append(el('div',{class:'lat-card'},el('b',{text:p[0]}),el('span',{class:'tipo '+p[2],text:p[1]}))));
+    if(c.etapa!=='hosp')lat.append(el('div',{class:'upsell'},el('span',{class:'rotulo',style:'color:var(--cor-secundaria-texto)',text:'Oferta prioritária'}),el('strong',{text:'Combo boia cross + arvorismo'}),el('span',{text:'R$ 170 por pessoa'})));
+  }
+  function cobrar(c,tipo){
+    const val=c.lead&&leadPor(c.lead)?Math.round((leadPor(c.lead).valor||1480)/2):740;
+    const txt=tipo==='Pix BB'?'Pix de R$ '+val.toLocaleString('pt-BR')+' (sinal) · QR code e copia-e-cola enviados · vale 24 h':tipo==='Link Cielo'?'Link Cielo de R$ '+val.toLocaleString('pt-BR')+' (sinal, até 6x) enviado':'Link do motor com datas preenchidas enviado';
+    c.pagamentos.push([tipo+' · R$ '+val.toLocaleString('pt-BR'),'Aguardando pagamento','t-mkt']);c.msgs.push(['sis',txt]);c.etapa='pag';renderInbox();
+    toast('Cobrança gerada. Quando o pagamento cair, o CRM lança no Silbeck e confirma ao cliente sozinho.');
+  }
+  function syncStatusTabs(){document.querySelectorAll('#cx-status button').forEach(b=>b.setAttribute('aria-selected',b.dataset.st===convStatus));}
+  $('cx-status').addEventListener('click',e=>{const b=e.target.closest('[data-st]');if(!b)return;convStatus=b.dataset.st;syncStatusTabs();renderInbox();});
+  $('cx-filtros').addEventListener('click',e=>{const b=e.target.closest('[data-f]');if(!b)return;convFiltro=b.dataset.f;$('cx-filtros').querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===b));renderInbox();});
+  $('cx-busca').addEventListener('input',renderInbox);
+
+  // ================= Vagas (mapa dos próximos 60 dias) =================
+  function renderVagas(){
+    const g=$('vagas-grade');g.textContent='';const tot=21;let vagas=0,vagasDQ=0,ocTot=0;
+    const ini=new Date(hoje);ini.setDate(ini.getDate()+1);
+    for(let i=0;i<(ini.getDay());i++)g.append(el('div',{class:'dia-vazio'}));
+    const feriados={'2026-10-10':1,'2026-10-11':1,'2026-10-12':1,'2026-11-01':1,'2026-11-02':1,'2026-11-20':1,'2026-11-21':1};
+    for(let d=0;d<60;d++){
+      const x=new Date(ini);x.setDate(ini.getDate()+d);const dw=x.getDay();const iso=x.toISOString().slice(0,10);
+      let oc=[5,6].includes(dw)?15+((d*7)%6):4+((d*13)%9);if(feriados[iso])oc=21;if(dw===0)oc=Math.min(oc,9);
+      const livres=tot-oc;vagas+=livres;ocTot+=oc;if(![5,6].includes(dw))vagasDQ+=livres;
+      const pct=Math.round(oc/tot*100);
+      const nivel=pct>=90?'n4':pct>=70?'n3':pct>=45?'n2':'n1';
+      g.append(el('button',{class:'dia '+nivel+([5,6].includes(dw)?' fds':''),type:'button',title:x.toLocaleDateString('pt-BR')+': '+livres+' livres',
+        onclick:()=>{$('vagas-det').textContent='';$('vagas-det').append(el('strong',{text:x.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'})}),el('span',{text:' · '+oc+' de '+tot+' acomodações ocupadas · '+livres+' livres'}),
+          el('div',{style:'display:flex;gap:6px;flex-wrap:wrap;margin-top:8px'},el('button',{class:'btn-mini',type:'button',text:'Ver lista de espera',onclick:()=>toast(livres?'Ninguém na lista de espera para esta data.':'3 pessoas na lista de espera. Elas são avisadas se houver cancelamento.')}),
+            el('button',{class:'btn-mini',type:'button',text:'Criar campanha para esta data',onclick:()=>toast('Campanha criada em rascunho: hóspedes de MS · convite para '+x.toLocaleDateString('pt-BR')+'.')})));}},
+        el('span',{class:'dn num',text:x.getDate()}),el('span',{class:'dp num',text:livres?livres+' livres':'lotado'})));
+    }
+    $('vagas-resumo').textContent='';
+    const ocMed=Math.round(ocTot/(60*tot)*100);
+    [['Ocupação prevista',ocMed+'%','meta: 60%'],['Noites vagas',vagas,'nos próximos 60 dias'],['Vagas de domingo a quinta',Math.round(vagasDQ/vagas*100)+'%','onde está o gargalo'],['Lista de espera','7 pessoas','em 3 datas lotadas']].forEach(([a,b,c2])=>
+      $('vagas-resumo').append(el('div',{class:'cartao kpi'},el('span',{class:'rotulo',text:a}),el('span',{class:'valor num',text:b}),el('span',{class:'var',style:'color:var(--cor-texto-sec)',text:c2}))));
+  }
+
+  // ================= Pagamentos =================
+  const PIX_MOTOR=[{id:1,res:'#48231 · Ana P. Souza · Bangalô 18 a 20/10',valor:1120,pix:'Pix de R$ 1.120,00 recebido hoje 14:02 · pagador ANA P SOUZA',conf:'alta',ok:false},{id:2,res:'#48236 · Marcos T. · Apto Standard 25 a 26/10',valor:430,pix:'Dois Pix de R$ 430,00 hoje (MARCOS TEIXEIRA e M T SILVA)',conf:'duvida',ok:false}];
+  const BOOKING=[{id:1,txt:'Família Souza · Bangalô 01 a 03/11 · R$ 2.240',prazo:'Cobrar até hoje',ok:false},{id:2,txt:'Hóspede Booking #7781 · Apto Superior 15 a 17/10 · R$ 1.180',prazo:'Cobrar até 03/10',ok:false}];
+  const ENVIADAS=[['Link Cielo · João P. · R$ 1.490 (3x)','Pago','t-livre'],['Pix BB · Mariana S. · R$ 740','Aguardando · vence em 22 h','t-mkt'],['Link Cielo · Pedro e Ana · R$ 2.100','Recusado · agente ofereceu Pix','t-erro']];
+  function renderPag(){
+    const a=$('pag-pix');a.textContent='';
+    PIX_MOTOR.forEach(p=>a.append(el('div',{class:'lat-card'},el('b',{text:'Reserva '+p.res}),el('span',{text:p.pix}),
+      p.ok?el('span',{class:'tipo t-livre',text:'Confirmado · adiantamento lançado no Silbeck'}):
+      p.conf==='alta'?el('div',{style:'display:flex;gap:6px;flex-wrap:wrap;align-items:center'},el('span',{class:'tipo t-livre',text:'Casamento único'}),el('button',{class:'btn-mini',type:'button',text:'Confirmar',onclick:()=>{p.ok=true;renderPag();toast('Pix confirmado: adiantamento lançado no Silbeck e cliente avisado.');}})):
+      el('div',{style:'display:flex;gap:6px;flex-wrap:wrap;align-items:center'},el('span',{class:'tipo t-mkt',text:'Dúvida: confira o pagador'}),el('button',{class:'btn-mini',type:'button',text:'É o MARCOS TEIXEIRA',onclick:()=>{p.ok=true;renderPag();toast('Confirmado com 1 clique.');}})))));
+    const b=$('pag-booking');b.textContent='';
+    BOOKING.forEach(x=>b.append(el('div',{class:'lat-card'},el('b',{text:x.txt}),el('span',{class:x.ok?'':'alerta-txt',text:x.ok?'Cobrado':x.prazo}),
+      el('span',{class:'lat-txt',text:'Cobrança na extranet do Booking e na maquininha. O CRM não guarda dados de cartão.'}),
+      x.ok?null:el('button',{class:'btn-mini',type:'button',text:'Marcar como cobrado',onclick:()=>{x.ok=true;renderPag();toast('Tarefa concluída. O CRM confirma quando o pagamento aparecer no Silbeck.');}}))));
+    const c=$('pag-env');c.textContent='';ENVIADAS.forEach(e=>c.append(el('div',{class:'lat-card'},el('b',{text:e[0]}),el('span',{class:'tipo '+e[2],text:e[1]}))));
+  }
+
+  // ================= Ajustes: questionário, biblioteca, testar, publicar =================
+  const TOPICOS=[
+    {n:'Reservas e pagamento',q:[['Como faço para reservar?','Pelo WhatsApp ou pelo site (sbreserva.silbeck.com.br/hotelcabanas), com desconto para quem reserva direto.'],['Quais as formas de pagamento?','50% antecipado; cartão em até 6x, débito ou Pix. Não aceitamos boleto.'],['Qual a política de cancelamento?','Reembolso integral com 30 dias; 50% do sinal com 15 dias; dentro de 15 dias, sem reembolso.']]},
+    {n:'Sobre o hotel',q:[['Aceitam pets?','Não, por causa dos animais silvestres.'],['Tem day use?','Não temos day use.'],['Quais os horários do restaurante?','Jantar de segunda a sábado, 19h às 21h; lanchonete 11h às 21h (domingo até 17h).']]},
+    {n:'Localização',q:[['Fica longe do centro?','6 km, com acesso asfaltado e ciclovia.'],['Como chegar do aeroporto?','Aeroporto de Bonito a 8 km: táxi ou carro alugado.'],['Tem transfer?','Não temos transfer próprio; indicamos táxi, vans e a Localiza.']]},
+    {n:'Pré-chegada',q:[['Qual o horário de check-in e check-out?',''],['O que levar durante a estadia?',''],['Como é o clima na cidade?','']]},
+    {n:'Atividades',q:[['Criança pode fazer boia cross?','A partir de 5 anos e 1,15 m.'],['Quanto custa o combo?','Boia cross + arvorismo: R$ 170 por pessoa.'],['O que está incluso na diária?','Café da manhã, piscina climatizada, sauna, trilhas com caiaque, SUP e tirolesa com monitor.']]},
+  ];
+  const BIBLIO=[['Acabei de efetuar o pagamento, e agora?','Ótimo! Pode enviar o comprovante aqui; confirmamos e mandamos a confirmação da reserva.','27/09 11:02'],['Pode mandar a localização?','Claro! Estamos entre os rios Formoso e Formosinho, a 6 km do centro: bit.ly/2PfI7Am','27/09 11:01'],['Fica longe do centro?','São 6 km de asfalto; aqui dentro vocês têm dois rios e as atividades com monitor, o passeio começa na porta.','26/09 15:40']];
+  let topSel=0,pendentes=0;
+  function marcarPendente(){pendentes++;$('pub-barra').hidden=false;$('pub-n').textContent=pendentes+(pendentes===1?' alteração não publicada':' alterações não publicadas');}
+  function renderQuest(){
+    const tl=$('q-topicos');tl.textContent='';
+    const totalQ=TOPICOS.reduce((a,t)=>a+t.q.length,0),resp=TOPICOS.reduce((a,t)=>a+t.q.filter(q=>q[1].trim()).length,0);
+    $('q-prog').style.width=Math.round(resp/totalQ*100)+'%';$('q-prog-txt').textContent=Math.round(resp/totalQ*100)+'% respondido ('+resp+' de '+totalQ+')';
+    TOPICOS.forEach((t,i)=>{const r=t.q.filter(q=>q[1].trim()).length;
+      tl.append(el('button',{type:'button','aria-selected':String(i===topSel),onclick:()=>{topSel=i;renderQuest();}},el('span',{text:t.n}),el('span',{class:'num '+(r===t.q.length?'ok':'falta'),text:r===t.q.length?'✓':r+'/'+t.q.length})));});
+    tl.append(el('button',{type:'button',class:'novo',text:'+ Novo tópico',onclick:()=>{TOPICOS.push({n:'Novo tópico',q:[]});topSel=TOPICOS.length-1;marcarPendente();renderQuest();}}));
+    const t=TOPICOS[topSel],qb=$('q-perguntas');qb.textContent='';
+    const nome=el('input',{type:'text',value:t.n,class:'q-nome','aria-label':'Nome do tópico',onchange:ev=>{t.n=ev.target.value||t.n;marcarPendente();renderQuest();}});
+    qb.append(nome);
+    t.q.forEach((q,i)=>{const perg=el('input',{type:'text',value:q[0],'aria-label':'Pergunta',onchange:ev=>{q[0]=ev.target.value;marcarPendente();}});
+      const r=el('textarea',{'aria-label':'Resposta',placeholder:'Resposta que o agente deve usar'});r.value=q[1];r.addEventListener('change',()=>{q[1]=r.value;marcarPendente();renderQuest();});
+      qb.append(el('div',{class:'q-card'+(q[1].trim()?'':' vazia')},el('div',{class:'q-cab'},el('span',{class:'tipo '+(q[1].trim()?'t-livre':'t-mkt'),text:q[1].trim()?'Respondida':'Falta responder'}),el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{t.q.splice(i,1);marcarPendente();renderQuest();}})),perg,r));});
+    qb.append(el('button',{class:'btn btn-editar',type:'button',text:'+ Nova pergunta',onclick:()=>{t.q.push(['Nova pergunta','']);marcarPendente();renderQuest();}}));
+  }
+  function renderBiblio(){
+    const tb=$('bib-corpo');tb.textContent='';
+    BIBLIO.forEach((b,i)=>tb.append(el('tr',{},el('td',{text:b[0]}),el('td',{text:b[1]}),el('td',{class:'num',text:b[2]}),
+      el('td',{},el('button',{class:'btn-mini',type:'button',text:'Editar',onclick:()=>editarBib(i)}),el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{BIBLIO.splice(i,1);marcarPendente();renderBiblio();}})))));
+  }
+  function editarBib(i){const b=BIBLIO[i];const f=$('bib-form');f.hidden=false;$('bib-p').value=b[0];$('bib-r').value=b[1];f.dataset.i=i;$('bib-p').focus();}
+  $('bib-novo').addEventListener('click',()=>{const f=$('bib-form');f.hidden=false;$('bib-p').value='';$('bib-r').value='';f.dataset.i='';$('bib-p').focus();});
+  $('bib-salvar').addEventListener('click',()=>{const p=$('bib-p').value.trim(),r=$('bib-r').value.trim();if(!p){$('bib-p').focus();return;}const f=$('bib-form');
+    if(f.dataset.i!==''){BIBLIO[+f.dataset.i]=[p,r,'agora'];}else BIBLIO.unshift([p,r,'agora']);f.hidden=true;marcarPendente();renderBiblio();});
+  $('bib-cancelar').addEventListener('click',()=>$('bib-form').hidden=true);
+  $('pub-descartar').addEventListener('click',()=>{pendentes=0;$('pub-barra').hidden=true;toast('Alterações descartadas (nesta tela de exemplo, os textos não voltam).');});
+  $('pub-publicar').addEventListener('click',()=>{const b=$('pub-publicar');b.disabled=true;b.textContent='Testando 30 perguntas…';
+    setTimeout(()=>{b.disabled=false;b.textContent='Publicar alterações';pendentes=0;$('pub-barra').hidden=true;toast('Bateria de testes: 30 de 30 respostas ok. Alterações publicadas; o agente já usa a versão nova.');},1200);});
+  // Testar conteúdo
+  function responderTeste(txt){
+    const t=txt.toLowerCase();let best=null,score=0;
+    const todas=[...BIBLIO.map(b=>[b[0],b[1],'Biblioteca: “'+b[0]+'”']),...TOPICOS.flatMap(tp=>tp.q.filter(q=>q[1].trim()).map(q=>[q[0],q[1],'Questionário → '+tp.n+' → “'+q[0]+'”']))];
+    todas.forEach(([p,r,f])=>{const s=p.toLowerCase().split(/\W+/).filter(w=>w.length>3&&t.includes(w)).length;if(s>score){score=s;best=[r,f];}});
+    return best||['Não tenho essa informação na fonte. Vou confirmar com a equipe e já te respondo. 🌿','Regra: sem resposta na fonte → passar para a equipe'];
+  }
+  $('t-form').addEventListener('submit',ev=>{ev.preventDefault();const i=$('t-inp'),v=i.value.trim();if(!v)return;const box=$('t-msgs');
+    box.append(el('div',{class:'balao in',text:v}));const [r,f]=responderTeste(v);const fonte=el('div',{class:'fonte-resp',text:'Fonte: '+f});
+    box.append(el('div',{class:'balao out ia'},el('div',{class:'autor',text:'Agente Cabanas (teste)'}),r,fonte));i.value='';box.scrollTop=box.scrollHeight;});
+
+  function iniciarV4(){renderInbox();renderVagas();renderPag();renderQuest();renderBiblio();}
+
+  $('arquivo').addEventListener('change',e=>{const n=e.target.files.length;e.target.value='';if(n)toast(n+' arquivo(s) enviado(s). O agente lê e sugere respostas para o questionário.');});
+  renderBoard();renderRegua();iniciarV4();
 })();
 </script>
