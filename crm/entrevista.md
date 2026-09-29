@@ -207,3 +207,4 @@
 - Alternativas avaliadas e descartadas: Vercel, Railway, Render, Netlify, Cloudflare (tudo), Cloud SQL e Firestore (relatórios exigiriam BigQuery como peça extra).
 - Custo estimado da infraestrutura: **~US$ 25/mês (~R$ 140)**; o resto do teto de R$ 800 fica para mensagens da Meta e IA do agente.
 - **Pendente:** o projeto do Google Cloud fica na conta pessoal do Ultra ou numa conta do hotel (recomendação: conta do hotel, com dono, Renata e Márcio como administradores; os créditos do Ultra só valem na conta do assinante).
+- **Página de validação** (29/09/2026): `crm/prototipo/validacao-funcionalidades.html`, publicada em https://claude.ai/artifact/Su6tvj37TXkJ4wjoievfSq. O dono marca Mantém/Corta/Muda + comentário em cada item e adiciona o que falta; as respostas ficam no banco da página (coleções `respostas` e `faltas`) e a equipe lê de lá.

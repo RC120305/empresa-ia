@@ -1,0 +1,233 @@
+<title>Validação do CRM Cabanas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Josefin+Sans:wght@600&display=swap">
+<style>
+/* Layout: uma coluna de cartões por área, barra de progresso fixa no topo. Tokens de crm/tokens.css. */
+:root{
+  --fundo:#F7F3EC;--sup:#FFFFFF;--borda:#E3DACB;--borda-forte:#9C8C7A;--texto:#2E2620;--texto-sec:#6B5D4F;
+  --prim:#847059;--prim-hover:#6E5B47;--prim-texto:#6E5B47;--prim-suave:#EEEBE8;--sobre-prim:#FFFFFF;
+  --verde:#5A7026;--verde-suave:#EEF3E1;--erro:#B3372B;--erro-suave:#FBEAE7;--alerta:#8A5A00;--alerta-suave:#FBF1DC;
+  --info:#2F6B82;--info-suave:#E6F0F3;--foco:#A8520F;--lat:#3B3128;--lat-texto:#F7F1E6;--laranja:#F58634;
+  --f-marca:"Josefin Sans","Montserrat",system-ui,sans-serif;--f-texto:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --fundo:#1E1914;--sup:#29221B;--borda:#4A3F34;--borda-forte:#7A6A58;--texto:#F2ECE2;--texto-sec:#BFB3A3;
+  --prim:#C4A98A;--prim-hover:#D3BC9F;--prim-texto:#C4A98A;--prim-suave:#342B23;--sobre-prim:#1E1914;
+  --verde:#90AB49;--verde-suave:#2E3322;--erro:#EF8A7A;--erro-suave:#3A2521;--alerta:#E8B04A;--alerta-suave:#3A2F1A;--info:#7FB8CC;--info-suave:#1F3038;--foco:#F58634;--lat:#171310}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --fundo:#1E1914;--sup:#29221B;--borda:#4A3F34;--borda-forte:#7A6A58;--texto:#F2ECE2;--texto-sec:#BFB3A3;
+  --prim:#C4A98A;--prim-hover:#D3BC9F;--prim-texto:#C4A98A;--prim-suave:#342B23;--sobre-prim:#1E1914;
+  --verde:#90AB49;--verde-suave:#2E3322;--erro:#EF8A7A;--erro-suave:#3A2521;--alerta:#E8B04A;--alerta-suave:#3A2F1A;--info:#7FB8CC;--info-suave:#1F3038;--foco:#F58634;--lat:#171310}
+*{box-sizing:border-box}
+body{background:var(--fundo);color:var(--texto);font-family:var(--f-texto);font-size:16px;line-height:1.5;margin:0}
+button,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--foco);outline-offset:2px}
+.rotulo{font-family:var(--f-marca);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--texto-sec)}
+.topo{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--lat);color:var(--lat-texto);padding:12px 16px}
+.topo-in{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.topo h1{margin:0;font-size:18px;font-weight:700}
+.prog{display:flex;align-items:center;gap:10px;font-size:13px;font-variant-numeric:tabular-nums}
+.trilho{flex:1;height:8px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden}
+.trilho i{display:block;height:100%;width:0;background:var(--laranja);border-radius:999px;transition:width .2s}
+.estado{font-size:12px;color:#BFB3A3}
+main{max-width:760px;margin:0 auto;padding-block:16px 60px;padding-inline:16px;display:flex;flex-direction:column;gap:20px}
+.intro{margin:0;color:var(--texto-sec);font-size:15px}
+.legenda{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--texto-sec)}
+.aviso{font-size:14px;padding:10px 12px;border-radius:8px;background:var(--alerta-suave);color:var(--alerta)}
+.filtros{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.chip{all:unset;cursor:pointer;font-size:13px;padding:6px 12px;border-radius:999px;border:1px solid var(--borda);background:var(--sup);color:var(--texto-sec);white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--prim);border-color:var(--prim);color:var(--sobre-prim)}
+.area{display:flex;flex-direction:column;gap:10px}
+.area h2{margin:0;font-size:19px;display:flex;align-items:baseline;gap:8px}
+.area h2 small{font-size:13px;font-weight:500;color:var(--texto-sec);font-variant-numeric:tabular-nums}
+.item{background:var(--sup);border:1px solid var(--borda);border-left:4px solid var(--borda);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.item[data-escolha="mantem"]{border-left-color:var(--verde)}
+.item[data-escolha="corta"]{border-left-color:var(--erro);opacity:.8}
+.item[data-escolha="muda"]{border-left-color:var(--alerta)}
+.cab{display:flex;gap:10px;align-items:flex-start}
+.num{font-variant-numeric:tabular-nums;font-weight:600;color:var(--texto-sec);font-size:14px;min-width:34px}
+.titulo{flex:1;min-width:0;font-size:15px}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.tag{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px}
+.t-dec{background:var(--verde-suave);color:var(--verde)}
+.t-ped{background:var(--alerta-suave);color:var(--alerta)}
+.t-sug{background:var(--info-suave);color:var(--info)}
+.t-fase{background:var(--prim-suave);color:var(--prim-texto)}
+.botoes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.botoes button{all:unset;cursor:pointer;text-align:center;min-height:44px;border-radius:8px;border:1px solid var(--borda-forte);font-weight:600;font-size:14px;display:grid;place-items:center;background:var(--sup)}
+.botoes button[data-v="mantem"][aria-pressed="true"]{background:var(--verde);border-color:var(--verde);color:var(--sup)}
+.botoes button[data-v="corta"][aria-pressed="true"]{background:var(--erro);border-color:var(--erro);color:var(--sup)}
+.botoes button[data-v="muda"][aria-pressed="true"]{background:var(--alerta);border-color:var(--alerta);color:var(--sup)}
+.comentar{all:unset;cursor:pointer;font-size:13px;color:var(--prim-texto);text-decoration:underline;text-underline-offset:3px;align-self:flex-start}
+textarea{width:100%;min-height:72px;border:1px solid var(--borda-forte);border-radius:8px;padding:10px;background:var(--sup);font-size:15px;resize:vertical}
+.salvo{font-size:12px;color:var(--texto-sec);min-height:1em}
+.falta{background:var(--sup);border:1px solid var(--borda);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.falta select{border:1px solid var(--borda-forte);border-radius:8px;padding:10px;background:var(--sup);min-height:44px}
+.btn{all:unset;cursor:pointer;background:var(--prim);color:var(--sobre-prim);font-weight:600;min-height:44px;padding:0 18px;border-radius:8px;display:inline-grid;place-items:center;align-self:flex-start}
+.btn:hover{background:var(--prim-hover)}
+.lista-falta{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.lista-falta div{padding:8px 10px;border-radius:8px;background:var(--prim-suave);display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+.lista-falta button{all:unset;cursor:pointer;color:var(--erro);font-size:13px;flex:none}
+.fim{text-align:center;color:var(--texto-sec);font-size:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="topo"><div class="topo-in">
+  <h1>Validação do CRM Cabanas</h1>
+  <div class="prog"><span id="prog-txt">0 de 0 avaliados</span><span class="trilho"><i id="prog-barra"></i></span></div>
+  <span class="estado" id="estado">Conectando…</span>
+</div></header>
+
+<main>
+  <p class="intro">Para cada funcionalidade, toque em <b>Mantém</b>, <b>Corta</b> ou <b>Muda</b>. Em "Muda", escreva o que mudar. Suas escolhas ficam salvas sozinhas e a equipe lê direto daqui. No fim da página, conte o que está faltando.</p>
+  <div class="legenda"><span class="tag t-dec">Decidido</span> na entrevista <span class="tag t-ped">Seu pedido</span> no protótipo <span class="tag t-sug">Sugestão</span> da equipe <span class="tag t-fase">Fase</span> de construção</div>
+  <div class="aviso" id="aviso-local" hidden>Não conseguimos salvar online agora. Suas escolhas ficam só neste aparelho; tente abrir de novo mais tarde.</div>
+  <div class="filtros" id="filtros" role="group" aria-label="Filtrar"></div>
+  <div id="areas"></div>
+
+  <section class="falta" aria-labelledby="t-falta">
+    <h2 id="t-falta" style="margin:0;font-size:19px">O que está faltando?</h2>
+    <label class="rotulo" for="falta-area">Área</label>
+    <select id="falta-area"></select>
+    <label class="rotulo" for="falta-texto">Descreva</label>
+    <textarea id="falta-texto" placeholder="Ex.: no funil, ver quantos dias o lead está parado em cada etapa"></textarea>
+    <button class="btn" id="falta-add" type="button">Adicionar</button>
+    <div class="lista-falta" id="lista-falta"></div>
+  </section>
+  <p class="fim">Terminou? É só avisar no chat: "terminei a validação".</p>
+</main>
+
+<script>
+const AREAS=[{"n": "1", "nome": "Funil de vendas", "itens": [{"id": "1.1", "t": "Colunas por etapa (Novo, Em atendimento, Orçamento enviado, Reservado, Perdido)", "s": "dec", "f": "1"}, {"id": "1.2", "t": "Arrastar e soltar o card entre as etapas", "s": "ped", "f": "1"}, {"id": "1.3", "t": "Mudar a etapa dentro do card (o card se move sozinho)", "s": "ped", "f": "1"}, {"id": "1.4", "t": "Clicar no card abre a ficha completa do cliente", "s": "ped", "f": "1"}, {"id": "1.5", "t": "Ao mover para Perdido, pedir o motivo (lista fixa + outro)", "s": "dec", "f": "1"}, {"id": "1.6", "t": "Ao mover para Reservado, ligar ao número da reserva no Silbeck (automático na fase 3)", "s": "dec", "f": "1/3"}, {"id": "1.7", "t": "Filtros do funil: responsável, origem, perfil, datas da estadia, canal", "s": "sug", "f": "1"}, {"id": "1.8", "t": "Busca por nome, telefone ou e-mail", "s": "sug", "f": "1"}, {"id": "1.9", "t": "Valor previsto por card e soma por coluna", "s": "sug", "f": "1"}, {"id": "1.10", "t": "Alerta visual de lead parado (ex.: sem resposta há 24 h)", "s": "sug", "f": "1"}, {"id": "1.11", "t": "Etapas editáveis (criar, renomear, reordenar)", "s": "sug", "f": "2"}, {"id": "1.12", "t": "Funis separados (ex.: Hospedagem × Agências × Eventos/grupos)", "s": "sug", "f": "2"}, {"id": "1.13", "t": "Visão em lista/tabela, além das colunas", "s": "sug", "f": "2"}]}, {"n": "2", "nome": "Ficha do cliente (lead / contato)", "itens": [{"id": "2.1", "t": "Editar dados do cliente (nome, telefones, e-mail, cidade/estado, data de nascimento, observações)", "s": "ped", "f": "1"}, {"id": "2.2", "t": "Trocar o responsável (qual usuário assume o lead)", "s": "ped", "f": "1"}, {"id": "2.3", "t": "Agendar atividades/tarefas (ligar, enviar proposta, lembrete) com data, hora e responsável", "s": "ped", "f": "1"}, {"id": "2.4", "t": "Histórico completo: todas as conversas (WhatsApp, direct, Messenger), mudanças de etapa, tarefas e reservas", "s": "sug", "f": "1"}, {"id": "2.5", "t": "Perfil detectado (casal, família, grupo, 55+...) editável", "s": "dec", "f": "1"}, {"id": "2.6", "t": "Origem real + canal de entrada (editáveis, com registro de quem mudou)", "s": "dec", "f": "1"}, {"id": "2.7", "t": "Pedido da estadia: datas, hóspedes (adultos/crianças com idades), acomodação desejada", "s": "dec", "f": "1"}, {"id": "2.8", "t": "Reservas anteriores (vindas do Silbeck) e valor gasto no total", "s": "dec", "f": "3"}, {"id": "2.9", "t": "Etiquetas livres (ex.: \"aniversário de casamento\", \"VIP\")", "s": "sug", "f": "1"}, {"id": "2.10", "t": "Anotações internas (não vão para o cliente)", "s": "sug", "f": "1"}, {"id": "2.11", "t": "Juntar contatos duplicados (mesma pessoa no direct e no WhatsApp)", "s": "dec", "f": "1"}, {"id": "2.12", "t": "Consentimento para mensagens de marketing (sim/não, data) — exigência da LGPD e da Meta", "s": "sug", "f": "1"}, {"id": "2.13", "t": "Cadastro de agência (contatos, comissão, reservas feitas)", "s": "dec", "f": "2"}]}, {"n": "3", "nome": "Tarefas e agenda", "itens": [{"id": "3.1", "t": "Lista \"Minhas tarefas de hoje\" / atrasadas", "s": "sug", "f": "1"}, {"id": "3.2", "t": "Agenda (dia/semana) com as tarefas de todos", "s": "sug", "f": "2"}, {"id": "3.3", "t": "Aviso da tarefa no celular/no sistema na hora marcada", "s": "sug", "f": "2"}, {"id": "3.4", "t": "Tarefas automáticas (ex.: agendamento de massagem com o terceiro, decoração a encomendar)", "s": "dec", "f": "3"}]}, {"n": "4", "nome": "Conversas (caixa de entrada)", "itens": [{"id": "4.1", "t": "WhatsApp 99110 + 99117 + direct do Instagram + Messenger numa fila só", "s": "dec", "f": "1"}, {"id": "4.2", "t": "Agente responde direto nos horários definidos; equipe assume a qualquer momento", "s": "dec", "f": "2"}, {"id": "4.3", "t": "Transferir conversa para outro usuário", "s": "sug", "f": "1"}, {"id": "4.4", "t": "Respostas rápidas (atalhos de texto da equipe)", "s": "sug", "f": "1"}, {"id": "4.5", "t": "Enviar foto, PDF, áudio e localização; ouvir áudio do cliente (e transcrição)", "s": "sug", "f": "1"}, {"id": "4.7", "t": "Botão \"Enviar do banco de imagens e vídeos\" na conversa, com busca por etiqueta", "s": "ped", "f": "2"}, {"id": "4.6", "t": "Filtros: aguardando, com o agente, minhas, por canal", "s": "dec", "f": "1"}]}, {"n": "5", "nome": "Agente de IA (aba Ajustes do agente)", "itens": [{"id": "5.1", "t": "Revisão depois: Aprovar / Corrigir / Reprovar; correção vira resposta de referência", "s": "ped", "f": "2"}, {"id": "5.2", "t": "Fonte de conhecimento (arquivos, textos, links por tema)", "s": "ped", "f": "2"}, {"id": "5.3", "t": "Regras: horários, o que passa para pessoa, o que nunca faz", "s": "dec", "f": "2"}, {"id": "5.4", "t": "Identificação automática do perfil pela fala", "s": "dec", "f": "2"}, {"id": "5.5", "t": "Consulta de disponibilidade e reserva no Silbeck", "s": "dec", "f": "3"}, {"id": "5.6", "t": "% de acerto e meta de 90%", "s": "dec", "f": "2"}, {"id": "5.7", "t": "Banco de imagens e vídeos (importado do Drive, com etiquetas e descrição da cena)", "s": "ped", "f": "2"}, {"id": "5.8", "t": "Agente envia as fotos/vídeos certos conforme a pergunta (acomodação, atividade, perfil)", "s": "ped", "f": "2"}, {"id": "5.9", "t": "Mídias favoritas por tema; desativar sem apagar", "s": "sug", "f": "2"}]}, {"n": "6", "nome": "Painel e relatórios", "itens": [{"id": "6.1", "t": "Filtro por data em todos os indicadores", "s": "dec", "f": "2"}, {"id": "6.2", "t": "Leads, conversão, faturamento e diária média por origem", "s": "dec", "f": "2"}, {"id": "6.3", "t": "Direta × OTA; noites domingo a quinta; motivos de perda", "s": "dec", "f": "2"}, {"id": "6.4", "t": "Desempenho por atendente (e agente)", "s": "sug", "f": "2"}, {"id": "6.5", "t": "Custo do mês (Meta + IA + servidor) × R$ 800", "s": "dec", "f": "2"}, {"id": "6.6", "t": "Resumo automático toda segunda de manhã", "s": "dec", "f": "2"}, {"id": "6.7", "t": "Exportar para planilha", "s": "sug", "f": "2"}]}, {"n": "7", "nome": "Régua de mensagens", "itens": [{"id": "7.1", "t": "Cadastro de mensagens com gatilho, público, conteúdo e número de envio", "s": "dec", "f": "3"}, {"id": "7.2", "t": "Pré-chegada (pré-check-in, localização, o que trazer, upsell) e pós-estadia (NPS, avaliação, volta, Booking → direto)", "s": "dec", "f": "3"}, {"id": "7.3", "t": "Follow-up: 1ª tentativa na janela de 24 h, 2ª em 3 dias com foto do perfil", "s": "dec", "f": "2"}, {"id": "7.4", "t": "Campanhas avulsas para uma lista filtrada (ex.: hóspedes de MS para um feriado com vagas)", "s": "sug", "f": "3"}]}, {"n": "8", "nome": "Usuários e configurações", "itens": [{"id": "8.1", "t": "Login individual (dono, Renata, Jagles, Márcio, outros atendentes)", "s": "dec", "f": "1"}, {"id": "8.2", "t": "Permissões por papel (ex.: atendente não apaga lead, não vê faturamento)", "s": "sug", "f": "1"}, {"id": "8.3", "t": "Registro de quem fez o quê (auditoria)", "s": "sug", "f": "1"}, {"id": "8.4", "t": "Funciona no computador e no celular (app instalável pelo navegador)", "s": "dec", "f": "1"}, {"id": "8.5", "t": "Notificações de nova conversa e de lead parado", "s": "sug", "f": "1"}]}];
+(function(){
+  const TAG={dec:["t-dec","Decidido"],ped:["t-ped","Seu pedido"],sug:["t-sug","Sugestão"]};
+  const total=AREAS.reduce((n,a)=>n+a.itens.length,0);
+  const escolhas={}; // id -> {escolha, comentario}
+  let db=null, local=false, filtro="todas";
+  const $=id=>document.getElementById(id);
+  const docId=id=>"item-"+id.replace(".","-");
+
+  // Filtros
+  const filtros=$("filtros");
+  [["todas","Todas"],["pendentes","Não avaliadas"],...AREAS.map(a=>[a.n,a.nome])].forEach(([v,t])=>{
+    const b=document.createElement("button");b.className="chip";b.textContent=t;b.dataset.f=v;b.setAttribute("aria-pressed",v==="todas");filtros.appendChild(b);
+  });
+  filtros.addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;filtro=b.dataset.f;
+    filtros.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));aplicarFiltro();});
+  // Select de área
+  AREAS.forEach(a=>{const o=document.createElement("option");o.value=a.nome;o.textContent=a.n+". "+a.nome;$("falta-area").appendChild(o);});
+  const oo=document.createElement("option");oo.value="Outra";oo.textContent="Outra área";$("falta-area").appendChild(oo);
+
+  // Render dos itens
+  const cont=$("areas");
+  AREAS.forEach(a=>{
+    const sec=document.createElement("section");sec.className="area";sec.dataset.area=a.n;
+    sec.innerHTML='<h2></h2>';sec.querySelector("h2").textContent=a.n+". "+a.nome;
+    const sm=document.createElement("small");sm.dataset.cont=a.n;sec.querySelector("h2").appendChild(sm);
+    a.itens.forEach(it=>{
+      const d=document.createElement("article");d.className="item";d.dataset.id=it.id;
+      d.innerHTML='<div class="cab"><span class="num"></span><div class="titulo"><div class="tx"></div><div class="meta"><span class="tag"></span><span class="tag t-fase"></span></div></div></div>'+
+        '<div class="botoes" role="group"><button type="button" data-v="mantem" aria-pressed="false">Mantém</button><button type="button" data-v="corta" aria-pressed="false">Corta</button><button type="button" data-v="muda" aria-pressed="false">Muda</button></div>'+
+        '<button type="button" class="comentar">Comentar</button><textarea hidden placeholder="O que mudar ou observar?"></textarea><span class="salvo"></span>';
+      d.querySelector(".num").textContent=it.id;d.querySelector(".tx").textContent=it.t;
+      const tg=d.querySelector(".meta .tag");tg.className="tag "+TAG[it.s][0];tg.textContent=TAG[it.s][1];
+      d.querySelector(".t-fase").textContent="Fase "+it.f;
+      const ta=d.querySelector("textarea");ta.id="c-"+it.id.replace(".","-");ta.setAttribute("aria-label","Comentário do item "+it.id);
+      d.querySelector(".botoes").setAttribute("aria-label","Decisão do item "+it.id);
+      sec.appendChild(d);
+    });
+    cont.appendChild(sec);
+  });
+
+  function pintar(id){
+    const d=cont.querySelector('[data-id="'+id+'"]');if(!d)return;const e=escolhas[id]||{};
+    d.dataset.escolha=e.escolha||"";
+    d.querySelectorAll(".botoes button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===e.escolha));
+    const ta=d.querySelector("textarea");
+    if(document.activeElement!==ta) ta.value=e.comentario||"";
+    if(e.comentario||e.escolha==="muda") ta.hidden=false;
+  }
+  function progresso(){
+    const n=Object.values(escolhas).filter(e=>e&&e.escolha).length;
+    $("prog-txt").textContent=n+" de "+total+" avaliados";$("prog-barra").style.width=(100*n/total)+"%";
+    AREAS.forEach(a=>{const k=a.itens.filter(i=>escolhas[i.id]&&escolhas[i.id].escolha).length;cont.querySelector('[data-cont="'+a.n+'"]').textContent=k+"/"+a.itens.length;});
+  }
+  function aplicarFiltro(){
+    cont.querySelectorAll(".area").forEach(sec=>{
+      let vis=0;sec.querySelectorAll(".item").forEach(d=>{
+        const ok=filtro==="todas"||(filtro==="pendentes"?!(escolhas[d.dataset.id]&&escolhas[d.dataset.id].escolha):sec.dataset.area===filtro);
+        d.hidden=!ok;if(ok)vis++;});
+      sec.hidden=vis===0;});
+  }
+
+  // Persistência
+  const LK="crm-validacao";
+  function lerLocal(){try{return JSON.parse(localStorage.getItem(LK)||"{}")}catch(e){return{}}}
+  function gravarLocal(){try{localStorage.setItem(LK,JSON.stringify({escolhas,faltas}))}catch(e){}}
+  const fila={};
+  async function salvar(id){
+    const d=cont.querySelector('[data-id="'+id+'"]');const st=d.querySelector(".salvo");
+    if(!db){gravarLocal();st.textContent="Salvo neste aparelho";return;}
+    if(fila[id]){fila[id].again=true;return;}
+    fila[id]={again:false};st.textContent="Salvando…";
+    try{
+      do{fila[id].again=false;const e=escolhas[id]||{};
+        await db.doc("respostas/"+docId(id)).set({item:id,escolha:e.escolha||"",comentario:e.comentario||"",atualizado:new Date().toISOString()});
+      }while(fila[id].again);
+      st.textContent="Salvo";
+    }catch(err){st.textContent="Não salvou. Tente de novo.";}
+    finally{delete fila[id];}
+  }
+  cont.addEventListener("click",e=>{
+    const d=e.target.closest(".item");if(!d)return;const id=d.dataset.id;
+    const b=e.target.closest(".botoes button");
+    if(b){const cur=escolhas[id]||{};const v=cur.escolha===b.dataset.v?"":b.dataset.v;escolhas[id]={...cur,escolha:v};
+      pintar(id);progresso();salvar(id);if(v==="muda")d.querySelector("textarea").focus();return;}
+    if(e.target.closest(".comentar")){const ta=d.querySelector("textarea");ta.hidden=false;ta.focus();}
+  });
+  const tempo={};
+  cont.addEventListener("input",e=>{
+    if(e.target.tagName!=="TEXTAREA")return;const id=e.target.closest(".item").dataset.id;
+    escolhas[id]={...(escolhas[id]||{}),comentario:e.target.value};
+    clearTimeout(tempo[id]);tempo[id]=setTimeout(()=>salvar(id),900);
+  });
+
+  // O que falta
+  let faltas=[];
+  function pintarFaltas(){
+    const l=$("lista-falta");l.textContent="";
+    faltas.forEach(f=>{const d=document.createElement("div");const s=document.createElement("span");s.textContent=f.area+": "+f.texto;
+      const x=document.createElement("button");x.type="button";x.textContent="Remover";x.onclick=()=>removerFalta(f.id);d.append(s,x);l.appendChild(d);});
+  }
+  async function removerFalta(id){faltas=faltas.filter(f=>f.id!==id);pintarFaltas();
+    if(db){try{await db.doc("faltas/"+id).delete()}catch(e){}}else gravarLocal();}
+  $("falta-add").addEventListener("click",async()=>{
+    const t=$("falta-texto").value.trim();if(!t){$("falta-texto").focus();return;}
+    const f={id:"f"+Date.now().toString(36),area:$("falta-area").value,texto:t,criado:new Date().toISOString()};
+    $("falta-texto").value="";
+    if(db){try{await db.doc("faltas/"+f.id).set({area:f.area,texto:f.texto,criado:f.criado});}catch(e){$("falta-texto").value=t;return;}}
+    else{faltas.push(f);gravarLocal();pintarFaltas();}
+  });
+
+  function iniciarLocal(){
+    local=true;$("aviso-local").hidden=false;$("estado").textContent="Salvando só neste aparelho";
+    const L=lerLocal();Object.assign(escolhas,L.escolhas||{});faltas=L.faltas||[];
+    AREAS.forEach(a=>a.itens.forEach(i=>pintar(i.id)));progresso();pintarFaltas();aplicarFiltro();
+  }
+  progresso();aplicarFiltro();
+  (async()=>{
+    try{db=window.claude&&window.claude.use?await window.claude.use("db"):null;}catch(e){db=null;}
+    if(!db){iniciarLocal();return;}
+    $("estado").textContent="Salvando automaticamente";
+    db.collection("respostas").onSnapshot(snap=>{
+      snap.docs.forEach(doc=>{const v=doc.data();if(!v||!v.item)return;
+        if(fila[v.item])return; escolhas[v.item]={escolha:v.escolha||"",comentario:v.comentario||""};pintar(v.item);});
+      progresso();if(filtro==="pendentes")aplicarFiltro();
+    },()=>{db=null;iniciarLocal();});
+    db.collection("faltas").orderBy("criado").onSnapshot(snap=>{
+      faltas=snap.docs.map(d=>({id:d.id,...d.data()}));pintarFaltas();
+    },()=>{});
+  })();
+})();
+</script>
