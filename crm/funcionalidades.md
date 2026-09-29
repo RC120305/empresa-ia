@@ -113,3 +113,12 @@
 | 9.6 | Confirmar sozinho o **Pix do motor** pelos Pix recebidos no BB (1 clique quando houver dúvida); lembrete ao cliente e alerta de vencido | 🆕 | 3 |
 | 9.5 | Etapa "Aguardando pagamento" com prazo e lembrete (A1) | ✅ | 1 |
 | 9.7 | Reservas do **Booking**: card "a cobrar", tarefa de cobrança com prazo, lista de pendentes e baixa automática quando o pagamento aparece no Silbeck. **Sem dados de cartão no CRM** | 🆕 | 3 |
+
+## 10. Produtos e upsell (acrescentado em 29/09/2026)
+| # | Funcionalidade | Status | Fase |
+|---|---|---|---|
+| 10.1 | **Catálogo de produtos** (preço do Silbeck, regras, antecedência, tipo de reserva, momento, perfis, prioridade, ativo/inativo; novo e importar do Silbeck) | 🆕 | 2 |
+| 10.2 | Oferta pelo **agente** (1 por conversa, só se cabe no perfil e tem vaga), pela **equipe** (1 clique) e pela **régua** | 🆕 | 2 |
+| 10.3 | **Reserva de boia cross e arvorismo pelo CRM** via API do sistema interno (horários, vagas, pessoas; combo com 2 horários) | 🆕 | 3 |
+| 10.4 | Pagamento do upsell (Pix BB / Cielo) e lançamento no Silbeck (tarefa de 1 clique até haver API de lançamento) | 🆕 | 3 |
+| 10.5 | Métricas de upsell (receita por produto, aceite por momento, agente × equipe) | 🆕 | 2 |

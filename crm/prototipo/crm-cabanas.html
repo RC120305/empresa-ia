@@ -508,6 +508,27 @@ button,input,select{font:inherit;color:inherit}
 .vag-tab td.vg.zero{color:var(--cor-erro);background:var(--cor-erro-suave)}
 .vag-tab td.vg.cheio{color:var(--cor-sucesso)}
 .vag-tab tr.tot td{font-weight:700;border-bottom:0}
+
+/* v11: catálogo de produtos e reserva de horários */
+.prod-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.prod{padding:14px;display:flex;flex-direction:column;gap:8px}
+.prod.inativo{opacity:.55}
+.prod-cab{display:flex;align-items:center;gap:8px}
+.prod-cab strong{flex:1;font-size:16px}
+.prod .preco{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.prod dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;margin:0;font-size:13px}
+.prod dt{color:var(--cor-texto-sec)}.prod dd{margin:0}
+.sug{border:1px solid var(--cor-borda);border-radius:var(--r-md);padding:8px 10px;display:flex;flex-direction:column;gap:6px;background:var(--cor-superficie)}
+.sug-cab{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.sug small{color:var(--cor-texto-sec);font-size:12px}
+.horarios{display:flex;gap:6px;flex-wrap:wrap}
+.horarios button{all:unset;cursor:pointer;border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:6px 8px;font-size:13px;display:flex;flex-direction:column;align-items:center;min-width:56px}
+.horarios button small{font-size:11px;color:var(--cor-texto-sec)}
+.horarios button[aria-pressed=true]{background:var(--cor-primaria);border-color:var(--cor-primaria);color:var(--cor-sobre-primaria)}
+.horarios button[aria-pressed=true] small{color:inherit}
+.horarios button:disabled{opacity:.45;cursor:not-allowed;text-decoration:line-through}
+.res-hor{display:flex;flex-direction:column;gap:8px;border-top:1px dashed var(--cor-borda-forte);padding-top:8px}
+.res-hor input{border:1px solid var(--cor-borda-forte);border-radius:8px;padding:6px 8px;background:var(--cor-superficie);color:var(--cor-texto);font:inherit;font-size:14px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -522,6 +543,8 @@ button,input,select{font:inherit;color:inherit}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg>Funil</button>
       <button role="tab" aria-selected="false" data-vista="tarefas" id="tab-tarefas">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tarefas<span class="qtd num" id="qtd-tarefas">0</span></button>
+      <button role="tab" aria-selected="false" data-vista="produtos" id="tab-produtos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Produtos</button>
       <button role="tab" aria-selected="false" data-vista="vagas" id="tab-vagas">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Vagas</button>
       <button role="tab" aria-selected="false" data-vista="pagamentos" id="tab-pagamentos">
@@ -596,6 +619,20 @@ button,input,select{font:inherit;color:inherit}
         <div class="chips" role="group" aria-label="Mostrar"><button class="chip" aria-pressed="true" data-t="abertas">Abertas</button><button class="chip" aria-pressed="false" data-t="feitas">Concluídas</button></div>
       </div>
       <div id="lista-tarefas" style="display:flex;flex-direction:column;gap:14px"></div>
+    </section>
+
+    <!-- PRODUTOS -->
+    <section data-painel="produtos" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="barra-ferr"><button class="btn btn-enviar" type="button" id="prod-novo">+ Novo produto</button><button class="btn btn-editar" type="button" id="prod-importar">Importar do Silbeck</button><span style="font-size:13px;color:var(--cor-texto-sec)">Preços sincronizados com o Silbeck. Horários das atividades vêm do sistema interno de reservas.</span></div>
+      <div class="cartao bloco" id="prod-form" hidden>
+        <div class="grade-campos"><label class="campo">Nome<input id="pf-nome" type="text"></label><label class="campo">Código<input id="pf-cod" type="text" maxlength="6"></label><label class="campo">Preço (R$)<input id="pf-preco" type="number"></label>
+        <label class="campo">Como se reserva<select id="pf-tipo"><option value="ativ">Atividade com horário (sistema interno)</option><option value="terc">Serviço de terceiro (tarefa)</option><option value="simples">Simples, sem horário</option></select></label>
+        <label class="campo largo">Regras (idade, altura, restrições)<input id="pf-regras" type="text"></label>
+        <label class="campo">Quando oferecer<select id="pf-quando"><option>Na cotação</option><option>3 dias antes da chegada</option><option>Durante a estadia</option><option>Cotação e estadia</option></select></label>
+        <label class="campo">Antecedência mínima (dias)<input id="pf-ant" type="number" value="0"></label></div>
+        <div class="acoes"><button class="btn btn-enviar" type="button" id="pf-salvar">Salvar produto</button><button class="btn btn-editar" type="button" id="pf-cancelar">Cancelar</button></div>
+      </div>
+      <div class="prod-grade" id="prod-grade"></div>
     </section>
 
     <!-- VAGAS -->
@@ -796,7 +833,7 @@ button,input,select{font:inherit;color:inherit}
 
 <script>
 (function(){
-  const titulos={conversas:"Conversas",funil:"Funil de reservas",tarefas:"Tarefas",vagas:"Vagas",pagamentos:"Pagamentos",painel:"Painel",regua:"Régua de mensagens",ajustes:"Ajustes do agente"};
+  const titulos={produtos:"Catálogo de produtos",conversas:"Conversas",funil:"Funil de reservas",tarefas:"Tarefas",vagas:"Vagas",pagamentos:"Pagamentos",painel:"Painel",regua:"Régua de mensagens",ajustes:"Ajustes do agente"};
   const tabs=[...document.querySelectorAll('.nav button')];
   const paineis=[...document.querySelectorAll('[data-painel]')];
   function abrir(v){
@@ -1232,7 +1269,7 @@ button,input,select{font:inherit;color:inherit}
       lat.append(el('div',{class:'lat-sec'},el('span',{class:'rotulo',text:'Pagamentos'})));
       if(!c.pagamentos.length)lat.append(el('p',{class:'lat-txt',text:'Nenhuma cobrança. Use “Cobrar” na conversa.'}));
       c.pagamentos.forEach(x=>lat.append(el('div',{class:'lat-card'},el('b',{text:x[0]}),el('span',{class:'tipo '+x[2],text:x[1]}))));
-      if(c.etapa!=='hosp')lat.append(el('div',{class:'upsell'},el('span',{class:'rotulo',style:'color:var(--cor-secundaria-texto)',text:'Oferta prioritária'}),el('strong',{text:'Combo boia cross + arvorismo'}),el('span',{text:'R$ 170 por pessoa'})));
+      renderProdutosConversa(c,lat);
     }
     if(painelLat==='his'){
       lat.append(el('span',{class:'rotulo',text:'Origem'}),el('p',{class:'lat-txt',text:c.origemDet}));
@@ -1429,6 +1466,70 @@ button,input,select{font:inherit;color:inherit}
   function recolher(on){app.classList.toggle('recolhido',on);btR.setAttribute('aria-expanded',String(!on));btR.setAttribute('aria-label',on?'Expandir menu':'Recolher menu');btR.title=on?'Expandir menu':'Recolher menu';try{localStorage.setItem('crm-menu',on?'1':'0')}catch(e){}}
   btR.addEventListener('click',()=>recolher(!app.classList.contains('recolhido')));
   let mIni='0';try{mIni=localStorage.getItem('crm-menu')||'0'}catch(e){}recolher(mIni==='1');
-  renderBoard();renderRegua();iniciarV4();
+
+  // v11: catálogo de produtos e reserva de horários (sistema interno)
+  const PRODUTOS=[
+    {cod:'COMBO',nome:'Combo boia cross + arvorismo',preco:170,tipo:'ativ',regras:'A partir de 5 anos e 1,15 m; sem gestantes; sem álcool',quando:'Cotação e estadia',ant:0,prio:1,ativo:true,perfis:'Família, grupo, casal',idade:5},
+    {cod:'BOIA',nome:'Boia cross',preco:100,tipo:'ativ',regras:'A partir de 5 anos e 1,15 m; sem gestantes; sem álcool',quando:'Cotação e estadia',ant:0,prio:2,ativo:true,perfis:'Família, grupo',idade:5},
+    {cod:'ARVO',nome:'Arvorismo',preco:120,tipo:'ativ',regras:'A partir de 5 anos e 1,15 m; 18 obstáculos + tirolesa aquática',quando:'Cotação e estadia',ant:0,prio:3,ativo:true,perfis:'Família, grupo, casal',idade:5},
+    {cod:'FLUT',nome:'Flutuação',preco:100,tipo:'ativ',regras:'A partir de 7 anos; sem gestantes',quando:'Durante a estadia',ant:0,prio:4,ativo:true,perfis:'Todos',idade:7},
+    {cod:'MASS',nome:'Massagem (avulsa ou pacote)',preco:null,tipo:'terc',regras:'Terceirizada; agendar com o parceiro',quando:'3 dias antes da chegada',ant:1,prio:5,ativo:true,perfis:'Casal, 55+',idade:0},
+    {cod:'DECO',nome:'Decoração especial',preco:null,tipo:'simples',regras:'Encomendar os itens',quando:'Na cotação',ant:3,prio:6,ativo:true,perfis:'Casal',idade:0},
+    {cod:'PIQ',nome:'Piquenique Sunset',preco:null,tipo:'simples',regras:'Retirado da oferta',quando:'—',ant:0,prio:9,ativo:false,perfis:'Casal',idade:0},
+  ];
+  const TIPO_RES={ativ:'Atividade com horário · sistema interno',terc:'Terceiro · tarefa de agendamento',simples:'Simples, sem horário'};
+  const brlP=v=>v==null?'a confirmar':'R$ '+v.toLocaleString('pt-BR');
+  function renderProdutos(){
+    const g=$('prod-grade');g.textContent='';
+    PRODUTOS.slice().sort((a,b)=>a.prio-b.prio).forEach(p=>{
+      const sw=el('button',{class:'switch',role:'switch','aria-checked':String(p.ativo),'aria-label':(p.ativo?'Desativar ':'Ativar ')+p.nome,onclick:()=>{p.ativo=!p.ativo;renderProdutos();toast(p.nome+(p.ativo?' ativado.':' desativado: o agente e a régua param de oferecer.'));}});
+      g.append(el('div',{class:'cartao prod'+(p.ativo?'':' inativo')},
+        el('div',{class:'prod-cab'},el('span',{class:'cod',style:'font-weight:700;font-size:11px;background:var(--cor-primaria-suave);color:var(--cor-primaria-texto);border-radius:4px;padding:2px 6px',text:p.cod}),el('strong',{text:p.nome}),sw),
+        el('span',{class:'preco',text:brlP(p.preco)+(p.preco!=null?' /pessoa':'')}),
+        el('dl',{},el('dt',{text:'Reserva'}),el('dd',{text:TIPO_RES[p.tipo]}),el('dt',{text:'Regras'}),el('dd',{text:p.regras}),el('dt',{text:'Oferecer'}),el('dd',{text:p.quando+(p.ant?' · mínimo '+p.ant+' dia(s) antes':'')}),el('dt',{text:'Para'}),el('dd',{text:p.perfis}),el('dt',{text:'Prioridade'}),el('dd',{text:String(p.prio)})),
+        el('div',{style:'display:flex;gap:6px'},el('button',{class:'btn-mini',type:'button',text:'Editar',onclick:()=>{abrirForm(p);}}),el('button',{class:'btn-mini',type:'button',text:'▲ Prioridade',onclick:()=>{const acima=PRODUTOS.find(x=>x.prio===p.prio-1);if(acima){acima.prio++;p.prio--;renderProdutos();}}}))));
+    });
+  }
+  let prodEdit=null;
+  function abrirForm(p){prodEdit=p||null;$('prod-form').hidden=false;$('pf-nome').value=p?p.nome:'';$('pf-cod').value=p?p.cod:'';$('pf-preco').value=p&&p.preco!=null?p.preco:'';$('pf-tipo').value=p?p.tipo:'ativ';$('pf-regras').value=p?p.regras:'';$('pf-ant').value=p?p.ant:0;$('pf-nome').focus();}
+  $('prod-novo').addEventListener('click',()=>abrirForm(null));
+  $('pf-cancelar').addEventListener('click',()=>$('prod-form').hidden=true);
+  $('pf-salvar').addEventListener('click',()=>{const n=$('pf-nome').value.trim();if(!n){$('pf-nome').focus();return;}
+    const d={nome:n,cod:($('pf-cod').value||n.slice(0,4)).toUpperCase(),preco:$('pf-preco').value===''?null:+$('pf-preco').value,tipo:$('pf-tipo').value,regras:$('pf-regras').value,quando:$('pf-quando').value,ant:+$('pf-ant').value||0};
+    if(prodEdit)Object.assign(prodEdit,d);else PRODUTOS.push(Object.assign(d,{prio:PRODUTOS.length+1,ativo:true,perfis:'Todos',idade:0}));
+    $('prod-form').hidden=true;renderProdutos();toast('Produto salvo. O agente já pode oferecer.');});
+  $('prod-importar').addEventListener('click',()=>toast('Importação do Silbeck (GET Produto): nomes e preços atualizados; complete regras e fotos dos novos.'));
+  // horários do sistema interno (exemplo)
+  const HORARIOS={BOIA:[['09:00',12],['10:30',0],['14:00',5],['15:30',9]],ARVO:[['09:30',6],['11:00',2],['14:30',0],['16:00',8]],FLUT:[['08:30',4],['10:00',6],['15:00',3]]};
+  let resAberta=null;
+  function renderProdutosConversa(c,lat){
+    lat.append(el('div',{class:'lat-sec'},el('span',{class:'rotulo',style:'color:var(--cor-secundaria-texto)',text:'Produtos sugeridos'}),el('button',{class:'btn-mini',type:'button',text:'Catálogo',onclick:()=>abrir('produtos')})));
+    const criancas=/6 e 9|6 e 11|8\)|crianç/i.test(c.perfil+' '+(c.lead&&leadPor(c.lead)?leadPor(c.lead).hosp:''));
+    const sugs=PRODUTOS.filter(p=>p.ativo).filter(p=>c.perfil==='Casal'?p.cod!=='BOIA':c.perfil==='55+'?['MASS','FLUT'].includes(p.cod):true).sort((a,b)=>a.prio-b.prio).slice(0,3);
+    sugs.forEach(p=>{
+      const box=el('div',{class:'sug'},el('div',{class:'sug-cab'},el('b',{text:p.nome}),el('span',{class:'num',text:brlP(p.preco)})),el('small',{text:p.regras}),
+        el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'},
+          el('button',{class:'btn-mini',type:'button',text:'Oferecer',onclick:()=>{c.msgs.push(['eq','[Cartão do produto] '+p.nome+' · '+brlP(p.preco)+(p.preco!=null?' por pessoa':'')+' · '+p.regras,'agora',USUARIOS[c.resp==='agente'?'voce':c.resp]||'Você']);renderChat();toast('Oferta enviada com foto e preço.');}}),
+          p.tipo==='ativ'?el('button',{class:'btn-mini',type:'button',text:resAberta===p.cod?'Fechar':'Reservar horário',onclick:()=>{resAberta=resAberta===p.cod?null:p.cod;renderLateral(c);}}):
+          p.tipo==='terc'?el('button',{class:'btn-mini',type:'button',text:'Criar tarefa de agendamento',onclick:()=>{const [lista]=tarefasDe(c);lista.push({t:'Agendar massagem',d:'Agendar '+p.nome+' com o parceiro',q:dia(1,'10:00'),r:'jagles',f:false});renderBoard();renderLateral(c);toast('Tarefa criada para agendar com o parceiro.');}}):null));
+      if(resAberta===p.cod&&p.tipo==='ativ')box.append(widgetReserva(c,p));
+      lat.append(box);
+    });
+  }
+  function widgetReserva(c,p){
+    const cods=p.cod==='COMBO'?['BOIA','ARVO']:[p.cod];const escolha={};
+    const data=el('input',{type:'date',value:c.datas?c.datas[0]:isoMais(hoje.toISOString().slice(0,10),1),'aria-label':'Data da atividade'});
+    const qtd=el('input',{type:'number',min:'1',value:'2',style:'width:70px','aria-label':'Pessoas'});
+    const blocos=cods.map(cd=>{const nome=PRODUTOS.find(x=>x.cod===cd).nome;
+      const hs=el('div',{class:'horarios'},(HORARIOS[cd]||[]).map(([h,v])=>el('button',{type:'button','aria-pressed':'false',disabled:v===0,onclick:e=>{escolha[cd]=h;e.currentTarget.parentElement.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===e.currentTarget)));}},el('b',{text:h}),el('small',{text:v?v+' vagas':'lotado'}))));
+      return el('div',{},el('small',{text:nome+' · horários do sistema interno'}),hs);});
+    return el('div',{class:'res-hor'},el('div',{style:'display:flex;gap:8px;align-items:end;flex-wrap:wrap'},el('label',{class:'campo'},'Data',data),el('label',{class:'campo'},'Pessoas',qtd)),blocos,
+      el('button',{class:'btn btn-enviar',type:'button',text:'Reservar no sistema interno',onclick:()=>{
+        if(cods.some(cd=>!escolha[cd])){toast('Escolha um horário'+(cods.length>1?' para cada atividade.':'.'));return;}
+        const txt=p.nome+' · '+fmtData(data.value)+' · '+cods.map(cd=>escolha[cd]).join(' e ')+' · '+qtd.value+' pessoa(s)';
+        c.reservas.push([txt,'Reservado no sistema interno · pagamento pendente','t-mkt']);c.msgs.push(['sis','Atividade reservada pelo CRM: '+txt]);resAberta=null;renderChat();
+        toast('Reservado no sistema interno (API). Cobre pelo botão “Cobrar” ou lance na conta do hóspede.');}}));
+  }
+  renderBoard();renderRegua();iniciarV4();renderProdutos();
 })();
 </script>
