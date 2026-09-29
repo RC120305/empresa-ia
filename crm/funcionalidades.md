@@ -97,3 +97,12 @@
 | 8.3 | Registro de quem fez o quê (auditoria) | 💡 | 1 |
 | 8.4 | Funciona no computador e no celular (app instalável pelo navegador) | ✅ | 1 |
 | 8.5 | Notificações de nova conversa e de lead parado | 💡 | 1 |
+
+## 9. Pagamentos (acrescentado em 29/09/2026)
+| # | Funcionalidade | Status | Fase |
+|---|---|---|---|
+| 9.1 | Cobrança **Pix dinâmica pela API do Banco do Brasil** enviada no WhatsApp, com confirmação automática | 🆕 | 3 |
+| 9.2 | Ao confirmar o Pix: criar/atualizar a reserva e **lançar o adiantamento no Silbeck**; avisar o cliente; card em Reservado | 🆕 | 3 |
+| 9.3 | Cartão pelo WhatsApp: link do motor da Silbeck (cobra e confirma sozinho) | 🆕 | 3 |
+| 9.4 | Casar os Pix do motor com as reservas pendentes (1 clique da equipe) | 💡 | 3 |
+| 9.5 | Etapa "Aguardando pagamento" com prazo e lembrete (A1) | ✅ | 1 |

@@ -241,3 +241,16 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 - Destaques: existe `POST /v1/reserva` (o agente pode reservar), `POST /v1/Adiantamento` (lançar o sinal na conta do cliente: responde ao A1), `GET /v1/Disponibilidade`, `POST /v1/Tarifario/Valor`, `GET /v1/ListaReserva`, `GET /v1/ListaEstadia`, `GET /v1/Hospede`, `POST /v1/FichaHospede` (pré-check-in) e `GET /v1/ExtratoConta`.
 - Lacunas: sem endpoint visível de cancelar/alterar reserva e sem webhooks (o CRM consulta periodicamente); link de pagamento vem de uma empresa de pagamentos, não da Silbeck.
 - Pendente: prints dos detalhes (parâmetros e respostas) dos 9 endpoints prioritários.
+
+### P31. Pagamentos hoje e automação do Pix (29/09/2026)
+**Como é hoje (dono):**
+- **Motor de reservas da Silbeck:** o **cartão** é cobrado no fim da compra e a reserva já cai **confirmada** (só falha se o cartão não passar). No **Pix**, o motor gera QR code e copia-e-cola, mas **não confirma sozinho**: a equipe entra no **Banco do Brasil**, confere e só então confirma no Silbeck (e na planilha).
+- **Venda pelo WhatsApp:** **tudo manual**: a equipe envia a chave Pix ou um link de pagamento e depois confere no banco.
+- **Pedido do dono:** automatizar dentro do CRM, usando a **API Pix do Banco do Brasil** (portal developers do BB) para confirmar a entrada.
+
+**Desenho proposto:**
+1. **Pix pelo WhatsApp (automático):** o CRM gera uma **cobrança Pix dinâmica no BB** (valor exato do sinal, identificador único ligado ao lead, validade ex. 24 h) → envia QR + copia-e-cola → o BB avisa o CRM quando o Pix cai (webhook, ou consulta a cada poucos minutos) → o CRM cria/atualiza a reserva no Silbeck (`POST reserva` + `POST Adiantamento`) → confirma ao cliente pelo WhatsApp → card vai para **Reservado**. Sem conferência manual e sem confusão de "de quem é este Pix".
+2. **Cartão pelo WhatsApp:** enviar o **link do motor da Silbeck** (já cobra e confirma sozinho). Verificar se o motor aceita link com datas e acomodação preenchidas.
+3. **Pix do motor (bônus):** o CRM lê os Pix recebidos no BB e **sugere o casamento** com as reservas do motor pendentes (valor, data, nome); a equipe confirma com 1 clique.
+- **Segurança:** o acesso do CRM ao BB fica **só com permissão de criar cobranças e ler Pix recebidos**, **nunca de enviar dinheiro**. Credenciais e certificado digital guardados no cofre de segredos do Cloud Run, nunca no chat nem no repositório.
+- **A verificar com o BB (gerente PJ + Márcio):** cadastro no portal developers, aplicação da API Pix em produção, **certificado digital** exigido pelo BB, tarifa por Pix recebido/cobrança, e se a chave Pix do hotel é da conta BB.
