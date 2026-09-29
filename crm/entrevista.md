@@ -70,3 +70,8 @@
 **Aprovada pelo dono como está.**
 - **Canal de entrada:** WhatsApp 99110 · WhatsApp 99117 · telefone · motor de reservas (site) · Booking · Airbnb · Expedia · Decolar · agência/operadora · direct do Instagram · e-mail.
 - **Origem real → como é descoberta:** Anúncio Meta (qual campanha; automático pelo dado de referência do anúncio de clique para WhatsApp) · Instagram orgânico (mensagem pronta do link e robô de comentários) · Google busca/Maps/Hotel (links com UTM; senão o agente pergunta) · Site (botão de WhatsApp com rastreamento) · Hóspede que volta (automático: telefone já no histórico do Silbeck) · Indicação, de quem (o agente pergunta) · Agência X / operadora X (número cadastrado) · OTA (canal da reserva no Silbeck).
+
+### P10. Métricas e quem acompanha (29/09/2026)
+- **Métricas aprovadas:** leads por origem · conversão por origem · faturamento e diária média por origem (Silbeck) · reserva direta × OTA (e comissão poupada) · noites de domingo a quinta por origem · motivo de perda · atendimento (tempo de 1ª resposta; resolvido pelo agente × passado para humano).
+- **Quem vê o painel:** o dono, **Renata**, **Jagles** e **Márcio**.
+- Frequência: não definida; proposta: painel ao vivo no CRM + resumo semanal automático (segunda de manhã) e fechamento mensal.
