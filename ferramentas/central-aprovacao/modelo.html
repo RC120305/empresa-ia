@@ -715,7 +715,7 @@ window.addEventListener("message", (e) => {
 function applyStyle(n, e){
   const p = byId[n]; if (!p.estilos || !p.estilos[e]) return;
   p.imgs = p.estilos[e]; p.atual = e;
-  const card = document.getElementById(cardId(p));
+  const card = document.getElementById(cardId(p)); if (!card) return;  // post fora da grade do mês (ex.: já publicado)
   if (p.ad) { card.classList.toggle("fmt-s", e === "s"); }
   const track = card.querySelector(".track");
   if (track) [...track.children].forEach((el,i) => { if (el.tagName === "IMG" && p.imgs[i]) el.src = p.imgs[i]; });
@@ -1120,7 +1120,7 @@ tally();
   }
   if (!assets) document.querySelectorAll("[data-up]").forEach(u => u.hidden = true);
   document.querySelectorAll("[data-edit]").forEach(b => b.hidden = false);
-  [...POSTS, ...ADCARDS].forEach(p => { if (p.pecas) document.querySelector("#" + cardId(p) + " [data-art]").hidden = false; });
+  [...POSTS, ...ADCARDS].forEach(p => { const a = p.pecas && document.querySelector("#" + cardId(p) + " [data-art]"); if (a) a.hidden = false; });
   if (ADCARDS.length) db.collection("anuncios_artes").where("plano","==",ANUNCIOS.id).onSnapshot(snap => {
     snap.docs.forEach(d => { const b = d.data(); if (b && b.cod) state[b.cod] = b; });
     ADCARDS.forEach(p => paint(p.n)); tallyAds(); renderAds();
