@@ -254,3 +254,10 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 3. **Pix do motor (bônus):** o CRM lê os Pix recebidos no BB e **sugere o casamento** com as reservas do motor pendentes (valor, data, nome); a equipe confirma com 1 clique.
 - **Segurança:** o acesso do CRM ao BB fica **só com permissão de criar cobranças e ler Pix recebidos**, **nunca de enviar dinheiro**. Credenciais e certificado digital guardados no cofre de segredos do Cloud Run, nunca no chat nem no repositório.
 - **A verificar com o BB (gerente PJ + Márcio):** cadastro no portal developers, aplicação da API Pix em produção, **certificado digital** exigido pelo BB, tarifa por Pix recebido/cobrança, e se a chave Pix do hotel é da conta BB.
+
+### P32. Link de pagamento pela Cielo (29/09/2026)
+- **Pedido do dono:** quando o cliente quiser pagar por **link**, integrar a **Cielo** para o CRM gerar o link.
+- **Desenho:** a Cielo tem **API de Link de Pagamento** (a confirmar com a Cielo se o contrato do hotel inclui o e-commerce/link). O CRM cria o link com o valor do sinal (ou total), descrição da reserva, **parcelamento até 6x** (regra do hotel) e validade → envia no WhatsApp → a Cielo avisa o CRM quando o pagamento é aprovado (URL de notificação) → o CRM lança o **Adiantamento no Silbeck**, confirma ao cliente e move o card para **Reservado**. Pagamento recusado: o CRM avisa a equipe e o agente oferece Pix.
+- Dados do cartão **nunca** passam pelo CRM (página da própria Cielo). Credenciais da Cielo no cofre de segredos.
+- Com isso, pelo WhatsApp o cliente escolhe: **Pix (API do BB)** ou **cartão por link (Cielo)**; o link do motor da Silbeck fica como alternativa.
+- **A verificar com a Cielo:** se o link de pagamento/e-commerce está habilitado no contrato, credenciais de API, taxas do link × maquininha, parcelamento e prazo de recebimento.
