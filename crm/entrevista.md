@@ -104,3 +104,15 @@
   - **por horários pré-definidos** em que o agente assume sozinho (ex.: noite, madrugada, fim de semana).
   - Quando o agente está desligado, a conversa fica com a equipe; quando uma pessoa assume uma conversa, o agente não interfere nela.
 - **Identificação automática do perfil pela fala do cliente:** "somos em 2", "eu e minha esposa/namorado" → **casal**; "2 adultos e 2 crianças", idades → **família com filhos**; "vamos em 6", "turma" → **grupo**; menções a idade 55+, aves, bike, sustentabilidade → personas específicas. O perfil fica no cadastro do lead (editável pela equipe) e alimenta a acomodação sugerida, o upsell e a imagem do follow-up.
+
+### P14. Horário do agente, banco de argumentos e nível de atendimento (29/09/2026)
+- **Horário padrão do agente sozinho: das 17h às 7h30** do dia seguinte. Das 7h30 às 17h a equipe atende (o agente pode sugerir respostas). O liga/desliga manual continua valendo.
+- **Desejo do dono:** que o agente atenda **tudo**, mas com o receio de ele não atender tão bem quanto uma pessoa.
+- **Banco de argumentos do agente:** quebra de objeções e argumentos de **custo-benefício** (o que está incluso na diária, atividades dentro do hotel, dois rios, notas públicas com fonte). Ponto de partida: `marketing/2026-09-banco-de-objecoes.md` (13 objeções, rascunho do Marketing); precisa de revisão (preços novos, sem piquenique) e aprovação do dono antes de virar base do agente. Fica editável na biblioteca do CRM.
+- **Histórico de conversas** para o agente se balizar: sim. Uso proposto: exemplos de **tom e de perguntas reais**, não fonte de fatos (preços e regras antigos ficam de fora). Dados pessoais retirados antes (LGPD).
+
+**Proposta de implantação gradual (resposta ao receio):**
+1. **Treino (2 a 4 semanas):** o agente escreve a resposta, Jagles aprova/edita antes de sair. O CRM mede quantas saíram sem edição.
+2. **Noite (17h–7h30):** o agente responde sozinho no horário definido; Jagles revisa as conversas da noite de manhã.
+3. **Dia inteiro:** só quando as metas forem batidas (ex.: 90% das respostas sem edição, nenhuma informação errada, conversão igual ou maior que a humana). O dono decide cada passo.
+- Regras permanentes: responde só com fatos da base (se não sabe, diz que vai confirmar e passa para a equipe); reclamação, grupo, agência e exceções vão para uma pessoa.
