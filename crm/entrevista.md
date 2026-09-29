@@ -345,3 +345,7 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 ### P40. Códigos das acomodações validados e parceira da massagem (29/09/2026)
 - **Códigos validados pelo dono:** CBD cabana duplo (3) · CBT cabana tripla (1) · CBM Cabana Master (1) · BG bangalô (2) · BGE bangalô especial (1) · STD apto standard duplo/triplo (6) · CST duplo casa standard (1) · SUP duplo/triplo superior (2) · CJ conjugado (1) · QST quádruplo standard (2) · QES quádruplo especial (1). **Total: 21.** Na integração, mapear cada código ao tipo correspondente do Silbeck (`GET /v1/TipoApartamento`).
 - **Parceira da massagem:** **Natália**, massoterapeuta, WhatsApp **+55 67 99228-6365** (cadastro de parceiros em `crm/upsell-catalogo.md`). Antes de ligar o fluxo automático, avisar a Natália de que passará a receber pedidos do número oficial do hotel com botões.
+
+### P41. Nome do agente (29/09/2026)
+- **Decisão do dono:** o agente se chama **Gilberto** (mesmo nome usado na Asksuite, em homenagem ao fundador). Protótipo atualizado.
+- Regra de honestidade mantida (P3): o Gilberto escreve com naturalidade, mas **se o cliente perguntar se está falando com uma pessoa, diz que é o assistente virtual do hotel** e oferece a equipe.
