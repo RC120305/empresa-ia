@@ -273,6 +273,69 @@ button,input,select{font:inherit;color:inherit}
 }
 .agente-movel{display:none}
 @media (max-width:900px){.agente-movel{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:10px 14px}}
+
+/* v3: funil, ficha, tarefas, edição */
+.barra-ferr{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.barra-ferr input[type=search],.barra-ferr select,.campo input,.campo select,.campo textarea{border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:8px 10px;background:var(--cor-superficie);min-height:44px;font:inherit;font-size:15px;color:var(--cor-texto)}
+.barra-ferr input[type=search]{flex:1;min-width:180px}
+.coluna{min-height:120px;transition:background .15s}
+.coluna.alvo{background:var(--cor-primaria-suave);outline:2px dashed var(--cor-primaria);outline-offset:-2px}
+.card-lead{cursor:pointer;position:relative}
+.card-lead[draggable=true]{cursor:grab}
+.card-lead.arrastando{opacity:.4}
+.card-lead:hover{border-color:var(--cor-borda-forte)}
+.card-lead .rodape{display:flex;align-items:center;gap:8px;justify-content:space-between;margin-top:2px}
+.card-lead select{font-size:13px;border:1px solid var(--cor-borda);border-radius:var(--r-sm);padding:4px 6px;background:var(--cor-superficie);color:var(--cor-texto);max-width:60%}
+.resp{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--cor-primaria-suave);color:var(--cor-primaria-texto);border:1px solid var(--cor-borda);flex:none}
+.resp.ia{background:var(--ia-s);color:var(--ia)}
+.vazio{font-size:13px;color:var(--cor-texto-sec);text-align:center;padding:14px 6px;border:1px dashed var(--cor-borda);border-radius:var(--r-md)}
+.fundo-escuro{position:fixed;inset:0;background:rgba(30,25,20,.45);z-index:20}
+.gaveta{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);background:var(--cor-fundo);z-index:21;display:flex;flex-direction:column;box-shadow:-8px 0 24px rgba(0,0,0,.18);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.gaveta header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--cor-superficie);border-bottom:1px solid var(--cor-borda)}
+.gaveta header h2{margin:0;font-size:19px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fechar{all:unset;cursor:pointer;width:44px;height:44px;display:grid;place-items:center;border-radius:var(--r-md);color:var(--cor-texto-sec)}
+.fechar:hover{background:var(--cor-primaria-suave)}
+.gaveta .abas{display:flex;gap:4px;padding:8px 16px 0;background:var(--cor-superficie);border-bottom:1px solid var(--cor-borda);overflow-x:auto}
+.gaveta .abas button{all:unset;cursor:pointer;padding:10px 12px;font-size:14px;font-weight:500;color:var(--cor-texto-sec);border-bottom:3px solid transparent;white-space:nowrap}
+.gaveta .abas button[aria-selected=true]{color:var(--cor-texto);border-bottom-color:var(--cor-destaque)}
+.gaveta .corpo{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.resumo-lead{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.grade-campos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.campo{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--cor-texto-sec);min-width:0}
+.campo.largo{grid-column:1/-1}
+.campo textarea{min-height:80px;resize:vertical}
+.rodape-gaveta{display:flex;gap:8px;padding:12px 16px;background:var(--cor-superficie);border-top:1px solid var(--cor-borda);flex-wrap:wrap}
+.tarefa{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 12px;background:var(--cor-superficie);border:1px solid var(--cor-borda);border-radius:var(--r-md);font-size:14px}
+.tarefa input{width:20px;height:20px;accent-color:var(--cor-primaria);margin-top:1px}
+.tarefa.feita .tt{text-decoration:line-through;color:var(--cor-texto-sec)}
+.tarefa .qd{font-size:12px;color:var(--cor-texto-sec)}
+.tarefa .qd.atrasada{color:var(--cor-erro);font-weight:600}
+.hist{display:flex;flex-direction:column;gap:0;border-left:2px solid var(--cor-borda);margin-left:6px}
+.hist div{position:relative;padding:0 0 14px 16px;font-size:14px}
+.hist div::before{content:"";position:absolute;left:-6px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--cor-borda-forte)}
+.hist small{display:block;color:var(--cor-texto-sec);font-size:12px}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100% - 32px));background:var(--cor-superficie);border-radius:var(--r-lg);z-index:31;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.modal h3{margin:0}
+.modal-fundo{position:fixed;inset:0;background:rgba(30,25,20,.45);z-index:30}
+.opcoes{display:flex;flex-direction:column;gap:6px}
+.opcoes label{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--cor-borda);border-radius:var(--r-md);cursor:pointer;font-size:15px}
+.opcoes input{accent-color:var(--cor-primaria);width:18px;height:18px}
+.aviso-toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--cor-texto);color:var(--cor-fundo);padding:10px 16px;border-radius:999px;font-size:14px;z-index:40;box-shadow:var(--sombra-2);max-width:calc(100% - 32px);text-align:center}
+.grupo-tarefas{display:flex;flex-direction:column;gap:8px}
+.grupo-tarefas h3{margin:6px 0 0;font-size:16px;display:flex;gap:8px;align-items:baseline}
+.grupo-tarefas h3 small{font-weight:500;color:var(--cor-texto-sec);font-size:13px}
+.tarefa .lead-link{all:unset;cursor:pointer;color:var(--cor-primaria-texto);font-weight:600;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.btn-mini{all:unset;cursor:pointer;font-size:13px;font-weight:600;color:var(--cor-primaria-texto);padding:4px 8px;border-radius:var(--r-sm)}
+.btn-mini:hover{background:var(--cor-primaria-suave)}
+.btn-mini.perigo{color:var(--cor-erro)}
+.fonte-item{position:relative}
+.fonte-item .acoes-item{display:flex;gap:2px;margin-top:2px}
+.edit-inline{display:flex;flex-direction:column;gap:6px;grid-column:1/-1}
+.edit-inline input,.edit-inline textarea,.edit-inline select{border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:8px 10px;background:var(--cor-superficie);font:inherit;font-size:14px;color:var(--cor-texto)}
+.edit-inline textarea{min-height:70px}
+.tema-k h3 input{font:inherit;font-weight:600;border:1px solid var(--cor-borda-forte);border-radius:var(--r-sm);padding:4px 6px;background:var(--cor-superficie);color:var(--cor-texto);min-width:0;flex:1}
+.passo .msg{margin-top:8px;font-size:14px;background:var(--cor-fundo);border:1px solid var(--cor-borda);border-radius:var(--r-md);padding:8px 10px;color:var(--cor-texto)}
+@media (max-width:600px){.grade-campos{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -284,6 +347,8 @@ button,input,select{font:inherit;color:inherit}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Conversas<span class="qtd num">7</span></button>
       <button role="tab" aria-selected="false" data-vista="funil" id="tab-funil">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="4" height="8" rx="1"/></svg>Funil</button>
+      <button role="tab" aria-selected="false" data-vista="tarefas" id="tab-tarefas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tarefas<span class="qtd num" id="qtd-tarefas">0</span></button>
       <button role="tab" aria-selected="false" data-vista="painel" id="tab-painel">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>Painel</button>
       <button role="tab" aria-selected="false" data-vista="regua" id="tab-regua">
@@ -399,28 +464,25 @@ button,input,select{font:inherit;color:inherit}
     </section>
 
     <!-- FUNIL -->
-    <section data-painel="funil" hidden>
-      <div class="funil">
-        <div class="coluna" style="--c:var(--cat-novo)"><header><span class="pilula p-novo">Novo</span><span class="soma num">4</span></header>
-          <div class="card-lead"><strong>Cláudia L.</strong><div class="linha"><span class="pilula o-insta">Instagram</span></div><div class="linha num">Dez · 2 adultos</div></div>
-          <div class="card-lead"><strong>Pedro e Ana</strong><div class="linha"><span class="pilula o-google">Google</span></div><div class="linha num">Jan · família (2+2)</div></div>
-        </div>
-        <div class="coluna" style="--c:var(--cat-atend)"><header><span class="pilula p-atend">Em atendimento</span><span class="soma num">6</span></header>
-          <div class="card-lead"><strong>Rafael e família</strong><div class="linha"><span class="pilula o-ret">Hóspede que volta</span></div><div class="linha num">12 a 14/10 · 2+2</div><div class="linha"><span class="pilula c-ia">Agente</span></div></div>
-          <div class="card-lead"><strong>Ecotur Agência</strong><div class="linha"><span class="pilula o-ag">Agência</span></div><div class="linha num">Mar · grupo de 8</div><div class="linha"><span class="pilula c-pessoa">Jagles</span></div></div>
-        </div>
-        <div class="coluna" style="--c:var(--cat-orc)"><header><span class="pilula p-orc">Orçamento enviado</span><span class="soma num">5 · R$ 7,9 mil</span></header>
-          <div class="card-lead"><strong>Mariana S.</strong><div class="linha"><span class="pilula o-meta">Anúncio Meta</span></div><div class="linha num">16 a 18/11 · dom a ter</div></div>
-          <div class="card-lead"><strong>Lúcia M.</strong><div class="linha"><span class="pilula o-ind">Indicação</span></div><div class="linha num">Nov · 55+</div><span class="alerta-txt">Sem resposta há 2 dias · 2ª tentativa amanhã</span></div>
-        </div>
-        <div class="coluna" style="--c:var(--cat-res)"><header><span class="pilula p-res">Reservado</span><span class="soma num">9 · R$ 14,2 mil</span></header>
-          <div class="card-lead"><strong>João P.</strong><div class="linha"><span class="pilula o-site">Site</span></div><div class="linha num">20 a 22/11 · + combo x2</div></div>
-          <div class="card-lead"><strong>Família Souza</strong><div class="linha"><span class="pilula o-meta">Anúncio Meta</span></div><div class="linha num">Finados · Bangalô</div></div>
-        </div>
-        <div class="coluna" style="--c:var(--cat-perd)"><header><span class="pilula p-perd">Perdido</span><span class="soma num">3</span></header>
-          <div class="card-lead"><strong>Carlos T.</strong><div class="linha"><span class="pilula o-google">Google</span></div><div class="linha">Motivo: sem vaga na data</div></div>
-        </div>
+    <section data-painel="funil" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="barra-ferr">
+        <input type="search" id="busca" placeholder="Buscar por nome, telefone ou e-mail" aria-label="Buscar lead">
+        <select id="f-resp" aria-label="Filtrar por responsável"><option value="">Todos os responsáveis</option></select>
+        <select id="f-origem" aria-label="Filtrar por origem"><option value="">Todas as origens</option></select>
+        <select id="f-perfil" aria-label="Filtrar por perfil"><option value="">Todos os perfis</option></select>
+        <button class="btn btn-enviar" type="button" id="bt-novo-lead"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Novo lead</button>
       </div>
+      <p style="margin:0;font-size:13px;color:var(--cor-texto-sec)">Arraste os cards entre as colunas ou mude a etapa no próprio card. Clique no card para abrir a ficha.</p>
+      <div class="funil" id="board"></div>
+    </section>
+
+    <!-- TAREFAS -->
+    <section data-painel="tarefas" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="barra-ferr">
+        <select id="t-resp" aria-label="Tarefas de quem"><option value="">De todos</option></select>
+        <div class="chips" role="group" aria-label="Mostrar"><button class="chip" aria-pressed="true" data-t="abertas">Abertas</button><button class="chip" aria-pressed="false" data-t="feitas">Concluídas</button></div>
+      </div>
+      <div id="lista-tarefas" style="display:flex;flex-direction:column;gap:14px"></div>
     </section>
 
     <!-- PAINEL -->
@@ -486,15 +548,8 @@ button,input,select{font:inherit;color:inherit}
     <!-- RÉGUA -->
     <section data-painel="regua" hidden style="display:flex;flex-direction:column;gap:12px">
       <p class="boas">Cada mensagem no momento certo.</p>
-      <div class="cartao regua">
-        <div class="passo"><div class="quando">Reserva confirmada<small>na hora</small></div><div><h4>Boas-vindas e resumo da reserva</h4><p>“Oi, {nome}! Sua {acomodação} está garantida de {entrada} a {saída}…”</p><div class="tags"><span class="tipo t-util">Utilidade</span><span class="pilula">Todos</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">96 envios · R$ 0,00</span></div></div>
-        <div class="passo"><div class="quando">7 dias antes<small>do check-in, 10h</small></div><div><h4>Link do pré-check-in</h4><p>Link do pré-check-in do Silbeck, com prazo e o que vamos pedir.</p><div class="tags"><span class="tipo t-util">Utilidade</span><span class="pilula">Todos</span><span class="pilula" style="--c:var(--cor-sucesso);--s:var(--cor-sucesso-suave)">Aprovado pela Meta</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">88 envios · 74% preencheram</span></div></div>
-        <div class="passo"><div class="quando">3 dias antes<small>do check-in, 10h</small></div><div><h4>Como chegar, o que trazer e aventura</h4><p>Localização, “leve a garrafa de tereré” e oferta do combo boia cross + arvorismo (R$ 170). Decoração especial só aparece se faltarem 3 dias ou mais.</p><div class="tags"><span class="tipo t-util">Utilidade</span><span class="pilula">Todos</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">81 envios · 19 combos vendidos</span></div></div>
-        <div class="passo"><div class="quando">Lead sem resposta<small>dentro de 24 h</small></div><div><h4>1ª tentativa de follow-up</h4><p>Texto livre do agente, retomando a dúvida da conversa.</p><div class="tags"><span class="tipo t-livre">Grátis (janela de 24 h)</span><span class="pilula">Leads</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">63 envios · 14 reservas</span></div></div>
-        <div class="passo"><div class="quando">Lead sem resposta<small>3 dias depois</small></div><div><h4>2ª tentativa com foto do perfil</h4><p>Casal: hidromassagem · Família: boia cross · 55+: deck com rede à beira do rio.</p><div class="tags"><span class="tipo t-mkt">Marketing (pago)</span><span class="pilula" style="--c:var(--o-insta);--s:var(--o-insta-s)">Casal</span><span class="pilula" style="--c:var(--cat-novo);--s:var(--cat-novo-s)">Família</span><span class="pilula">55+</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">41 envios · R$ 16,40 · 6 reservas</span></div></div>
-        <div class="passo"><div class="quando">1 dia depois<small>do check-out</small></div><div><h4>Pesquisa de satisfação (NPS)</h4><p>Nota de 0 a 10. Nota até 6 vira alerta para Renata e Jagles; 9 ou 10 recebe o pedido de avaliação no Google.</p><div class="tags"><span class="tipo t-util">Utilidade</span><span class="pilula">Todos</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="true" aria-label="Mensagem ativa"></button><span class="num">77 envios · NPS 78</span></div></div>
-        <div class="passo"><div class="quando">45 dias depois<small>do check-out</small></div><div><h4>Convite para voltar (domingo a quinta)</h4><p>“Bonito fica logo ali”: convite para uma volta no meio da semana, na baixa temporada.</p><div class="tags"><span class="tipo t-mkt">Marketing (pago)</span><span class="pilula">Hóspedes de MS</span><span class="pilula o-ota">Veio pelo Booking</span></div></div><div class="estat"><button class="switch" role="switch" aria-checked="false" aria-label="Mensagem desativada"></button><span>Desligada · aguardando aprovação do texto</span></div></div>
-      </div>
+      <div class="barra-ferr"><button class="btn btn-enviar" type="button" id="bt-nova-msg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Nova mensagem</button></div>
+      <div class="cartao regua" id="regua-lista"></div>
     </section>
 
     <!-- AJUSTES DO AGENTE -->
@@ -545,15 +600,14 @@ button,input,select{font:inherit;color:inherit}
             <button class="btn btn-editar" type="button" id="bt-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Adicionar link</button>
           </div>
           <div id="novo-item" hidden style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:8px;text-align:left">
+            <label class="rotulo" for="novo-tema">Tema</label><select id="novo-tema" style="border:1px solid var(--cor-borda-forte);border-radius:8px;padding:10px;background:var(--cor-superficie);min-height:44px"></select>
             <label class="rotulo" for="novo-titulo">Título</label><input id="novo-titulo" style="border:1px solid var(--cor-borda-forte);border-radius:8px;padding:10px;background:var(--cor-superficie);min-height:44px" placeholder="Ex.: Horário do check-in e check-out">
             <label class="rotulo" for="novo-texto">Conteúdo</label><textarea id="novo-texto" style="border:1px solid var(--cor-borda-forte);border-radius:8px;padding:10px;background:var(--cor-superficie);min-height:90px;font:inherit" placeholder="Escreva aqui o que o agente precisa saber"></textarea>
             <div class="acoes"><button class="btn btn-enviar" type="button" id="bt-salvar-novo">Salvar na fonte</button></div>
           </div>
         </div>
-        <div class="conhecimento" id="conhecimento">
-          <div class="cartao tema-k" id="novos" hidden><h3>Adicionados agora<small class="num">em revisão</small></h3></div>
-          <div class="cartao tema-k"><h3>Políticas<small class="num">4 itens</small></h3><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span><div><strong>Cancelamento e reembolso</strong><span>30 dias: integral · 15 dias: 50% do sinal · Base operacional · <b class="em-uso">em uso</b></span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Pagamento</strong><span>50% antecipado · cartão até 6x, débito ou depósito · sem boleto</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Pets</strong><span>Não são permitidos, por causa dos animais silvestres</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Descontos</strong><span>Não damos desconto; o preço direto já é o melhor</span></div></div></div><div class="cartao tema-k"><h3>Horários<small class="num">3 itens</small></h3><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Café da manhã</strong><span>6h30 às 9h30</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Restaurante e lanchonete</strong><span>Jantar seg. a sáb. 19h–21h · lanchonete 11h–21h (dom. até 17h)</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Programação inclusa</strong><span>Arco e flecha 8h30 · trilhas com tirolesa, caiaque e SUP à tarde</span></div></div></div><div class="cartao tema-k"><h3>Atividades e preços<small class="num">5 itens</small></h3><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Boia cross</strong><span>R$ 100 por pessoa · a partir de 5 anos e 1,15 m</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Arvorismo</strong><span>R$ 120 por pessoa · 18 obstáculos + tirolesa aquática</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Combo boia cross + arvorismo</strong><span>R$ 170 por pessoa · <b>prioridade de venda</b></span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Flutuação</strong><span>R$ 100 · a partir de 7 anos</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Massagem e decoração</strong><span>Massagem avulsa ou pacote · decoração com 3 dias de antecedência</span></div></div></div><div class="cartao tema-k"><h3>Links<small class="num">4 itens</small></h3><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><div><strong>Cardápio</strong><span>cabanasaventura.com.br/cardapio</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><div><strong>Localização (Google Maps)</strong><span>bit.ly/2PfI7Am</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><div><strong>Motor de reservas</strong><span>sbreserva.silbeck.com.br/hotelcabanas</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><div><strong>Tour virtual 360°</strong><span>tourmkr.com/…</span></div></div></div><div class="cartao tema-k"><h3>Como chegar e distâncias<small class="num">4 itens</small></h3><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Centro de Bonito</strong><span>6 km, acesso asfaltado, com ciclovia</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Aeroporto de Bonito</strong><span>8 km · táxi ou carro alugado</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Campo Grande</strong><span>cerca de 260 km de estrada · aeroporto de CG a 280 km</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Transporte</strong><span>Não temos transfer próprio; indicamos táxi, vans e a Localiza</span></div></div></div><div class="cartao tema-k"><h3>Passeios de Bonito<small class="num">3 itens</small></h3><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span><div><strong>Guia do destino</strong><span>Voucher único, capacidade de carga, melhores meses · Base do destino</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><div><strong>Agência parceira</strong><span>Portal Ecotrip para passeios fora do hotel</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span><div><strong>Boletim OTEB ago/2026</strong><span>PDF · ocupação e perfil do turista</span></div></div></div><div class="cartao tema-k" id="ref-lista"><h3>Respostas de referência<small class="num">5 aprendidas</small></h3><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span><div><strong>“Fica longe do centro?”</strong><span>Corrigida por Jagles em 27/09 · usada 14 vezes</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span><div><strong>“Criança de 4 anos faz boia cross?”</strong><span>Corrigida em 26/09 · a partir de 5 anos e 1,15 m</span></div></div><div class="fonte-item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span><div><strong>“Vocês têm day use?”</strong><span>Aprovada em 25/09 · não temos day use</span></div></div><button class="lnk" type="button">Ver todas</button></div>
-        </div>
+        <div class="barra-ferr"><button class="btn btn-editar" type="button" id="bt-novo-tema"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>Novo tema</button></div>
+        <div class="conhecimento" id="conhecimento"></div>
       </div>
 
       <div data-subpainel="reg" hidden>
@@ -582,9 +636,20 @@ button,input,select{font:inherit;color:inherit}
   </main>
 </div>
 
+<div class="fundo-escuro" id="fundo" hidden></div>
+<aside class="gaveta" id="gaveta" hidden role="dialog" aria-modal="true" aria-labelledby="g-nome">
+  <header><span class="avatar" id="g-avatar">?</span><h2 id="g-nome">Lead</h2><button class="fechar" id="g-fechar" aria-label="Fechar ficha"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button></header>
+  <div class="abas" role="tablist"><button role="tab" aria-selected="true" data-g="dados">Dados</button><button role="tab" aria-selected="false" data-g="atividades">Atividades</button><button role="tab" aria-selected="false" data-g="historico">Histórico</button></div>
+  <div class="corpo" id="g-corpo"></div>
+  <div class="rodape-gaveta" id="g-rodape"></div>
+</aside>
+<div class="modal-fundo" id="m-fundo" hidden></div>
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="m-titulo"><h3 id="m-titulo">Por que perdemos este lead?</h3><div class="opcoes" id="m-opcoes"></div><div class="acoes"><button class="btn btn-enviar" id="m-ok" type="button">Mover para Perdido</button><button class="btn btn-editar" id="m-cancelar" type="button">Cancelar</button></div></div>
+<div class="aviso-toast" id="toast" hidden role="status"></div>
+
 <script>
 (function(){
-  const titulos={conversas:"Conversas",funil:"Funil de reservas",painel:"Painel",regua:"Régua de mensagens",ajustes:"Ajustes do agente"};
+  const titulos={conversas:"Conversas",funil:"Funil de reservas",tarefas:"Tarefas",painel:"Painel",regua:"Régua de mensagens",ajustes:"Ajustes do agente"};
   const tabs=[...document.querySelectorAll('.nav button')];
   const paineis=[...document.querySelectorAll('[data-painel]')];
   function abrir(v){
@@ -660,21 +725,288 @@ button,input,select{font:inherit;color:inherit}
     });
   });
 
-  // Fonte de conhecimento: adicionar material (só nesta tela de exemplo)
-  const novos=document.getElementById('novos');
-  function addFonte(titulo,sub){
-    novos.hidden=false;const d=document.createElement('div');d.className='fonte-item';
-    d.innerHTML='<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span><div><strong></strong><span></span></div>';
-    d.querySelector('strong').textContent=titulo;d.querySelector('div span').textContent=sub;novos.appendChild(d);
+  // ================= v3: dados de exemplo =================
+  const $=id=>document.getElementById(id);
+  function el(tag,props,...filhos){const e=document.createElement(tag);if(props)for(const[k,v]of Object.entries(props)){
+      if(k==='class')e.className=v;else if(k==='text')e.textContent=v;else if(k.startsWith('on'))e.addEventListener(k.slice(2),v);
+      else if(k==='dataset')Object.assign(e.dataset,v);else if(v!==false&&v!=null)e.setAttribute(k,v===true?'':v);}
+    filhos.flat().forEach(f=>{if(f!=null&&f!==false)e.append(f.nodeType?f:document.createTextNode(f));});return e;}
+  function toast(msg){const t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2600);}
+  const hoje=new Date('2026-09-29T09:00:00');
+  const dia=(d,h='10:00')=>{const x=new Date(hoje);x.setDate(x.getDate()+d);return x.toISOString().slice(0,10)+'T'+h;};
+
+  const ETAPAS=[['novo','Novo','p-novo','--cat-novo'],['atend','Em atendimento','p-atend','--cat-atend'],['orc','Orçamento enviado','p-orc','--cat-orc'],['res','Reservado','p-res','--cat-res'],['perd','Perdido','p-perd','--cat-perd']];
+  const ORIGENS={meta:['Anúncio Meta','o-meta'],insta:['Instagram','o-insta'],google:['Google','o-google'],site:['Site','o-site'],ret:['Hóspede que volta','o-ret'],ind:['Indicação','o-ind'],ag:['Agência','o-ag'],ota:['Booking','o-ota']};
+  const PERFIS=['Casal','Família com filhos','Grupo de amigos','55+','Observador de aves','Ciclista','Agência'];
+  const USUARIOS={voce:'Você',renata:'Renata',jagles:'Jagles',marcio:'Márcio',agente:'Agente Cabanas'};
+  const MOTIVOS=['Sem vaga na data','Preço','Parou de responder','Mudou de planos','Escolheu outro hotel','Outro'];
+  const TIPOS_TAREFA=['Ligar','Enviar proposta','Follow-up','Confirmar pagamento','Agendar massagem','Encomendar decoração','Outro'];
+  let seq=100;
+  const LEADS=[
+    {id:1,nome:'Cláudia L.',tel:'(67) 9xxxx-2231',email:'',cidade:'Campo Grande/MS',nasc:'',etapa:'novo',origem:'insta',perfil:'Casal',resp:'agente',entrada:'2026-12-05',saida:'2026-12-07',hosp:'2 adultos',acom:'Cabana suspensa',valor:1480,parado:3,tags:['Aniversário de casamento'],notas:'',tarefas:[],hist:[['Chegou pelo direct do Instagram','hoje, 17:20']]},
+    {id:2,nome:'Pedro e Ana',tel:'(11) 9xxxx-8812',email:'pedro@exemplo.com',cidade:'São Paulo/SP',nasc:'',etapa:'novo',origem:'google',perfil:'Família com filhos',resp:'jagles',entrada:'2027-01-14',saida:'2027-01-18',hosp:'2 adultos + 2 crianças (6 e 9)',acom:'Bangalô Especial',valor:4200,parado:30,tags:[],notas:'',tarefas:[{t:'Ligar',d:'Retornar sobre transfer do aeroporto',q:dia(-1,'15:00'),r:'jagles',f:false}],hist:[['Chegou pelo Google (link de reserva)','ontem, 11:02']]},
+    {id:3,nome:'Rafael e família',tel:'(67) 9xxxx-5540',email:'',cidade:'Dourados/MS',nasc:'',etapa:'atend',origem:'ret',perfil:'Família com filhos',resp:'agente',entrada:'2026-10-12',saida:'2026-10-14',hosp:'2 adultos + 2 crianças (6 e 11)',acom:'Bangalô',valor:2150,parado:1,tags:['Voltou pela 3ª vez'],notas:'Na última estadia pediu berço.',tarefas:[],hist:[['Conversa atendida pelo agente','hoje, 21:05'],['Hóspede em nov/2025 (Silbeck)','—']]},
+    {id:4,nome:'Ecotur Agência',tel:'(67) 3xxx-1100',email:'reservas@ecotur.exemplo',cidade:'Bonito/MS',nasc:'',etapa:'atend',origem:'ag',perfil:'Agência',resp:'jagles',entrada:'2027-03-10',saida:'2027-03-13',hosp:'Grupo de 8',acom:'4 apartamentos',valor:9800,parado:6,tags:['Comissão 10%'],notas:'',tarefas:[{t:'Enviar proposta',d:'Proposta para grupo de 8 com comissão',q:dia(0,'16:00'),r:'jagles',f:false}],hist:[['E-mail recebido da agência','hoje, 18:55']]},
+    {id:5,nome:'Mariana S.',tel:'(67) 9xxxx-4410',email:'',cidade:'Campo Grande/MS',nasc:'',etapa:'orc',origem:'meta',perfil:'Casal',resp:'agente',entrada:'2026-11-16',saida:'2026-11-18',hosp:'2 adultos',acom:'Cabana suspensa',valor:1480,parado:0,tags:[],notas:'',tarefas:[{t:'Follow-up',d:'1ª tentativa dentro da janela de 24 h',q:dia(0,'21:40'),r:'agente',f:false}],hist:[['Orçamento enviado pelo agente','hoje, 21:42'],['Chegou pelo anúncio “Casal: domingo a quinta”','hoje, 21:31']]},
+    {id:6,nome:'Lúcia M.',tel:'(67) 9xxxx-7781',email:'',cidade:'Campo Grande/MS',nasc:'',etapa:'orc',origem:'ind',perfil:'55+',resp:'renata',entrada:'2026-11-03',saida:'2026-11-05',hosp:'2 adultos',acom:'Apartamento Superior',valor:1320,parado:48,tags:['Indicada por hóspede'],notas:'Prefere quarto térreo.',tarefas:[{t:'Follow-up',d:'2ª tentativa com foto do deck e rede',q:dia(1,'10:00'),r:'agente',f:false}],hist:[['Orçamento enviado por Renata','27/09, 14:10']]},
+    {id:7,nome:'João P.',tel:'(67) 9xxxx-9003',email:'joao@exemplo.com',cidade:'Campo Grande/MS',nasc:'',etapa:'res',origem:'site',perfil:'Casal',resp:'jagles',entrada:'2026-11-20',saida:'2026-11-22',hosp:'2 adultos',acom:'Cabana Master',valor:2980,parado:0,tags:['Combo x2'],notas:'',tarefas:[{t:'Encomendar decoração',d:'Decoração especial: encomendar até 17/11',q:dia(49,'09:00'),r:'renata',f:false}],hist:[['Reserva #48213 vinculada (Silbeck)','ontem, 22:40'],['Combo boia cross + arvorismo x2','ontem, 22:38']]},
+    {id:8,nome:'Família Souza',tel:'(18) 9xxxx-3320',email:'',cidade:'Presidente Prudente/SP',nasc:'',etapa:'res',origem:'meta',perfil:'Família com filhos',resp:'renata',entrada:'2026-11-01',saida:'2026-11-03',hosp:'2 adultos + 1 criança (7)',acom:'Bangalô',valor:2240,parado:0,tags:[],notas:'',tarefas:[{t:'Confirmar pagamento',d:'Conferir o sinal de 50%',q:dia(-2,'11:00'),r:'renata',f:true}],hist:[['Reserva #48190 vinculada (Silbeck)','26/09']]},
+    {id:9,nome:'Carlos T.',tel:'(41) 9xxxx-6610',email:'',cidade:'Curitiba/PR',nasc:'',etapa:'perd',origem:'google',perfil:'Grupo de amigos',resp:'jagles',entrada:'2026-10-10',saida:'2026-10-12',hosp:'4 adultos',acom:'Apartamento Conjugado',valor:0,parado:0,motivo:'Sem vaga na data',tags:[],notas:'Oferecer 20 a 22/11.',tarefas:[],hist:[['Movido para Perdido: sem vaga na data','25/09']]},
+  ];
+  const brl=v=>v?'R$ '+v.toLocaleString('pt-BR'):'—';
+  const fmtData=d=>d?d.split('-').reverse().slice(0,2).join('/'):'';
+  const inic=n=>n.split(/\s+/).filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase();
+  const leadPor=id=>LEADS.find(l=>l.id===id);
+  const agoraTxt=()=>'agora';
+
+  // ================= Funil =================
+  const board=$('board');
+  // filtros
+  Object.entries(USUARIOS).forEach(([k,v])=>{$('f-resp').append(el('option',{value:k,text:v}));$('t-resp').append(el('option',{value:k,text:v}));});
+  Object.entries(ORIGENS).forEach(([k,v])=>$('f-origem').append(el('option',{value:k,text:v[0]})));
+  PERFIS.forEach(p=>$('f-perfil').append(el('option',{value:p,text:p})));
+  ['busca','f-resp','f-origem','f-perfil'].forEach(id=>$(id).addEventListener('input',renderBoard));
+
+  function passaFiltro(l){
+    const q=$('busca').value.trim().toLowerCase();
+    if(q&&!(l.nome+' '+l.tel+' '+l.email).toLowerCase().includes(q))return false;
+    if($('f-resp').value&&l.resp!==$('f-resp').value)return false;
+    if($('f-origem').value&&l.origem!==$('f-origem').value)return false;
+    if($('f-perfil').value&&l.perfil!==$('f-perfil').value)return false;
+    return true;
   }
-  document.getElementById('arquivo').addEventListener('change',e=>{[...e.target.files].forEach(f=>addFonte(f.name,'Enviado agora · aguardando você confirmar o tema'));e.target.value='';});
-  const novo=document.getElementById('novo-item');
-  document.getElementById('bt-texto').addEventListener('click',()=>{novo.hidden=false;document.getElementById('novo-texto').placeholder='Escreva aqui o que o agente precisa saber';document.getElementById('novo-titulo').focus();});
-  document.getElementById('bt-link').addEventListener('click',()=>{novo.hidden=false;document.getElementById('novo-texto').placeholder='Cole o link e diga para que serve';document.getElementById('novo-titulo').focus();});
-  document.getElementById('bt-salvar-novo').addEventListener('click',()=>{
-    const t=document.getElementById('novo-titulo'),c=document.getElementById('novo-texto');
-    if(!t.value.trim()){t.focus();return;}
-    addFonte(t.value.trim(),(c.value.trim()||'Sem conteúdo').slice(0,90));t.value='';c.value='';novo.hidden=true;
-  });
+  function card(l){
+    const o=ORIGENS[l.origem];
+    const sel=el('select',{'aria-label':'Etapa de '+l.nome,onclick:e=>e.stopPropagation(),onchange:e=>mover(l.id,e.target.value)},
+      ETAPAS.map(([k,n])=>el('option',{value:k,text:n,selected:k===l.etapa})));
+    const alerta=l.etapa!=='res'&&l.etapa!=='perd'&&l.parado>=24?el('span',{class:'alerta-txt',text:'Parado há '+(l.parado>=48?Math.round(l.parado/24)+' dias':l.parado+' h')}):null;
+    const pend=l.tarefas.filter(t=>!t.f).length;
+    return el('article',{class:'card-lead',draggable:'true',tabindex:'0',dataset:{id:l.id},
+      ondragstart:e=>{e.dataTransfer.setData('text/plain',l.id);e.dataTransfer.effectAllowed='move';e.currentTarget.classList.add('arrastando');},
+      ondragend:e=>e.currentTarget.classList.remove('arrastando'),
+      onclick:()=>abrirFicha(l.id),onkeydown:e=>{if(e.key==='Enter')abrirFicha(l.id);}},
+      el('strong',{text:l.nome}),
+      el('div',{class:'linha'},el('span',{class:'pilula '+o[1],text:o[0]}),el('span',{class:'pilula',text:l.perfil})),
+      el('div',{class:'linha num',text:(l.entrada?fmtData(l.entrada)+' a '+fmtData(l.saida)+' · ':'')+l.hosp}),
+      el('div',{class:'linha num'},el('span',{text:brl(l.valor)}),pend?el('span',{text:'· '+pend+' tarefa'+(pend>1?'s':'')}):null),
+      l.motivo?el('div',{class:'linha',text:'Motivo: '+l.motivo}):null,
+      alerta,
+      el('div',{class:'rodape'},sel,el('span',{class:'resp'+(l.resp==='agente'?' ia':''),title:USUARIOS[l.resp],text:l.resp==='agente'?'IA':inic(USUARIOS[l.resp])})));
+  }
+  function renderBoard(){
+    board.textContent='';
+    ETAPAS.forEach(([k,n,cls,cor])=>{
+      const ls=LEADS.filter(l=>l.etapa===k&&passaFiltro(l));
+      const soma=ls.reduce((a,l)=>a+(l.valor||0),0);
+      const col=el('div',{class:'coluna',style:'--c:var('+cor+')',dataset:{etapa:k},
+        ondragover:e=>{e.preventDefault();e.currentTarget.classList.add('alvo');},
+        ondragleave:e=>e.currentTarget.classList.remove('alvo'),
+        ondrop:e=>{e.preventDefault();e.currentTarget.classList.remove('alvo');const id=+e.dataTransfer.getData('text/plain');if(id)mover(id,k);}},
+        el('header',{},el('span',{class:'pilula '+cls,text:n}),el('span',{class:'soma num',text:ls.length+(soma&&k!=='perd'?' · '+brl(soma):'')})),
+        ls.length?ls.map(card):el('div',{class:'vazio',text:'Solte um card aqui'}));
+      board.append(col);
+    });
+    renderTarefas();
+  }
+
+  // Mover de etapa (com motivo quando for Perdido)
+  let pendente=null;
+  function mover(id,etapa){
+    const l=leadPor(id);if(!l||l.etapa===etapa){renderBoard();return;}
+    if(etapa==='perd'){pendente={id,etapa};abrirMotivo();return;}
+    aplicarMover(l,etapa);
+  }
+  function aplicarMover(l,etapa,motivo){
+    const nome=ETAPAS.find(e=>e[0]===etapa)[1];
+    l.etapa=etapa;l.parado=0;if(motivo)l.motivo=motivo;else delete l.motivo;
+    l.hist.unshift(['Movido para '+nome+(motivo?': '+motivo.toLowerCase():'')+' por Você',agoraTxt()]);
+    renderBoard();if(!$('gaveta').hidden&&fichaId===l.id)renderFicha();
+    toast(etapa==='res'?l.nome+' em Reservado. Na fase 3, o CRM busca a reserva no Silbeck e vincula sozinho.':l.nome+' movido para '+nome+'.');
+  }
+  function abrirMotivo(){
+    const box=$('m-opcoes');box.textContent='';
+    MOTIVOS.forEach((m,i)=>box.append(el('label',{},el('input',{type:'radio',name:'motivo',value:m,checked:i===0}),m)));
+    $('m-fundo').hidden=false;$('modal').hidden=false;$('m-ok').focus();
+  }
+  function fecharMotivo(){$('m-fundo').hidden=true;$('modal').hidden=true;pendente=null;renderBoard();}
+  $('m-cancelar').addEventListener('click',fecharMotivo);$('m-fundo').addEventListener('click',fecharMotivo);
+  $('m-ok').addEventListener('click',()=>{if(!pendente)return;const m=document.querySelector('input[name=motivo]:checked').value;
+    const l=leadPor(pendente.id);$('m-fundo').hidden=true;$('modal').hidden=true;const p=pendente;pendente=null;aplicarMover(l,p.etapa,m);});
+
+  // ================= Ficha do cliente (gaveta) =================
+  let fichaId=null,abaFicha='dados';
+  function abrirFicha(id){fichaId=id;abaFicha='dados';$('fundo').hidden=false;$('gaveta').hidden=false;renderFicha();$('g-fechar').focus();}
+  function fecharFicha(){$('fundo').hidden=true;$('gaveta').hidden=true;fichaId=null;}
+  $('g-fechar').addEventListener('click',fecharFicha);$('fundo').addEventListener('click',fecharFicha);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidden)fecharMotivo();else if(!$('gaveta').hidden)fecharFicha();}});
+  document.querySelectorAll('.gaveta .abas button').forEach(b=>b.addEventListener('click',()=>{abaFicha=b.dataset.g;renderFicha();}));
+  $('bt-novo-lead').addEventListener('click',()=>{
+    const l={id:++seq,nome:'Novo lead',tel:'',email:'',cidade:'',nasc:'',etapa:'novo',origem:'insta',perfil:'Casal',resp:'voce',entrada:'',saida:'',hosp:'',acom:'',valor:0,parado:0,tags:[],notas:'',tarefas:[],hist:[['Lead criado por Você',agoraTxt()]]};
+    LEADS.unshift(l);renderBoard();abrirFicha(l.id);});
+
+  function campo(rotulo,input,largo){return el('label',{class:'campo'+(largo?' largo':'')},rotulo,input);}
+  function renderFicha(){
+    const l=leadPor(fichaId);if(!l)return;
+    $('g-nome').textContent=l.nome;$('g-avatar').textContent=inic(l.nome)||'?';
+    document.querySelectorAll('.gaveta .abas button').forEach(b=>b.setAttribute('aria-selected',b.dataset.g===abaFicha));
+    const corpo=$('g-corpo'),rod=$('g-rodape');corpo.textContent='';rod.textContent='';
+    const o=ORIGENS[l.origem],et=ETAPAS.find(e=>e[0]===l.etapa);
+    corpo.append(el('div',{class:'resumo-lead'},el('span',{class:'pilula '+et[2],text:et[1]}),el('span',{class:'pilula '+o[1],text:o[0]}),el('span',{class:'pilula',text:l.perfil}),el('span',{class:'canal',text:'Responsável: '+USUARIOS[l.resp]})));
+    if(abaFicha==='dados'){
+      const f={};
+      const inp=(k,tipo)=>f[k]=el('input',{type:tipo||'text',value:l[k]||''});
+      const sel=(k,opts)=>f[k]=el('select',{},opts.map(([v,t])=>el('option',{value:v,text:t,selected:String(l[k])===String(v)})));
+      corpo.append(el('div',{class:'rotulo',text:'Contato'}),el('div',{class:'grade-campos'},
+        campo('Nome',inp('nome'),true),campo('Telefone / WhatsApp',inp('tel','tel')),campo('E-mail',inp('email','email')),
+        campo('Cidade / estado',inp('cidade')),campo('Data de nascimento',inp('nasc','date'))));
+      corpo.append(el('div',{class:'rotulo',text:'Atendimento'}),el('div',{class:'grade-campos'},
+        campo('Responsável',sel('resp',Object.entries(USUARIOS))),campo('Etapa',sel('etapa',ETAPAS.map(e=>[e[0],e[1]]))),
+        campo('Origem',sel('origem',Object.entries(ORIGENS).map(([k,v])=>[k,v[0]]))),campo('Perfil',sel('perfil',PERFIS.map(p=>[p,p])))));
+      corpo.append(el('div',{class:'rotulo',text:'Estadia'}),el('div',{class:'grade-campos'},
+        campo('Entrada',inp('entrada','date')),campo('Saída',inp('saida','date')),campo('Hóspedes',inp('hosp'),true),
+        campo('Acomodação',inp('acom')),campo('Valor previsto (R$)',inp('valor','number'))));
+      f.tags=el('input',{type:'text',value:l.tags.join(', '),placeholder:'Separe por vírgula'});
+      f.notas=el('textarea',{placeholder:'Só a equipe vê'});f.notas.value=l.notas||'';
+      corpo.append(el('div',{class:'rotulo',text:'Outros'}),el('div',{class:'grade-campos'},campo('Etiquetas',f.tags,true),campo('Anotações internas',f.notas,true)));
+      rod.append(el('button',{class:'btn btn-enviar',type:'button',text:'Salvar dados',onclick:()=>{
+        const antesEtapa=l.etapa,antesResp=l.resp;
+        ['nome','tel','email','cidade','nasc','entrada','saida','hosp','acom','origem','perfil'].forEach(k=>l[k]=f[k].value);
+        l.valor=+f.valor.value||0;l.resp=f.resp.value;l.tags=f.tags.value.split(',').map(t=>t.trim()).filter(Boolean);l.notas=f.notas.value;
+        if(antesResp!==l.resp)l.hist.unshift(['Responsável trocado para '+USUARIOS[l.resp]+' por Você',agoraTxt()]);
+        l.hist.unshift(['Dados editados por Você',agoraTxt()]);
+        if(f.etapa.value!==antesEtapa){mover(l.id,f.etapa.value);}else{renderBoard();renderFicha();toast('Dados salvos.');}
+      }}),el('button',{class:'btn btn-editar',type:'button',text:'Abrir conversa',onclick:()=>{fecharFicha();abrir('conversas');}}));
+    }
+    if(abaFicha==='atividades'){
+      const lista=el('div',{style:'display:flex;flex-direction:column;gap:8px'});
+      if(!l.tarefas.length)lista.append(el('div',{class:'vazio',text:'Nenhuma atividade agendada.'}));
+      l.tarefas.slice().sort((a,b)=>a.q.localeCompare(b.q)).forEach(t=>lista.append(linhaTarefa(t,l,false)));
+      const tipo=el('select',{},TIPOS_TAREFA.map(t=>el('option',{value:t,text:t})));
+      const desc=el('input',{type:'text',placeholder:'Ex.: ligar para confirmar as datas'});
+      const quando=el('input',{type:'datetime-local',value:dia(1,'10:00')});
+      const quem=el('select',{},Object.entries(USUARIOS).map(([k,v])=>el('option',{value:k,text:v,selected:k===l.resp})));
+      corpo.append(el('div',{class:'rotulo',text:'Agendar atividade'}),el('div',{class:'grade-campos'},campo('Tipo',tipo),campo('Para quem',quem),campo('Quando',quando,true),campo('Descrição',desc,true)),
+        el('button',{class:'btn btn-enviar',type:'button',style:'align-self:flex-start',text:'Agendar',onclick:()=>{
+          l.tarefas.push({t:tipo.value,d:desc.value||tipo.value,q:quando.value,r:quem.value,f:false});
+          l.hist.unshift(['Atividade agendada: '+tipo.value+' ('+USUARIOS[quem.value]+')',agoraTxt()]);renderFicha();renderBoard();toast('Atividade agendada.');}}),
+        el('div',{class:'rotulo',text:'Atividades'}),lista);
+    }
+    if(abaFicha==='historico'){
+      corpo.append(el('div',{class:'hist'},l.hist.map(([t,q])=>el('div',{},t,el('small',{text:q})))));
+    }
+  }
+
+  // ================= Tarefas =================
+  function quandoTxt(q){const d=new Date(q);const diff=Math.floor((new Date(d.toDateString())-new Date(hoje.toDateString()))/864e5);
+    const h=d.toTimeString().slice(0,5);return diff===0?'Hoje, '+h:diff===1?'Amanhã, '+h:diff===-1?'Ontem, '+h:d.toLocaleDateString('pt-BR')+', '+h;}
+  function linhaTarefa(t,l,comLead){
+    const atras=!t.f&&new Date(t.q)<hoje;
+    return el('div',{class:'tarefa'+(t.f?' feita':'')},
+      el('input',{type:'checkbox',checked:t.f,'aria-label':'Concluir '+t.t,onchange:e=>{t.f=e.target.checked;l.hist.unshift([(t.f?'Concluída: ':'Reaberta: ')+t.t+' por Você',agoraTxt()]);renderBoard();if(!$('gaveta').hidden)renderFicha();}}),
+      el('div',{},el('div',{class:'tt'},el('b',{text:t.t}),' · ',t.d),el('div',{class:'qd'+(atras?' atrasada':''),text:(atras?'Atrasada · ':'')+quandoTxt(t.q)+' · '+USUARIOS[t.r]})),
+      comLead?el('button',{class:'lead-link',type:'button',text:l.nome,onclick:()=>abrirFicha(l.id)}):el('span'));
+  }
+  let tModo='abertas';
+  document.querySelector('[data-painel="tarefas"] .chips').addEventListener('click',e=>{const c=e.target.closest('[data-t]');if(c){tModo=c.dataset.t;renderTarefas();}});
+  $('t-resp').addEventListener('input',renderTarefas);
+  function renderTarefas(){
+    const todas=[];LEADS.forEach(l=>l.tarefas.forEach(t=>todas.push([t,l])));
+    const abertas=todas.filter(([t])=>!t.f);$('qtd-tarefas').textContent=abertas.length;
+    const box=$('lista-tarefas');box.textContent='';
+    let ls=todas.filter(([t])=>tModo==='abertas'?!t.f:t.f);
+    if($('t-resp').value)ls=ls.filter(([t])=>t.r===$('t-resp').value);
+    ls.sort((a,b)=>a[0].q.localeCompare(b[0].q));
+    const hojeStr=hoje.toISOString().slice(0,10);
+    const grupos=tModo==='feitas'?[['Concluídas',ls]]:[
+      ['Atrasadas',ls.filter(([t])=>new Date(t.q)<hoje)],
+      ['Hoje',ls.filter(([t])=>t.q.startsWith(hojeStr)&&new Date(t.q)>=hoje)],
+      ['Próximas',ls.filter(([t])=>t.q.slice(0,10)>hojeStr)]];
+    grupos.forEach(([n,g])=>{if(!g.length)return;box.append(el('div',{class:'grupo-tarefas'},el('h3',{},n,el('small',{text:g.length+''})),g.map(([t,l])=>linhaTarefa(t,l,true))));});
+    if(!box.children.length)box.append(el('div',{class:'vazio',text:'Nenhuma tarefa aqui.'}));
+  }
+
+  // ================= Fonte de conhecimento (editável) =================
+  const TEMAS=[
+    {n:'Políticas',i:[['Cancelamento e reembolso','30 dias: reembolso integral · 15 dias: 50% do sinal · dentro de 15 dias: sem reembolso'],['Pagamento','50% antecipado · cartão até 6x, débito ou depósito · sem boleto'],['Pets','Não são permitidos, por causa dos animais silvestres'],['Descontos','Não damos desconto; o preço direto já é o melhor']]},
+    {n:'Horários',i:[['Café da manhã','6h30 às 9h30'],['Restaurante e lanchonete','Jantar seg. a sáb. 19h–21h · lanchonete 11h–21h (dom. até 17h)'],['Programação inclusa','Arco e flecha 8h30 · trilhas com tirolesa, caiaque e SUP à tarde'],['Check-in e check-out','[a preencher]']]},
+    {n:'Atividades e preços',i:[['Boia cross','R$ 100 por pessoa · a partir de 5 anos e 1,15 m'],['Arvorismo','R$ 120 por pessoa · 18 obstáculos + tirolesa aquática'],['Combo boia cross + arvorismo','R$ 170 por pessoa · prioridade de venda'],['Flutuação','R$ 100 · a partir de 7 anos'],['Massagem e decoração','Massagem avulsa ou pacote · decoração com 3 dias de antecedência']]},
+    {n:'Links',i:[['Cardápio','cabanasaventura.com.br/cardapio'],['Localização (Google Maps)','bit.ly/2PfI7Am'],['Motor de reservas','sbreserva.silbeck.com.br/hotelcabanas'],['Tour virtual 360°','tourmkr.com/…']]},
+    {n:'Como chegar e distâncias',i:[['Centro de Bonito','6 km, acesso asfaltado, com ciclovia'],['Aeroporto de Bonito','8 km · táxi ou carro alugado'],['Campo Grande','cerca de 260 km de estrada'],['Transporte','Não temos transfer próprio; indicamos táxi, vans e a Localiza']]},
+    {n:'Passeios de Bonito',i:[['Guia do destino','Voucher único, capacidade de carga, melhores meses'],['Agência parceira','Portal Ecotrip para passeios fora do hotel']]},
+    {n:'O que trazer',i:[['Lista para o hóspede','[a preencher: roupa de banho, repelente, protetor solar, garrafa de tereré…]']]},
+  ];
+  const kBox=$('conhecimento');
+  function renderTemas(){
+    kBox.textContent='';$('novo-tema').textContent='';
+    TEMAS.forEach((tm,ti)=>{
+      $('novo-tema').append(el('option',{value:ti,text:tm.n}));
+      const h=el('h3',{},tm.n,el('small',{class:'num',text:tm.i.length+' '+(tm.i.length===1?'item':'itens')}));
+      const card=el('div',{class:'cartao tema-k'},h);
+      tm.i.forEach((it,ii)=>card.append(itemFonte(tm,ti,it,ii)));
+      card.append(el('div',{style:'display:flex;gap:4px;flex-wrap:wrap'},
+        el('button',{class:'btn-mini',type:'button',text:'+ Adicionar informação',onclick:()=>{tm.i.push(['Nova informação','']);renderTemas();editarItem(ti,tm.i.length-1);}}),
+        el('button',{class:'btn-mini',type:'button',text:'Renomear tema',onclick:()=>{h.textContent='';const inp=el('input',{type:'text',value:tm.n,'aria-label':'Nome do tema'});
+          const ok=()=>{tm.n=inp.value.trim()||tm.n;renderTemas();};inp.addEventListener('keydown',e=>{if(e.key==='Enter')ok();});inp.addEventListener('blur',ok);h.append(inp);inp.focus();}})));
+      kBox.append(card);
+    });
+  }
+  let editando=null;
+  function itemFonte(tm,ti,it,ii){
+    if(editando&&editando[0]===ti&&editando[1]===ii){
+      const t=el('input',{type:'text',value:it[0],'aria-label':'Título'}),d=el('textarea',{'aria-label':'Conteúdo'});d.value=it[1];
+      return el('div',{class:'edit-inline'},t,d,el('div',{style:'display:flex;gap:4px'},
+        el('button',{class:'btn-mini',type:'button',text:'Salvar',onclick:()=>{it[0]=t.value.trim()||it[0];it[1]=d.value;editando=null;renderTemas();toast('Informação salva. O agente já usa a versão nova.');}}),
+        el('button',{class:'btn-mini',type:'button',text:'Cancelar',onclick:()=>{editando=null;renderTemas();}}),
+        el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{tm.i.splice(ii,1);editando=null;renderTemas();}})));
+    }
+    return el('div',{class:'fonte-item'},el('span',{class:'ic',text:'i'}),el('div',{},el('strong',{text:it[0]}),el('span',{text:it[1]||'—'}),
+      el('div',{class:'acoes-item'},el('button',{class:'btn-mini',type:'button',text:'Editar',onclick:()=>editarItem(ti,ii)}))));
+  }
+  function editarItem(ti,ii){editando=[ti,ii];renderTemas();}
+  $('bt-novo-tema').addEventListener('click',()=>{TEMAS.push({n:'Novo tema',i:[]});renderTemas();toast('Tema criado. Use "Renomear tema" para dar o nome.');});
+  const novo=$('novo-item');
+  $('arquivo').addEventListener('change',e=>{const ti=TEMAS.length-1;[...e.target.files].forEach(f=>TEMAS[0].i.push([f.name,'Arquivo enviado agora · confira o tema']));e.target.value='';renderTemas();toast('Arquivo adicionado em "'+TEMAS[0].n+'". Edite para mudar de tema.');});
+  $('bt-texto').addEventListener('click',()=>{novo.hidden=false;$('novo-texto').placeholder='Escreva aqui o que o agente precisa saber';$('novo-titulo').focus();});
+  $('bt-link').addEventListener('click',()=>{novo.hidden=false;$('novo-texto').placeholder='Cole o link e diga para que serve';$('novo-titulo').focus();});
+  $('bt-salvar-novo').addEventListener('click',()=>{const t=$('novo-titulo'),c=$('novo-texto');if(!t.value.trim()){t.focus();return;}
+    const tm=TEMAS[+$('novo-tema').value];tm.i.push([t.value.trim(),c.value.trim()]);t.value='';c.value='';novo.hidden=true;renderTemas();toast('Salvo em "'+tm.n+'".');});
+
+  // ================= Régua (editável) =================
+  const REGUA=[
+    {q:'Reserva confirmada',s:'na hora',t:'Boas-vindas e resumo da reserva',m:'Oi, {nome}! Sua {acomodação} está garantida de {entrada} a {saída}. Qualquer dúvida, é só chamar aqui. 🌿',tipo:'util',pub:'Todos',on:true,e:'96 envios · R$ 0,00'},
+    {q:'7 dias antes',s:'do check-in, 10h',t:'Link do pré-check-in',m:'{nome}, falta uma semana! Para agilizar sua chegada, preencha o pré-check-in: {link_precheckin}',tipo:'util',pub:'Todos',on:true,e:'88 envios · 74% preencheram'},
+    {q:'3 dias antes',s:'do check-in, 10h',t:'Como chegar, o que trazer e aventura',m:'Estamos quase! Como chegar: {link_mapa}. Leve roupa de banho e a garrafa de tereré. Quer garantir o combo boia cross + arvorismo (R$ 170 por pessoa)?',tipo:'util',pub:'Todos',on:true,e:'81 envios · 19 combos vendidos'},
+    {q:'Lead sem resposta',s:'dentro de 24 h',t:'1ª tentativa de follow-up',m:'Texto livre do agente, retomando a dúvida da conversa.',tipo:'livre',pub:'Leads',on:true,e:'63 envios · 14 reservas'},
+    {q:'Lead sem resposta',s:'3 dias depois',t:'2ª tentativa com foto do perfil',m:'{nome}, separamos essa foto para você imaginar os dias aqui. As datas ainda estão livres. Quer que eu reserve?',tipo:'mkt',pub:'Casal · Família · 55+',on:true,e:'41 envios · R$ 16,40 · 6 reservas'},
+    {q:'1 dia depois',s:'do check-out',t:'Pesquisa de satisfação (NPS)',m:'{nome}, de 0 a 10, quanto você recomendaria o Hotel Cabanas para um amigo?',tipo:'util',pub:'Todos',on:true,e:'77 envios · NPS 78'},
+    {q:'45 dias depois',s:'do check-out',t:'Convite para voltar (domingo a quinta)',m:'Bonito fica logo ali! Que tal voltar num domingo a quinta, com o hotel mais tranquilo?',tipo:'mkt',pub:'Hóspedes de MS · veio pelo Booking',on:false,e:'Desligada · aguardando aprovação do texto'},
+  ];
+  const TIPO={util:['Utilidade','t-util'],mkt:['Marketing (pago)','t-mkt'],livre:['Grátis (janela de 24 h)','t-livre']};
+  let rEdit=null;
+  function renderRegua(){
+    const box=$('regua-lista');box.textContent='';
+    REGUA.forEach((x,i)=>{
+      if(rEdit===i){
+        const q=el('input',{type:'text',value:x.q,'aria-label':'Quando'}),s2=el('input',{type:'text',value:x.s,'aria-label':'Detalhe do momento'}),t=el('input',{type:'text',value:x.t,'aria-label':'Título'}),m=el('textarea',{'aria-label':'Mensagem'});m.value=x.m;
+        const tp=el('select',{'aria-label':'Tipo'},Object.entries(TIPO).map(([k,v])=>el('option',{value:k,text:v[0],selected:k===x.tipo})));
+        const pb=el('input',{type:'text',value:x.pub,'aria-label':'Público'});
+        box.append(el('div',{class:'passo'},el('div',{class:'edit-inline'},el('span',{class:'rotulo',text:'Quando'}),q,s2,el('span',{class:'rotulo',text:'Título e mensagem'}),t,m,
+          el('span',{class:'rotulo',text:'Tipo e público'}),tp,pb,el('small',{style:'color:var(--cor-texto-sec)',text:'Campos automáticos: {nome}, {acomodação}, {entrada}, {saída}, {link_precheckin}, {link_mapa}'}),
+          el('div',{style:'display:flex;gap:4px;flex-wrap:wrap'},
+            el('button',{class:'btn-mini',type:'button',text:'Salvar',onclick:()=>{Object.assign(x,{q:q.value,s:s2.value,t:t.value,m:m.value,tipo:tp.value,pub:pb.value});rEdit=null;renderRegua();toast(x.tipo==='livre'?'Mensagem salva.':'Mensagem salva. Um texto novo fora da janela de 24 h volta para aprovação da Meta.');}}),
+            el('button',{class:'btn-mini',type:'button',text:'Cancelar',onclick:()=>{rEdit=null;if(!x.t)REGUA.splice(i,1);renderRegua();}}),
+            el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{REGUA.splice(i,1);rEdit=null;renderRegua();}})))));
+        return;
+      }
+      const sw=el('button',{class:'switch',role:'switch','aria-checked':String(x.on),'aria-label':x.on?'Mensagem ativa':'Mensagem desativada',onclick:()=>{x.on=!x.on;renderRegua();}});
+      box.append(el('div',{class:'passo'},el('div',{class:'quando'},x.q,el('small',{text:x.s})),
+        el('div',{},el('h4',{text:x.t}),el('div',{class:'msg',text:x.m}),el('div',{class:'tags'},el('span',{class:'tipo '+TIPO[x.tipo][1],text:TIPO[x.tipo][0]}),el('span',{class:'pilula',text:x.pub}),
+          el('button',{class:'btn-mini',type:'button',text:'Editar',onclick:()=>{rEdit=i;renderRegua();}}))),
+        el('div',{class:'estat'},sw,el('span',{class:'num',text:x.on?x.e:'Desligada'}))));
+    });
+  }
+  $('bt-nova-msg').addEventListener('click',()=>{REGUA.push({q:'Escolha o momento',s:'',t:'',m:'',tipo:'util',pub:'Todos',on:false,e:'Nova'});rEdit=REGUA.length-1;renderRegua();});
+
+  renderBoard();renderTemas();renderRegua();
 })();
 </script>

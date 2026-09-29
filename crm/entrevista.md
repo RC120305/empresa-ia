@@ -217,3 +217,4 @@ Comentários do dono:
 - **5.5** Reserva pelo agente: "via a[PI]" (comentário cortado; entendido como via API da Silbeck).
 - **7.2** Régua: **cada mensagem com seu campo de edição** e possibilidade de **cadastrar outras** (comentário cortado no fim).
 Próximo passo: protótipo v3 com a lista validada (funil completo com arrastar e soltar, ficha do cliente, tarefas, etc.).
+- **Protótipo v3** (29/09/2026), mesmo link: Funil com arrastar e soltar, etapa mudada no card, motivo obrigatório ao ir para Perdido, busca e filtros, alerta de lead parado, soma por coluna, "Novo lead"; **ficha do cliente** em gaveta com abas Dados (tudo editável, inclusive responsável), Atividades (agendar com tipo, data e responsável) e Histórico; aba **Tarefas** (atrasadas, hoje, próximas); **fonte de conhecimento editável** (editar/excluir itens, adicionar informação no tema, criar e renomear temas); **régua editável** (editar cada mensagem e criar novas).
