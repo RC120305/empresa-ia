@@ -75,3 +75,12 @@
 - **Métricas aprovadas:** leads por origem · conversão por origem · faturamento e diária média por origem (Silbeck) · reserva direta × OTA (e comissão poupada) · noites de domingo a quinta por origem · motivo de perda · atendimento (tempo de 1ª resposta; resolvido pelo agente × passado para humano).
 - **Quem vê o painel:** o dono, **Renata**, **Jagles** e **Márcio**.
 - Frequência: não definida; proposta: painel ao vivo no CRM + resumo semanal automático (segunda de manhã) e fechamento mensal.
+
+### P11. Upsell: o que vender, prioridades e regras (29/09/2026)
+- **Métricas:** o painel precisa de **filtro por data** (período livre) em todos os indicadores.
+- **Preços atualizados:** boia cross **R$ 100** · arvorismo **R$ 120** · **combo boia cross + arvorismo R$ 170** (por pessoa). Atualizado em `contexto/hotel-operacional.md`.
+- **Prioridade de venda:** **boia cross e arvorismo** (e o combo).
+- **Piquenique Sunset: retirado** da oferta. ⚠️ Ainda aparece no conteúdo de outubro (`social/conteudo/2026-10/conteudo.md`, linha ~444) e no anúncio P02 do plano de mídia (`textos-v3.md`): corrigir antes de publicar/subir.
+- **Massagem:** pode ser vendida **antecipadamente**; o hóspede escolhe **um tipo avulso** ou **monta um pacote**. Serviço terceirizado: o CRM tenta **integrar ao sistema de agenda do terceiro**; se não houver integração, gera uma **tarefa para a equipe agendar manualmente** e confirmar ao hóspede.
+- **Decoração especial:** só com **no mínimo 3 dias de antecedência** do check-in (tempo para encomendar os itens). O agente não oferece se faltarem menos de 3 dias.
+- Flutuação (R$ 100) e upgrade/noite extra: seguem como upsell, sem prioridade definida.

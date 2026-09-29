@@ -41,9 +41,11 @@
 ## 4. Atividades opcionais (pagas; todas realizadas **dentro do hotel**)
 | Atividade | Descrição | Duração | Restrições | Valor para hóspede* |
 |---|---|---|---|---|
-| **Boia cross** | Descida em boias individuais por corredeiras e cachoeiras do Rio Formoso, 1.200 m, com guias treinados | 1 h | Gestantes, quem ingeriu álcool, **menores de 5 anos** e altura abaixo de 1,15 m | R$ 80/pessoa |
-| **Arvorismo** | **18 obstáculos + 2 tirolesas**, sendo a última uma **tirolesa aquática no Rio Formoso**, com guias treinados | 1 h 15 | Gestantes, quem ingeriu álcool, **menores de 5 anos** e altura abaixo de 1,15 m | R$ 100/pessoa |
+| **Boia cross** | Descida em boias individuais por corredeiras e cachoeiras do Rio Formoso, 1.200 m, com guias treinados | 1 h | Gestantes, quem ingeriu álcool, **menores de 5 anos** e altura abaixo de 1,15 m | **R$ 100/pessoa** (dono, 29/09/2026) |
+| **Arvorismo** | **18 obstáculos + 2 tirolesas**, sendo a última uma **tirolesa aquática no Rio Formoso**, com guias treinados | 1 h 15 | Gestantes, quem ingeriu álcool, **menores de 5 anos** e altura abaixo de 1,15 m | **R$ 120/pessoa** (dono, 29/09/2026) |
 | **Flutuação** | **500 m no Rio Formoso**, com guia do hotel; peixes como **dourado, piraputanga e curimbatá** | 1 h | Gestantes, quem ingeriu álcool, **menores de 7 anos** | R$ 100/pessoa |
+
+**Combo boia cross + arvorismo: R$ 170/pessoa** (dono, 29/09/2026). Boia cross e arvorismo são a **prioridade de venda** (upsell).
 
 **Idade mínima (dono, 2026-09-27):** boia cross e arvorismo: **a partir de 5 anos e com pelo menos 1,15 m**. As atividades da **programação inclusa** (arco e flecha, trilhas com tirolesa, caiaque, SUP) **não têm idade mínima**.
 
@@ -52,9 +54,9 @@
 **Rio cheio (dono, 2026-09-27, revisado):** os rios do hotel **raramente enchem** a ponto de parar as atividades; cancelamento é **muito raro**. **Não é preciso** colocar "sujeito às condições do rio" nas peças. Continua proibido prometer "água cristalina garantida" nos meses de chuva (fato do destino).
 
 ## 5. Serviços opcionais
-- **Piquenique Sunset:** num deck à margem do Rio Formosinho, ao pôr do sol. Reserva pelo WhatsApp de reservas.
-- **Decoração especial no quarto:** contratada antes do check-in, pelo WhatsApp de reservas.
-- **Massagem relaxante** no quarto ou **à margem dos rios**. Serviço terceirizado, com agendamento na recepção; o valor varia.
+- ~~Piquenique Sunset~~: **retirado da oferta** (dono, 29/09/2026). Não oferecer nem divulgar.
+- **Decoração especial no quarto:** contratada antes do check-in, pelo WhatsApp de reservas, com **no mínimo 3 dias de antecedência** (para encomendar os itens; dono, 29/09/2026).
+- **Massagem relaxante** no quarto ou **à margem dos rios**. Serviço terceirizado; o valor varia. **Pode ser vendida antecipadamente** (dono, 29/09/2026): um tipo avulso ou um **pacote de massagens** montado pelo hóspede; o agendamento com o terceiro é integrado ao sistema dele ou feito manualmente pela equipe.
 - **Aula de ioga:** aos **sábados, às 8h30**, à margem do Rio Formosinho.
 - **Lavanderia:** a partir de R$ 8 por peça.
 
