@@ -51,6 +51,7 @@
   --sombra-1:0 1px 2px rgba(0,0,0,.4);--sombra-2:0 2px 8px rgba(0,0,0,.45);}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--cor-fundo);color:var(--cor-texto);font-family:var(--f-texto);font-size:16px;line-height:1.5;margin:0}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--cor-foco);outline-offset:2px}
@@ -464,6 +465,18 @@ button,input,select{font:inherit;color:inherit}
 @media (max-width:1250px){.cx{grid-template-columns:280px minmax(0,1fr) 48px}.cx.com-painel{grid-template-columns:280px minmax(0,1fr) 260px 48px}}
 @media (max-width:900px){.cx,.cx.com-painel{grid-template-columns:minmax(0,1fr)}.cx-trilho{flex-direction:row;position:static;order:-1}.recolher{display:none}.app.recolhido{grid-template-columns:1fr}}
 .bib-selos{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}.bib tr.vencida td{opacity:.6}#bib-val{border:1px solid var(--cor-borda-forte);border-radius:8px;padding:8px 10px;background:var(--cor-superficie);color:var(--cor-texto);font:inherit}
+
+/* v8: cabeçalho da conversa fixo no topo; só as mensagens rolam */
+.cx{height:calc(100vh - 96px);min-height:520px;grid-template-rows:auto minmax(0,1fr)}
+.cx-col{grid-row:1/3;min-height:0}
+.cx-lista{max-height:none;flex:1;min-height:0}
+.cx-cab{grid-column:2/-1;grid-row:1;overflow:visible}
+.cx-cab .cx-topo{flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:0}
+.cx-chat{grid-row:2;min-height:0;height:100%}
+.cx-chat .mensagens{max-height:none;min-height:0}
+.cx-lateral{grid-row:2;min-height:0;max-height:100%;overflow-y:auto}
+.cx-trilho{grid-row:2;align-self:start}
+@media (max-width:900px){.cx{height:auto;grid-template-rows:none}.cx-col,.cx-cab,.cx-chat,.cx-lateral,.cx-trilho{grid-row:auto;grid-column:auto}.cx-chat{height:auto;min-height:480px}.cx-chat .mensagens{max-height:420px}.cx-lista{max-height:320px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -520,6 +533,7 @@ button,input,select{font:inherit;color:inherit}
           </div>
           <div class="cx-lista" id="cx-lista"></div>
         </div>
+        <div class="cartao cx-cab" id="cx-cab"></div>
         <div class="cartao cx-chat" id="cx-chat"></div>
         <div class="cartao cx-lateral" id="cx-lateral" hidden></div>
         <nav class="cx-trilho" id="cx-trilho" aria-label="Painéis da conversa">
@@ -1130,7 +1144,7 @@ button,input,select{font:inherit;color:inherit}
     const swA=el('button',{class:'switch',role:'switch','aria-checked':String(c.agente),'aria-label':'Agente ativo nesta conversa',onclick:()=>{c.agente=!c.agente;if(!c.agente&&c.resp==='agente')c.resp='voce';renderInbox();toast(c.agente?'O agente voltou a atender esta conversa.':'Você assumiu a conversa. O agente não responde mais aqui.');}});
     const stSel=el('select',{'aria-label':'Status',onchange:ev=>{c.status=ev.target.value;renderInbox();toast(c.status==='resolvido'?'Conversa marcada como resolvida.':'Conversa reaberta.');}},[['aberto','Aberto'],['resolvido','Resolvido'],['arquivado','Arquivado']].map(([v,t])=>el('option',{value:v,text:t,selected:v===c.status})));
     const rSel=el('select',{'aria-label':'Responsável',onchange:ev=>{c.resp=ev.target.value;c.agente=c.resp==='agente';renderInbox();toast('Conversa transferida para '+USUARIOS[c.resp]+'.');}},Object.entries(USUARIOS).map(([k,v])=>el('option',{value:k,text:v,selected:k===c.resp})));
-    box.append(el('div',{class:'cx-topo'},
+    const cab=$('cx-cab');cab.textContent='';cab.append(el('div',{class:'cx-topo'},
       el('div',{class:'cx-quem'},el('strong',{text:c.nome}),el('span',{class:'canal',text:CANAL[c.canal]+(c.hospedado?' · '+c.hospedado:'')})),
       el('div',{class:'cx-ctrl'},el('span',{class:'pilula '+o[1],text:o[0]}),el('span',{class:'pilula '+e[1],text:e[0]}),el('span',{class:'pilula',text:c.perfil}),
         el('label',{class:'cx-sw'},swA,'Agente'),stSel,rSel,
@@ -1144,7 +1158,7 @@ button,input,select{font:inherit;color:inherit}
       ms.append(el('div',{class:'balao out'+(ia?' ia':'')},el('div',{class:'autor',text:ia?'Agente Cabanas':(m[3]||'Equipe')}),m[1],el('div',{class:'hora num',text:m[2]+' ✓✓'}),
         fonte,ia&&m[3]?el('button',{class:'ver-fonte',type:'button',text:'Ver fonte da resposta',onclick:ev=>{fonte.hidden=!fonte.hidden;ev.currentTarget.textContent=fonte.hidden?'Ver fonte da resposta':'Ocultar fonte';}}):null));
     });
-    box.append(ms);
+    box.append(ms);requestAnimationFrame(()=>{ms.scrollTop=ms.scrollHeight;});
     // rodapé
     if(c.status!=='aberto'){box.append(el('div',{class:'cx-rodape'},el('span',{text:'Conversa '+c.status+'.'}),el('button',{class:'btn btn-editar',type:'button',text:'Reabrir',onclick:()=>{c.status='aberto';convStatus='aberto';syncStatusTabs();renderInbox();}})));}
     else if(c.agente){box.append(el('div',{class:'cx-rodape'},el('span',{text:'O Agente Cabanas está atendendo esta conversa.'}),el('button',{class:'btn btn-destaque',type:'button',text:'Assumir atendimento',onclick:()=>{c.agente=false;c.resp='voce';c.fila=null;c.msgs.push(['sis','Você assumiu o atendimento']);renderInbox();}})));}
