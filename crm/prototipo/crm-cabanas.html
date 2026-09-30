@@ -321,12 +321,31 @@ button,input,select{font:inherit;color:inherit}
 .opcoes{display:flex;flex-direction:column;gap:6px}
 .opcoes label{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--cor-borda);border-radius:var(--r-md);cursor:pointer;font-size:15px}
 .opcoes input{accent-color:var(--cor-primaria);width:18px;height:18px}
-.alertas{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:16px;z-index:45;width:min(380px,calc(100% - 32px));background:var(--cor-superficie);border:2px solid var(--cor-erro);border-radius:var(--r-lg);box-shadow:var(--sombra-2);padding:10px 12px;display:flex;flex-direction:column;gap:8px;max-height:70vh;overflow:auto}
+.alertas{position:fixed;top:calc(72px + env(safe-area-inset-top,0px));right:16px;z-index:45;width:min(380px,calc(100% - 32px));background:var(--cor-superficie);border:2px solid var(--cor-erro);border-radius:var(--r-lg);box-shadow:var(--sombra-2);padding:10px 12px;display:flex;flex-direction:column;gap:8px;max-height:70vh;overflow:auto}
 .alertas .al-cab{display:flex;flex-direction:column;gap:2px;color:var(--cor-erro)}
 .alertas .al-cab small{color:var(--cor-texto-sec)}
 .alertas .al-item{border-top:1px solid var(--cor-borda);padding-top:8px;display:flex;flex-direction:column;gap:4px;font-size:14px}
 .acoes-res{display:flex;gap:6px;flex-wrap:wrap}
 .acoes-card{display:flex;gap:6px;flex-wrap:wrap}
+.simular-wrap{position:relative}
+.simular-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:46;width:340px;max-width:calc(100vw - 32px);background:var(--cor-elevada);border:1px solid var(--cor-borda);border-radius:var(--r-md);box-shadow:var(--sombra-2);display:flex;flex-direction:column}
+.simular-menu button{all:unset;cursor:pointer;padding:10px 12px;font-size:14px;border-bottom:1px solid var(--cor-borda)}
+.simular-menu button:hover{background:var(--cor-primaria-suave)}
+.sino{all:unset;cursor:pointer;position:relative;width:40px;height:40px;border-radius:999px;display:grid;place-items:center;border:1px solid var(--cor-borda);background:var(--cor-superficie)}
+.sino svg{width:20px;height:20px}
+.sino.ativo{border-color:var(--cor-erro);color:var(--cor-erro);animation:balanca 1s ease-in-out 2}
+.sino-n{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:var(--cor-erro);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center}
+@keyframes balanca{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
+@media (prefers-reduced-motion:reduce){.sino.ativo{animation:none}}
+.cx-item.urgente{border:2px solid var(--cor-erro);border-left-width:6px;background:var(--cor-erro-suave)}
+.cx-item.urgente.u-alteracao{border-color:var(--cor-alerta);background:var(--cor-alerta-suave)}
+.cx-item.urgente.u-assumido{border-color:var(--cor-borda-forte);background:var(--cor-superficie)}
+.cx-urg{display:flex;justify-content:space-between;gap:6px;font-size:12px;font-weight:700;color:var(--cor-erro);text-transform:uppercase;letter-spacing:.04em}
+.u-alteracao .cx-urg{color:var(--cor-alerta)}
+.u-assumido .cx-urg{color:var(--cor-texto-sec)}
+.cx-urg small{font-weight:600;text-transform:none;letter-spacing:0}
+.al-tipo{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--cor-erro)}
+.al-cab .al-acoes{display:flex;gap:6px}
 .cx-barra{position:absolute;bottom:100%;left:12px;right:12px;z-index:7;background:var(--cor-elevada);border:1px solid var(--cor-borda);border-radius:var(--r-md);box-shadow:var(--sombra-2);display:flex;flex-direction:column;max-height:280px;overflow-y:auto}
 .cx-barra button{all:unset;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;padding:8px 12px;border-bottom:1px solid var(--cor-borda);font-size:14px}
 .cx-barra button b{color:var(--cor-destaque-texto,var(--cor-primaria-texto));font-family:ui-monospace,Menlo,monospace}
@@ -630,6 +649,15 @@ body.sem-rolagem .principal{padding-block-end:12px}
     <div class="topo">
       <h1 id="titulo">Conversas</h1>
       <span class="aviso-exemplo">Exemplo visual · dados fictícios</span>
+      <div class="simular-wrap"><button class="btn btn-editar" type="button" id="bt-simular" aria-haspopup="true" aria-expanded="false">Simular ▾</button>
+        <div class="simular-menu" id="simular-menu" hidden>
+          <button type="button" data-sim="humano">Cliente pede para falar com uma pessoa</button>
+          <button type="button" data-sim="reclamacao">Gilberto passa para a equipe (reclamação na estadia)</button>
+          <button type="button" data-sim="naosabe">Gilberto passa para a equipe (não sabe responder)</button>
+          <button type="button" data-sim="alteracao">Cliente pede alteração da reserva</button>
+          <button type="button" data-sim="cancelamento">Cliente pede cancelamento</button>
+        </div></div>
+      <button class="sino" type="button" id="bt-sino" aria-label="Alertas da equipe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="sino-n num" id="sino-n" hidden>0</span></button>
       <button class="tema" id="bt-tema" type="button">Tema: automático</button>
     </div>
 
@@ -1251,7 +1279,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
         ['cli','Qual fica o valor? E vale mais a pena que ir pro centro?','21:42'],
         ['ia','Para as duas noites fica R$ 1.480, já com o desconto de quem reserva direto. Estamos a 6 km do centro, com acesso asfaltado, e aqui dentro vocês têm dois rios e as atividades com monitor. Se quiserem aventura, o combo boia cross + arvorismo sai R$ 170 por pessoa. Quer que eu faça a reserva? 😊','21:42','Silbeck: POST Tarifario/Valor (R$ 740/noite) · Biblioteca: “Fica longe do centro?” · Fonte: Atividades e preços → “Combo”']]},
     {id:2,lead:3,nome:'Rafael e família',canal:'w99110',origem:'ret',origemDet:'Hóspede que volta (3ª estadia · telefone no histórico do Silbeck)',etapa:'atend',perfil:'Família com filhos',agente:true,resp:'agente',status:'aberto',naoLidas:2,hora:'21:10',janela:true,
-      reservas:[['Bangalô · nov/2025','Hospedou-se · R$ 2.090','t-livre']],pagamentos:[],
+      reservas:[['Quádruplo standard · 14 a 16/10','Reservado · pago · #48260','t-livre'],['Bangalô · nov/2025','Hospedou-se · R$ 2.090','t-livre']],pagamentos:[],
       msgs:[['cli','Oi! Queremos voltar no feriado de 12/10. Criança de 6 anos faz boia cross?','21:05'],['ia','Que alegria ter vocês de volta, Rafael! A boia cross é a partir de 5 anos e 1,15 m de altura, então dá sim, se ela tiver essa altura. Para 12 a 14/10 o feriado está lotado; posso ver 14 a 16/10 (terça a quinta), bem mais tranquilo?','21:06','Fonte: Atividades e preços → “Boia cross” · Silbeck: GET Disponibilidade (sem vaga 12–14/10)'],['cli','Pode ver sim','21:09'],['cli','E tem berço?','21:10']]},
     {id:3,lead:null,nome:'Thiago B.',canal:'w99117',origem:'google',origemDet:'Google (link rastreável GOOGLE-HOTEL)',etapa:'novo',perfil:'Grupo de amigos',agente:false,resp:'jagles',status:'aberto',naoLidas:1,hora:'01:14',janela:true,fila:'Grupo de 12, 10 a 13/03, quer valor especial',
       reservas:[],pagamentos:[],
@@ -1284,8 +1312,10 @@ body.sem-rolagem .principal{padding-block-end:12px}
     if(convFiltro==='minhas')ls=ls.filter(c=>c.resp==='voce'||c.resp==='jagles');if(convFiltro==='agente')ls=ls.filter(c=>c.agente);
     if(convFiltro==='hosp')ls=ls.filter(c=>c.hospedado);if(convFiltro==='janela')ls=ls.filter(c=>!c.janela);
     if(!ls.length)lista.append(el('div',{class:'vazio',text:'Nenhuma conversa aqui.'}));
-    ls.forEach(c=>{const o=ORIGENS[c.origem],e=ETQ_ETAPA[c.etapa];
-      lista.append(el('button',{class:'cx-item',type:'button','aria-selected':String(c.id===convSel),onclick:()=>{convSel=c.id;c.naoLidas=0;renderInbox();}},
+    const OU={reclamacao:0,cancelamento:1,humano:2,naosabe:3,'alteração':4};ls=ls.slice().sort((a,z)=>(!!z.urg-!!a.urg)||(a.urg&&z.urg?((!!a.urg.quem-!!z.urg.quem)||OU[a.urg.tipo]-OU[z.urg.tipo]):0));
+    ls.forEach(c=>{const o=ORIGENS[c.origem],e=ETQ_ETAPA[c.etapa];const u=c.urg;
+      lista.append(el('button',{class:'cx-item'+(u?' urgente u-'+(u.quem?'assumido':u.tipo==='alteração'?'alteracao':'x'):''),type:'button','aria-selected':String(c.id===convSel),onclick:()=>{convSel=c.id;c.naoLidas=0;renderInbox();}},
+        u?el('div',{class:'cx-urg'},el('span',{text:ROT_URG[u.tipo]}),el('small',{text:u.quem?u.quem+' assumiu':(minDesde(u.desde)==='agora'?'agora':'há '+minDesde(u.desde))})):null,
         el('div',{class:'cx-l1'},el('span',{class:'canal-ic '+c.canal,title:CANAL[c.canal],text:c.canal==='ig'?'IG':c.canal==='fb'?'FB':'WA'}),el('strong',{text:c.nome}),el('span',{class:'cx-hora num',text:c.hora}),c.naoLidas?el('span',{class:'cx-nl num',text:c.naoLidas}):null),
         el('div',{class:'cx-l2'},el('span',{class:'pilula '+o[1],text:o[0]}),el('span',{class:'pilula '+e[1],text:e[0]}),c.fila?el('span',{class:'tipo t-mkt',text:'Aguardando a equipe'}):null),
         !c.janela?el('div',{class:'cx-janela',text:'A janela de 24 h expirou'}):null,
@@ -1455,25 +1485,64 @@ body.sem-rolagem .principal{padding-block-end:12px}
   }
   const ALERTAS=[];
   function bip(){try{const a=new (window.AudioContext||window.webkitAudioContext)();[0,.3].forEach(t=>{const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.12,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+t+.22);o.start(a.currentTime+t);o.stop(a.currentTime+t+.25);});}catch(e){}}
+  const ROT_URG={humano:'⚑ Pede atendimento humano',reclamacao:'⚑ Reclamação · passar para a equipe',naosabe:'⚑ Gilberto passou para a equipe','alteração':'⚑ Pedido de alteração',cancelamento:'⚑ Pedido de cancelamento'};
+  const minDesde=d=>{const m=Math.max(0,Math.round((Date.now()-d)/6e4));return m<1?'agora':m+' min';};
+  let somLigado=true;
+  function novoAlerta(a){a.etapa='novo';a.hora=agora();a.desde=Date.now();ALERTAS.push(a);a.c.urg={tipo:a.tipo,desde:a.desde};a.c.status='aberto';a.c.naoLidas=(a.c.naoLidas||0)+1;
+    if(somLigado)bip();const s=$('bt-sino');s.classList.remove('ativo');void s.offsetWidth;s.classList.add('ativo');painelAlertas=true;renderAlertas();renderInbox();}
+  function humano(c,tipo){
+    const fora=!expediente();
+    const falas={humano:['cli','Prefiro falar com uma pessoa, pode ser?'],reclamacao:['cli','O ar-condicionado do quarto não está gelando e está muito calor 😓'],naosabe:['cli','Vocês conseguem organizar um jantar surpresa com decoração e músico no deck para o meu pedido de casamento?']};
+    const resp={humano:fora?'Claro! Nossa equipe atende a partir das 7h30 e já deixei seu pedido na frente da fila. Se preferir, posso ir adiantando alguma informação.':'Claro! Já chamei a equipe e alguém continua com você por aqui em instantes. 😊',
+      reclamacao:'Sinto muito pelo desconforto! Já avisei a equipe agora mesmo para resolver o ar-condicionado. Te aviso assim que alguém estiver a caminho.',
+      naosabe:'Que ideia linda! 💍 Para um pedido assim quero que a nossa equipe cuide de cada detalhe. Já passei para eles e te respondem por aqui'+(fora?' a partir das 7h30.':' em instantes.')};
+    const info={humano:'Cliente pediu atendimento humano. Gilberto: perfil '+c.perfil+(c.reservas.length?' · '+c.reservas[0][0]:''),reclamacao:'Hóspede no Bangalô 3 · encaminhar à manutenção · prioridade alta',naosabe:'Pedido fora da base (evento especial). Gilberto não inventa: passou para a equipe'};
+    const f=falas[tipo];c.msgs.push([f[0],f[1],agora()]);c.msgs.push(['ia',resp[tipo],agora(),'Regra: '+(tipo==='humano'?'cliente pede pessoa → passar para a equipe':tipo==='reclamacao'?'reclamação → alerta imediato':'sem resposta na base → passar para a equipe')]);
+    c.fila=tipo==='humano'?'Pediu atendimento humano':tipo==='reclamacao'?'Reclamação durante a estadia':'Pedido especial fora da base';
+    novoAlerta({c,tipo,info:info[tipo]});toast('Alerta enviado a Jagles, Márcio e Ricardo, no CRM e no WhatsApp.');
+  }
   function pedido(c,x,tipo){
     const alt=tipo==='alteração';
     c.msgs.push(['cli',alt?'Oi! Consigo mudar a reserva para 15 a 17/11?':'Oi, infelizmente vou precisar cancelar a reserva.',agora()]);
     c.msgs.push(['ia',expediente()?'Recebi o seu pedido de '+tipo+'. Nossa equipe já está verificando no sistema e te confirmo por aqui assim que estiver feito.':'Recebi o seu pedido de '+tipo+'. Logo pela manhã nossa equipe verifica e te confirma por aqui.',agora(),'Regra: alteração e cancelamento só são confirmados depois de feitos no Silbeck']);
-    ALERTAS.push({c,x,tipo,etapa:'novo',hora:agora(),info:alt?'Gilberto conferiu: há vaga de 15 a 17/11 no mesmo tipo · diferença estimada R$ 180':'Valor a devolver conforme a política de cancelamento (calculado pelo CRM)'});
-    x[1]='Reservado · '+tipo+' pedida · aguardando a equipe';x[2]='t-mkt';
-    bip();renderAlertas();renderInbox();toast('Alerta enviado a Jagles, Márcio e Ricardo, no CRM e no WhatsApp.');
+    novoAlerta({c,x,tipo,info:alt?'Gilberto conferiu: há vaga de 15 a 17/11 no mesmo tipo · diferença estimada R$ 180':'Valor a devolver conforme a política de cancelamento (calculado pelo CRM)'});
+    x[1]='Reservado · '+tipo+' pedida · aguardando a equipe';x[2]='t-mkt';renderAlertas();renderInbox();
+    toast('Alerta enviado a Jagles, Márcio e Ricardo, no CRM e no WhatsApp.');
   }
+  let painelAlertas=false;
   function renderAlertas(){
-    const box=$('alertas');box.textContent='';const ab=ALERTAS.filter(a=>a.etapa!=='fim');box.hidden=!ab.length;if(!ab.length)return;
-    box.append(el('div',{class:'al-cab'},el('b',{text:ab.length+(ab.length>1?' pedidos aguardando':' pedido aguardando')+' a equipe'}),el('small',{text:'Avisados no CRM (com som) e no WhatsApp: Jagles, Márcio e Ricardo. Sem ação, o alerta repete.'})));
-    ab.forEach(a=>box.append(el('div',{class:'al-item'},el('b',{text:'Pedido de '+a.tipo+' · '+a.c.nome+' · '+a.hora}),el('span',{text:a.x[0]}),el('span',{class:'lat-txt',text:a.info}),
-      a.quem?el('span',{class:'tipo t-util',text:a.quem+' está fazendo no Silbeck'}):null,
-      el('div',{class:'acoes-res'},a.etapa==='novo'?el('button',{class:'btn-mini',type:'button',text:'Assumir e fazer no Silbeck',onclick:()=>{a.etapa='exec';a.quem='Jagles';renderAlertas();toast('Jagles assumiu. O alerta sai do WhatsApp dos outros.');}}):
-        el('button',{class:'btn-mini',type:'button',text:'Feito no Silbeck',onclick:()=>concluir(a)}),
-        el('button',{class:'btn-mini',type:'button',text:'Abrir conversa',onclick:()=>{convSel=a.c.id;document.querySelector('[data-vista="conversas"]').click();renderInbox();}})))));
+    const box=$('alertas');box.textContent='';const ab=ALERTAS.filter(a=>a.etapa!=='fim');const nv=ab.filter(a=>a.etapa==='novo').length;
+    const n=$('sino-n');n.hidden=!ab.length;n.textContent=ab.length;if(!nv)$('bt-sino').classList.remove('ativo');
+    $('bt-sino').setAttribute('aria-label',ab.length?ab.length+' alertas da equipe':'Sem alertas');
+    box.hidden=!(painelAlertas&&ab.length);if(box.hidden)return;
+    box.append(el('div',{class:'al-cab'},el('b',{text:ab.length+(ab.length>1?' pedidos aguardando':' pedido aguardando')+' a equipe'}),
+      el('small',{text:'Avisados no CRM (com som) e no WhatsApp: Jagles, Márcio e Ricardo. Sem ninguém assumir em 10 min, o alerta repete e sobe para a Renata.'}),
+      el('div',{class:'al-acoes'},el('button',{class:'btn-mini',type:'button',text:somLigado?'Silenciar som':'Ligar som',onclick:()=>{somLigado=!somLigado;renderAlertas();}}),el('button',{class:'btn-mini',type:'button',text:'Minimizar',onclick:()=>{painelAlertas=false;renderAlertas();}}))));
+    const ordem={reclamacao:0,cancelamento:1,humano:2,naosabe:3,'alteração':4};
+    ab.slice().sort((a,z)=>(a.etapa!=='novo')-(z.etapa!=='novo')||ordem[a.tipo]-ordem[z.tipo]).forEach(a=>{
+      const silbeck=a.tipo==='alteração'||a.tipo==='cancelamento';
+      const abrir=()=>{convSel=a.c.id;a.c.naoLidas=0;document.querySelector('[data-vista="conversas"]').click();renderInbox();};
+      box.append(el('div',{class:'al-item'},el('span',{class:'al-tipo',text:ROT_URG[a.tipo].replace('⚑ ','')}),el('b',{text:a.c.nome+' · '+a.hora+' · '+CANAL[a.c.canal]}),a.x?el('span',{text:a.x[0]}):null,el('span',{class:'lat-txt',text:a.info}),
+        a.quem?el('span',{class:'tipo t-util',text:a.quem+(silbeck?' está fazendo no Silbeck':' assumiu a conversa')}):null,
+        el('div',{class:'acoes-res'},
+          silbeck?(a.etapa==='novo'?el('button',{class:'btn-mini',type:'button',text:'Assumir e fazer no Silbeck',onclick:()=>{a.etapa='exec';a.quem='Jagles';a.c.urg.quem='Jagles';renderAlertas();renderInbox();toast('Jagles assumiu. O alerta sai do WhatsApp dos outros.');}}):
+            el('button',{class:'btn-mini',type:'button',text:'Feito no Silbeck',onclick:()=>concluir(a)})):
+          el('button',{class:'btn-mini',type:'button',text:'Assumir atendimento',onclick:()=>{a.etapa='fim';const c=a.c;c.agente=false;c.resp='voce';c.fila=null;c.urg=null;c.msgs.push(['sis','Você assumiu o atendimento. O Gilberto sai desta conversa.']);abrir();renderAlertas();toast('Você assumiu. O cliente passa a falar com a equipe.');}}),
+          el('button',{class:'btn-mini',type:'button',text:'Abrir conversa',onclick:abrir}))));});
   }
+  $('bt-sino').addEventListener('click',()=>{painelAlertas=!painelAlertas;if(!ALERTAS.some(a=>a.etapa!=='fim')){toast('Nenhum pedido aguardando a equipe.');painelAlertas=false;}renderAlertas();});
+  $('bt-simular').addEventListener('click',e=>{const m=$('simular-menu');m.hidden=!m.hidden;e.currentTarget.setAttribute('aria-expanded',String(!m.hidden));});
+  $('simular-menu').addEventListener('click',e=>{const b=e.target.closest('[data-sim]');if(!b)return;$('simular-menu').hidden=true;$('bt-simular').setAttribute('aria-expanded','false');
+    const conv=id=>CONVS.find(c=>c.id===id);const t=b.dataset.sim;
+    if(t==='humano')humano(conv(7),'humano');
+    else if(t==='reclamacao')humano(conv(4),'reclamacao');
+    else if(t==='naosabe')humano(conv(6),'naosabe');
+    else{const c=t==='alteracao'?conv(8):conv(2);const x=c.reservas.find(r=>/^Reservado · (pago|alterado)/.test(r[1]));
+      if(!x){toast('Esta reserva já tem um pedido em andamento.');return;}pedido(c,x,t==='alteracao'?'alteração':'cancelamento');}
+    document.querySelector('[data-vista="conversas"]').click();});
+  document.addEventListener('click',e=>{if(!e.target.closest('.simular-wrap'))$('simular-menu').hidden=true;});
   function concluir(a){
-    a.etapa='fim';const c=a.c,x=a.x;
+    a.etapa='fim';const c=a.c,x=a.x;c.urg=null;c.fila=null;
     if(a.tipo==='alteração'){x[0]=x[0].replace(/·[^·]*$/,'· 15 a 17/11');x[1]='Reservado · alterado no Silbeck · diferença R$ 180 cobrada';x[2]='t-livre';
       c.msgs.push(['sis','CRM conferiu no Silbeck (ListaReserva): datas alteradas. Pix da diferença enviado; boia cross e mensagens de pré-chegada remarcadas.']);
       c.msgs.push(['ia','Pronto, sua reserva foi alterada para 15 a 17/11! A diferença ficou em R$ 180 e o Pix está aqui embaixo.',agora(),'Silbeck: ListaReserva (datas novas conferidas)']);
