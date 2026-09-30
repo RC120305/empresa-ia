@@ -26,7 +26,7 @@
 | `GET /v1/Hospede` | **Histórico de hóspedes** (importação, A5); reconhecer o hóspede que volta pelo telefone/e-mail (2.8, D1) |
 | `GET /v1/TipoApartamento` / `GET /v1/Apartamento` | Lista das acomodações para orçamento e agente (fotos: a confirmar) |
 | `POST /v1/Tarifario` | Tarifário por período (apoio ao orçamento e à demanda não atendida) |
-| `GET /v1/Produto` | Produtos e serviços (boia cross, arvorismo, combo?) com preço para o upsell |
+| `GET /v1/Produto` | Produtos e serviços (boia cross, arvorismo, combo?) (só código e nome, **sem preço**)|
 | `GET /v1/Setor` | Setores do hotel: **encaminhar pedidos de hóspede** ao setor certo (B1) |
 | `GET /v1/Empresa` | **Fonte do cadastro de agências/operadoras**: sincronização a cada hora, ligação por CNPJ, ID usado no `POST reserva` (P42). Sem POST: agência nova é cadastrada no Silbeck pela equipe |
 | `GET /v1/CategoriaHospede`, `/Cidade`, `/Profissao`, `/TipoPensao` | Tabelas de apoio para preencher a ficha e a reserva |

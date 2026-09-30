@@ -638,7 +638,7 @@ button,input,select{font:inherit;color:inherit}
 
     <!-- PRODUTOS -->
     <section data-painel="produtos" hidden style="display:flex;flex-direction:column;gap:12px">
-      <div class="barra-ferr"><button class="btn btn-enviar" type="button" id="prod-novo">+ Novo produto</button><button class="btn btn-editar" type="button" id="prod-importar">Importar do Silbeck</button><span style="font-size:13px;color:var(--cor-texto-sec)">Preços sincronizados com o Silbeck. Horários das atividades vêm do sistema interno de reservas.</span></div>
+      <div class="barra-ferr"><button class="btn btn-enviar" type="button" id="prod-novo">+ Novo produto</button><button class="btn btn-editar" type="button" id="prod-importar">Importar do Silbeck</button><span style="font-size:13px;color:var(--cor-texto-sec)">Código e nome vêm do Silbeck; o preço é cadastrado aqui. Horários das atividades vêm do sistema interno de reservas.</span></div>
       <div class="cartao bloco" id="prod-form" hidden>
         <div class="grade-campos"><label class="campo">Nome<input id="pf-nome" type="text"></label><label class="campo">Código<input id="pf-cod" type="text" maxlength="6"></label><label class="campo">Preço (R$)<input id="pf-preco" type="number"></label>
         <label class="campo">Como se reserva<select id="pf-tipo"><option value="ativ">Atividade com horário (sistema interno)</option><option value="terc">Serviço de terceiro (tarefa)</option><option value="simples">Simples, sem horário</option></select></label>

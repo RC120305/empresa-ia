@@ -8,7 +8,7 @@ Um lugar único para tudo o que o hotel vende além da diária. Cada produto tem
 | Campo | Exemplo | De onde vem |
 |---|---|---|
 | Nome, código, descrição, fotos | Boia cross · BOIA · "1.200 m pelo Rio Formoso…" | Equipe (fotos do banco de imagens) |
-| **Preço** | R$ 100 por pessoa | **Silbeck** (`GET /v1/Produto`), sincronizado |
+| **Preço** | R$ 100 por pessoa | **Equipe, no CRM** (a API do Silbeck só traz código e nome do produto) |
 | **Regras** | ≥ 5 anos e ≥ 1,15 m; sem gestantes; sem álcool | Equipe |
 | **Antecedência mínima** | Decoração: 3 dias | Equipe |
 | **Como se reserva** | Atividade com horário (sistema interno) · Serviço de terceiro (tarefa de agendamento) · Serviço simples (sem horário) | Equipe |
@@ -17,7 +17,7 @@ Um lugar único para tudo o que o hotel vende além da diária. Cada produto tem
 | **Prioridade** | 1 = combo, 2 = boia cross, 3 = arvorismo | Equipe |
 | **Ativo / inativo** | Piquenique: inativo | Equipe |
 
-**Incluir mais produtos:** botão **"+ Novo produto"** ou **"Importar do Silbeck"** (traz nome e preço; a equipe completa regras, fotos e momento).
+**Incluir mais produtos:** botão **"+ Novo produto"** ou **"Importar do Silbeck"** (traz código e nome; a equipe completa o preço, completa regras, fotos e momento).
 
 ### Catálogo inicial
 | Código | Produto | Preço | Tipo de reserva | Prioridade |

@@ -97,3 +97,23 @@
 6. Categorias de hóspede cadastradas no Cabanas (idades das crianças) para o `Tarifario/Valor`.
 7. O Cabanas pode usar o acesso pela **nuvem da Silbeck** (`cloud.silbeck.com.br`) em vez de abrir portas na rede do hotel?
 8. Documentação da **API do motor de reservas** (a usada pela Asksuite).
+
+## 5. Conferência com a estrutura do CRM (30/09/2026)
+| Item do CRM | API atende? | Ajuste |
+|---|---|---|
+| Mapa de vagas 60 dias, vagas no painel da conversa | ✅ `Disponibilidade` | — |
+| Orçamento (equipe e Gilberto) | ✅ `Disponibilidade` + `TipoApartamento` + `Tarifario/Valor` (1 chamada por tipo) | Idades das crianças → categorias do Silbeck |
+| Gilberto reserva (5.5) | ✅ `POST reserva` | Guardar `idReserva` e `idReservaItem` no card |
+| Sinal Pix BB / Cielo (9.1–9.3) | ✅ `Adiantamento` (tipo 8 Pix, tipo 4 cartão com NSU e parcelas) | Precisa do `idReservaItem`: a reserva tem de existir antes do lançamento |
+| Pré-reserva não paga | ⚠️ não há cancelamento pela API | Decisão do dono: quando criar a reserva (P46) |
+| Cliente pede cancelamento no WhatsApp | ⚠️ sem API | Tarefa para a equipe cancelar no Silbeck; o CRM confirma pelo `status=3` |
+| Sincronizar motor, Booking, agências (9.4, 9.7) | ✅ `ListaReserva` por data de cadastro (portal, adiantamentos, status) | Ligação ao lead por telefone/e-mail feita no CRM |
+| Pago × aguardando pagamento | ✅ totais e lista de adiantamentos | — |
+| Faturamento por origem (6.2) | ⚠️ sem campo "origem" | Portal "CRM WhatsApp" ou voucher (pergunta à Silbeck) |
+| Histórico do hóspede (2.8, A5, D1) | ✅ `Hospede` (250/página) + `ListaReserva` por períodos | Importação inicial demorada, feita uma vez em segundo plano |
+| Agências (2.13) | ✅ `Empresa` (documento = CNPJ) + `codigoEmpresa` na reserva | — |
+| Status Hospedado e régua (B1, 7.2) | ✅ `ListaEstadia`, `MapaApartamento` | — |
+| Pré-check-in (7.2) | ✅ `FichaHospede` (FNRH completa) | Reserva precisa ter os hóspedes listados |
+| Produtos e upsell (10.1, 10.4) | ⚠️ `Produto` sem preço; sem lançamento de consumo | Preço no CRM; lançamento por tarefa de 1 clique |
+| Painel (ocupação, RevPAR, por portal, por UF) | ✅ `Ocupacao` | — |
+| Fotos das acomodações | ❌ | Banco de imagens por código |
