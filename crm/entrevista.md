@@ -420,3 +420,13 @@ Lido da página (16 de 16 avaliadas; nada acrescentado): **9 aprovadas, 6 com "A
 - **G7 ajustado:** estadia mínima, feriados, idade que paga e pessoas por unidade **são controladas pelo Silbeck**; o CRM só informa. **Validade do orçamento: dispensada** (o CRM recota no aceite e avisa se mudou). A confirmar com a Silbeck se a API aplica essas regras (pergunta 7c já enviada).
 - **G13 ajustado:** a equipe usa o **WhatsApp Web**, não o celular; a regra vale igual (mensagem enviada fora do CRM pausa o Gilberto). Conferir se a coexistência da Meta sincroniza as mensagens do WhatsApp Web.
 - **G4, G9 e G14:** o dono pediu explicação com exemplos (respondido no chat).
+
+### P49. Alteração e cancelamento pedidos pelo cliente (G4 revisto) e G9 aprovado (30/09/2026)
+- **G9 aprovado:** o Gilberto pede o WhatsApp logo no início de conversas pelo direct ou Messenger.
+- **G4, decisão do dono:** como a API não altera nem cancela, o Gilberto **não confirma** nada ao cliente antes de a equipe executar no Silbeck.
+  1. Cliente pede alteração → o Gilberto **confere a vaga** e o valor das novas datas (só para informar a equipe; ao cliente diz que vai verificar).
+  2. **Alerta** para **Jagles, Márcio e Ricardo**: no CRM (faixa de alerta na tela, com **aviso sonoro**) e no **WhatsApp** de cada um (modelo de utilidade interno), com reserva, pedido, vaga e diferença.
+  3. Um deles **confirma a alteração** no CRM, a equipe executa no Silbeck e marca "Feito". O CRM confere a reserva nova (`ListaReserva`) e **só então** o Gilberto (ou a equipe) envia a **confirmação ao cliente** e a cobrança da diferença; remarca atividades e régua.
+  4. **Fora do expediente:** o Gilberto responde "Recebemos seu pedido; logo pela manhã nossa equipe verifica e te confirma." O alerta fica na fila da manhã.
+  5. **Cancelamento:** mesmo fluxo (alerta, execução no Silbeck, conferência do `status=3`, e então confirmação ao cliente com o valor a devolver pela política).
+  - Sem ação em X minutos no expediente, o alerta repete.
