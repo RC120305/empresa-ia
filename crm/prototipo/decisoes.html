@@ -1,0 +1,249 @@
+<title>Decisões do CRM Cabanas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Josefin+Sans:wght@600&display=swap">
+<style>
+/* Layout: uma coluna de cartões por área, barra de progresso fixa no topo. Tokens de crm/tokens.css. */
+:root{
+  --fundo:#F7F3EC;--sup:#FFFFFF;--borda:#E3DACB;--borda-forte:#9C8C7A;--texto:#2E2620;--texto-sec:#6B5D4F;
+  --prim:#847059;--prim-hover:#6E5B47;--prim-texto:#6E5B47;--prim-suave:#EEEBE8;--sobre-prim:#FFFFFF;
+  --verde:#5A7026;--verde-suave:#EEF3E1;--erro:#B3372B;--erro-suave:#FBEAE7;--alerta:#8A5A00;--alerta-suave:#FBF1DC;
+  --info:#2F6B82;--info-suave:#E6F0F3;--foco:#A8520F;--lat:#3B3128;--lat-texto:#F7F1E6;--laranja:#F58634;
+  --f-marca:"Josefin Sans","Montserrat",system-ui,sans-serif;--f-texto:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --fundo:#1E1914;--sup:#29221B;--borda:#4A3F34;--borda-forte:#7A6A58;--texto:#F2ECE2;--texto-sec:#BFB3A3;
+  --prim:#C4A98A;--prim-hover:#D3BC9F;--prim-texto:#C4A98A;--prim-suave:#342B23;--sobre-prim:#1E1914;
+  --verde:#90AB49;--verde-suave:#2E3322;--erro:#EF8A7A;--erro-suave:#3A2521;--alerta:#E8B04A;--alerta-suave:#3A2F1A;--info:#7FB8CC;--info-suave:#1F3038;--foco:#F58634;--lat:#171310}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --fundo:#1E1914;--sup:#29221B;--borda:#4A3F34;--borda-forte:#7A6A58;--texto:#F2ECE2;--texto-sec:#BFB3A3;
+  --prim:#C4A98A;--prim-hover:#D3BC9F;--prim-texto:#C4A98A;--prim-suave:#342B23;--sobre-prim:#1E1914;
+  --verde:#90AB49;--verde-suave:#2E3322;--erro:#EF8A7A;--erro-suave:#3A2521;--alerta:#E8B04A;--alerta-suave:#3A2F1A;--info:#7FB8CC;--info-suave:#1F3038;--foco:#F58634;--lat:#171310}
+*{box-sizing:border-box}
+body{background:var(--fundo);color:var(--texto);font-family:var(--f-texto);font-size:16px;line-height:1.5;margin:0}
+button,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--foco);outline-offset:2px}
+.rotulo{font-family:var(--f-marca);font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--texto-sec)}
+.topo{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--lat);color:var(--lat-texto);padding:12px 16px}
+.topo-in{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.topo h1{margin:0;font-size:18px;font-weight:700}
+.prog{display:flex;align-items:center;gap:10px;font-size:13px;font-variant-numeric:tabular-nums}
+.trilho{flex:1;height:8px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden}
+.trilho i{display:block;height:100%;width:0;background:var(--laranja);border-radius:999px;transition:width .2s}
+.estado{font-size:12px;color:#BFB3A3}
+main{max-width:760px;margin:0 auto;padding-block:16px 60px;padding-inline:16px;display:flex;flex-direction:column;gap:20px}
+.intro{margin:0;color:var(--texto-sec);font-size:15px}
+.legenda{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--texto-sec)}
+.aviso{font-size:14px;padding:10px 12px;border-radius:8px;background:var(--alerta-suave);color:var(--alerta)}
+.filtros{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.chip{all:unset;cursor:pointer;font-size:13px;padding:6px 12px;border-radius:999px;border:1px solid var(--borda);background:var(--sup);color:var(--texto-sec);white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--prim);border-color:var(--prim);color:var(--sobre-prim)}
+.area{display:flex;flex-direction:column;gap:10px}
+.area h2{margin:0;font-size:19px;display:flex;align-items:baseline;gap:8px}
+.area h2 small{font-size:13px;font-weight:500;color:var(--texto-sec);font-variant-numeric:tabular-nums}
+.item{background:var(--sup);border:1px solid var(--borda);border-left:4px solid var(--borda);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.item[data-escolha="mantem"]{border-left-color:var(--verde)}
+.item[data-escolha="corta"]{border-left-color:var(--erro);opacity:.8}
+.item[data-escolha="muda"]{border-left-color:var(--alerta)}
+.cab{display:flex;gap:10px;align-items:flex-start}
+.num{font-variant-numeric:tabular-nums;font-weight:600;color:var(--texto-sec);font-size:14px;min-width:34px}
+.titulo{flex:1;min-width:0;font-size:15px}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.tag{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px}
+.t-dec{background:var(--verde-suave);color:var(--verde)}
+.t-ped{background:var(--alerta-suave);color:var(--alerta)}
+.t-sug{background:var(--info-suave);color:var(--info)}
+.t-fase{background:var(--prim-suave);color:var(--prim-texto)}
+.botoes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.botoes button{all:unset;cursor:pointer;text-align:center;min-height:44px;border-radius:8px;border:1px solid var(--borda-forte);font-weight:600;font-size:14px;display:grid;place-items:center;background:var(--sup)}
+.botoes button[data-v="mantem"][aria-pressed="true"]{background:var(--verde);border-color:var(--verde);color:var(--sup)}
+.botoes button[data-v="corta"][aria-pressed="true"]{background:var(--erro);border-color:var(--erro);color:var(--sup)}
+.botoes button[data-v="muda"][aria-pressed="true"]{background:var(--alerta);border-color:var(--alerta);color:var(--sup)}
+.comentar{all:unset;cursor:pointer;font-size:13px;color:var(--prim-texto);text-decoration:underline;text-underline-offset:3px;align-self:flex-start}
+textarea{width:100%;min-height:72px;border:1px solid var(--borda-forte);border-radius:8px;padding:10px;background:var(--sup);font-size:15px;resize:vertical}
+.salvo{font-size:12px;color:var(--texto-sec);min-height:1em}
+.falta{background:var(--sup);border:1px solid var(--borda);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.falta select{border:1px solid var(--borda-forte);border-radius:8px;padding:10px;background:var(--sup);min-height:44px}
+.btn{all:unset;cursor:pointer;background:var(--prim);color:var(--sobre-prim);font-weight:600;min-height:44px;padding:0 18px;border-radius:8px;display:inline-grid;place-items:center;align-self:flex-start}
+.btn:hover{background:var(--prim-hover)}
+.lista-falta{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.lista-falta div{padding:8px 10px;border-radius:8px;background:var(--prim-suave);display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+.lista-falta button{all:unset;cursor:pointer;color:var(--erro);font-size:13px;flex:none}
+.cen{background:var(--sup);border:1px solid var(--borda);border-radius:12px;padding:12px 14px}
+.cen summary{cursor:pointer;font-weight:600;font-size:15px}
+.cen summary span{font-weight:500;color:var(--texto-sec);font-size:13px;margin-left:6px}
+.cen-lista{display:flex;flex-direction:column;margin-top:10px}
+.cen-lista div{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:7px 0;border-top:1px solid var(--borda);font-size:14px}
+.cen-lista .st{font-weight:700;text-align:center;border-radius:6px;font-size:12px;padding:1px 0}
+.st-o{background:var(--verde-suave);color:var(--verde)}.st-a{background:var(--alerta-suave);color:var(--alerta)}.st-x{background:var(--erro-suave);color:var(--erro)}
+.cen-lista small{color:var(--texto-sec);font-variant-numeric:tabular-nums;white-space:nowrap}
+.obs{display:block;color:var(--texto-sec);font-size:13px;margin-top:4px}
+.opcoes{display:flex;flex-direction:column;gap:6px}
+.opcoes button{all:unset;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid var(--borda-forte);background:var(--sup);font-size:14px;box-sizing:border-box}
+.opcoes button:hover{border-color:var(--prim)}
+.opcoes button[aria-checked="true"]{background:var(--verde);border-color:var(--verde);color:var(--sup);font-weight:600}
+.opcoes .rec{flex:none;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:999px;background:var(--prim-suave);color:var(--prim-texto)}
+.opcoes button[aria-checked="true"] .rec{background:rgba(255,255,255,.25);color:var(--sup)}
+.fim{text-align:center;color:var(--texto-sec);font-size:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="topo"><div class="topo-in">
+  <h1>Decisões que faltam no CRM</h1>
+  <div class="prog"><span id="prog-txt">0 de 0 avaliados</span><span class="trilho"><i id="prog-barra"></i></span></div>
+  <span class="estado" id="estado">Conectando…</span>
+</div></header>
+
+<main>
+  <p class="intro">São as escolhas que ainda faltam para fechar o desenho do CRM. Em cada uma, toque na opção que prefere; a marcada com <b>Sugestão</b> é a recomendação da equipe. Se nenhuma servir, escreva no comentário. Tudo fica salvo sozinho.</p>
+  
+  <div class="aviso" id="aviso-local" hidden>Não conseguimos salvar online agora. Suas escolhas ficam só neste aparelho; tente abrir de novo mais tarde.</div>
+  <div class="filtros" id="filtros" role="group" aria-label="Filtrar"></div>
+  <div id="areas"></div>
+
+  <section class="falta" aria-labelledby="t-falta">
+    <h2 id="t-falta" style="margin:0;font-size:19px">Falta decidir mais alguma coisa?</h2>
+    <label class="rotulo" for="falta-area">Área</label>
+    <select id="falta-area"></select>
+    <label class="rotulo" for="falta-texto">Descreva</label>
+    <textarea id="falta-texto" placeholder="Ex.: uma decisão que não está na lista"></textarea>
+    <button class="btn" id="falta-add" type="button">Adicionar</button>
+    <div class="lista-falta" id="lista-falta"></div>
+  </section>
+  <p class="fim">Terminou? É só avisar no chat: "terminei as decisões".</p>
+</main>
+
+<script>
+const AREAS=[{"n": "A", "nome": "Preços e hóspedes", "itens": [{"id": "D1", "t": "Crianças: até que idade não pagam a diária?", "ops": ["Até 5 anos (como informa hoje a Asksuite)", "Até 6 anos", "Até 11 anos com tarifa reduzida", "Seguir o que estiver cadastrado no Silbeck"], "rec": 3, "obs": "Hoje a Asksuite pergunta \"pessoas até 5 anos\". A regra de preço fica no Silbeck (categorias de hóspede); o CRM só precisa saber para explicar ao cliente."}, {"id": "D2", "t": "Crianças contam na capacidade do quarto?", "ops": ["Sim, todas contam", "Bebês até 2 anos não contam (berço)", "Seguir o que estiver cadastrado no Silbeck"], "rec": 2, "obs": "Define quais acomodações aparecem no orçamento para cada família."}, {"id": "D3", "t": "Tarifa de agência e operadora", "ops": ["Comissionada: tarifa cheia e o hotel paga a comissão", "Líquida: a agência recebe a tarifa já com desconto", "Depende da agência (campo no cadastro)"], "rec": 2, "obs": "Afeta o valor que aparece para a agência e o relatório de comissão."}, {"id": "D4", "t": "Preço da decoração especial e dos pacotes de massagem", "ops": ["Vou informar no comentário", "Cadastrar depois na tela Produtos"], "rec": 1, "obs": "Sem preço, o Gilberto não oferece esses itens sozinho."}]}, {"n": "B", "nome": "Orçamento e reserva", "itens": [{"id": "D5", "t": "Como o orçamento é enviado ao cliente?", "ops": ["Só mensagem no WhatsApp, com fotos", "Mensagem + página do orçamento (fotos e botão \"Quero reservar\")", "Mensagem agora; página numa fase seguinte"], "rec": 2, "obs": "A página impressiona mais, mas é mais uma peça para construir."}, {"id": "D6", "t": "Família ou grupo em mais de um quarto", "ops": ["Perguntar sempre: uma reserva só ou separada por família", "Padrão: uma reserva por família (a equipe muda se pedirem)", "Padrão: tudo numa reserva só"], "rec": 0, "obs": "Você já disse que o Gilberto e a equipe perguntam; aqui é só confirmar o padrão."}, {"id": "D7", "t": "A partir de quantas pessoas o grupo vai direto para a equipe?", "ops": ["Acima de 8 pessoas", "Acima de 10 pessoas", "Acima de 15 pessoas"], "rec": 1, "obs": "Abaixo do limite, o Gilberto cota e reserva sozinho (com vários quartos)."}]}, {"n": "C", "nome": "Atendimento e alertas", "itens": [{"id": "D8", "t": "Horário de expediente da equipe (para alertas e respostas do Gilberto)", "ops": ["7h30 às 17h", "7h às 19h", "Outro (escrever no comentário)"], "rec": 0, "obs": "Fora do expediente, o Gilberto avisa que a equipe responde a partir da abertura."}, {"id": "D9", "t": "Alerta sem ninguém assumir: depois de quanto tempo escala?", "ops": ["5 minutos", "10 minutos", "15 minutos"], "rec": 1, "obs": "Vale só no expediente."}, {"id": "D10", "t": "Para quem o alerta escala?", "ops": ["Renata e Ricardo", "Só Ricardo", "Só Renata"], "rec": 0, "obs": ""}, {"id": "D11", "t": "Como funciona o plantão?", "ops": ["Escolhido manualmente no CRM (quem está de plantão agora)", "Escala fixa por turno, cadastrada uma vez", "Sem plantão: alerta para todos"], "rec": 0, "obs": "Plantão evita que todos achem que outro vai pegar."}, {"id": "D12", "t": "Pedidos do hóspede aos setores (toalha, manutenção, restaurante)", "ops": ["O setor tem usuário no CRM e recebe aviso no celular", "Mensagem automática para o WhatsApp do setor", "A recepção recebe tudo e repassa"], "rec": 1, "obs": "Depois cadastramos setor por setor na tela Setores."}, {"id": "D13", "t": "E-mail de reservas dentro do CRM (fase 2)", "ops": ["Sim, trazer a caixa de e-mail para o CRM", "Não, o e-mail continua fora"], "rec": 0, "obs": "Agências usam muito e-mail; dentro do CRM entra no mesmo funil."}]}, {"n": "D", "nome": "Acesso, dados e contas", "itens": [{"id": "D14", "t": "Quem vê faturamento e valores no painel?", "ops": ["Só o dono e a Renata", "Dono, Renata e Márcio", "Toda a equipe"], "rec": 1, "obs": "Os atendentes continuam vendo o valor das próprias reservas."}, {"id": "D15", "t": "Por quanto tempo guardar as conversas (LGPD)?", "ops": ["2 anos", "5 anos", "Sem prazo, apagando quando o cliente pedir"], "rec": 1, "obs": "O cliente sempre pode pedir para apagar os dados."}, {"id": "D16", "t": "Projeto do Google Cloud (onde o CRM roda)", "ops": ["Conta do hotel, com dono, Renata e Márcio como administradores", "Conta pessoal do dono, para usar os créditos do Google AI Ultra"], "rec": 0, "obs": "Os créditos do Ultra só valem na conta do assinante; a conta do hotel dá continuidade se alguém sair."}]}];
+(function(){
+  const TAG={alta:["t-ped","Prioridade alta"],media:["t-sug","Prioridade média"],baixa:["t-dec","Prioridade baixa"]};
+  const total=AREAS.reduce((n,a)=>n+a.itens.length,0);
+  const escolhas={}; // id -> {escolha, comentario}
+  let db=null, local=false, filtro="todas";
+  const $=id=>document.getElementById(id);
+  const docId=id=>"item-"+id;
+
+  // Filtros
+  const filtros=$("filtros");
+  [["todas","Todas"],["pendentes","Não avaliadas"],...AREAS.map(a=>[a.n,a.nome])].forEach(([v,t])=>{
+    const b=document.createElement("button");b.className="chip";b.textContent=t;b.dataset.f=v;b.setAttribute("aria-pressed",v==="todas");filtros.appendChild(b);
+  });
+  filtros.addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;filtro=b.dataset.f;
+    filtros.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",x===b));aplicarFiltro();});
+  // Select de área
+  AREAS.forEach(a=>{const o=document.createElement("option");o.value=a.nome;o.textContent=a.n+". "+a.nome;$("falta-area").appendChild(o);});
+  const oo=document.createElement("option");oo.value="Outra";oo.textContent="Outra área";$("falta-area").appendChild(oo);
+
+  // Render dos itens
+  const cont=$("areas");
+  AREAS.forEach(a=>{
+    const sec=document.createElement("section");sec.className="area";sec.dataset.area=a.n;
+    sec.innerHTML='<h2></h2>';sec.querySelector("h2").textContent=a.n+". "+a.nome;
+    const sm=document.createElement("small");sm.dataset.cont=a.n;sec.querySelector("h2").appendChild(sm);
+    a.itens.forEach(it=>{
+      const d=document.createElement("article");d.className="item";d.dataset.id=it.id;
+      d.innerHTML='<div class="cab"><span class="num"></span><div class="titulo"><div class="tx"></div><small class="obs"></small></div></div><div class="opcoes" role="radiogroup"></div>'+
+        '<button type="button" class="comentar">Comentar</button><textarea hidden placeholder="Seu comentário ou outra opção"></textarea><span class="salvo"></span>';
+      d.querySelector(".num").textContent=it.id;d.querySelector(".tx").textContent=it.t;
+      const ob=d.querySelector(".obs");if(it.obs)ob.textContent=it.obs;else ob.remove();
+      const g=d.querySelector(".opcoes");g.setAttribute("aria-label",it.t);
+      it.ops.forEach((o,k)=>{const b=document.createElement("button");b.type="button";b.setAttribute("role","radio");b.setAttribute("aria-checked","false");b.dataset.v=String(k);
+        const t=document.createElement("span");t.textContent=o;b.appendChild(t);
+        if(k===it.rec){const r=document.createElement("span");r.className="rec";r.textContent="Sugestão";b.appendChild(r);}g.appendChild(b);});
+      const ta=d.querySelector("textarea");ta.id="c-"+it.id;ta.setAttribute("aria-label","Comentário da decisão "+it.id);
+      sec.appendChild(d);
+    });
+    cont.appendChild(sec);
+  });
+
+  function pintar(id){
+    const d=cont.querySelector('[data-id="'+id+'"]');if(!d)return;const e=escolhas[id]||{};
+    d.dataset.escolha=e.escolha?"mantem":"";
+    d.querySelectorAll(".opcoes button").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.v===e.escolha)));
+    const ta=d.querySelector("textarea");
+    if(document.activeElement!==ta) ta.value=e.comentario||"";
+    if(e.comentario) ta.hidden=false;
+  }
+  function progresso(){
+    const n=Object.values(escolhas).filter(e=>e&&e.escolha).length;
+    $("prog-txt").textContent=n+" de "+total+" decididas";$("prog-barra").style.width=(100*n/total)+"%";
+    AREAS.forEach(a=>{const k=a.itens.filter(i=>escolhas[i.id]&&escolhas[i.id].escolha).length;cont.querySelector('[data-cont="'+a.n+'"]').textContent=k+"/"+a.itens.length;});
+  }
+  function aplicarFiltro(){
+    cont.querySelectorAll(".area").forEach(sec=>{
+      let vis=0;sec.querySelectorAll(".item").forEach(d=>{
+        const ok=filtro==="todas"||(filtro==="pendentes"?!(escolhas[d.dataset.id]&&escolhas[d.dataset.id].escolha):sec.dataset.area===filtro);
+        d.hidden=!ok;if(ok)vis++;});
+      sec.hidden=vis===0;});
+  }
+
+  // Persistência
+  const LK="crm-decisoes";
+  function lerLocal(){try{return JSON.parse(localStorage.getItem(LK)||"{}")}catch(e){return{}}}
+  function gravarLocal(){try{localStorage.setItem(LK,JSON.stringify({escolhas,faltas}))}catch(e){}}
+  const fila={};
+  async function salvar(id){
+    const d=cont.querySelector('[data-id="'+id+'"]');const st=d.querySelector(".salvo");
+    if(!db){gravarLocal();st.textContent="Salvo neste aparelho";return;}
+    if(fila[id]){fila[id].again=true;return;}
+    fila[id]={again:false};st.textContent="Salvando…";
+    try{
+      do{fila[id].again=false;const e=escolhas[id]||{};
+        const it=AREAS.flatMap(a=>a.itens).find(x=>x.id===id);await db.doc("respostas/"+docId(id)).set({item:id,escolha:e.escolha||"",opcao:e.escolha!==""&&e.escolha!=null&&it?it.ops[+e.escolha]:"",comentario:e.comentario||"",atualizado:new Date().toISOString()});
+      }while(fila[id].again);
+      st.textContent="Salvo";
+    }catch(err){st.textContent="Não salvou. Tente de novo.";}
+    finally{delete fila[id];}
+  }
+  cont.addEventListener("click",e=>{
+    const d=e.target.closest(".item");if(!d)return;const id=d.dataset.id;
+    const b=e.target.closest(".opcoes button");
+    if(b){const cur=escolhas[id]||{};const v=cur.escolha===b.dataset.v?"":b.dataset.v;escolhas[id]={...cur,escolha:v};
+      pintar(id);progresso();salvar(id);return;}
+    if(e.target.closest(".comentar")){const ta=d.querySelector("textarea");ta.hidden=false;ta.focus();}
+  });
+  const tempo={};
+  cont.addEventListener("input",e=>{
+    if(e.target.tagName!=="TEXTAREA")return;const id=e.target.closest(".item").dataset.id;
+    escolhas[id]={...(escolhas[id]||{}),comentario:e.target.value};
+    clearTimeout(tempo[id]);tempo[id]=setTimeout(()=>salvar(id),900);
+  });
+
+  // O que falta
+  let faltas=[];
+  function pintarFaltas(){
+    const l=$("lista-falta");l.textContent="";
+    faltas.forEach(f=>{const d=document.createElement("div");const s=document.createElement("span");s.textContent=f.area+": "+f.texto;
+      const x=document.createElement("button");x.type="button";x.textContent="Remover";x.onclick=()=>removerFalta(f.id);d.append(s,x);l.appendChild(d);});
+  }
+  async function removerFalta(id){faltas=faltas.filter(f=>f.id!==id);pintarFaltas();
+    if(db){try{await db.doc("faltas/"+id).delete()}catch(e){}}else gravarLocal();}
+  $("falta-add").addEventListener("click",async()=>{
+    const t=$("falta-texto").value.trim();if(!t){$("falta-texto").focus();return;}
+    const f={id:"f"+Date.now().toString(36),area:$("falta-area").value,texto:t,criado:new Date().toISOString()};
+    $("falta-texto").value="";
+    if(db){try{await db.doc("faltas/"+f.id).set({area:f.area,texto:f.texto,criado:f.criado});}catch(e){$("falta-texto").value=t;return;}}
+    else{faltas.push(f);gravarLocal();pintarFaltas();}
+  });
+
+  function iniciarLocal(){
+    local=true;$("aviso-local").hidden=false;$("estado").textContent="Salvando só neste aparelho";
+    const L=lerLocal();Object.assign(escolhas,L.escolhas||{});faltas=L.faltas||[];
+    AREAS.forEach(a=>a.itens.forEach(i=>pintar(i.id)));progresso();pintarFaltas();aplicarFiltro();
+  }
+  progresso();aplicarFiltro();
+  (async()=>{
+    try{db=window.claude&&window.claude.use?await window.claude.use("db"):null;}catch(e){db=null;}
+    if(!db){iniciarLocal();return;}
+    $("estado").textContent="Salvando automaticamente";
+    db.collection("respostas").onSnapshot(snap=>{
+      snap.docs.forEach(doc=>{const v=doc.data();if(!v||!v.item)return;
+        if(fila[v.item])return; escolhas[v.item]={escolha:v.escolha||"",comentario:v.comentario||""};pintar(v.item);});
+      progresso();if(filtro==="pendentes")aplicarFiltro();
+    },()=>{db=null;iniciarLocal();});
+    db.collection("faltas").orderBy("criado").onSnapshot(snap=>{
+      faltas=snap.docs.map(d=>({id:d.id,...d.data()}));pintarFaltas();
+    },()=>{});
+  })();
+})();
+</script>
