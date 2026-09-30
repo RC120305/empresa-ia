@@ -111,7 +111,7 @@
 | 9.3 | **Cartão por link da Cielo** gerado pelo CRM (até 6x), com confirmação automática e lançamento no Silbeck; link do motor da Silbeck como alternativa | 🆕 | 3 |
 | 9.4 | **Sincronizar as reservas do motor da Silbeck** (e do Booking/agências): entram no CRM, casam com o lead existente e ficam como **pago** (cartão) ou **aguardando pagamento** (Pix) | 🆕 | 3 |
 | 9.6 | Confirmar sozinho o **Pix do motor** pelos Pix recebidos no BB (1 clique quando houver dúvida); lembrete ao cliente e alerta de vencido | 🆕 | 3 |
-| 9.5 | Etapa "Aguardando pagamento" com prazo e lembrete (A1) | ✅ | 1 |
+| 9.5 | Etapa "Aguardando pagamento" com prazo e lembrete (A1). **P46:** a reserva é criada no Silbeck no aceite; lembretes ao cliente, alerta de vencida e tarefa de cancelamento manual no Silbeck; painel "Reservas a receber" | ✅ | 1 |
 | 9.7 | Reservas do **Booking**: card "a cobrar", tarefa de cobrança com prazo, lista de pendentes e baixa automática quando o pagamento aparece no Silbeck. **Sem dados de cartão no CRM** | 🆕 | 3 |
 
 ## 10. Produtos e upsell (acrescentado em 29/09/2026)

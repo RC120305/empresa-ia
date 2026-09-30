@@ -105,7 +105,7 @@
 | Orçamento (equipe e Gilberto) | ✅ `Disponibilidade` + `TipoApartamento` + `Tarifario/Valor` (1 chamada por tipo) | Idades das crianças → categorias do Silbeck |
 | Gilberto reserva (5.5) | ✅ `POST reserva` | Guardar `idReserva` e `idReservaItem` no card |
 | Sinal Pix BB / Cielo (9.1–9.3) | ✅ `Adiantamento` (tipo 8 Pix, tipo 4 cartão com NSU e parcelas) | Precisa do `idReservaItem`: a reserva tem de existir antes do lançamento |
-| Pré-reserva não paga | ⚠️ não há cancelamento pela API | Decisão do dono: quando criar a reserva (P46) |
+| Pré-reserva não paga | ⚠️ não há cancelamento pela API | **Decidido (P46):** reserva criada no aceite; o CRM controla o pagamento e alerta; cancelamento manual pela equipe no Silbeck |
 | Cliente pede cancelamento no WhatsApp | ⚠️ sem API | Tarefa para a equipe cancelar no Silbeck; o CRM confirma pelo `status=3` |
 | Sincronizar motor, Booking, agências (9.4, 9.7) | ✅ `ListaReserva` por data de cadastro (portal, adiantamentos, status) | Ligação ao lead por telefone/e-mail feita no CRM |
 | Pago × aguardando pagamento | ✅ totais e lista de adiantamentos | — |
