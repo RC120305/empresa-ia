@@ -92,4 +92,6 @@ Ver `formatos.md`. Resumo: carrossel de 5 a 7 telas (capa imersiva → experiên
 
 ## Chamada de reserva nas legendas (dono, 28/09/2026)
 Toda legenda de post do feed ou de Reels termina, antes das hashtags, com: "Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648." (se a legenda já tiver essa chamada, não repetir). A bio tem um Linktree (site, motor, WhatsApp, tour virtual, acomodações).
+
+> **Regra do dono (30/09/2026): sem o link do motor de reservas na legenda.** Link escrito na legenda de post não é clicável no Instagram, então não colocar `sbreserva.silbeck.com.br/hotelcabanas` nas legendas; a frase do desconto para quem reserva direto pode ficar, e o fecho acima leva ao Linktree da bio. O link clicável vai nos **stories com figurinha de link**, nos **anúncios** (botão) e no **Linktree**.
 A chamada "Comente RESERVA" fica **suspensa** enquanto o robô de direct estiver pausado (ver `social/publicacao/robo-comentarios.md`).
