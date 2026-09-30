@@ -329,6 +329,11 @@ button,input,select{font:inherit;color:inherit}
 .acoes-card{display:flex;gap:6px;flex-wrap:wrap}
 .simular-wrap{position:relative}
 .cx-novo-wrap{position:relative;display:flex}
+.orc-idades{display:flex;flex-direction:column;gap:6px}
+.cx-cab .cx-contato{min-width:0;flex:1 1 320px;justify-content:flex-end}
+.cx-cab .cx-contato .dado{min-width:0;flex-wrap:wrap}
+.orc-idades-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.orc-idades select.falta{border-color:var(--cor-alerta)}
 .cx-novo-wrap .btn{flex:1}
 .nova-menu{left:0;right:auto}
 .cx-contato{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--cor-texto-sec);align-items:center}
@@ -644,7 +649,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
 
 /* v16: montar orçamento */
 .orc-campos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.orc-campos input{border:1px solid var(--cor-borda-forte);border-radius:8px;padding:6px 8px;background:var(--cor-superficie);color:var(--cor-texto);font:inherit;font-size:14px;width:100%}
+.orc-campos input,.orc-campos select,.orc-idades select{border:1px solid var(--cor-borda-forte);border-radius:8px;padding:6px 8px;background:var(--cor-superficie);color:var(--cor-texto);font:inherit;font-size:14px;width:100%}
 .orc-extr{font-size:12px;color:var(--ia);background:var(--ia-s);border-radius:6px;padding:6px 8px}
 .orc-op{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;border:1px solid var(--cor-borda);border-radius:var(--r-md);padding:8px;background:var(--cor-superficie);cursor:pointer}
 .orc-op.sel{border-color:var(--cor-primaria);box-shadow:inset 0 0 0 1px var(--cor-primaria);background:var(--cor-primaria-suave)}
@@ -2046,15 +2051,20 @@ body.sem-rolagem .principal{padding-block-end:12px}
   const cotar=(cod,ent,sai)=>{let t=0;for(let d=ent;d<sai;d=isoMais(d,1)){const w=new Date(d+'T12:00:00').getDay();t+=Math.round(DIARIA[cod]*((w===5||w===6)?1.15:1));}return t;};
   const noites=(a,b)=>Math.max(0,Math.round((new Date(b)-new Date(a))/864e5));
   function renderOrcamento(c,lat){
-    if(!c.orc){const cas=/Casal/.test(c.perfil);c.orc={ent:c.datas?c.datas[0]:isoMais(hoje.toISOString().slice(0,10),14),sai:c.datas?c.datas[1]:isoMais(hoje.toISOString().slice(0,10),16),adultos:/Grupo/.test(c.perfil)?12:cas||/55/.test(c.perfil)?2:2,criancas:/Família/.test(c.perfil)?'6, 9':'',sel:[],combo:true,validade:'48 horas',buscado:false};}
+    if(!c.orc){const cas=/Casal/.test(c.perfil);c.orc={ent:c.datas?c.datas[0]:isoMais(hoje.toISOString().slice(0,10),14),sai:c.datas?c.datas[1]:isoMais(hoje.toISOString().slice(0,10),16),adultos:/Grupo/.test(c.perfil)?12:cas||/55/.test(c.perfil)?2:2,kids:/Família/.test(c.perfil)?[6,9]:[],sel:[],combo:true,validade:'48 horas',buscado:false};}
     const o=c.orc;
     const f=(id,tipo,val,rot,on)=>el('label',{class:'campo'},rot,el('input',{type:tipo,value:val,'aria-label':rot,onchange:e=>{on(e.target.value);o.buscado=false;o.sel=[];renderLateral(c);}}));
-    lat.append(el('div',{class:'orc-extr',text:'Gilberto extraiu da conversa: '+(c.datas?fmtData(c.datas[0])+' a '+fmtData(c.datas[1])+' · ':'')+o.adultos+' adulto(s)'+(o.criancas?' · crianças: '+o.criancas+' anos':'')+'. Confira e ajuste.'}));
-    lat.append(el('div',{class:'orc-campos'},f('e','date',o.ent,'Entrada',v=>o.ent=v),f('s','date',o.sai,'Saída',v=>o.sai=v),f('a','number',o.adultos,'Adultos',v=>o.adultos=+v||1),f('k','text',o.criancas,'Idades das crianças',v=>o.criancas=v)));
+    lat.append(el('div',{class:'orc-extr',text:'Gilberto extraiu da conversa: '+(c.datas?fmtData(c.datas[0])+' a '+fmtData(c.datas[1])+' · ':'')+o.adultos+' adulto(s)'+(o.kids.length?' · '+o.kids.length+' criança(s): '+o.kids.map(k=>k==null?'?':k).join(', ')+' anos':'')+'. Confira e ajuste.'}));
+    lat.append(el('div',{class:'orc-campos'},f('e','date',o.ent,'Entrada',v=>o.ent=v),f('s','date',o.sai,'Saída',v=>o.sai=v),f('a','number',o.adultos,'Adultos',v=>o.adultos=Math.max(1,+v||1)),
+      el('label',{class:'campo'},'Crianças',el('select',{'aria-label':'Número de crianças',onchange:e=>{const n=+e.target.value;o.kids=o.kids.slice(0,n);while(o.kids.length<n)o.kids.push(null);o.buscado=false;o.sel=[];renderLateral(c);}},[0,1,2,3,4,5,6].map(n=>el('option',{value:String(n),text:String(n),selected:n===o.kids.length}))))));
+    if(o.kids.length)lat.append(el('div',{class:'orc-idades'},el('span',{class:'rotulo',text:'Idade de cada criança'}),el('div',{class:'orc-idades-grade'},o.kids.map((k,i)=>el('label',{class:'campo'},'Criança '+(i+1),
+      el('select',{'aria-label':'Idade da criança '+(i+1),class:k==null?'falta':'',onchange:e=>{o.kids[i]=e.target.value===''?null:+e.target.value;o.buscado=false;o.sel=[];renderLateral(c);}},
+        [el('option',{value:'',text:'Idade…',selected:k==null})].concat([...Array(18)].map((_,a)=>el('option',{value:String(a),text:a===0?'menos de 1 ano':a+(a===1?' ano':' anos'),selected:k===a})))))))));
     const n=noites(o.ent,o.sai);
-    const idades=o.criancas.split(/[^0-9]+/).filter(Boolean).map(Number);const pax=o.adultos+idades.length;
+    const idades=o.kids.filter(k=>k!=null);const faltaIdade=o.kids.some(k=>k==null);const pax=o.adultos+o.kids.length;
     lat.append(el('p',{class:'lat-txt',style:'font-size:12px',text:n+' noite(s) · '+pax+' pessoa(s) no quarto'+(idades.some(i=>i<=5)?' · crianças até 5 anos: regra de cobrança a confirmar':'')}));
-    lat.append(el('button',{class:'btn btn-enviar',type:'button',text:'Buscar no motor (vagas, valores e fotos)',onclick:()=>{o.buscado=true;renderLateral(c);}}));
+    if(faltaIdade)lat.append(el('p',{class:'lat-txt',style:'font-size:12px;color:var(--cor-alerta)',text:'Informe a idade de cada criança: ela define o preço e a capacidade do quarto. Se o cliente não disse, o Gilberto pergunta.'}));
+    lat.append(el('button',{class:'btn btn-enviar',type:'button',disabled:faltaIdade,text:'Buscar no motor (vagas, valores e fotos)',onclick:()=>{o.buscado=true;renderLateral(c);}}));
     if(!o.buscado)return;
     const ops=TIPOS_AC.map(([cod,nome])=>{const l=[...Array(n)].map((_,k)=>livres(cod,TIPOS_AC.find(t=>t[0]===cod)[2],isoMais(o.ent,k)));const min=n?Math.min(...l):0;return{cod,nome,cap:CAP[cod],livres:min,total:cotar(cod,o.ent,o.sai)};})
       .filter(x=>x.cap>=pax).sort((a,b)=>(b.livres>0)-(a.livres>0)||a.total-b.total);
