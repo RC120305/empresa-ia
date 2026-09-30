@@ -117,3 +117,19 @@
 | Produtos e upsell (10.1, 10.4) | ⚠️ `Produto` sem preço; sem lançamento de consumo | Preço no CRM; lançamento por tarefa de 1 clique |
 | Painel (ocupação, RevPAR, por portal, por UF) | ✅ `Ocupacao` | — |
 | Fotos das acomodações | ❌ | Banco de imagens por código |
+
+
+## 6. Respostas da Silbeck (Marcos, 30/09/2026)
+| Pergunta | Resposta | Consequência para o CRM |
+|---|---|---|
+| Ambiente de testes | **Não existe** (cloud.silbeck.com.br:30503 é antigo). Consultas podem ser feitas direto no sistema do hotel, porque não alteram nada | Leituras testadas no sistema real. Gravações (reserva, adiantamento, ficha): simulador da API durante a construção + poucos testes reais controlados (reserva "TESTE CRM" em data distante, cancelada pela equipe) |
+| Acesso pela nuvem da Silbeck | Só migrando o servidor do hotel para a nuvem deles | Alternativa futura; hoje, servidor local |
+| HTTPS / túnel | A API é **só HTTP**; uma **VPN que funcione como IP externo** pode ser testada | Túnel seguro/VPN feito pelo Márcio: nenhuma porta aberta, tudo criptografado entre a nuvem e o hotel. Plano B: IP fixo com portas liberadas **só para o IP do CRM** |
+| Autenticação | `client_id` e `client_secret` **na URL** do `/v1/Liberar` | Confirmado; só trafega dentro do túnel. `expires_in` sem resposta: medir no primeiro teste |
+| API do motor | **Não é liberada** | Orçamento usa `Tarifario/Valor` + fotos do nosso banco (a página do orçamento já funciona assim) |
+| Status da reserva criada | Entra **não confirmada** e **confirma sozinha ao lançar o adiantamento** | Bate com P46 |
+| Origem da reserva | Criar o portal **"CRM WhatsApp"** e enviar o `idReservaPortal` | Filtra nos relatórios do Silbeck |
+| idTarifario / idTipoPensao | Usar os IDs cadastrados no hotel (ex.: pensão "Só Café" = 4) | Coletar no sistema (`silbeck/mapa-ids.md`) |
+| Agências | `codigoEmpresa` calcula a comissão; o **`idFaturamento` precisa ser o de empresa** | Regra do CRM: reserva de agência → faturamento "empresa" |
+| Cancelar/alterar e webhooks | **Não existe**; melhoria pode ser pedida em suporte@silbeck.com.br | Mantém o desenho (alerta + equipe no Silbeck; consulta a cada 5 min) |
+| IDs, categorias, bandeiras | Coletar dentro do sistema | `silbeck/mapa-ids.md` |

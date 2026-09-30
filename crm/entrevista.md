@@ -503,3 +503,13 @@ Lido da página (16 de 16; nada acrescentado):
 - **Protótipo v27:** ao enviar o orçamento, a mensagem leva o link, a conversa registra a página criada e, segundos depois, "Mariana abriu a página do orçamento"; no painel, "Ver como a cliente vê a página".
 - **Protótipo v28:** o link do orçamento na conversa (crm.hotelcabanas.com.br/o/…) ficou clicável e abre a página de exemplo; o endereço real só passa a existir quando o CRM estiver no ar (domínio do hotel apontado para o Cloud Run).
 - **Página do orçamento v2** (pedido do dono): **todos os extras** do catálogo na seção "Para deixar a viagem completa": combo (R$ 170/pessoa), boia cross (R$ 100), arvorismo (R$ 120), com seletor de quantas pessoas (até o nº de hóspedes; com o combo, boia e arvorismo avulsos ficam "já no combo"); decoração especial e massagem como "tenho interesse" (valor e horário confirmados pela equipe; entram no resumo como "a confirmar"). Os extras somam no total e no sinal. A página mostra só o que cabe no perfil e nas datas (idade/altura, decoração com 3 dias de antecedência). **Lacuna:** o banco de imagens não tem foto de massagem.
+
+### P57. Respostas da Silbeck (30/09/2026)
+Resumo em `crm/silbeck-api-detalhes.md` (seção 6):
+- **Sem ambiente de testes:** leituras direto no sistema do hotel; gravações num **simulador da API** e depois poucos testes reais controlados.
+- **API só HTTP; aceitam VPN "como IP externo":** caminho = **túnel seguro/VPN pelo Márcio**. Plano B: IP fixo com portas liberadas só para o IP do CRM.
+- **Sem API do motor:** orçamento com `Tarifario/Valor` + fotos do nosso banco.
+- Reserva entra **não confirmada** e **confirma com o adiantamento** (bate com P46).
+- Origem: **portal "CRM WhatsApp"**. Agências: `codigoEmpresa` + **faturamento "empresa"**.
+- IDs a coletar no sistema: `crm/silbeck/mapa-ids.md`.
+- Cancelar/alterar e webhooks: não existem; pedir melhoria em suporte@silbeck.com.br.
