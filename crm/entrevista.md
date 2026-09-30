@@ -513,3 +513,8 @@ Resumo em `crm/silbeck-api-detalhes.md` (seção 6):
 - Origem: **portal "CRM WhatsApp"**. Agências: `codigoEmpresa` + **faturamento "empresa"**.
 - IDs a coletar no sistema: `crm/silbeck/mapa-ids.md`.
 - Cancelar/alterar e webhooks: não existem; pedir melhoria em suporte@silbeck.com.br.
+
+### P58. Contas do WhatsApp no portfólio da Meta (30/09/2026, prints do dono)
+- O portfólio **Hotel Cabanas** (verificado) já tem **3 contas do WhatsApp Business**: "Hotel Cabanas" (ID 883477901210277; moeda **INR** e fuso **America/Asuncion**, configurados errado), "Chat_bot_cabanas" e outra "Hotel Cabanas". Há **6 pedidos pendentes** no portfólio ("Ação necessária").
+- A chave atual (`META_IG_TOKEN`) não tem permissão de WhatsApp: os detalhes precisam ser vistos na tela (aba **Phone numbers** e **Parceiros** de cada conta) ou com uma chave nova com `whatsapp_business_management`.
+- Hipótese: "Chat_bot_cabanas" foi criada pela Asksuite para o 99110; as outras duas podem ser tentativas antigas. A moeda da conta não muda depois de criada; se a conta certa estiver em INR, o CRM usa uma conta nova em BRL e o número é migrado para ela.
