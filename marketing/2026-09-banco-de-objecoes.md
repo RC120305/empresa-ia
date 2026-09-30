@@ -35,7 +35,7 @@
 **(c) Provas e fatos:**
 - Incluído na diária: café da manhã (6h30 às 9h30); piscina climatizada, hidromassagem aquecida, sauna a vapor, academia, salão de jogos, redário próximo ao rio, quadra de beach tênis e vôlei de areia, playground e balneário privativo; trilhas e decks de banho à margem dos dois rios; programação diária com monitor ou guia exclusivo para hóspedes (arco e flecha; trilha no Formosinho com tirolesa, SUP e decks; trilha no Formoso com caiaque, SUP e decks); horários podem variar conforme a temporada (`hotel-operacional.md`, seção 3).
 - Crianças até 5 anos não pagam, na cama dos pais (`hotel-operacional.md`, seção 8).
-- Pagamento: 50% antecipado; cartão em até 6x, débito ou depósito (`hotel-operacional.md`, seção 9).
+- Pagamento: 50% antecipado; Pix ou cartão em até 6x (débito no hotel); não aceita depósito nem boleto (dono, 30/09/2026) (`hotel-operacional.md`, seção 9).
 - Desconto para reserva direta (`hotel-operacional.md`, seção 9).
 - Standard é o mais econômico (`hotel-operacional.md`, seção 2).
 - "Custo-benefício: hospedagem e atividades num só lugar, com economia de tempo e dinheiro" (`cultura.md`, seção 4).

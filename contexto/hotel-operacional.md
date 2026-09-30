@@ -21,18 +21,18 @@
 | **Bangalô** | 40 m² | 2 a 4 pessoas (casal + 2 solteiro); aceita crianças | Alvenaria **elevada do chão**, **não divide paredes** com outra acomodação, **varanda privativa** com vista para a natureza, mesa, cadeiras e rede; garagem em frente; TV 40" |
 | **Bangalô Especial** | 45 m² | **Até 4 pessoas** (2 camas de casal **king**); aceita crianças; indicado para **famílias com filhos** | Alvenaria **elevada do chão**, **não divide paredes** com outra acomodação, **ampla varanda privativa** com vista para a natureza, mesa, cadeiras, **rede e banco**; garagem em frente; TV 40" (informado pelo dono em 2026-09-26) |
 | **Apartamento Conjugado** | 55 m², em dois pisos | Até 5 pessoas; indicado para famílias com filhos | Térreo com 3 camas de solteiro e banheiro; em cima, suíte queen com **varanda com vista para a natureza** |
-| **Apartamento Superior** | 25 m² | 2 a 4 pessoas | Em blocos; espaço mais amplo que o standard |
+| **Apartamento Superior** | 25 m² | **Duplo/triplo superior: 2 a 3 pessoas · Quádruplo superior: até 4 pessoas** (dono, 30/09/2026) | Em blocos; espaço mais amplo que o standard |
 | **Apartamento Standard** | 20 a 25 m² | 2 a 4 pessoas | O mais econômico; em blocos; estacionamento em frente |
 
 **Itens em todas as acomodações:** Smart TV a cabo, ar-condicionado split inverter **quente e frio**, aquecimento **solar e a gás** nas duchas, secador, frigobar, amenities (shampoo, condicionador, sabonete), Wi-Fi, armário, bancada de trabalho, roupa de cama e toalhas.
 - **Toalhas dobradas em forma de bichos** (ex.: cisnes) sobre a cama: **arrumação padrão** do hotel (confirmado pelo dono em 2026-09-26). Pétalas, rosa e plaquinha "LOVE" que aparecem em algumas fotos: **são da decoração especial (opcional)**, confirmado pelo dono em 2026-09-27. Legenda ou anúncio com essas fotos sempre indica "decoração especial (opcional)".
-**Não há:** ferro de passar, camas extras, quartos para fumantes. Há **cofre central** gratuito e **berços** mediante agendamento.
+**Voltagem: 110V em todas as acomodações** (dono, 30/09/2026). **Não há:** ferro de passar, camas extras, quartos para fumantes. Há **cofre central** gratuito e **berços** mediante agendamento.
 
 ## 3. O que está incluído na diária
 - **Café da manhã**, das 6h30 às 9h30.
 - **Área de lazer:** piscina climatizada, hidromassagem aquecida, sauna a vapor, academia, salão de jogos (tênis de mesa, bilhar, pebolim), **redário próximo ao rio**, quadra de beach tênis e vôlei de areia, **playground** e **balneário privativo**.
 - **Trilhas e decks de banho** à margem dos dois rios, dentro do hotel, com acesso livre o dia todo.
-- **Programação diária inclusa**, com monitor ou guia exclusivo para os hóspedes:
+- **Programação diária inclusa**, com monitor ou guia exclusivo para os hóspedes, **inclusive para quem fica só uma diária** (dono, 30/09/2026):
   - **8h30 às 9h30:** arco e flecha
   - **14h às 15h:** trilha no **Rio Formosinho** com **tirolesa**, **stand up paddle** e decks de banho
   - **15h30 às 17h:** trilha no **Rio Formoso** com **caiaque**, **stand up paddle** e decks de banho
@@ -83,7 +83,7 @@
 ## 9. Políticas
 - **Pets:** não são permitidos, por causa dos animais silvestres.
 - **Bebidas:** o documento traz duas versões (ver a seção 12). **Alimentos:** podem ser trazidos.
-- **Pagamento:** 50% antecipado; cartão de crédito (até 6x), débito ou depósito. **Não aceita boleto.**
+- **Pagamento:** 50% antecipado; **Pix ou cartão de crédito (até 6x)**; no hotel também débito. **Não aceita depósito bancário** (dono, 30/09/2026) **nem boleto.**
 - **Estadia mínima / pacotes (confirmado pelo dono em 2026-09-27):** só nos **pacotes de Réveillon e de Carnaval, com 4 noites**. Pacote de Réveillon 2026/27: **29/12 a 02/01** (dono, na Central, 27/09). Nos demais feriados não há estadia mínima. Valores e o que o pacote inclui: [a confirmar com o dono].
 - **Cancelamento:** reembolso integral com 30 dias de antecedência; 50% do sinal com 15 dias; sem reembolso dentro de 15 dias. Reservas feitas por agência ou canal online seguem a política deles.
 - **Não há:** day use, espaço para eventos, transfer próprio (a equipe indica quem faça), desconto para terceira idade, oferta para aniversariantes, tarifa para longa estadia nem convênio com Bancorbrás.
@@ -111,7 +111,7 @@
 | 2 | ✅ **Resolvida (dono):** o restaurante **não abre no domingo à noite**; jantar de segunda a sábado | — |
 | 3 | ✅ **Resolvida em parte (dono):** aos domingos funciona a lanchonete durante o dia. O horário de domingo no documento é das 11h às 17h | Se citar o domingo, use "lanchonete durante o dia" |
 | 4 | Guia: "piscina aquecida"; base: "piscina climatizada" e "hidromassagem aquecida" | "Piscina climatizada e hidromassagem aquecida" |
-| 5 | Bebidas: "não é permitida a entrada" × "permitidas apenas as que não temos no cardápio" | Não mencione em anúncios |
+| 5 | ✅ **Resolvida (dono, 30/09/2026):** bebidas só as que não temos no cardápio, para consumo na acomodação; tereré liberado | Não mencione em anúncios |
 | 6 | Aeroporto de Bonito "com voos vindos de Campinas"; hoje também há voos de Congonhas e Guarulhos (fato do destino) | Não liste companhias ou origens sem "[confirmar fonte atual]" |
 | 7 | ✅ **Resolvida (dono):** "Único hotel de Bonito cercado por dois rios" **pode ser anunciado** | Use com os nomes dos rios: Formoso e Formosinho |
 | 8 | Cabana Tripla: 35 m² no texto e 30 m² na lista | Não cite a metragem da Tripla |

@@ -29,7 +29,7 @@
 
 **Pontos de desenho que isso cria (propostas, a confirmar):**
 - **Honestidade (Código de Cultura: Integridade e Transparência):** o agente escreve com naturalidade e no tom do Cabanas, mas **não se passa por pessoa**: se o hóspede perguntar se está falando com um robô, ele diz a verdade e oferece a equipe. As regras da Meta para o WhatsApp Business também pedem que o atendimento automatizado seja do próprio negócio e que haja caminho para um humano.
-- **Reserva pelo agente:** depende de a Silbeck liberar uma **API de disponibilidade, tarifa e criação de reserva** (a confirmar). Pagamento: 50% antecipado; cartão (até 6x), débito ou depósito; sem boleto (`hotel-operacional.md`).
+- **Reserva pelo agente:** depende de a Silbeck liberar uma **API de disponibilidade, tarifa e criação de reserva** (a confirmar). Pagamento: 50% antecipado; Pix ou cartão (até 6x); sem depósito nem boleto (atualizado 30/09) (`hotel-operacional.md`).
 - **Limites do agente:** não dá desconto (só o dono), não promete o que o hotel não entrega, passa para a equipe os casos sensíveis (reclamação, grupo grande, agência, exceção de política).
 - O agente é um novo "funcionário" de IA: o cargo passa pela RH e pela aprovação do dono (regra do `CLAUDE.md`).
 
@@ -527,5 +527,5 @@ Resumo em `crm/silbeck-api-detalhes.md` (seção 6):
 ## Questionário da Asksuite (30/09/2026)
 - Dono subiu o `Questionario.txt` (Drive, pasta "CRM - material Asksuite"). Revisado e convertido em `crm/gilberto/base-conhecimento.md`: **68 perguntas em 10 tópicos**, já corrigidas (flutuação, piquenique, idade 5 anos, acessibilidade, sem desconto à vista, recepção 24h, quartos e capacidades, fluxo de alteração pelo CRM, pandemia removida).
 - Protótipo v29: o **Questionário** (Biblioteca) passa a usar essa base (100% respondido).
-- ⚠️ 5 dúvidas para o dono no fim do arquivo (Superior, atividades "mais de uma noite", 110V, depósito bancário, regra de bebidas).
+- ✅ Dúvidas respondidas pelo dono (30/09): Superior duplo/triplo (2 a 3) e quádruplo (até 4); inclusos valem também para uma diária; 110V em todas; só Pix e cartão (sem depósito); bebidas só as que não temos, na acomodação, tereré liberado. Atualizado em `contexto/hotel-operacional.md`, na base do Gilberto e no protótipo.
 - Meta, Pedidos (6): recebidos há ~35 semanas, sem solicitante nem detalhes visíveis. Não aprovar nem recusar; provavelmente pedidos antigos, anteriores ao CRM.

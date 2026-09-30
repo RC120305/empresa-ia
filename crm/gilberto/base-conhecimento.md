@@ -1,7 +1,7 @@
 # Base de conhecimento do Gilberto (perguntas e respostas)
 
 > **Origem:** questionário da Asksuite (`Questionario.txt`, Drive, pasta "CRM - material Asksuite"), enviado pelo dono em 30/09/2026.
-> **Revisão:** conferido contra `contexto/hotel-operacional.md` e as decisões de `crm/entrevista.md`. Itens desatualizados já estão **corrigidos** aqui (lista no fim). Os itens marcados com ⚠️ aguardam o OK do dono.
+> **Revisão:** conferido contra `contexto/hotel-operacional.md` e as decisões de `crm/entrevista.md`. Itens desatualizados já estão **corrigidos** aqui (lista no fim). As dúvidas foram respondidas pelo dono em 30/09/2026.
 > **Uso:** vira o **Questionário** do CRM (tela Biblioteca → Questionário). O Gilberto responde com estes fatos, no tom da casa, **sem inventar** o que não está aqui (se não souber, passa para a equipe).
 > Sem dados pessoais de hóspedes.
 
@@ -43,7 +43,7 @@
 - **P:** O que todos os quartos têm?
   R: Smart TV, ar-condicionado split inverter quente e frio, duchas com aquecimento solar e a gás, frigobar, Wi-Fi, secador de cabelo, amenities (shampoo, condicionador, sabonete), armário, bancada de trabalho, roupa de cama e toalhas.
 - **P:** Quais os tipos de acomodação?
-  R: **Standard** (o mais econômico, completo, 2 a 4 pessoas) · **Superior** (mais espaço, 2 a 4 pessoas) · **Bangalô** (alvenaria elevada, sem parede compartilhada, varanda privativa com rede, até 4 pessoas) · **Bangalô Especial** (2 camas king, ampla varanda, até 4 pessoas, ideal para famílias) · **Apartamento Conjugado** (dois pisos, até 5 pessoas) · **Cabana Casal** e **Cabana Tripla** (em madeira, elevadas a 3 m, varanda com rede e garagem privativa) · **Cabana Master** (85 m², a maior, banheira de hidromassagem para 2, até 5 pessoas). ⚠️ Superior: o questionário antigo dizia "somente cama de casal".
+  R: **Standard** (o mais econômico, completo, 2 a 4 pessoas) · **Superior** (mais espaço que o Standard: duplo/triplo superior para 2 a 3 pessoas e quádruplo superior para até 4) · **Bangalô** (alvenaria elevada, sem parede compartilhada, varanda privativa com rede, até 4 pessoas) · **Bangalô Especial** (2 camas king, ampla varanda, até 4 pessoas, ideal para famílias) · **Apartamento Conjugado** (dois pisos, até 5 pessoas) · **Cabana Casal** e **Cabana Tripla** (em madeira, elevadas a 3 m, varanda com rede e garagem privativa) · **Cabana Master** (85 m², a maior, banheira de hidromassagem para 2, até 5 pessoas).
 - **P:** Qual a capacidade máxima?
   R: Até 5 pessoas na Cabana Master e no Apartamento Conjugado. As demais acomodam até 4 (a Cabana Casal, 2; a Tripla, 3).
 - **P:** Criança paga? A partir de que idade?
@@ -61,7 +61,7 @@
 - **P:** O hotel tem acessibilidade?
   R: Não temos apartamentos adaptados para pessoas com deficiência. Para entender a sua necessidade e orientar com honestidade, vou chamar alguém da equipe. *(Passa para humano. Nunca prometer acessibilidade.)*
 - **P:** Qual a voltagem?
-  R: 110V. ⚠️ Confirmar (dado novo, só no questionário).
+  R: 110V em todas as acomodações.
 
 ## 5. Gastronomia e bebidas
 - **P:** Quais os horários da gastronomia?
@@ -79,11 +79,11 @@
 - **P:** Quais bebidas vocês têm?
   R: O bar funciona o dia todo, com sucos, refrigerantes, cervejas, vinhos e drinks. O frigobar é abastecido conforme o pedido do hóspede.
 - **P:** Posso levar comida e bebida?
-  R: Alimentos que não temos no cardápio ou de restrição alimentar, sim. Bebidas, só as que não temos no cardápio, para consumo na acomodação; não é permitido levar caixa térmica com bebida para as áreas sociais (recepção, piscina e decks). Garrafa de tereré pode, sem problema. ⚠️ Confirmar a regra de bebidas.
+  R: Alimentos que não temos no cardápio ou de restrição alimentar, sim. Bebidas, só as que não temos no cardápio, para consumo na acomodação; não é permitido levar caixa térmica com bebida para as áreas sociais (recepção, piscina e decks). Garrafa de tereré pode, sem problema.
 
 ## 6. Atividades e lazer
 - **P:** Quais atividades estão incluídas na diária?
-  R: Com monitor exclusivo: arco e flecha, trilhas pela mata ciliar com banho de rio, tirolesa, stand up paddle e caiaque no Rio Formoso. Não têm idade mínima. ⚠️ O questionário antigo dizia "para quem fica mais de uma noite": confirmar se vale.
+  R: Com monitor exclusivo: arco e flecha, trilhas pela mata ciliar com banho de rio, tirolesa, stand up paddle e caiaque no Rio Formoso. Valem para todos os hóspedes, inclusive para quem fica só uma diária, e não têm idade mínima.
 - **P:** Quais atividades são pagas à parte?
   R: **Boia cross** (1 h, 1.200 m de corredeiras e cachoeiras do Rio Formoso): R$ 100 por pessoa. **Arvorismo** (18 obstáculos e 2 tirolesas, a última aquática no Rio Formoso): R$ 120 por pessoa. **Combo boia cross + arvorismo:** R$ 170 por pessoa. As duas a partir de 5 anos e 1,15 m; não recomendadas para gestantes nem para quem ingeriu álcool. Posso já reservar?
 - **P:** Tem flutuação?
@@ -121,7 +121,7 @@
 
 ## 8. Reservas, pagamentos e cancelamento
 - **P:** Quais as formas de pagamento?
-  R: Pix ou cartão de crédito em até 6x sem juros. Para garantir a reserva, pagamos 50% de sinal e o restante no check-out (no hotel também aceitamos débito). Não aceitamos boleto. *(No CRM: link Pix ou Cielo com prazo de 24h, ou 2h se o check-in for em até 3 dias; P46.)* ⚠️ Confirmar se "depósito bancário" continua.
+  R: Pix ou cartão de crédito em até 6x sem juros. Para garantir a reserva, pagamos 50% de sinal e o restante no check-out (no hotel também aceitamos débito). Não aceitamos depósito bancário nem boleto. *(No CRM: link Pix ou Cielo com prazo de 24h, ou 2h se o check-in for em até 3 dias; P46.)*
 - **P:** Pagamento à vista tem desconto?
   R: Não trabalhamos com desconto: o valor para quem reserva direto com a gente já é o melhor que você encontra. E dá para parcelar em até 6x sem juros. *(Corrigido: o antigo "condições especiais à vista" contraria a regra "sem desconto".)*
 - **P:** Qual a política de cancelamento?
@@ -178,11 +178,10 @@
 | Mudança de data "ao comercial por e-mail" | Alerta no CRM; confirma após alterar no Silbeck | decisão G4 |
 | Resposta sobre a pandemia | Removida | obsoleta |
 | Lazer sem sala de jogos, redário, ioga | Incluídos | hotel-operacional §3 e §5 |
-| "Não é permitida a entrada de bebidas" (contradição) | Regra única + tereré | dono, 28/09 (⚠️ confirmar) |
+| "Não é permitida a entrada de bebidas" (contradição) | Regra única + tereré | dono, 30/09 |
+| Superior "somente cama de casal" | Duplo/triplo superior (2 a 3) e quádruplo superior (até 4) | dono, 30/09 |
+| Passeios inclusos "para quem fica mais de uma noite" | Valem também para uma diária | dono, 30/09 |
+| Depósito bancário aceito | Só Pix e cartão | dono, 30/09 |
 
-## Dúvidas para o dono (⚠️)
-1. **Apartamento Superior:** "somente cama de casal" (questionário) ou "2 a 4 pessoas" (base operacional)?
-2. **Atividades inclusas "só para quem fica mais de uma noite"**: ainda vale?
-3. **Voltagem 110V** em todas as acomodações?
-4. **Depósito bancário** continua como forma de pagamento, ou só Pix e cartão?
-5. **Bebidas:** a regra é "só as que não temos no cardápio, na acomodação"?
+## Dúvidas para o dono
+✅ Respondidas em 30/09/2026: Superior (duplo/triplo 2 a 3; quádruplo até 4) · inclusos valem para uma diária · 110V em todas · só Pix e cartão · bebidas só as que não temos, na acomodação, tereré liberado.
