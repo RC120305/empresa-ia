@@ -692,7 +692,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
       <span id="agente-txt-1">Atendendo sozinho das 17h às 7h30. Revisão depois, em Ajustes.</span>
       <span class="num">Acerto da semana: <b style="color:var(--lat-texto)">87%</b> · meta 90%</span>
     </div>
-    <div class="plantao"><label for="sel-plantao">De plantão agora</label><select id="sel-plantao"><option value="Jagles">Jagles</option><option value="Márcio">Márcio</option><option value="Ricardo">Ricardo</option><option value="Renata">Renata</option><option value="todos">Todos (sem plantão)</option></select><small id="plantao-txt">Recebe os alertas no celular. Se ninguém assumir em 10 min, sobe para a Renata e o Ricardo.</small></div>
+    <div class="plantao"><label for="sel-plantao">De plantão agora</label><select id="sel-plantao"><option value="Jagles">Jagles</option><option value="Márcio">Márcio</option><option value="Ricardo">Ricardo</option><option value="todos">Todos (sem plantão)</option></select><small id="plantao-txt">Recebe os alertas no celular. Se ninguém assumir em 10 min, o alerta vai para Márcio, Jagles e Ricardo.</small></div>
   </aside>
 
   <main class="principal">
@@ -1357,7 +1357,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
       msgs:[['cli','Oi! Queremos voltar no feriado de 12/10. Criança de 6 anos faz boia cross?','21:05'],['ia','Que alegria ter vocês de volta, Rafael! A boia cross é a partir de 5 anos e 1,15 m de altura, então dá sim, se ela tiver essa altura. Para 12 a 14/10 o feriado está lotado; posso ver 14 a 16/10 (terça a quinta), bem mais tranquilo?','21:06','Fonte: Atividades e preços → “Boia cross” · Silbeck: GET Disponibilidade (sem vaga 12–14/10)'],['cli','Pode ver sim','21:09'],['cli','E tem berço?','21:10']]},
     {id:3,lead:null,nome:'Thiago B.',canal:'w99117',origem:'google',origemDet:'Google (link rastreável GOOGLE-HOTEL)',etapa:'novo',perfil:'Grupo de amigos',agente:false,resp:'jagles',status:'aberto',naoLidas:1,hora:'01:14',janela:true,fila:'Grupo de 12, 10 a 13/03, quer valor especial',
       reservas:[],pagamentos:[],
-      msgs:[['cli','Boa noite! Vocês fazem um valor especial para um grupo de 12 pessoas de 10 a 13 de março?','01:12'],['ia','Ótima pergunta, Thiago! Grupos são com a nossa equipe, que responde a partir das 7h30. Já deixei o seu pedido anotado e amanhã cedo alguém fala com você. 🌿','01:14','Regra: grupo acima de 8 pessoas → passar para a equipe'],['sis','Passada para a equipe às 01:14 · aviso para Jagles às 7h30 · sobe para Renata às 9h se ninguém responder']]},
+      msgs:[['cli','Boa noite! Vocês fazem um valor especial para um grupo de 12 pessoas de 10 a 13 de março?','01:12'],['ia','Ótima pergunta, Thiago! Grupos são com a nossa equipe, que responde a partir das 7h30. Já deixei o seu pedido anotado e amanhã cedo alguém fala com você. 🌿','01:14','Regra: grupo acima de 8 pessoas → passar para a equipe'],['sis','Passada para a equipe às 01:14 · aviso para Jagles às 7h30 · repete para Márcio, Jagles e Ricardo se ninguém responder']]},
     {id:4,lead:null,nome:'Paula R. · Bangalô 3',canal:'w99117',origem:'site',origemDet:'Hospedada agora (Silbeck: estadia 28/09 a 30/09)',etapa:'hosp',perfil:'Casal',agente:true,resp:'agente',status:'aberto',naoLidas:0,hora:'20:58',janela:true,hospedado:'Bangalô 3 · sai em 30/09',
       reservas:[['Bangalô 3 · 28 a 30/09','Hospedada · pago','t-livre']],pagamentos:[],
       msgs:[['cli','Oi, o chuveiro do bangalô não está esquentando','20:55'],['ia','Poxa, Paula, sinto muito! Já avisei a manutenção e alguém passa aí em alguns minutos. Se precisar de mais alguma coisa, é só chamar. 🌿','20:56','Regra: hóspede hospedado → pedido para o setor · Silbeck: GET Setor (Manutenção)'],['sis','Chamado aberto para Manutenção: “Chuveiro sem água quente · Bangalô 3” · plantão avisado']]},
@@ -1661,14 +1661,14 @@ body.sem-rolagem .principal{padding-block-end:12px}
     $('bt-sino').setAttribute('aria-label',ab.length?ab.length+' alertas da equipe':'Sem alertas');
     box.hidden=!(painelAlertas&&ab.length);if(box.hidden)return;
     box.append(el('div',{class:'al-cab'},el('b',{text:ab.length+(ab.length>1?' pedidos aguardando':' pedido aguardando')+' a equipe'}),
-      el('small',{text:'De plantão: '+plantao()+' (CRM com som, notificação no celular e WhatsApp). Sem ninguém assumir em 10 min, o alerta repete e sobe para a Renata e o Ricardo.'}),
+      el('small',{text:'De plantão: '+plantao()+' (CRM com som, notificação no celular e WhatsApp). Sem ninguém assumir em 10 min, o alerta repete para Márcio, Jagles e Ricardo.'}),
       el('div',{class:'al-acoes'},el('button',{class:'btn-mini',type:'button',text:'🔊 Testar som',onclick:()=>{bip();}}),el('button',{class:'btn-mini',type:'button',text:somLigado?'Silenciar som':'Ligar som',onclick:()=>{somLigado=!somLigado;renderAlertas();}}),el('button',{class:'btn-mini',type:'button',text:'Minimizar',onclick:()=>{painelAlertas=false;renderAlertas();}}))));
     const ordem={reclamacao:0,cancelamento:1,humano:2,naosabe:3,'alteração':4};
     ab.slice().sort((a,z)=>(a.etapa!=='novo')-(z.etapa!=='novo')||ordem[a.tipo]-ordem[z.tipo]).forEach(a=>{
       const silbeck=a.tipo==='alteração'||a.tipo==='cancelamento';
       const abrir=()=>{convSel=a.c.id;a.c.naoLidas=0;document.querySelector('[data-vista="conversas"]').click();renderInbox();};
       box.append(el('div',{class:'al-item'},el('span',{class:'al-tipo',text:ROT_URG[a.tipo].replace('⚑ ','')}),el('b',{text:a.c.nome+' · '+a.hora+' · '+CANAL[a.c.canal]}),a.x?el('span',{text:a.x[0]}):null,el('span',{class:'lat-txt',text:a.info}),
-        a.escalado&&!a.quem?el('span',{class:'tipo t-erro',text:'Escalado há 10 min sem dono · Renata e Ricardo avisados'}):null,
+        a.escalado&&!a.quem?el('span',{class:'tipo t-erro',text:'Escalado há 10 min sem dono · Márcio, Jagles e Ricardo avisados'}):null,
         a.quem?el('span',{class:'tipo t-util',text:a.quem+(silbeck?' está fazendo no Silbeck':' assumiu a conversa')}):null,
         el('div',{class:'acoes-res'},
           silbeck?(a.etapa==='novo'?el('button',{class:'btn-mini',type:'button',text:'Assumir e fazer no Silbeck',onclick:()=>{a.etapa='exec';a.quem=plantao().includes(',')?'Jagles':plantao();a.c.urg.quem=a.quem;a.assumido=Date.now();renderAssumir();renderAlertas();renderInbox();toast('Jagles assumiu. O alerta sai do WhatsApp dos outros.');}}):
@@ -1686,7 +1686,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
     const conv=id=>CONVS.find(c=>c.id===id);const t=b.dataset.sim;
     if(t==='tempo'){const ab=ALERTAS.filter(a=>a.etapa==='novo');if(!ab.length){toast('Nenhum alerta sem dono. Simule um pedido primeiro.');return;}
       ab.forEach(a=>{a.desde-=6e5;a.c.urg.desde=a.desde;a.escalado=true;});if(somLigado)bip();painelAlertas=true;renderAlertas();renderInbox();
-      pushCel('Alerta escalado','Ninguém assumiu '+ab.length+' pedido(s) em 10 min','Renata e Ricardo foram avisados.');toast('10 min sem ninguém assumir: o alerta repetiu e subiu para a Renata e o Ricardo.');return;}
+      pushCel('Alerta escalado','Ninguém assumiu '+ab.length+' pedido(s) em 10 min','Márcio, Jagles e Ricardo foram avisados.');toast('10 min sem ninguém assumir: o alerta repetiu para Márcio, Jagles e Ricardo.');return;}
     if(t==='humano')humano(conv(7),'humano');
     else if(t==='reclamacao')humano(conv(4),'reclamacao');
     else if(t==='naosabe')humano(conv(6),'naosabe');
@@ -2083,9 +2083,12 @@ body.sem-rolagem .principal{padding-block-end:12px}
     const nome=c.nome.split(' ')[0].replace(/[^A-Za-zÀ-ú]/g,'');
     const txt='Oi, '+nome+'! Separei estas opções para '+fmtData(o.ent)+' a '+fmtData(o.sai)+', '+o.adultos+' adulto(s)'+(idades.length?' e '+idades.length+' criança(s)':'')+':\n\n'+linhas.join('\n')+'\n\nNa diária: café da manhã, piscina climatizada, sauna e trilhas com caiaque, SUP e tirolesa com monitor.'+(o.combo?'\nPara a aventura: combo boia cross + arvorismo por R$ 170 por pessoa.':'')+'\n\nReserva com 50% de sinal (Pix ou cartão em até 6x). Valores com desconto para quem reserva direto, válidos por '+o.validade+'. Qual opção prefere? 😊';
     const prev=el('textarea',{class:'orc-prev','aria-label':'Prévia da mensagem'});prev.value=txt;
-    lat.append(el('span',{class:'rotulo',text:'Prévia (pode editar)'}),prev,el('small',{class:'lat-txt',text:'Vai com '+o.sel.length+' foto(s) das acomodações escolhidas.'}),
+    lat.append(el('span',{class:'rotulo',text:'Prévia (pode editar)'}),prev,el('small',{class:'lat-txt',text:'Vai com um link para a página do orçamento: fotos das '+o.sel.length+' opção(ões), incluso, combo, condições e botão "Quero reservar".'}),el('a',{class:'btn-mini',href:'https://claude.ai/artifact/DfYcXJAbqr3ZaXyZyHKDU8',target:'_blank',rel:'noopener',text:'Ver como a cliente vê a página ↗'}),
       el('button',{class:'btn btn-destaque',type:'button',text:'Enviar orçamento',onclick:()=>{
-        c.msgs.push(['eq',prev.value,'agora',c.agente?'Gilberto':USUARIOS[c.resp]||'Você']);c.msgs.push(['sis','Orçamento enviado com '+o.sel.length+' foto(s) · valores do motor da Silbeck · válido por '+o.validade]);
+        const link='crm.hotelcabanas.com.br/o/'+Math.random().toString(36).slice(2,8);
+        c.msgs.push(['eq',prev.value+'\n\n📄 Veja as fotos e reserve pelo link: '+link,'agora',c.agente?'Gilberto':USUARIOS[c.resp]||'Você']);
+        c.msgs.push(['sis','Página do orçamento criada ('+link+') com '+o.sel.length+' opção(ões), fotos do banco e valores do Silbeck. Abrir exemplo: claude.ai/artifact/DfYcXJAbqr3ZaXyZyHKDU8']);
+        setTimeout(()=>{c.msgs.push(['sis','👁 '+c.nome.split(' ')[0]+' abriu a página do orçamento e olhou a '+(ops.find(y=>y.cod===o.sel[0])||{nome:'primeira opção'}).nome+'. O follow-up usa essa informação.']);if(convSel===c.id)renderChat();},4000);
         o.sel.forEach(cod=>{const x=ops.find(y=>y.cod===cod);c.reservas.push([x.nome+' · '+fmtData(o.ent)+' a '+fmtData(o.sai),'Orçamento enviado · R$ '+x.total.toLocaleString('pt-BR'),'t-util']);});
         c.etapa='orc';c.orc=null;painelLat='res';renderInbox();toast('Orçamento enviado e salvo no card do cliente.');}}));
   }
@@ -2096,6 +2099,6 @@ body.sem-rolagem .principal{padding-block-end:12px}
     const j=cv(8),y=j.reservas.find(z=>/^Reservado · pago/.test(z[1]));pedido(j,y,'alteração');
     [[7,3],[2,6],[8,9]].forEach(([id,m])=>{const a=ALERTAS.find(k=>k.c.id===id);a.desde-=m*6e4;a.c.urg.desde=a.desde;a.hora=new Date(a.desde).toTimeString().slice(0,5);});
     silencioIni=false;convSel=7;painelAlertas=true;renderAlertas();renderInbox();$('toast').hidden=true;})();
-  $('sel-plantao').addEventListener('change',e=>{const v=e.target.value;$('plantao-txt').textContent=v==='todos'?'Todos recebem os alertas. Sem plantão, cada um pode achar que outro vai pegar.':v+' recebe os alertas no celular. Se ninguém assumir em 10 min, sobe para a Renata e o Ricardo.';toast(v==='todos'?'Plantão desligado: alertas para todos.':v+' está de plantão.');renderAlertas();});
+  $('sel-plantao').addEventListener('change',e=>{const v=e.target.value;$('plantao-txt').textContent=v==='todos'?'Todos recebem os alertas. Sem plantão, cada um pode achar que outro vai pegar.':v+' recebe os alertas no celular. Se ninguém assumir em 10 min, o alerta vai para Márcio, Jagles e Ricardo.';toast(v==='todos'?'Plantão desligado: alertas para todos.':v+' está de plantão.');renderAlertas();});
 })();
 </script>

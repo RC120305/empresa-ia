@@ -485,7 +485,7 @@ Lido da página (16 de 16; nada acrescentado):
 | D7 | Grupo vai direto para a equipe **acima de 10 pessoas** |
 | D8 | Expediente da equipe: **7h30 às 17h** |
 | D9 | Alerta sem dono escala em **10 minutos** |
-| D10 | Opção marcada "Renata e Ricardo", com o comentário **"para Márcio, Jagles e Ricardo"** (a confirmar: alerta inicial para Márcio, Jagles e Ricardo e escalonamento para Renata e Ricardo, ou escalonamento para Márcio, Jagles e Ricardo) |
+| D10 | **Confirmado pelo dono:** alertas só para **Márcio, Jagles e Ricardo** (o de plantão primeiro; sem dono em 10 min, os três). A Renata não recebe alertas e saiu do plantão |
 | D11 | Plantão **escolhido manualmente no CRM** |
 | D12 | Pedidos do hóspede aos setores: **a recepção recebe tudo e repassa** (a tela Setores fica simples: só a recepção como destino) |
 | D13 | **E-mail de reservas dentro do CRM** (fase 2) |
@@ -493,3 +493,11 @@ Lido da página (16 de 16; nada acrescentado):
 | D15 | Guardar conversas por **5 anos** (exclusão antes, se o cliente pedir) |
 | D16 | Google Cloud na **conta pessoal do dono** (créditos do Google AI Ultra); recomendação: incluir Renata e Márcio como administradores do projeto para não depender de uma pessoa só |
 - **Exemplo da página do orçamento (D5):** `crm/prototipo/orcamento-exemplo.html`, https://claude.ai/artifact/DfYcXJAbqr3ZaXyZyHKDU8. Página de celular na identidade do Cabanas: saudação do Gilberto, 3 opções com fotos reais que deslizam, destaques, total e média por noite, "Quero reservar esta"; incluso na diária; combo boia cross + arvorismo com opção de incluir; condições (sinal 50%, 6x, check-in/out, cancelamento, distância); ao reservar, resumo com sinal e saldo no check-out e escolha Pix ou cartão (Cielo), criando a reserva e enviando a cobrança no WhatsApp.
+
+### P56. Página do orçamento aprovada (30/09/2026)
+- **Dono aprovou** a página do exemplo e pediu para implementar.
+- **Como é gerada:** o mesmo motor de orçamento monta a página a partir das opções escolhidas (valores do Silbeck na hora, fotos do banco de imagens pelo código da acomodação, textos de incluso/condições da Biblioteca, combo do catálogo). Cada orçamento ganha um **link único** (ex.: `crm.hotelcabanas.com.br/o/…`) enviado junto com a mensagem no WhatsApp; o card guarda a versão.
+- **O Gilberto também gera:** extrai datas e pessoas da conversa, escolhe até 3 opções pelo perfil, envia mensagem + link sozinho. A equipe faz o mesmo pelo botão "Montar orçamento".
+- **Na página:** o cliente vê as opções e clica "Quero reservar esta" → o CRM **confere vaga e preço de novo**, cria a reserva no Silbeck (P46) e manda a cobrança (Pix ou Cielo) no WhatsApp. Se o preço mudou, a página mostra o valor novo antes de confirmar.
+- **Sinal para a equipe:** o CRM registra quando o cliente **abre** a página e qual opção olhou; isso aparece na conversa e alimenta o follow-up ("vi que você gostou da Cabana Casal…").
+- **Protótipo v27:** ao enviar o orçamento, a mensagem leva o link, a conversa registra a página criada e, segundos depois, "Mariana abriu a página do orçamento"; no painel, "Ver como a cliente vê a página".
