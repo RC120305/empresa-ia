@@ -471,3 +471,24 @@ Lido da página (16 de 16 avaliadas; nada acrescentado): **9 aprovadas, 6 com "A
 ### P54. Página de decisões pendentes (30/09/2026)
 - A pedido do dono, as escolhas que faltam para fechar o desenho viraram uma página com botões: `crm/prototipo/decisoes.html`, https://claude.ai/artifact/YaY1Gqk3AiNH7mohfYFSRp (coleções `respostas` e `faltas`; cada resposta guarda o índice e o texto da opção).
 - **16 decisões:** crianças (idade que paga, capacidade), tarifa de agência, preços de decoração e massagem, envio do orçamento, grupos em vários quartos, limite de grupo para a equipe, expediente, tempo e destino do escalonamento, plantão, setores, e-mail no CRM, acesso ao faturamento, guarda das conversas (LGPD) e conta do Google Cloud.
+
+### P55. Decisões do dono (página de decisões, 30/09/2026)
+Lido da página (16 de 16; nada acrescentado):
+| # | Decisão |
+|---|---|
+| D1 | Crianças **até 5 anos** não pagam (regra controlada pelo Silbeck; registrada aqui para o Gilberto explicar) |
+| D2 | Capacidade do quarto: **segue o cadastro do Silbeck** |
+| D3 | Agências: **tarifa comissionada** (tarifa cheia; o hotel paga a comissão) |
+| D4 | Preço da decoração e da massagem: **cadastrar depois na tela Produtos** |
+| D5 | Orçamento: **mensagem + página do orçamento** (fotos e "Quero reservar"); o dono pediu um exemplo |
+| D6 | Grupos/famílias: **perguntar sempre** se é uma reserva só ou separada por família |
+| D7 | Grupo vai direto para a equipe **acima de 10 pessoas** |
+| D8 | Expediente da equipe: **7h30 às 17h** |
+| D9 | Alerta sem dono escala em **10 minutos** |
+| D10 | Opção marcada "Renata e Ricardo", com o comentário **"para Márcio, Jagles e Ricardo"** (a confirmar: alerta inicial para Márcio, Jagles e Ricardo e escalonamento para Renata e Ricardo, ou escalonamento para Márcio, Jagles e Ricardo) |
+| D11 | Plantão **escolhido manualmente no CRM** |
+| D12 | Pedidos do hóspede aos setores: **a recepção recebe tudo e repassa** (a tela Setores fica simples: só a recepção como destino) |
+| D13 | **E-mail de reservas dentro do CRM** (fase 2) |
+| D14 | Faturamento visível para **dono, Renata e Márcio** |
+| D15 | Guardar conversas por **5 anos** (exclusão antes, se o cliente pedir) |
+| D16 | Google Cloud na **conta pessoal do dono** (créditos do Google AI Ultra); recomendação: incluir Renata e Márcio como administradores do projeto para não depender de uma pessoa só |
