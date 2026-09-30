@@ -326,6 +326,18 @@ button,input,select{font:inherit;color:inherit}
 .alertas .al-cab small{color:var(--cor-texto-sec)}
 .alertas .al-item{border-top:1px solid var(--cor-borda);padding-top:8px;display:flex;flex-direction:column;gap:4px;font-size:14px}
 .acoes-res{display:flex;gap:6px;flex-wrap:wrap}
+.acoes-card{display:flex;gap:6px;flex-wrap:wrap}
+.btn-mini.perigo{color:var(--cor-erro)}
+.prod dd{overflow-wrap:anywhere;min-width:0}
+.conf-excluir{display:flex;flex-direction:column;gap:6px;padding:8px 10px;border-radius:var(--r-md);background:var(--cor-erro-suave);color:var(--cor-erro);font-size:13px}
+/* v18: na tela de Conversas a página não rola; só as colunas internas */
+.cx{height:calc(100dvh - 92px)}
+.cx-col{align-self:stretch;min-height:0;overflow:hidden}
+.cx-lista{flex:1 1 0;min-height:0}
+body.sem-rolagem{overflow:hidden}
+body.sem-rolagem .principal{padding-block-end:12px}
+.lateral{overflow-y:auto}
+@media (max-width:900px){.cx{height:auto}.cx-col{overflow:visible}body.sem-rolagem{overflow:auto}}
 .aviso-toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--cor-texto);color:var(--cor-fundo);padding:10px 16px;border-radius:999px;font-size:14px;z-index:40;box-shadow:var(--sombra-2);max-width:calc(100% - 32px);text-align:center}
 .grupo-tarefas{display:flex;flex-direction:column;gap:8px}
 .grupo-tarefas h3{margin:6px 0 0;font-size:16px;display:flex;gap:8px;align-items:baseline}
@@ -660,8 +672,8 @@ button,input,select{font:inherit;color:inherit}
       <div class="barra-ferr"><input type="search" id="ag-busca" placeholder="Buscar por nome, CNPJ ou telefone" aria-label="Buscar agência"><button class="btn btn-enviar" type="button" id="ag-nova">+ Nova agência</button><button class="btn btn-editar" type="button" id="ag-sync">Sincronizar com o Silbeck</button></div>
       <p style="margin:0;font-size:13px;color:var(--cor-texto-sec)" id="ag-ultima">O Silbeck é a fonte do cadastro (razão social, CNPJ, código). O CRM guarda os contatos e os dados comerciais. Última sincronização: hoje, 09:00.</p>
       <div class="cartao bloco" id="ag-form" hidden>
-        <div class="grade-campos"><label class="campo">Nome fantasia<input id="agf-nome" type="text"></label><label class="campo">CNPJ<input id="agf-cnpj" type="text" placeholder="00.000.000/0000-00"></label><label class="campo">WhatsApp do contato<input id="agf-fone" type="tel"></label><label class="campo">Comissão (%)<input id="agf-com" type="number" value="10"></label></div>
-        <p style="margin:0;font-size:13px;color:var(--cor-texto-sec)">A API da Silbeck só lê empresas. O CRM cria um pré-cadastro e uma tarefa para a equipe cadastrar no Silbeck; na próxima sincronização, os dois se ligam pelo CNPJ.</p>
+        <div class="grade-campos"><label class="campo">Nome fantasia<input id="agf-nome" type="text"></label><label class="campo">CNPJ<input id="agf-cnpj" type="text" placeholder="00.000.000/0000-00"></label><label class="campo">WhatsApp do contato<input id="agf-fone" type="tel"></label><label class="campo">E-mail de reservas<input id="agf-email" type="email"></label><label class="campo">Comissão (%)<input id="agf-com" type="number" value="10"></label></div>
+        <p style="margin:0;font-size:13px;color:var(--cor-texto-sec)" id="agf-aviso">A API da Silbeck só lê empresas. O CRM cria um pré-cadastro e uma tarefa para a equipe cadastrar no Silbeck; na próxima sincronização, os dois se ligam pelo CNPJ.</p>
         <div class="acoes"><button class="btn btn-enviar" type="button" id="agf-salvar">Salvar pré-cadastro</button><button class="btn btn-editar" type="button" id="agf-cancelar">Cancelar</button></div>
       </div>
       <div class="prod-grade" id="ag-grade"></div>
@@ -874,6 +886,7 @@ button,input,select{font:inherit;color:inherit}
     tabs.forEach(t=>t.setAttribute('aria-selected',t.dataset.vista===v));
     paineis.forEach(p=>p.hidden=p.dataset.painel!==v);
     document.getElementById('titulo').textContent=titulos[v];
+    document.body.classList.toggle('sem-rolagem',v==='conversas');
     try{localStorage.setItem('crm-vista',v)}catch(e){}
   }
   tabs.forEach(t=>t.addEventListener('click',()=>abrir(t.dataset.vista)));
@@ -1593,18 +1606,19 @@ button,input,select{font:inherit;color:inherit}
         el('div',{class:'prod-cab'},el('span',{class:'cod',style:'font-weight:700;font-size:11px;background:var(--cor-primaria-suave);color:var(--cor-primaria-texto);border-radius:4px;padding:2px 6px',text:p.cod}),el('strong',{text:p.nome}),sw),
         el('span',{class:'preco',text:brlP(p.preco)+(p.preco!=null?' /pessoa':'')}),
         el('dl',{},el('dt',{text:'Reserva'}),el('dd',{text:TIPO_RES[p.tipo]}),el('dt',{text:'Regras'}),el('dd',{text:p.regras}),el('dt',{text:'Oferecer'}),el('dd',{text:p.quando+(p.ant?' · mínimo '+p.ant+' dia(s) antes':'')}),el('dt',{text:'Para'}),el('dd',{text:p.perfis}),el('dt',{text:'Prioridade'}),el('dd',{text:String(p.prio)})),
-        el('div',{style:'display:flex;gap:6px'},el('button',{class:'btn-mini',type:'button',text:'Editar',onclick:()=>{abrirForm(p);}}),el('button',{class:'btn-mini',type:'button',text:'▲ Prioridade',onclick:()=>{const acima=PRODUTOS.find(x=>x.prio===p.prio-1);if(acima){acima.prio++;p.prio--;renderProdutos();}}}))));
+        p.conf?el('div',{class:'conf-excluir'},el('span',{text:'Excluir “'+p.nome+'”? O agente e a régua deixam de oferecer. Para só pausar, use o botão de ativo.'}),el('div',{class:'acoes-card'},el('button',{class:'btn-mini perigo',type:'button',text:'Sim, excluir',onclick:()=>{PRODUTOS.splice(PRODUTOS.indexOf(p),1);PRODUTOS.slice().sort((a,b)=>a.prio-b.prio).forEach((x,i)=>x.prio=i+1);renderProdutos();toast('Produto excluído.');}}),el('button',{class:'btn-mini',type:'button',text:'Cancelar',onclick:()=>{p.conf=false;renderProdutos();}}))):
+        el('div',{class:'acoes-card'},el('button',{class:'btn-mini',type:'button',text:'Editar',onclick:()=>{abrirForm(p);}}),el('button',{class:'btn-mini',type:'button',text:'▲ Prioridade',onclick:()=>{const acima=PRODUTOS.find(x=>x.prio===p.prio-1);if(acima){acima.prio++;p.prio--;renderProdutos();}}}),el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{p.conf=true;renderProdutos();}}))));
     });
   }
   let prodEdit=null;
-  function abrirForm(p){prodEdit=p||null;$('prod-form').hidden=false;$('pf-nome').value=p?p.nome:'';$('pf-cod').value=p?p.cod:'';$('pf-preco').value=p&&p.preco!=null?p.preco:'';$('pf-tipo').value=p?p.tipo:'ativ';$('pf-regras').value=p?p.regras:'';$('pf-ant').value=p?p.ant:0;$('pf-nome').focus();}
+  function abrirForm(p){prodEdit=p||null;$('prod-form').hidden=false;$('pf-nome').value=p?p.nome:'';$('pf-cod').value=p?p.cod:'';$('pf-preco').value=p&&p.preco!=null?p.preco:'';$('pf-tipo').value=p?p.tipo:'ativ';$('pf-regras').value=p?p.regras:'';$('pf-ant').value=p?p.ant:0;$('pf-salvar').textContent=p?'Salvar alterações':'Salvar produto';$('prod-form').scrollIntoView({block:'start',behavior:'smooth'});$('pf-nome').focus({preventScroll:true});}
   $('prod-novo').addEventListener('click',()=>abrirForm(null));
   $('pf-cancelar').addEventListener('click',()=>$('prod-form').hidden=true);
   $('pf-salvar').addEventListener('click',()=>{const n=$('pf-nome').value.trim();if(!n){$('pf-nome').focus();return;}
     const d={nome:n,cod:($('pf-cod').value||n.slice(0,4)).toUpperCase(),preco:$('pf-preco').value===''?null:+$('pf-preco').value,tipo:$('pf-tipo').value,regras:$('pf-regras').value,quando:$('pf-quando').value,ant:+$('pf-ant').value||0};
     if(prodEdit)Object.assign(prodEdit,d);else PRODUTOS.push(Object.assign(d,{prio:PRODUTOS.length+1,ativo:true,perfis:'Todos',idade:0}));
     $('prod-form').hidden=true;renderProdutos();toast('Produto salvo. O agente já pode oferecer.');});
-  $('prod-importar').addEventListener('click',()=>toast('Importação do Silbeck (GET Produto): nomes e preços atualizados; complete regras e fotos dos novos.'));
+  $('prod-importar').addEventListener('click',()=>toast('Importação do Silbeck (GET Produto): códigos e nomes atualizados; complete preço, regras e fotos dos novos.'));
   // horários do sistema interno (exemplo)
   const HORARIOS={BOIA:[['09:00',12],['10:30',0],['14:00',5],['15:30',9]],ARVO:[['09:30',6],['11:00',2],['14:30',0],['16:00',8]]};
   let resAberta=null;
@@ -1679,13 +1693,24 @@ button,input,select{font:inherit;color:inherit}
         el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'},
           a.status==='pendente'?el('button',{class:'btn-mini',type:'button',text:'Já cadastrei no Silbeck',onclick:()=>{a.status='ok';a.silbeck='EMP-0'+(210+AGENCIAS.indexOf(a));renderAgencias();toast('Ligado ao Silbeck pelo CNPJ. Reservas desta agência já saem com a empresa certa.');}}):null,
           a.status==='diverge'?el('button',{class:'btn-mini',type:'button',text:'Usar dados do Silbeck',onclick:()=>{a.status='ok';a.diverge=null;renderAgencias();toast('Cadastro do CRM atualizado com os dados do Silbeck.');}}):null,
-          el('button',{class:'btn-mini',type:'button',text:'Copiar link',onclick:()=>toast('Link wa.me com o código '+a.codigo+' copiado.')}))));
+          el('button',{class:'btn-mini',type:'button',text:'Copiar link',onclick:()=>toast('Link wa.me com o código '+a.codigo+' copiado.')}),
+          el('button',{class:'btn-mini',type:'button',text:'Editar',onclick:()=>abrirAg(a)}),
+          el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{a.conf=true;renderAgencias();}})),
+        a.conf?el('div',{class:'conf-excluir'},el('span',{text:a.silbeck?'Excluir “'+a.nome+'” do CRM? Os contatos e o link rastreável são apagados aqui; no Silbeck o cadastro continua (a exclusão lá é feita pela equipe).':'Excluir o pré-cadastro de “'+a.nome+'”? A tarefa de cadastrar no Silbeck também é cancelada.'}),
+          el('div',{class:'acoes-card'},el('button',{class:'btn-mini perigo',type:'button',text:'Sim, excluir',onclick:()=>{AGENCIAS.splice(AGENCIAS.indexOf(a),1);renderAgencias();toast('Agência excluída do CRM.');}}),el('button',{class:'btn-mini',type:'button',text:'Cancelar',onclick:()=>{a.conf=false;renderAgencias();}}))):null));
     });
   }
   $('ag-busca').addEventListener('input',renderAgencias);
-  $('ag-nova').addEventListener('click',()=>{$('ag-form').hidden=false;$('agf-nome').focus();});
-  $('agf-cancelar').addEventListener('click',()=>$('ag-form').hidden=true);
+  let agEdit=null;
+  function abrirAg(a){agEdit=a||null;$('ag-form').hidden=false;$('agf-nome').value=a?a.nome:'';$('agf-cnpj').value=a&&a.cnpj!=='—'?a.cnpj:'';
+    $('agf-fone').value=a?(a.contatos.find(c=>/WhatsApp/.test(c))||'').replace('WhatsApp ',''):'';$('agf-email').value=a?(a.contatos.find(c=>/@/.test(c))||''):'';$('agf-com').value=a?a.comissao:10;
+    $('agf-cnpj').disabled=!!(a&&a.silbeck);$('agf-aviso').textContent=a&&a.silbeck?'Razão social e CNPJ vêm do Silbeck (sincronizado). Aqui você edita nome de exibição, contatos e comissão.':'A API da Silbeck só lê empresas. O CRM cria um pré-cadastro e uma tarefa para a equipe cadastrar no Silbeck; na próxima sincronização, os dois se ligam pelo CNPJ.';
+    $('agf-salvar').textContent=a?'Salvar alterações':'Salvar pré-cadastro';$('ag-form').scrollIntoView({block:'start',behavior:'smooth'});$('agf-nome').focus({preventScroll:true});}
+  $('ag-nova').addEventListener('click',()=>abrirAg(null));
+  $('agf-cancelar').addEventListener('click',()=>{agEdit=null;$('ag-form').hidden=true;});
   $('agf-salvar').addEventListener('click',()=>{const n=$('agf-nome').value.trim();if(!n){$('agf-nome').focus();return;}
+    const contatos=[$('agf-fone').value?'WhatsApp '+$('agf-fone').value:null,$('agf-email').value||null].filter(Boolean);
+    if(agEdit){Object.assign(agEdit,{nome:n,contatos:contatos.length?contatos:['—'],comissao:+$('agf-com').value||0});if(!agEdit.silbeck)agEdit.cnpj=$('agf-cnpj').value||'—';agEdit=null;$('ag-form').hidden=true;renderAgencias();toast('Agência atualizada.');return;}
     AGENCIAS.unshift({nome:n,cnpj:$('agf-cnpj').value||'—',silbeck:null,status:'pendente',contatos:[$('agf-fone').value?'WhatsApp '+$('agf-fone').value:'—'],comissao:+$('agf-com').value||0,codigo:'AG-'+n.replace(/[^A-Za-z]/g,'').slice(0,6).toUpperCase(),reservas:0,valor:0});
     const l=leadPor(4);if(l){l.tarefas.push({t:'Outro',d:'Cadastrar a agência '+n+' no Silbeck',q:dia(0,'17:00'),r:'jagles',f:false});renderBoard();}
     $('ag-form').hidden=true;renderAgencias();toast('Pré-cadastro salvo e tarefa criada: cadastrar no Silbeck.');});
