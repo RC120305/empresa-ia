@@ -20,7 +20,7 @@ Reaproveita o carrossel **Cabana Casal v3** (`design/pecas/2026-10-carrossel-cab
 - TELA 2: "Cada **degrau** deixa a *cidade* mais longe" (foto: `cabana_casal_03_externa` (1XMr0j), https://drive.google.com/file/d/1XMr0j853KISaSUSB1c4AwqBYSB2esEnU/view)
 - TELA 3: "Na **rede**, o tempo *balança* devagar" (foto: `cabana_casal_03_varanda` (1_0gOD), https://drive.google.com/file/d/1_0gOD83XvwgWT_b-CO08T2nCmUNOf9F2/view)
 - TELA 4: "**Adormecer** na madeira, *acordar* entre árvores" (foto: `cabana_casal_01_interna` (10Q-Yd), https://drive.google.com/file/d/10Q-YmdPemEE4y5n1c5VrCJzeYjxwDjtt/view; pétalas = decoração especial (opcional), dito na legenda)
-- TELA 5: apoio "RESERVE DIRETO" · "Seu **lugar** de *conexão* espera por você" + sbreserva.silbeck.com.br/hotelcabanas + WHATSAPP (67) 99117-1648 (foto: `cabana_casal_01_eterna` (1tq2O3), https://drive.google.com/file/d/1tq2O31hdmfhn2ucJ3PzumJ9M5akGt0YM/view)
+- TELA 5: apoio "RESERVE PELO LINK DA BIO" · "Seu **lugar** de *conexão* espera por você" (foto: `cabana_casal_01_eterna` (1tq2O3), https://drive.google.com/file/d/1tq2O31hdmfhn2ucJ3PzumJ9M5akGt0YM/view)
 
 ### Legenda
 Uma terça-feira a 3 metros do chão, na Cabana Casal.
@@ -60,7 +60,7 @@ Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648.
 | 4 | `imagem_caiaque_rio_formoso` (1VLR1u) | "**15h30**: o *Formoso* no remo" (5) | 9 a 12 s |
 | 5 | `imagem_standup_formosinho_casal` (1iYdKL) | "De **pé** sobre o *rio*" (5) | 12 a 15 s |
 | 6 | `imagem_deck_balneario_formosinho` (17YGi-) | "Na **diária**, *com monitor*" (4) | 15 a 19 s |
-| Fecho | Fundo marrom `#847059` + logo branco + assinatura | "RESERVE DIRETO" + sbreserva.silbeck.com.br/hotelcabanas + (67) 99117-1648 | 19 a 22 s |
+| Fecho | Fundo marrom `#847059` + logo branco + assinatura | "RESERVE PELO LINK DA BIO" | 19 a 22 s |
 
 ### Legenda (vale para o vídeo e para o plano B)
 Terça-feira, 8h30: o arco e flecha começa. E já está na sua diária.
@@ -92,7 +92,7 @@ Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648.
 - TELA 2: apoio "SÁBADO · 8H30 · INCLUSO" · "Sábado **cedo**, a *flecha* primeiro" (5) (foto: `Atividades e balneário / imagem_arco_flecha_casal` (1sO8Ca))
 - TELA 3: apoio "ARVORISMO (OPCIONAL)" · "Entre **copas**, um *passo* por vez" (6) (foto: `Arvorismo / arvorismo_tirolesa_vista_externa` (12qaM9))
 - TELA 4: apoio **"DOMINGO · DIA LIVRE"** (antes: "DOMINGO · LANCHONETE ATÉ 17H"; **a arte muda só no apoio**) · "Domingo **leve**, sem *relógio*" (4) (foto: `Lanchonete e Café da manhã / detalhe_lanche` (1B3R4B))
-- TELA 5: apoio "RESERVE DIRETO" · "Segunda sem **pressa** de *voltar*" (5) + sbreserva.silbeck.com.br/hotelcabanas + WHATSAPP (67) 99117-1648 (foto: `Lanchonete e Café da manhã / casal_cafe_manha` (14kua8))
+- TELA 5: apoio "RESERVE PELO LINK DA BIO" · "Segunda sem **pressa** de *voltar*" (5) (foto: `Lanchonete e Café da manhã / casal_cafe_manha` (14kua8))
 
 ### Legenda
 O feriado de 20 de novembro cai numa sexta. E se a volta ficar para segunda?
@@ -157,7 +157,7 @@ Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648.
 | 4 | `cabana_master_interna_ambiente_casal_detalhe_cama` (1ZA18A) | "**Acordar** sem *despertador*" (3) | 9 a 12 s |
 | 5 | `cabana_master_varanda _balanco` (1hx24E) | "Vai e **vem**, bem *devagar*" (5) | 12 a 15 s |
 | 6 | `cabana_master_externa` (1GEFSq) | "Seu **meio** de semana, *a dois*" (6) | 15 a 19 s |
-| Fecho | Fundo marrom + logo branco | "RESERVE DIRETO" + motor + WhatsApp | 19 a 22 s |
+| Fecho | Fundo marrom + logo branco | "RESERVE PELO LINK DA BIO" (sem link nem número na arte) | 19 a 22 s |
 **Nunca** usar foto com rede na Master (ela tem balanço). Se a imagem final mostrar pétalas, rosa ou plaquinha "LOVE", acrescentar à legenda, antes do CTA: "A decoração da imagem é a decoração especial (opcional), contratada antes do check-in pelo WhatsApp."
 
 ### Legenda (vale para o vídeo e para o plano B)
@@ -189,7 +189,7 @@ Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648.
 - TELA 3: apoio "SOM · DECK DO RIO FORMOSINHO" · "O **som** do *Formosinho*" (4) (foto: `Atividades e balneário / imagem_deck_rio_formosinho` (1LzEkM))
 - TELA 4: apoio "VAPOR · SAUNA" · "**Vapor** para *respirar* devagar" (4) (foto: `Infraestrutura / area_espaco_relaxamento_sauna` (1O9epH))
 - TELA 5: apoio "BALANÇO · REDÁRIO" · "Na **rede**, o *rio* por perto" (6) (foto: `Atividades e balneário / imagem_redario_mulher_sorrindo` (1DFdy_))
-- TELA 6: apoio "RESERVE DIRETO" · "**Domingo** a quinta, *sem pressa*" (5) + sbreserva.silbeck.com.br/hotelcabanas + WHATSAPP (67) 99117-1648 (foto: `imagem_redario_balneario_rio_formosinho` (1jimO_))
+- TELA 6: apoio "RESERVE PELO LINK DA BIO" · "**Domingo** a quinta, *sem pressa*" (5) (foto: `imagem_redario_balneario_rio_formosinho` (1jimO_))
 
 ### Legenda
 Sabor, calor, som, vapor e balanço: uma quarta-feira qualquer no Hotel Cabanas.
@@ -222,7 +222,7 @@ Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648.
 - TELA 3: apoio "SAUNA A VAPOR" · "O **vapor** *desfaz* a semana" (5) (foto: `area_espaco_relaxamento_sauna` (1tv2Uh))
 - TELA 4: apoio "TRILHAS · ACESSO LIVRE" · "Trilhas no **seu** *ritmo*" (4) (foto: `Atividades e balneário / imagem_casal_caminhando_trilha` (1NnMQQ))
 - TELA 5: apoio "BANGALÔ · 40 M²" · "Sem **vizinho** de *parede*" (4) (foto: `Bangalô / bangalo_externa` (1Ys225))
-- TELA 6: apoio "RESERVE DIRETO" · "Sua **rede**, seu *dezembro*" (4) + sbreserva.silbeck.com.br/hotelcabanas + WHATSAPP (67) 99117-1648 (foto: `Bangalô / bangalo_quadruplo_varanda_com_rede` (1c3Ru5))
+- TELA 6: apoio "RESERVE PELO LINK DA BIO" · "Sua **rede**, seu *dezembro*" (4) (foto: `Bangalô / bangalo_quadruplo_varanda_com_rede` (1c3Ru5))
 
 ### Legenda
 A 1ª quinzena de dezembro ainda é baixa temporada em Bonito. E, de domingo a quinta, o hotel fica mais tranquilo: a agenda é sua.
@@ -317,10 +317,10 @@ Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648.
 ### Briefing de arte
 - TELA 1 (capa): apoio "DOMINGO · CHECK-IN ÀS 15H" · "**Quatro** noites, *nenhuma* pressa" (4) (foto: `Infraestrutura / recepcao_externa` (1srwNX))
 - TELA 2: apoio "SEGUNDA · ARCO E FLECHA INCLUSO" · "Segunda, **8h30**: *mira* no centro" (5) (foto: `Atividades e balneário / imagem_arco_flecha_guia_mulher` (1W8swZ))
-- TELA 3: apoio "TERÇA · ARVORISMO (OPCIONAL)" · "Terça, as **copas** *por dentro*" (5) (foto: `Arvorismo / arvorismo_tirolesa_vista_externa_close_pessoa` (1L8G1W))
+- TELA 3: apoio "TERÇA · ARVORISMO (OPCIONAL)" · "Terça, a **aventura** por entre as *árvores*" (7) (editado pelo dono na Central em 30/09) (foto: `Arvorismo / arvorismo_tirolesa_vista_externa_close_pessoa` (1L8G1W))
 - TELA 4: apoio "TERÇA À TARDE · SUP" · "Remar no **ritmo** do *rio*" (5) (foto: `Atividades e balneário / imagem_standup_formosinho_mulher` (1E3nBm))
 - TELA 5: apoio "QUARTA · PASSEIOS DA CIDADE" · "Quarta, **Bonito** a *6 km*" (4) (foto: `Infraestrutura / placa_hotel_com_logo` (1TOVBB))
-- TELA 6: apoio "RESERVE DIRETO" · "Quinta, **café** e *até breve*" (5) + sbreserva.silbeck.com.br/hotelcabanas + WHATSAPP (67) 99117-1648 (foto: `Lanchonete e Café da manhã / casal_cafe_manha` (1BHhSN))
+- TELA 6: apoio "RESERVE PELO LINK DA BIO" · "Quinta, **café** e *até breve*" (5) (foto: `Lanchonete e Café da manhã / casal_cafe_manha` (1BHhSN))
 
 ### Legenda
 Quatro noites em Bonito, de domingo a quinta, quando o hotel fica mais tranquilo. Um roteiro possível, sem pressa.
@@ -492,7 +492,7 @@ Detalhes para o Designer (fotos com ID completo, cuidados e texto alternativo): 
 - TELA 3: apoio "AEROPORTO A 280 KM · VANS, ÔNIBUS OU LOCAÇÃO" · "Voou para **Campo Grande**? *Siga* de estrada" (7) (foto: `Infraestrutura / recepcao` (1l3xlm))
 - TELA 4: apoio "DE CAMPO GRANDE OU DOURADOS: CERCA DE 260 KM" · "A **estrada** já é *viagem*" (5) (foto: `Infraestrutura / placa_hotel_com_logo` (1TOVBB); também está no POST 10, alternativa `recepcao` (1btXrx))
 - TELA 5: apoio "DO CENTRO AO HOTEL · TÁXI OU LOCADORA" · "Os **últimos** 6 km, *no asfalto*" (6) (foto: `Infraestrutura / recepcao` (15P_kj))
-- TELA 6: apoio "WHATSAPP (67) 99117-1648 · RESERVE DIRETO: sbreserva.silbeck.com.br/hotelcabanas" · "Dúvida no **caminho**? *Fala* conosco" (5) (foto: `Infraestrutura / piscina` (1hkm1s))
+- TELA 6: apoio "TIRE DÚVIDAS PELO LINK DA BIO" · "Dúvida no **caminho**? *Fala* conosco" (5) (foto: `Infraestrutura / piscina` (1hkm1s))
 
 ### Legenda
 Avião, carro e os últimos 6 km em asfalto: o caminho até o Hotel Cabanas, em Bonito/MS. Salva este guia.
@@ -540,7 +540,7 @@ Feed 3:4 (1080 × 1440). Um só layout em todas as telas (o dono prefere **sem f
 - TELA 4: apoio "VARANDA PRIVATIVA" · "Conversa **longa**, *vista* para *natureza*" (5) (texto editado pelo dono na Central em 29/09) (foto: `Bangalô / bangalo_triplo_varanda` (1WZSUd), https://drive.google.com/file/d/1WZSUdBcTUezcjnZwCvvxPKNRDwHXxKRA/view)
 - TELA 5: apoio "CAMA DE CASAL + 2 CAMAS DE SOLTEIRO" · "Espaço **amplo**, e *confortável*" (4) (texto editado pelo dono na Central em 29/09) (foto: `Bangalô / bangalo_quadruplo_interna` (1d-UlW), https://drive.google.com/file/d/1d-UlWVw-I06W9AND9MgIZklVzv3hHUTl/view; **trocada pelo Designer**: é a única que mostra a cama de casal e as 2 de solteiro no mesmo quadro; a 1Pcz3a e a 1r9eJt cortam uma das camas de solteiro)
 - TELA 6: apoio "DUCHA COM AQUECIMENTO SOLAR E A GÁS" · "**Banho** quente depois do *rio*" (5) (foto: `Bangalô / bangalo_triplo_banheiro` (1DpWTs), https://drive.google.com/file/d/1DpWTsbU7sOQrbOwTkBesdXu2QEsdEPLn/view; **trocada pelo Designer**: na 1L53TA o vaso sanitário fica em primeiro plano no recorte vertical; na 1DpWTs aparecem o box, o chuveiro e a janela)
-- TELA 7 (CTA): apoio "RESERVE DIRETO · sbreserva.silbeck.com.br/hotelcabanas · WHATSAPP (67) 99117-1648" · "Seu **lugar** de *conexão*, em família" (6) (foto: `Bangalô / bangalo_triplo_interna` (1PmfzQ), https://drive.google.com/file/d/1PmfzQ7cebMpdsT_UvalwFbQvqDEf-uh2/view; **trocada pelo dono na Central em 29/09**; texto no alto, sobre o forro)
+- TELA 7 (CTA): apoio "RESERVE PELO LINK DA BIO" · "Seu **lugar** de *conexão*, em família" (6) (foto: `Bangalô / bangalo_triplo_interna` (1PmfzQ), https://drive.google.com/file/d/1PmfzQ7cebMpdsT_UvalwFbQvqDEf-uh2/view; **trocada pelo dono na Central em 29/09**; texto no alto, sobre o forro)
 - Fora do carrossel: `bangalo_quadruplo_clouset` (1fEZoM, 1HQIwo), `bangalo_triplo_clouset` (1kp8SE, 1Jggn8) e `bangalo_triplo_interna` (1Kemg6, 1PmfzQ, 19qZPQ) ficam como reserva.
 - Se alguma foto mostrar pétalas, rosa ou plaquinha "LOVE", ela sai do carrossel (este post não fala da decoração especial).
 
@@ -573,7 +573,7 @@ Ajustadas pelo Designer ao que as fotos mostram (29/09/2026).
 - TELA 4: "Varanda do Bangalô com mesa de madeira, banco com almofadas e vista para a mata. Texto: Conversa longa, vista para natureza."
 - TELA 5: "Quarto do Bangalô com uma cama de casal ao centro e duas camas de solteiro, uma de cada lado, com toalhas dobradas e forro de madeira. Texto: Espaço amplo e confortável."
 - TELA 6: "Banheiro do Bangalô com box de vidro, chuveiro e parede de ladrilhos estampados. Texto: Banho quente depois do rio."
-- TELA 7: "Quarto do Bangalô com forro de madeira, duas camas arrumadas, porta e janela para a mata. Texto: Seu lugar de conexão, em família. Reserve direto em sbreserva.silbeck.com.br/hotelcabanas ou pelo WhatsApp (67) 99117-1648."
+- TELA 7: "Quarto do Bangalô com forro de madeira, duas camas arrumadas, porta e janela para a mata. Texto: Seu lugar de conexão, em família. Reserve pelo link da bio."
 
 ### A confirmar com o dono
 - **Fotos:** conferidas pelo Designer em 29/09/2026. As telas 5 (1d-UlW) e 6 (1DpWTs) foram trocadas, e a tela 7 foi mantida (ver `design/pecas/2026-10-instagram/POST-16/entrega.md`).
