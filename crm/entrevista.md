@@ -402,4 +402,5 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
   - **Pagamento parcial** (menos de 50%) ou valor diferente: alerta para conferência.
   - **Depois do cancelamento:** o CRM vê o `status=3` no Silbeck, fecha a tarefa sozinho, move o card para **Perdido** (motivo "não pagou") e **avisa a lista de espera** daquelas datas (A3).
   - **Tarefa esquecida:** se a reserva vencida continuar ativa no Silbeck depois de X horas, o alerta sobe para Renata/dono.
+- **Prazos aprovados pelo dono (30/09/2026):** 24 h e 2 h (check-in em até 3 dias), contados da criação da reserva.
 - **Painel "Reservas a receber":** todas as reservas sem sinal (do CRM, do motor com Pix e do Booking), com valor, prazo e cor (no prazo, vence hoje, vencida), para o dia a dia da equipe.
