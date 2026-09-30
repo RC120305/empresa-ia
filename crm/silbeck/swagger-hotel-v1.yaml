@@ -1,0 +1,2228 @@
+openapi: 3.0.3
+info:
+  title: API REST do SB Hotel
+  # description: 
+  # termsOfService: http://swagger.io/terms/
+  # contact:
+  #  email: "programacao@silbeck.com.br"
+  version: 1.0.1
+servers:
+  - url: http://cloud.silbeck.com.br:30503/datasnap/rest
+  - url: http://localhost:8366/datasnap/rest
+# basePath: /datasnap/rest/v1
+tags:
+  - name: "Geral"
+    # description: "Descricao..." 
+  - name: "Cadastros"
+    # description: "Descricao..." 
+paths:
+  /v1/Liberar:
+    post:
+      tags:
+        - "Geral"
+      # summary: ""
+      # description: "descricao..."
+      operationId: "liberar"
+      # description: "Parametros utilizados são do tipo body - application/x-www-form-urlencoded"
+      parameters:
+        - name: "client_id"
+          in: "query"
+          description: "Client id do usuário"
+          required: true
+          schema:
+            type: "string"      
+        - name: "client_secret"
+          in: "query"
+          description: "Client secret do usuário"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LiberarResultado"
+        400:
+          description: "Erro" 
+          
+  /v1/Ocupacao:
+    get:
+      tags:
+        - "Geral"
+      operationId: "ocupacao"
+      parameters:
+        - in: "query"
+          name: "tipoLista"
+          description: "(0 - Geral, 1 - Atividade, 2 - GrupoHospedeEmpresa, 3 - Empresa, 4 - Faturamento, 5 - TipoCategoriaHospede, 6 - CategoriaHospede, 7 - Apto, 8 - TipoApto, 9 - TipoPensao, 10 - Portal, 11 - TipoReserva, 12 - BlocoApto, 13 - GeralPorTipoApto, 14 - RDS)"
+          required: false
+          schema:
+            type: "integer"
+            minimum: 0
+            maximum: 14
+            default: 0
+            enum:
+              - 0
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+              - 7
+              - 8
+              - 9
+              - 10
+              - 11
+              - 12
+              - 13
+              - 14
+            example: 0
+        - in: "query"
+          name: "dataInicial"
+          description: "'Data inicial' no formato yyyy-mm-dd"
+          required: true
+          schema:
+            type: "string"
+            format: "date"
+        - in: "query"
+          name: "dataFinal"
+          description: "'Data final' no formato yyyy-mm-dd"
+          required: true
+          schema:
+            type: "string"
+            format: "date"
+        - in: "query"
+          name: "cidadeOrigemHospede"
+          description: "Filtrar por cidade de origem do hóspede"
+          required: false
+          schema:
+            type: "string"
+            example: "RIO DE JANEIRO"
+        - in: "query"
+          name: "listaUFOrigemHospede"
+          description: "Filtrar por estados específicos, lista de UFs separada por vírgula"
+          required: false
+          schema:
+            type: "string"
+            example: "SC,PR,SP"
+        - in: "query"
+          name: "excetoAtividade"
+          description: "Funciona em conjunto com código de atividade, filtrando todos EXCETO o código enviado"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "codigoAtividade"
+          description: "Código da atividade deve ser consultado com base nos códigos de empresa cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+        - in: "query"
+          name: "excetoEmpresa"
+          description: "Funciona em conjunto com código da empresa, filtrando todos EXCETO o código enviado"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "codigoEmpresa"
+          description: "Código da empresa deve ser consultado com base nos códigos de atividade cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+        - in: "query"
+          name: "excetoFaturamento"
+          description: "Funciona em conjunto com código do faturamento, filtrando todos EXCETO o código enviado"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "codigoFaturamento"
+          description: "Código do faturamento deve ser consultado com base nos códigos de faturamento cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+        - in: "query"
+          name: "excetoCategoriaHospede"
+          description: "Funciona em conjunto com código da categoria de hóspede, filtrando todos EXCETO o código enviado"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "codigoCategoriaHospede"
+          description: "Código da categoria de hóspede deve ser consultado com base nos códigos de categoria de hóspede cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+        - in: "query"
+          name: "excetoApartamento"
+          description: "Funciona em conjunto com código do apartamento, filtrando todos EXCETO o código enviado"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "codigoApartamento"
+          description: "Código do apartamento deve ser consultado com base nos códigos de apartamento cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+        - in: "query"
+          name: "excetoTipoApartamento"
+          description: "Funciona em conjunto com código do tipo de apartamento, filtrando todos EXCETO o código enviado"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "codigoTipoApartamento"
+          description: "Código do tipo de apartamento deve ser consultado com base nos códigos de tipo de apartamento cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+        - in: "query"
+          name: "excetoTipoPensao"
+          description: "Funciona em conjunto com código do tipo de pensão, filtrando todos EXCETO o código enviado"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "codigoTipoPensao"
+          description: "Código do tipo de pensão deve ser consultado com base nos códigos de tipo de pensão cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+        - in: "query"
+          name: "excetoReservaTipo"
+          description: "Funciona em conjunto com código do tipo de reserva, filtrando todos EXCETO o código enviado"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "codigoReservaTipo"
+          description: "Código do tipo de reserva deve ser consultado com base nos códigos de tipo de reserva cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+        - in: "query"
+          name: "excetoTarifario"
+          description: "Funciona em conjunto com código do tarifário, filtrando todos EXCETO o código enviado"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "codigoTarifario"
+          description: "Código do tarifário deve ser consultado com base nos códigos de tarifário cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+        - in: "query"
+          name: "excetoPortal"
+          description: "Funciona em conjunto com código do portal de reserva, filtrando todos EXCETO o código enviado"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "codigoPortal"
+          description: "Código do portal de reserva deve ser consultado com base nos códigos de portal de reserva cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+        - in: "query"
+          name: "excetoEvento"
+          description: "Funciona em conjunto com código do evento, filtrando todos EXCETO o código enviado"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "codigoEvento"
+          description: "Código do evento deve ser consultado com base nos códigos de evento cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+            example: "5"
+        - in: "query"
+          name: "blocoApartamento"
+          description: "Código do bloco deve ser consultado com base nos blocos cadastrados no hotel"
+          required: false
+          schema:
+            type: "string"
+            example: "LESTE"
+        - in: "query"
+          name: "origemDados"
+          description: "(0 - Todos, 1 - Reserva, 2 - Walkin, 3 - Estadia)"
+          required: false
+          schema:
+            type: "integer"
+            minimum: 0
+            maximum: 3
+            default: 0
+            enum:
+              - 0
+              - 1
+              - 2
+              - 3
+        - in: "query"
+          name: "listaPorQuantidadePessoas"
+          description: "Funciona para os tipos de lista (2 - GrupoHospedeEmpresa, 3 - Empresa, 4 - Faturamento) usa para definir se vai calcular por apartamento ou por hóspedes no apartamento"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "agruparPorMes"
+          description: "Funciona para os tipos de lista (2 - GrupoHospedeEmpresa, 3 - Empresa, 4 - Faturamento) usa para definir se vai calcular por apartamento ou por hóspedes no apartamento"
+          required: false
+          schema:
+            type: "boolean"
+        - in: "query"
+          name: "tipoOcupacaoNight"
+          description: "(0 - Ambos, 1 - Somente com RoomNight, 2 - Somente sem RoomNight) RoomNight = Passou a noite"
+          required: false
+          schema:
+            type: "integer"
+            minimum: 0
+            maximum: 2
+            default: 0
+            enum:
+              - 0
+              - 1
+              - 2
+        - in: "query"
+          name: "aptosCondominos"
+          description: "(0 - Ambos, 1 - Sim, 2 - Nao)"
+          required: false
+          schema:
+            type: "integer"
+            minimum: 0
+            maximum: 2
+            default: 0
+            enum:
+              - 0
+              - 1
+              - 2
+        - in: "query"
+          name: "somenteReservaConfirmada"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "separarRefeicaoDiaria"
+          description: "Se vai separar o valor cadastrado para refeições das pensões do valor da diária ou se vai calcular tudo junto"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+        - in: "query"
+          name: "considerarValoresZeradosDiariaMedia"
+          description: "Se ao calcular a diária média, vai incluir as diárias com valores zerados ou se considerará somente diárias com valor maior que zero"
+          required: false
+          schema:
+            type: "boolean"
+            default: false
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OcupacaoResultado"
+        400:
+          description: "Erro"          
+
+  /v1/Disponibilidade:
+    get:
+      tags:
+        - "Geral"
+      operationId: "disponibilidade"
+      parameters:
+        - in: "query"
+          name: "dataInicial"
+          description: "'Data inicial' no formato yyyy-mm-dd"
+          required: true
+          schema:
+            type: "string"           
+        - in: "query"
+          name: "DataFinal"
+          description: "'Data final' no formato yyyy-mm-dd"
+          required: true     
+          schema:
+            type: "string"           
+        - in: "query"
+          name: "DetalharDiaADia"
+          description: "Detalhar a ocupação de cada dia"
+          required: false
+          schema:
+            type: boolean   
+            default: true
+            enum:
+              - true
+              - false
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DisponibilidadeResultado"
+        400:
+          description: "Erro"   
+          
+  /v1/Tarifario/Valor:
+    post:
+      description: "Calcular o valor das diárias"
+      tags:
+        - "Geral"
+      operationId: "tarifarioValor"
+      requestBody:
+        description: "JSON com os parâmetros para calcular o valor da diária <br> Campos obrigatórios:<br>- dataEntrada,<br>- dataSaida,<br>- quantidadeAdulto ou listaCategoriaHospede,<br>- idTipoApartamento ou codigoTipoApartamento"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTarifarioValor"          
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateTarifarioValorResultado"
+        400:
+          description: "Erro"            
+          
+  /v1/ListaEstadia:
+    get:
+      tags:
+        - "Geral"
+      operationId: "listaEstadia"
+      parameters:
+        - in: "query"
+          name: "dataInicial"
+          description: "'Data inicial' no formato yyyy-mm-dd"
+          required: true
+          schema:
+            type: "string"         
+        - in: "query"
+          name: "dataFinal"
+          description: "'Data final' no formato yyyy-mm-dd"
+          required: true     
+          schema:
+            type: "string"           
+        - in: "query"
+          name: "tipoData"
+          description: "Informar o tipo de data para consulta."
+          required: false
+          schema:
+            type: "string"   
+            default: "entrada"
+            enum:
+              - entrada
+              - ocupacao
+              - saida            
+        - in: "query"
+          name: "fechado"
+          description: "Informar se o apartamento esta fechado ou aberto, caso não seja informado, irá trazer os dois. True / False"
+          required: false  
+          schema:
+            type: "string"           
+        - in: "query"
+          name: "tipoOcupacaoNight"
+          required: false
+          description: "0 - Todos (padrão) | 1 - Somente room night | 2 - Somente sem room night"
+          schema:
+            type: "integer"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaEstadiaResultado"
+        400:
+          description: "Erro"    
+          
+  /v1/ListaReserva:
+    get:
+      tags:
+        - "Reserva"
+      operationId: "listaReserva"
+      parameters:
+        - in: "query"
+          name: "dataInicial"
+          description: "'Data inicial' no formato yyyy-mm-dd"
+          required: true
+          schema:
+            type: "string"           
+        - in: "query"
+          name: "dataFinal"
+          description: "'Data final' no formato yyyy-mm-dd"
+          required: true    
+          schema:
+            type: "string"           
+        - in: "query"
+          name: "idReserva"
+          description: "Identificador da reserva"
+          required: false    
+          schema:
+            type: "integer"           
+        - in: "query"
+          name: "tipoData"
+          description: "Informar o tipo de data para consulta."
+          required: false   
+          schema:
+            type: "string"           
+            default: "entrada"
+            enum:
+              - cadastro
+              - efetivacao
+              - entrada
+              - ocupacao
+              - saida           
+        - in: "query"
+          name: "status"
+          description: "Status da reserva. Padrão: Todos \n 0 - Em andamento \n 1 - Não confirmada \n 2 - Confirmada \n 3 - Cancelada \n 4 - Check-in Efetuado \n 5 - No-Show"
+          required: false
+          schema:
+            type: "integer"
+        - in: "query"
+          name: "ativo"
+          description: "True = Somente ativas | False = Somente inativas | Não informado = todas (ativas, inativas)"
+          required: false    
+          schema:
+            type: "boolean"           
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaReservaResultado"
+        400:
+          description: "Erro"  
+      
+  /v1/Lancamento:
+    get:
+      tags:
+        - "Geral"
+      operationId: "lancamento"
+      parameters:
+        - in: "query"
+          name: "dataInicial"
+          description: "'Data inicial' no formato yyyy-mm-dd"
+          required: true
+          schema:
+            type: "string" 
+        - in: "query"
+          name: "dataFinal"
+          description: "'Data final' no formato yyyy-mm-dd"
+          required: true
+          schema:
+            type: "string"      
+        - in: "query"
+          name: "idSetor"
+          required: false
+          schema:
+            type: "integer" 
+        - in: "query"
+          name: "codigoSetor"
+          required: false
+          schema:
+            type: "string" 
+        - in: "query"
+          name: "idProduto"
+          required: false
+          schema:
+            type: "integer" 
+        - in: "query"
+          name: "codigoProduto"
+          required: false
+          schema:
+            type: "string" 
+        - in: "query"
+          name: "padraoRds"
+          description: "Quando habilitado, seguirá os padrões do RDS, se for estornado antes do período retornará um valor negativo, se for lançado e estornado dentro do período retornará um valor zerado, caso for ativo retornará o valor positivo"
+          required: false
+          schema:
+            type: "boolean" 
+        - in: "query"
+          name: "incluirInativos"
+          description: "Inclui registros inativos/estornados na consulta"
+          required: false
+          schema:
+            type: "boolean"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaLancamentoResultado"
+        400:
+          description: "Erro"            
+ 
+  /v1/Apartamento:
+    get:
+      tags:
+        - "Cadastros"
+      operationId: "apartamento"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaApartamentoResultado"
+        400:
+          description: "Erro"    
+          
+  /v1/Apartamento/Limpeza:
+    put:
+      tags: 
+        - "Cadastros"
+      operationId: "apartamentoLimpeza"
+      requestBody:
+        description: "Alterar status do apartamento"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateApartamentoLimpeza"       
+      responses:
+        200:
+          description: "Sucesso"
+        400:
+          description: "Erro"    
+  
+  /v1/TipoApartamento:
+    get:
+      tags:
+        - "Cadastros"
+      operationId: "tipoApartamento"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaTipoApartamentoResultado"
+        400:
+          description: "Erro"             
+  
+  /v1/Produto:
+    get:
+      tags:
+        - "Cadastros"
+      operationId: "produto"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaProdutoResultado"
+        400:
+          description: "Erro"   
+  
+  /v1/Insumo:
+    get:
+      tags:
+        - "Cadastros"
+      operationId: "insumo"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaInsumoResultado"
+        400:
+          description: "Erro"   
+          
+  /v1/Setor:
+    get:
+      tags:
+        - "Cadastros"
+      operationId: "setor"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaSetorResultado"
+        400:
+          description: "Erro" 
+  
+  /v1/TipoPensao:
+    get:
+      tags:
+        - "Cadastros"
+      operationId: "tipoPensao"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaTipoPensaoResultado"
+        400:
+          description: "Erro" 
+          
+  /v1/CategoriaHospede:
+    get:
+      tags:
+        - "Cadastros"
+      operationId: "categoriaHospede"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaCategoriaHospedeResultado"
+        400:
+          description: "Erro" 
+          
+  /v1/Cidade:
+    get:
+      tags:
+        - "Cadastros"
+      operationId: "cidade"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaCidadeResultado"
+        400:
+          description: "Erro" 
+  
+  /v1/Profissao:
+    get:
+      tags:
+        - "Cadastros"
+      operationId: "profissao"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaProfissaoResultado"
+        400:
+          description: "Erro"           
+  
+  /v1/Empresa:
+    get:
+      description: "Observação: serão retornado nos máximo 250 registros. Utilize o parâmetro 'Pagina' para buscar o registros seguintes."
+      tags:
+        - "Cadastros"
+      operationId: "empresa"
+      parameters:
+        - in: "query"
+          name: "pagina"
+          required: false
+          schema:
+            type: "integer"  
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaEmpresaResultado"
+        400:
+          description: "Erro"        
+  
+  /v1/Fornecedor:
+    get:
+      description: "Observação: serão retornado nos máximo 250 registros. Utilize o parâmetro 'Pagina' para buscar o registros seguintes."
+      tags:
+        - "Cadastros"
+      operationId: "fornecedor"
+      parameters:
+        - in: "query"
+          name: "pagina"
+          required: false
+          schema:
+            type: "integer"           
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaFornecedorResultado"
+        400:
+          description: "Erro"      
+  
+  /v1/Hospede:
+    get:
+      description: "Observação: serão retornado nos máximo 250 registros. Utilize o parâmetro 'Pagina' para buscar o registros seguintes."
+      tags:
+        - "Cadastros"
+      operationId: "hospede"
+      parameters:
+        - in: "query"
+          name: "pagina"
+          required: false 
+          schema:
+            type: "integer"          
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaHospedeResultado"
+        400:
+          description: "Erro"            
+  
+  /v1/Tarifario:
+    post:
+      description: "Inclusão / alteração de tarifário"
+      tags:
+        - "Cadastros"
+      operationId: "tarifario"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTarifario"          
+      responses:
+        200:
+          description: "Sucesso"
+        400:
+          description: "Erro" 
+  
+  /v1/FichaHospede:
+    post:
+      description: "Inclusão / alteração de hóspede e ficha nacional de registro de hóspede"
+      tags:
+        - "Geral"
+      operationId: "fichaHospede"
+      requestBody:
+        description: "Incluir/Alterar hóspede"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFichaHospede"          
+      responses:
+        200:
+          description: "Sucesso"
+        400:
+          description: "Erro"           
+  
+  /v1/ExtratoConta:
+    get:
+      tags:
+        - "Geral"
+      operationId: "extratoconta"
+      parameters:
+        - in: "query"
+          name: "codigoApartamento"
+          description: "Número de apartamento"
+          schema:
+            type: "string" 
+        - in: "query"
+          name: "codigoFuncionario"
+          description: "Código do usuário"
+          schema:
+            type: "string" 
+        - in: "query"
+          name: "codigoAvulsa"
+          description: "Código da avulsa"
+          schema:
+            type: "string" 
+        - in: "query"
+          name: "codigoEmpresa"
+          description: "Código da empresa"
+          schema:
+            type: "string" 
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListaExtratoContaResultado"
+        400:
+          description: "Erro"     
+          
+  /v1/MapaApartamento:
+    get:
+      tags:
+        - "Geral"
+      operationId: "mapaApartamento"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MapaApartamentoResultado"
+        400:
+          description: "Erro"            
+          
+  /v1/reserva:
+    post:
+      description: "Inclusão de reserva"
+      tags: 
+        - "Reserva"
+      summary: "Adicionar uma nova reserva"  
+      operationId: "reserva"
+      requestBody:
+        description: "Incluir reserva"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReserva"  
+      responses:
+        200:
+          description: Sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateReservaStatus200' 
+        400:
+          description: Erro 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusCode400'
+
+  /v1/reserva/checkin:
+    post:
+      description: "Check-in de reserva"
+      tags:
+        - "Reserva"
+      operationId: "reservaCheckin"
+      requestBody:
+        description: "Check-in por IdReservaItem ou IdReserva + CodigoApartamento"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateReservaCheckin"
+      responses:
+        200:
+          description: "Sucesso"
+        400:
+          description: "Erro"
+        404:
+          description : "Reserva não encontrada"
+                
+  /v1/Fechadura/Senha:
+    post:
+      description: "Inclusão/Alteração de senha da fechadura eletrônica na reserva"
+      tags: 
+        - "Geral"
+      operationId: "fechaduraSenha"
+      requestBody:
+        description: "Incluir/Alterar senha da fechadura eletrônica"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFechaduraSenha"
+      responses:
+        200:
+          description: "Sucesso"
+        400:
+          description: "Erro"
+        404:
+          description : "Não encontrado"
+          
+  /v1/Fechadura/Checkin:
+    post:
+      description: "Realizar check-in da reserva no apartamento"
+      tags: 
+        - "Geral"
+      operationId: "fechaduraCheckin"
+      requestBody:
+        description: "Incluir check-in no apartamento"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateFechaduraCheckin"
+      responses:
+        200:
+          description: "Sucesso"
+        400:
+          description: "Erro"
+        404:
+          description : "Não encontrado"
+
+  /v1/Adiantamento:
+    post:
+      description: "Inserir adiantamento vinculado a um item de reserva"
+      tags:
+        - "Reserva"
+      operationId: "inserirAdiantamento"
+      requestBody:
+        description: "Dados do adiantamento a ser inserido. O campo 'idConta' corresponde ao ID do item da reserva (idReservaItem)."
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAdiantamento"
+      responses:
+        200:
+          description: "Sucesso"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdiantamentoResultado"
+        400:
+          description: "Erro"
+
+components:
+  schemas:
+    ListaReservaResultado:
+      type: object
+      properties:
+        listaReserva:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReservaResultado"
+    ReservaResultado:
+      type: object
+      properties: 
+        id:
+          type: integer
+        dataHora:
+          type: string
+          format: date-time (yyyy-mm-dd) 
+        idNoPortal:
+          type: string
+        nomePortal:
+          type: string
+        idFaturamento:
+          type: integer  
+        faturamento:
+          type: string
+        codigoRegime:
+          type: string
+        empresa:
+          type: string
+        titular:
+          type: string
+        numeroDocumento:
+          type: string  
+        tipoReserva:
+          type: string
+        nomeUsuario:
+          type: string
+        telefone:
+          type: string
+        email:
+          type: string 
+        voucher:
+          type: string
+        IDReservaPortal:
+          type: integer   
+        nomePromotorDeVendas:
+          type: string
+        comissaoPromotorDeVendas:
+          type: number
+          format: double
+        percentualComissaoEmpresa:
+          type: number
+          format: double 
+        codigoEmpresa:
+          type: string 
+        listaReservaItem:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              idApartamento:
+                type: integer  
+              apartamento:
+                type: string
+              idTipoApartamento:
+                type: integer
+              codigoTipoApartamento:
+                type: string
+              nomeTipoApartamento:
+                type: string  
+              nomeTipoPensao:
+                type: string
+              quantidadeAdulto:
+                type: integer
+              quantidadeCrianca:
+                type: integer  
+              dataEntrada:
+                type: string
+                format: date-time (yyyy-mm-dd)
+              dataSaida:
+                type: string
+                format: date-time (yyyy-mm-dd)
+              qtdeApartamento:
+                type: integer  
+              idTipoPensao:
+                type: string  
+              status:
+                type: integer  
+              statusDescricao:
+                type: string
+              idTarifario: 
+                type: integer  
+              idEstadia:
+                type: integer
+              dataHoraEfetivacao:
+                type: string
+                format: (yyyy-mm-dd hh:mm:ss)
+              valorTotalDiaria:
+                type: number
+                format: double
+              listaHospede:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    idHospede:
+                      type: integer
+                    nome:
+                      type: string
+                    adulto:
+                      type: boolean  
+                    numeroDocumento:
+                      type: string  
+                    categoria:
+                      type: string
+                    dataNascimento:
+                      type: string
+                      format: date-time (yyyy-mm-dd)
+                    telefone:
+                      type: string
+                    celular:
+                      type: string
+                    email:
+                      type: string
+                    cidade:
+                      type: string
+                    estado:
+                      type: string
+                    pais:
+                      type: string
+                    sexo:
+                      type: string
+              listaData:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    data:
+                      type: string
+                      format: date-time (yyyy-mm-dd)
+                    valorDiaria:
+                      type: number
+                      format: Double
+                    idTarifario:
+                      type: integer
+                    idTipoPensao:
+                      type: integer  
+                    idMoeda:
+                      type: integer
+                    simboloMoeda:
+                      type: string   
+              listaTotal:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    idQuebra:
+                      type: integer
+                    idMoeda:
+                      type: integer
+                    codigoMoeda:
+                      type: string
+                    simboloMoeda:
+                      type: string
+                    adiantamento:
+                      type: number
+                      format: double
+                    usoCredito:
+                      type: number
+                      format: double
+                    diaria:
+                      type: object
+                      properties:
+                        valor:
+                          type: number
+                          format: double
+                        taxaServico:
+                          type: number
+                          format: double
+                        taxaISS:
+                          type: number
+                          format: double
+                    diferencaDiaria:
+                      type: object
+                      properties:
+                        valor:
+                          type: number
+                          format: double
+                        taxaServico:
+                          type: number
+                          format: double
+                        taxaISS:
+                          type: number
+                          format: double
+                    extra:
+                      type: object
+                      properties:
+                        valor:
+                          type: number
+                          format: double
+                        taxaServico:
+                          type: number
+                          format: double
+                        taxaISS:
+                          type: number
+                          format: double
+                    turismo:
+                      type: object
+                      properties:
+                        valor:
+                          type: number
+                          format: double
+                        taxaServico:
+                          type: number
+                          format: double
+                        taxaISS:
+                          type: number
+                          format: double  
+                    totalGeral:
+                      type: object
+                      properties:
+                        valor:
+                          type: number
+                          format: double
+                        taxaServico:
+                          type: number
+                          format: double
+                        taxaISS:
+                          type: number
+                          format: double
+              listaAdiantamento:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer   
+                    idFormaPagamento:
+                      type: integer
+                    idContaCorrente:
+                      type: integer
+                    data:
+                      type: string
+                      format: date-time (yyyy-mm-dd)
+                    situacao:
+                      type: string
+                      description: "Ativo<br>Estornado<br>Transferido<br>Cancelado<br>Devolvido"        
+                    valor:
+                      type: number
+                      format: Double
+                    observacao:
+                      type: string
+                    confirmar:
+                      type: boolean
+                    simboloMoeda:
+                      type: string
+                    iDMoeda:
+                      type: integer 
+              listaItemExtra:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nomeCategoriaHospede:
+                      type: string   
+                    data:
+                      type: string
+                      format: date-time (yyyy-mm-dd)
+                    tipo:
+                      type: string
+                    extra:
+                      type: string
+                    produto:
+                      type: string
+                    quantidade:
+                      type: integer
+                    idMoeda:
+                      type: integer
+                    simboloMoeda:
+                      type: string
+                    valor:
+                      type: number
+                      format: Double
+                    controle:
+                      type: string 
+                    cobrar:
+                      type: boolean
+    ListaEstadiaResultado:
+      type: "object"
+      properties:
+        listaEstadia:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/EstadiaResultado"
+    EstadiaResultado:
+      type: "object"
+      properties:    
+        id:
+          type: "integer"
+        apartamento:
+          type: "string"
+        fechado:
+          type: "integer"
+        codigoTipoApartamento:
+          type: "string"
+        nomeTipoApartamento:
+          type: "string"
+        dataEntrada: 
+          type: "string"
+          format: "date-time (yyyy-mm-dd)"
+        horaEntrada:
+          type: "string"
+        dataSaida: 
+          type: "string"
+          format: "date-time (yyyy-mm-dd)"
+        horaSaida: 
+          type: "string"
+        faturamento: 
+          type: "string"
+        empresa: 
+          type: "string"
+        idReserva: 
+          type: "integer"
+        idReservaNoPortal: 
+          type: "string"
+        nomePortal: 
+          type: "string"
+        tipoReserva: 
+          type: "string"
+        dataHoraReserva:
+          type: "string"
+          format: "date-time (yyyy-mm-dd)"               
+        nomeTipoPensao:
+          type: "string"
+        observacaoInterna:
+          type: "string"
+        observacaoExterna:
+          type: "string"
+        observacaoAlimentosEBebidas:
+          type: "string"
+        listaHospede:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              id:
+                type: "integer"
+              idHospede:
+                type: "integer"
+              nome:
+                type: "string"
+              categoria:
+                type: "string"
+              dataNascimento:
+                type: "string"
+                format: "date-time (yyyy-mm-dd)"
+              telefone:
+                type: "string"
+              celular:
+                type: "string"
+              email:
+                type: "string"
+              cidade:
+                type: "string"
+              estado:
+                type: "string"
+              pais:
+                type: "string"
+              sexo:
+                type: "string"
+        listaData:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              data:
+                type: "string"
+                format: "date-time (yyyy-mm-dd)"
+              ValorDiaria:
+                type: number
+                format: Double
+                description : "Retrocompatibilidade com ValorDiariaPrevista"
+                example: 900.5
+              ValorDiariaPrevista:
+                type: number
+                format: Double
+                description : "Usar este campo no lugar do valorDiaria"
+                example: 900.5
+              ValorDiariaMediaPrevista:
+                type: number
+                format: Double
+                example: 900.5
+              ValorDiferencaDiariaLiquidaPrevista:
+                type: number
+                format: Double
+                example: 10
+              ValorDiferencaDiariaMediaPrevista:
+                type: number
+                format: Double
+                example: 10
+              ValorDiariaGerou:
+                type: number
+                format: Double
+                example: 800.5
+              ValorDiariaMediaGerou:
+                type: number
+                format: Double
+                example: 800.5
+              ValorDiferencaDiariaGerou:
+                type: number
+                format: Double
+                example: 15.5
+              ValorDiferencaDiariaMediaGerou:
+                type: number
+                format: Double
+                example: 15.5
+              ValorDiariaInclusoGerou:
+                type: number
+                format: Double
+                example: 35
+    DisponibilidadeResultado:
+      type: "object"
+      properties:
+        listaTipoApto:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              id: 
+                type: "integer"
+              codigo:
+                type: "string"
+              nome:
+                type: "string"
+              qtdeMapa: 
+                type: "integer"
+              listaSituacaoTipoApto:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    data: 
+                      type: "string"
+                      format: "date-time (yyyy-mm-dd)"
+                    qtdeDisponivel:
+                      type: "integer"
+                    qtdeOcupado:
+                      type: "integer"
+                    qtdeManutencao:
+                      type: "integer"
+    OcupacaoResultado:
+      type: "object"
+      properties:
+        listaOcupacao:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              data:
+                type: "string"
+                format: "date-time (yyyy-mm-dd)"
+              pax:
+                type: "object"
+                properties:
+                  diaAnterior: 
+                    type: "integer"
+                  saida: 
+                    type: "integer"
+                  entrada: 
+                    type: "integer"
+                  total: 
+                    type: "integer"
+                  percentual: 
+                    type: "number"
+                  diariaMedia: 
+                    type: "integer"
+              apto:
+                type: "object"
+                properties:
+                  diaAnterior: 
+                    type: "integer"
+                  saida: 
+                    type: "integer"
+                  entrada: 
+                    type: "integer"
+                  total: 
+                    type: "integer"
+                  percentual: 
+                    type: "number"
+                  diariaMedia: 
+                    type: "number"
+              totalDiaria:
+                type: "number"
+              revPar: 
+                type: "number"
+        mediaPermanencia:
+          type: "number"
+        paxTotal:
+          type: "integer"
+        paxTotalPercentual:
+          type: "number"
+        paxTotalDiariaMedia:
+          type: "number"
+        aptoTotal:
+          type: "integer"
+        aptoTotalPercentual:
+          type: "number"
+        aptoTotalDiariaMedia:
+          type: "number"
+        totalDiaria:
+          type: "number"
+    LiberarResultado:
+      type: "object"
+      properties:
+        access_token:
+          type: "string"
+        token_type:
+          type: "string"
+        expires_in:
+          type: "integer"
+    ListaApartamentoResultado:
+      type: "object"
+      properties:
+        listaApartamento:
+          type: "array"
+          items: 
+            properties:
+              id:
+                type: "integer"
+              codigo:
+                type: "string"
+              codigoTipoApartamento:
+                type: "string"
+    ListaTipoApartamentoResultado:
+      type: "object"
+      properties:
+        listaTipoApartamento:
+          type: "array"
+          items: 
+            properties:
+              id:
+                type: "integer"
+              codigo:
+                type: "string"
+              nome:
+                type: "string"
+              quantidade:
+                type: "integer"
+              maximoOcupantes:
+                type: "integer"
+    ListaProdutoResultado:
+      type: "object"
+      properties:
+        listaProduto:
+          type: "array"
+          items:      
+            properties:
+              id:
+                type: "integer"
+              codigo:
+                type: "string"
+              nome:
+                type: "string"      
+    ListaInsumoResultado:
+      type: "object"
+      properties:
+        listaInsumo:
+          type: "array"
+          items:      
+            properties:
+              id:
+                type: "integer"
+              codigo:
+                type: "string"
+              nome:
+                type: "string"      
+    ListaSetorResultado:
+      type: "object"
+      properties:
+        listaSetor:
+          type: "array"
+          items:      
+            properties:
+              id:
+                type: "integer"
+              codigo:
+                type: "string"
+              nome:
+                type: "string"               
+    ListaTipoPensaoResultado:
+      type: "object"
+      properties:
+        listaTipoPensao:
+          type: "array"
+          items:      
+            properties:
+              id:
+                type: "integer"
+              codigo:
+                type: "string"
+              nome:
+                type: "string"               
+    ListaCategoriaHospedeResultado:
+      type: "object"
+      properties:
+        listaCategoriaHospede:
+          type: "array"
+          items:      
+            properties:
+              id:
+                type: "integer"                             
+              nome:
+                type: "string"               
+              tipo:
+                type: "integer"
+                description: "1 - Adulto Pagante<br>2 - Adulto Cortesia<br>3 - Criança pagante<br>4 - Criança cortesia"                
+    ListaLancamentoResultado:
+      type: "object"
+      properties:
+        ListaProduto:
+          type: "array"
+          items:      
+            properties:
+              id:
+                type: "string"
+              dataHora:
+                type: "string"
+                format: "date-time (yyyy-mm-dd hh:mm:ss)"
+              idProduto:
+                type: "integer"    
+              codigoProduto:
+                type: "string"
+              nomeProduto:
+                type: "string"
+              idSetor:
+                type: "integer"    
+              codigoSetor:
+                type: "string"
+              nomeSetor:
+                type: "string"              
+              quantidade:
+                type: "number"
+              valorUnitario:
+                type: "number"
+              ativo:
+                type: "boolean"
+              dataHoraEstorno:
+                type: "string"
+                format: "date-time (yyyy-mm-dd hh:mm:ss)"
+              nomeUsuario:
+                type: "string"    
+              idUsuario:
+                type: "integer"             
+    PessoaResultado:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        codigo:
+          type: "string"
+        nome:
+          type: "string"               
+        dataNascimento:
+          type: "string"
+          format: "date-time (yyyy-mm-dd hh:mm:ss)"  
+        telefone:
+          type: "string"               
+        celular:
+          type: "string"               
+        email:
+          type: "string"               
+        cidade:
+          type: "string"
+        cep:
+          type: "string"
+        bairro:
+          type: "string"
+        estado:
+          type: "string"               
+        pais:
+          type: "string"               
+        sexo:
+          type: "string"               
+        documento:
+          type: "string"               
+        tipoPessoa:
+          type: "string"    
+    ListaEmpresaResultado:
+      type: "object"
+      properties:
+        listaEmpresa:
+          type: "array"          
+          items:
+            $ref: "#/components/schemas/PessoaResultado"
+    ListaFornecedorResultado:
+      type: "object"
+      properties:
+        listaFornecedor:
+          type: "array"          
+          items:
+            $ref: "#/components/schemas/PessoaResultado"          
+    ListaHospedeResultado:
+      type: "object"
+      properties:
+        listaHospede:
+          type: "array"          
+          items:
+            $ref: "#/components/schemas/PessoaResultado"
+    UpdateTarifario:
+      type: "object"
+      properties:
+        dataInicial:
+          type: "string"
+          format: "date-time (yyyy-mm-dd)"
+        dataFinal:
+          type: "string"
+          format: "date-time (yyyy-mm-dd)"
+        idTarifario:
+          type: "integer"
+        pensoes:
+          type: "array"
+          items:
+            properties:
+              idTipoPensao:
+                type: "integer"
+              valores:
+                type: "array"
+                items:
+                  properties:
+                    idTipoApartamento:
+                      type: "integer"
+                    idCategoriaHospede:
+                      type: "integer"
+                    quantidade:
+                      type: "integer"                    
+                    valor:
+                      type: "number"                  
+    ListaProfissaoResultado:
+      type: "object"
+      properties:
+        listaProfissao:
+          type: "array"
+          items:      
+            properties:
+              id:
+                type: "integer"
+              nome:
+                type: "string"      
+    ListaCidadeResultado:
+      type: "object"
+      properties:
+        listaCidade:
+          type: "array"
+          items:      
+            properties:
+              id:
+                type: "integer"
+              nome:
+                type: "string"   
+              estado:
+                type: "string"                 
+    ListaExtratoContaResultado:
+      type: "object"
+      properties:
+        listaSetor:
+          type: "array"
+          items:      
+            properties:
+              id:
+                type: "integer"
+              nome:
+                type: "string"               
+              idMoeda:
+                type: "integer"              
+              simboloMoeda:
+                type: "string"
+              valorTotal:
+                type: "number"
+              listaLancamento:
+                type: "array"
+                items:      
+                  properties:
+                    id:
+                      type: "integer"
+                    idProduto:
+                      type: "integer"              
+                    codigoProduto:
+                      type: "string"               
+                    nomeProduto:
+                      type: "string"               
+                    dataHora:
+                      type: "string"
+                      format: "date-time (yyyy-mm-dd hh:mm:ss)"
+                    quantidade:
+                      type: "number"               
+                    valorUnitario:
+                      type: "number"
+                    valorTotal:
+                      type: "number"
+                    ativo:
+                      type: "boolean"
+                    faturado:
+                      type: "boolean"
+                    nomeUsuario:
+                      type: "string"   
+                    idUsuario:
+                      type: "integer" 
+        listaTotal:
+          type: "array"
+          items:      
+            properties:
+              idMoeda:
+                type: "integer"
+              simboloMoeda:
+                type: "string" 
+              faturado:
+                type: "boolean"             
+              valorTotal:
+                type: "number"
+              valorDesconto:
+                type: "number"
+              valorTaxaServico:
+                type: "number"
+              valorTaxaISS:
+                type: "number"
+              valorAdiantamento:
+                type: "number"
+              valorAberto:
+                type: "number"    
+    ManutencaoResultado:
+      type: object
+      properties:
+        id:
+          type: integer
+        dataInicial:
+          type: "string"
+          format: "date-time (yyyy-mm-dd)"
+        dataFinal:
+          type: "string"
+          format: "date-time (yyyy-mm-dd)"
+        motivo:
+          type: "string"
+        situacao:
+          type: integer
+          enum:
+              - 0 = Em aberto
+              - 1 = Liberado
+              - 2 = Cancelado
+    MapaApartamentoResultado:
+      type: array
+      items:
+        properties:
+          id:
+            type: integer
+          codigo:
+            type: string
+          codigoTipoApartamento:
+            type: string
+          situacao:
+            type: string
+          limpeza:
+            type: integer
+            enum:
+              - 0 = false
+              - 1 = true
+          estadia: 
+            $ref: "#/components/schemas/EstadiaResultado"
+          manutencao: 
+            $ref: "#/components/schemas/ManutencaoResultado"
+          reserva: 
+            $ref: "#/components/schemas/ReservaResultado"
+    UpdateApartamentoLimpeza:
+      type: "object"
+      properties:
+        codigo:
+          type: "string"
+        limpeza:
+          type: "boolean"                
+    UpdateFichaHospede:
+      type: "object"
+      properties:
+        idReservaItemHospede:
+          type: "string"
+          description: "campo 'id' do array 'listaReservaItem'"
+        nome:
+          type: "string"
+        email:
+          type: "string"
+        telefone:
+          type: "string"
+        celular:
+          type: "string"
+        profissao:
+          type: "string"
+        paisNacionalidade:
+          type: "string"
+        dataNascimento:
+          type: "string"
+          format: "date-time (yyyy-mm-dd)"
+        sexo:
+          type: "string"
+          description: "F - Feminino<br>M - Masculino<br>N - Não declarado<br>O - Outros"
+        tipoDocumento:
+          type: "integer"
+          description: "1 - CPF<br>2 - RG<br>3 - CN - Certidão de Nascimento<br>4 - CIE - Cédula de Identidade do Estrangeiro<br>5 - PASSAPORTE"
+        numeroDocumento:
+          type: "string"
+        orgaoExpedidor:
+          type: "string"
+        cpf:
+          type: "string"
+        logradouro:
+          type: "string"
+        numero:
+          type: "string"
+        complementoLogradouro:
+          type: "string"
+        cidade:
+          type: "string"
+        estado:
+          type: "string"
+          description: "UF = RS, SC, PR, SP, ..."
+        pais:
+          type: "string"
+        bairro:
+          type: "string"
+        cep:
+          type: "string"
+        codigoIbgeCidade:
+          type: "string"
+        ultimaProcedenciaPais:
+          type: "string"
+        ultimaProcedenciaCidade:
+          type: "string"
+        ultimaProcedenciaEstado:
+          type: "string"
+        ultimaProcedenciaCodigoIbgeCidade:
+          type: "string"
+        proximoDestinoPais:
+          type: "string"
+        proximoDestinoCidade:
+          type: "string"
+        proximoDestinoEstado:
+          type: "string"
+        proximoDestinoCodigoIbgeCidade:
+          type: "string"
+        raca:
+          type: "integer"
+          description: "1 - Amarela<br>2 - Branca<br>3 - Indígena<br>4 - Parda<br>5 - Preta<br>6 - Não informar"
+        deficiencia:
+          type: "integer"
+          description: "1 - Não<br>2 - Não informar<br>3 - Física<br>4 - Auditiva<br>5 - Visual<br>6 - Intelectual<br>7 - Múltipla"
+        motivoViagem:
+          type: "integer"
+          description: "1 - Compras<br>2 - Congresso<br>3 - Estudos<br>4 - Lazer<br>5 - Negócios<br>6 - Parentes<br>7 - Religião<br>8 - Saúde"
+        meioTransporte:
+          type: "integer"
+          description: "1 - Ônibus<br>2 - Automóvel<br>3 - Avião<br>4 - Moto<br>5 - Navio<br>6 - A pé<br>7 - Trem<br>8 - Bicicleta"
+        previsaoEntrada:
+          type: "string"
+          format: "date-time (yyyy-mm-dd hh:mm:ss)"
+        previsaoSaida:
+          type: "string"
+          format: "date-time (yyyy-mm-dd hh:mm:ss)"
+    UpdateTarifarioValor:
+      type: "object"
+      properties:
+        dataEntrada:
+          type: "string"
+          format: "date-time (yyyy-mm-dd)"
+        dataSaida:
+          type: "string"
+          format: "date-time (yyyy-mm-dd)"
+        quantidadeAdulto:
+          type: "integer"
+        quantidadeCrianca:
+          type: "integer"
+        idTipoPensao:
+          type: "integer"
+        idTipoApartamento:
+          type: "integer"
+        codigoTipoApartamento:
+          type: "string"
+        listaCategoriaHospede:
+          type: array
+          items:
+            properties:
+              id:
+                type: integer
+              quantidade:
+                type: integer
+    UpdateTarifarioValorResultado:
+      type: array
+      items:
+        properties:
+          data:
+            type: "string"
+            format: "date-time (yyyy-mm-dd)"            
+          valor:
+            type: number
+            format: double
+          valorTaxaServico:
+            type: number
+            format: double
+          valorTaxaISS:
+            type: number
+            format: double
+    UpdateReserva:
+      type: object
+      properties: 
+        idFaturamento:
+          type: integer
+          description: Opcional
+          example: 1
+        codigoRegime:
+          type: string
+          description: Opcional
+          example: 7
+        titular:
+          type: string 
+          example: Teste Swagger
+        numeroDocumento:
+          type: string
+          description: Opcional
+          example: 123.123.123-00
+        email:
+          type: string
+          description: Opcional
+          example: teste@teste.com.br
+        telefone:
+          type: string 
+          description: Opcional
+          example: (48) 99999-9999
+        voucher:
+          type: string
+          description: Opcional
+          example: TesteVoucherSwagger
+        observacao:
+          type: string
+          description: Opcional
+          example: Irá trazer o pet.   
+        idReservaPortal:
+          type: integer 
+          description: Opcional
+          example: 1166
+        codigoEmpresa:
+          type: string
+          description: Opcional
+          example: 503
+        listaReservaItem:
+            type: array
+            items:
+              type: object
+              properties:
+                idApartamento:
+                  type: integer
+                  description: Opcional
+                  example: 1
+                idTipoApartamento:
+                  type: integer
+                  example: 5
+                quantidadeAdulto:
+                  type: integer
+                  example: 2
+                quantidadeCrianca:
+                  type: integer
+                  description: Opcional
+                  example: 1
+                dataEntrada:
+                  type: string
+                  format: date-time (yyyy-mm-dd)
+                  example: 2025-05-10
+                dataSaida:
+                  type: string
+                  format: date-time (yyyy-mm-dd)
+                  example: 2025-05-11
+                qtdeApartamento:
+                  type: integer
+                  example: 1
+                idTipoPensao:
+                  type: string
+                  description: Opcional
+                  example: 1
+                idTarifario: 
+                  type: integer
+                  description: Opcional
+                  example: 1
+                valorTotalDiaria:
+                  type: number 
+                  format: double
+                  example: 900.50
+                listaHospede:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      nome:
+                        type: string
+                        example: Teste adulto
+                      adulto:
+                        type: boolean
+                        example: true
+                      numeroDocumento:
+                        type: string
+                        description: Opcional
+                        example: 123.123.123-12
+                listaData:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      data:
+                        type: string
+                        format: date-time (yyyy-mm-dd)
+                        example: 2025-05-10
+                      valorDiaria:
+                        type: number
+                        format: double
+                        example: 900.5
+                      idTarifario:
+                        type: integer 
+                        description: Opcional
+                        example: 1
+                      idTipoPensao:
+                        type: integer
+                        description: Opcional
+                        example: 1
+    UpdateReservaCheckin:
+      type: object
+      properties:
+        idReservaItem:
+          type: integer
+          description: Obrigatório quando não informado idReserva
+        idReserva:
+          type: integer
+          description: Obrigatório quando não informado idReservaItem          
+        codigoApartamento:
+          type: string
+          description: Obrigatório quando informado idReserva          
+    UpdateFechaduraSenha:
+      type: object
+      properties:
+        idReserva:
+          type: string
+        senha:
+          type: string
+    UpdateFechaduraCheckin:
+      type: object
+      properties:
+        idReserva:
+          type: string
+        dataHora:
+          type: string
+          format: date-time (yyyy-mm-dd hh:mm:ss)
+
+    UpdateReservaStatus200:
+       type: object
+       properties:
+          id:
+            type: string
+            description: ID da Reserva
+            
+    StatusCode400:
+      type: object
+      properties:
+        erro:
+          type: array
+          items: 
+            type: object
+            properties:
+              codigo: 
+                type: string
+              mensagem:
+                type: string
+              campoFoco:
+                type: string
+    UpdateAdiantamento:
+      type: object
+      properties:
+        valor:
+          type: number
+          format: double
+          description: "Valor do adiantamento"
+          example: 500.00
+        idConta:
+          type: integer
+          description: "ID do item da reserva (idReservaItem) retornado em /v1/ListaReserva"
+          example: 1234
+        tipoFormaPagamento:
+          type: integer
+          description: "Tipo da forma de pagamento.<br>1 - Dinheiro<br>4 - Cartão<br>5 - Outra moeda<br>6 - Cheque<br>8 - Depósito bancário (PIX)"
+          example: 4
+        bandeiraCartao:
+          type: string
+          description: "Identificador da bandeira do cartão de crédito. Utilizado para buscar o cartão de crédito automaticamente. Opcional."
+          example: "00001"
+        nsuCartao:
+          type: string
+          description: "NSU do cartão. Opcional."
+          example: "123456"
+        codigoAutorizacaoCartao:
+          type: string
+          description: "Código de autorização do cartão. Opcional."
+          example: "AUTH123"
+        numeroCartao:
+          type: string
+          description: "Número do cartão (últimos 4 dígitos). Opcional."
+          example: "1234"
+        quantidadeParcelas:
+          type: integer
+          description: "Quantidade de parcelas. Padrão: 1."
+          example: 1
+        observacao:
+          type: string
+          description: "Observação. Opcional."
+          example: "Pago via PIX"
+    AdiantamentoResultado:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: "ID do adiantamento inserido"
+        confirmado:
+          type: boolean
+          description: "Indica se o adiantamento foi confirmado automaticamente"
+        dataDeposito:
+          type: string
+          format: date (yyyy-mm-dd)
+          description: "Data do depósito"

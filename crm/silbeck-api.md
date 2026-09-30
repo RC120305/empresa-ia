@@ -1,5 +1,6 @@
 # API da Silbeck (Hotel v1): mapa para o CRM
 
+> **30/09/2026: especificação completa recebida** (`crm/silbeck/swagger-hotel-v1.yaml`); leitura detalhada, lacunas confirmadas e perguntas à Silbeck em **`crm/silbeck-api-detalhes.md`**. As seções 3 e 4 abaixo ficam como histórico.
 > 29/09/2026. Montado a partir dos prints da documentação enviados pelo dono (o site bloqueia acesso de servidores de nuvem). Só temos **os nomes** dos endpoints; parâmetros e respostas ainda precisam ser vistos (seção 4).
 > Servidor **local** do hotel (DataSnap, `http://192.168.132.242:8366/datasnap/rest/v1/...`), acesso só pela ponte segura (Márcio). Credenciais **nunca** no repositório.
 
