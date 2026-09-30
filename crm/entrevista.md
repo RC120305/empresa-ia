@@ -410,3 +410,13 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 - **Feito:** teste automático do protótipo v16 (10 telas, 7 conversas × 5 painéis, fluxo orçamento → reserva → cobrança; sem erros) e **24 cenários** percorridos passo a passo: **7 cobertos, 12 com lacuna, 5 não cobertos**. Documento: `crm/analise-jornada.md`.
 - **16 lacunas (G1–G16)**, 7 para resolver antes de construir: pagamento depois do prazo (G1), overbooking pela API (G2), orçamento com várias acomodações (G3), alteração e cancelamento depois de pagar (G4), contato × negócio (G5), dados para reservar e aceite da política (G6), regras de venda que a API não traz (G7).
 - **Página de aprovação:** `crm/prototipo/analise-jornada.html`, https://claude.ai/artifact/5v2KBzG1zgW42rezdU723K (coleções `respostas` e `faltas`). 4 perguntas novas para a Silbeck acrescentadas em `crm/silbeck/mensagem-pedro.md`.
+
+### P48. Respostas do dono à análise da jornada (30/09/2026)
+Lido da página (16 de 16 avaliadas; nada acrescentado): **9 aprovadas, 6 com "Ajusta", 1 reprovada**.
+- **Aprovadas:** G2 (overbooking), G5 (contato × negócio), G6 (dados para reservar e política), G8 (consentimento), G10 (modelos da Meta), G11 (efeito cascata), G12 (setores; pergunta: haverá local de configuração → **sim**, tela "Setores" em Ajustes), G15 (**pedir o WhatsApp do cliente** à agência).
+- **G1 aprovado com acréscimo:** cobrança vence junto com o prazo, mas o cancelamento é manual e a equipe costuma **falar com o cliente antes** (ele pode ter esquecido). Por isso, na reserva vencida, botão **"Enviar novo link"** (Pix ou Cielo, com novo prazo) ao lado de "Vou cancelar".
+- **G16 reprovado:** o saldo é **cobrado no check-out**; a pré-chegada não fala de saldo.
+- **G3 ajustado:** no aceite, o Gilberto ou a equipe **pergunta se a reserva fica em nome de uma pessoa só ou separada** (um titular com vários quartos ou uma reserva por família). O orçamento com várias acomodações continua.
+- **G7 ajustado:** estadia mínima, feriados, idade que paga e pessoas por unidade **são controladas pelo Silbeck**; o CRM só informa. **Validade do orçamento: dispensada** (o CRM recota no aceite e avisa se mudou). A confirmar com a Silbeck se a API aplica essas regras (pergunta 7c já enviada).
+- **G13 ajustado:** a equipe usa o **WhatsApp Web**, não o celular; a regra vale igual (mensagem enviada fora do CRM pausa o Gilberto). Conferir se a coexistência da Meta sincroniza as mensagens do WhatsApp Web.
+- **G4, G9 e G14:** o dono pediu explicação com exemplos (respondido no chat).
