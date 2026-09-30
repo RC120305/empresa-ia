@@ -442,3 +442,7 @@ Lido da página (16 de 16 avaliadas; nada acrescentado): **9 aprovadas, 6 com "A
   - **Onde se cadastram:** na **Biblioteca de respostas** (Ajustes do agente), com o novo campo **"Atalho para a equipe"** (ex.: `/local`). Um lugar só para a equipe e o Gilberto; `{nome}` vira o primeiro nome do cliente.
   - **O Gilberto usa?** Sim, a mesma biblioteca: ele reconhece a pergunta **pelo sentido** (não precisa do atalho) e, se a resposta for **fixa**, envia o texto exato. O atalho é só um jeito rápido da equipe chamar a resposta.
   - **Protótipo v20:** digitar `/` na caixa de mensagem abre a lista; `/lo` filtra; setas e Enter inserem o texto (com o nome do cliente); o contador de usos sobe.
+
+### P51. Banco de imagens completo na versão final (30/09/2026)
+- O protótipo fica com a **amostra de 36 fotos** (suficiente para entender a galeria).
+- **Versão final: todas as imagens do banco do Drive** (476 hoje), sincronizadas quando entrarem fotos novas, com miniaturas no armazenamento do CRM (Supabase) e carregamento conforme a rolagem. Para a busca e as sugestões funcionarem em todo o banco, cada foto precisa de **descrição e etiquetas** (a maioria dos nomes de arquivo não descreve a cena): etapa de implantação da fase 2, feita com ajuda da IA e revisada pela equipe.

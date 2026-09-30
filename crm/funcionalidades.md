@@ -66,7 +66,7 @@
 | 5.4 | Identificação automática do perfil pela fala | ✅ | 2 |
 | 5.5 | Consulta de disponibilidade e **reserva no Silbeck**. 💬 *Via API da Silbeck.* | ✅ | 3 |
 | 5.6 | % de acerto e meta de 90% | ✅ | 2 |
-| 5.7 | **Banco de imagens e vídeos** (importado do Drive, com etiquetas e descrição da cena) | 🆕 | 2 |
+| 5.7 | **Banco de imagens e vídeos** (importado do Drive, com etiquetas e descrição da cena). **Versão final: o banco inteiro** (476 fotos em 30/09/2026, mais as que entrarem no Drive), sincronizado, com miniaturas guardadas no CRM e carregadas conforme a rolagem; galeria com busca, pastas e "Sugeridas para esta conversa" (P50, P51) | 🆕 | 2 |
 | 5.8 | Agente envia as fotos/vídeos certos conforme a pergunta (acomodação, atividade, perfil) | 🆕 | 2 |
 | 5.9 | Mídias favoritas por tema; desativar sem apagar | 💡 | 2 |
 | 5.10 | **Biblioteca de respostas** (pergunta → resposta), alimentada pelas correções da revisão, cadastro manual e importação da Asksuite | 🆕 | 2 |
