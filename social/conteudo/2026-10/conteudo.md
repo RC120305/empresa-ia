@@ -420,7 +420,7 @@ Nada pendente (27/09): todas as dúvidas foram respondidas pelo dono. Antes de p
 - Cuidado: não se sabe se a foto é da Cabana Casal ou da Master. A legenda **não nomeia o tipo** e não cita atributos de um tipo só (rede, balanço, banheira, metragem, "3 m", "privativa").
 
 ### Briefing de arte
-FRASE: "A varanda é *de vocês*" (5) · apoio "DE DOMINGO A QUINTA, SEM PRESSA" (textos definidos pelo dono)
+FRASE: "A **varanda** é *de vocês*" (5) · apoio "DE DOMINGO A QUINTA, SEM PRESSA" (textos definidos pelo dono; negrito em "varanda" pedido na Central em 30/09)
 Foto: pasta "Casal na cabana", `IMG_3751.JPG` (18JoXg), https://drive.google.com/file/d/18JoXgU9hUFp3gTBb0VLziQ-2pYEfGbaM/view (casal abraçado na varanda de madeira, luz de fim de tarde, olhando a mata). Feed 3:4.
 
 ### Legenda
