@@ -91,7 +91,7 @@ Ver `formatos.md`. Resumo: carrossel de 5 a 7 telas (capa imersiva → experiên
 > **Regra do dono (28/09/2026): não exagerar no "domingo a quinta".** O meio de semana é o objetivo de venda, mas não o tema de todo texto: no máximo 1 em cada 4 anúncios ou posts leva esse ângulo, e só uma vez no texto. Nos demais, variar: dois rios e 40 hectares, cabanas suspensas, programação inclusa, estrutura (piscina climatizada, hidro, sauna), café da manhã, 25 anos de família, localização, avaliações, reserva direta, momentos a dois, família.
 
 ## Chamada de reserva nas legendas (dono, 28/09/2026)
-Toda legenda de post do feed ou de Reels termina, antes das hashtags, com: "Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648." (se a legenda já tiver essa chamada, não repetir). A bio tem um Linktree (site, motor, WhatsApp, tour virtual, acomodações).
+Toda legenda de post do feed ou de Reels termina, antes das hashtags, com: "Reserve pelo link na bio." (decisão do dono em 30/09/2026: sem o número do WhatsApp na legenda) (se a legenda já tiver essa chamada, não repetir). A bio tem um Linktree (site, motor, WhatsApp, tour virtual, acomodações).
 
 > **Regra do dono (30/09/2026): sem o link do motor de reservas na legenda.** Link escrito na legenda de post não é clicável no Instagram, então não colocar `sbreserva.silbeck.com.br/hotelcabanas` nas legendas; a frase do desconto para quem reserva direto pode ficar, e o fecho acima leva ao Linktree da bio. O link clicável vai nos **stories com figurinha de link**, nos **anúncios** (botão) e no **Linktree**.
 

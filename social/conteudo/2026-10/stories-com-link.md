@@ -38,4 +38,4 @@ O STORY-0910 (POST 14, publicado em 28/09) é um extra do plano anterior.
 4. Posicione a figurinha **na faixa livre abaixo do texto** (entre o texto e a barra de resposta) e publique.
 
 ## Bio
-O dono usa um **Linktree** na bio com site, motor de reservas, WhatsApp, tour virtual e acomodações (28/09). CTA padrão das legendas: "Reserve pelo link na bio ou pelo WhatsApp (67) 99117-1648".
+O dono usa um **Linktree** na bio com site, motor de reservas, WhatsApp, tour virtual e acomodações (28/09). CTA padrão das legendas: "Reserve pelo link na bio." (decisão do dono em 30/09: sem o número do WhatsApp).
