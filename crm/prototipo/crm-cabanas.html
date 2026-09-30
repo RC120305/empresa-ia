@@ -529,6 +529,18 @@ button,input,select{font:inherit;color:inherit}
 .horarios button:disabled{opacity:.45;cursor:not-allowed;text-decoration:line-through}
 .res-hor{display:flex;flex-direction:column;gap:8px;border-top:1px dashed var(--cor-borda-forte);padding-top:8px}
 .res-hor input{border:1px solid var(--cor-borda-forte);border-radius:8px;padding:6px 8px;background:var(--cor-superficie);color:var(--cor-texto);font:inherit;font-size:14px}
+
+/* v16: montar orçamento */
+.orc-campos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.orc-campos input{border:1px solid var(--cor-borda-forte);border-radius:8px;padding:6px 8px;background:var(--cor-superficie);color:var(--cor-texto);font:inherit;font-size:14px;width:100%}
+.orc-extr{font-size:12px;color:var(--ia);background:var(--ia-s);border-radius:6px;padding:6px 8px}
+.orc-op{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;border:1px solid var(--cor-borda);border-radius:var(--r-md);padding:8px;background:var(--cor-superficie);cursor:pointer}
+.orc-op.sel{border-color:var(--cor-primaria);box-shadow:inset 0 0 0 1px var(--cor-primaria);background:var(--cor-primaria-suave)}
+.orc-op.off{opacity:.5;cursor:not-allowed}
+.orc-foto{border-radius:6px;min-height:70px;display:grid;place-items:end start;padding:4px 6px;color:#fff;font-size:11px;font-weight:700;background:linear-gradient(135deg,#5A7026,#847059)}
+.orc-op b{display:block;font-size:14px}.orc-op small{display:block;font-size:12px;color:var(--cor-texto-sec)}
+.orc-op .v{font-weight:700;font-variant-numeric:tabular-nums}
+.orc-prev{width:100%;min-height:170px;border:1px solid var(--cor-borda-forte);border-radius:8px;padding:8px;background:var(--cor-superficie);color:var(--cor-texto);font:inherit;font-size:13px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -595,6 +607,7 @@ button,input,select{font:inherit;color:inherit}
         <nav class="cx-trilho" id="cx-trilho" aria-label="Painéis da conversa">
           <button type="button" data-p="res" aria-pressed="false" title="Reservas e pagamentos" aria-label="Reservas e pagamentos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 16l2 2 4-4"/></svg></button>
           <button type="button" data-p="his" aria-pressed="false" title="Histórico do cliente e origem" aria-label="Histórico do cliente e origem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></button>
+          <button type="button" data-p="orc" aria-pressed="false" title="Montar orçamento" aria-label="Montar orçamento"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9.5 13.5c0-.8.9-1.5 2.5-1.5s2.5.7 2.5 1.5-1 1.2-2.5 1.5-2.5.7-2.5 1.5.9 1.5 2.5 1.5 2.5-.7 2.5-1.5"/></svg></button>
           <button type="button" data-p="vag" aria-pressed="false" title="Vagas por tipo de acomodação" aria-label="Vagas por tipo de acomodação"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V10l9-6 9 6v11"/><path d="M9 21v-6h6v6"/></svg></button>
           <button type="button" data-p="tar" aria-pressed="false" title="Tarefas" aria-label="Tarefas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span class="bdg num" id="bdg-tar" hidden>0</span></button>
         </nav>
@@ -1273,8 +1286,8 @@ button,input,select{font:inherit;color:inherit}
     const [tfs]=tarefasDe(c);const ab=tfs.filter(t=>!t.f).length;$('bdg-tar').hidden=!ab;$('bdg-tar').textContent=ab;
     document.querySelectorAll('#cx-trilho [data-p]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.p===painelLat)));
     $('cx').classList.toggle('com-painel',!!painelLat);lat.hidden=!painelLat;if(!painelLat)return;
-    const titulo={res:'Reservas e pagamentos',his:'Histórico do cliente',tar:'Tarefas',vag:'Vagas por acomodação'}[painelLat];
-    $('cx').classList.toggle('painel-largo',painelLat==='vag');
+    const titulo={res:'Reservas e pagamentos',his:'Histórico do cliente',tar:'Tarefas',vag:'Vagas por acomodação',orc:'Montar orçamento'}[painelLat];
+    $('cx').classList.toggle('painel-largo',painelLat==='vag'||painelLat==='orc');
     lat.append(el('div',{class:'lat-cab'},el('h3',{text:titulo}),el('button',{class:'fechar',type:'button','aria-label':'Recolher painel',onclick:()=>{painelLat='';try{localStorage.setItem('crm-painel','')}catch(e){}renderChat();}},el('span',{text:'✕'}))));
     if(painelLat==='res'){
       lat.append(el('div',{class:'lat-sec'},el('span',{class:'rotulo',text:'Reservas nesta conversa'}),el('button',{class:'btn-mini',type:'button',text:'+ Registrar',onclick:()=>{c.reservas.push(['Nova reserva (exemplo)','Pré-reserva · aguardando pagamento','t-mkt']);c.etapa='pag';renderInbox();toast('Reserva criada no Silbeck pela API (POST reserva). Card em “Aguardando pagamento”.');}})));
@@ -1297,6 +1310,7 @@ button,input,select{font:inherit;color:inherit}
       if(c.lead)lat.append(el('button',{class:'btn btn-editar',type:'button',text:'Abrir ficha completa',onclick:()=>abrirFicha(c.lead)}));
     }
     if(painelLat==='vag'){renderPainelVagas(c,lat);}
+    if(painelLat==='orc'){renderOrcamento(c,lat);}
     if(painelLat==='tar'){
       const [lista,l]=tarefasDe(c);
       if(!lista.length)lat.append(el('p',{class:'lat-txt',text:'Não há tarefas para este cliente.'}));
@@ -1598,6 +1612,46 @@ button,input,select{font:inherit;color:inherit}
     const l=leadPor(4);if(l){l.tarefas.push({t:'Outro',d:'Cadastrar a agência '+n+' no Silbeck',q:dia(0,'17:00'),r:'jagles',f:false});renderBoard();}
     $('ag-form').hidden=true;renderAgencias();toast('Pré-cadastro salvo e tarefa criada: cadastrar no Silbeck.');});
   $('ag-sync').addEventListener('click',()=>{$('ag-ultima').textContent='O Silbeck é a fonte do cadastro (razão social, CNPJ, código). O CRM guarda os contatos e os dados comerciais. Última sincronização: agora.';toast('Sincronizado: 4 empresas lidas do Silbeck (GET Empresa); 1 diferença e 1 pendente.');});
+
+  // v16: motor de orçamento (tipos, valores e fotos vêm do motor/Silbeck)
+  const CAP={CBD:2,CBT:3,CBM:5,BG:4,BGE:4,STD:3,CST:2,SUP:4,CJ:5,QST:4,QES:4};
+  const DIARIA={CBD:690,CBT:790,CBM:1190,BG:720,BGE:820,STD:480,CST:450,SUP:560,CJ:780,QST:620,QES:690};
+  const cotar=(cod,ent,sai)=>{let t=0;for(let d=ent;d<sai;d=isoMais(d,1)){const w=new Date(d+'T12:00:00').getDay();t+=Math.round(DIARIA[cod]*((w===5||w===6)?1.15:1));}return t;};
+  const noites=(a,b)=>Math.max(0,Math.round((new Date(b)-new Date(a))/864e5));
+  function renderOrcamento(c,lat){
+    if(!c.orc){const cas=/Casal/.test(c.perfil);c.orc={ent:c.datas?c.datas[0]:isoMais(hoje.toISOString().slice(0,10),14),sai:c.datas?c.datas[1]:isoMais(hoje.toISOString().slice(0,10),16),adultos:/Grupo/.test(c.perfil)?12:cas||/55/.test(c.perfil)?2:2,criancas:/Família/.test(c.perfil)?'6, 9':'',sel:[],combo:true,validade:'48 horas',buscado:false};}
+    const o=c.orc;
+    const f=(id,tipo,val,rot,on)=>el('label',{class:'campo'},rot,el('input',{type:tipo,value:val,'aria-label':rot,onchange:e=>{on(e.target.value);o.buscado=false;o.sel=[];renderLateral(c);}}));
+    lat.append(el('div',{class:'orc-extr',text:'Gilberto extraiu da conversa: '+(c.datas?fmtData(c.datas[0])+' a '+fmtData(c.datas[1])+' · ':'')+o.adultos+' adulto(s)'+(o.criancas?' · crianças: '+o.criancas+' anos':'')+'. Confira e ajuste.'}));
+    lat.append(el('div',{class:'orc-campos'},f('e','date',o.ent,'Entrada',v=>o.ent=v),f('s','date',o.sai,'Saída',v=>o.sai=v),f('a','number',o.adultos,'Adultos',v=>o.adultos=+v||1),f('k','text',o.criancas,'Idades das crianças',v=>o.criancas=v)));
+    const n=noites(o.ent,o.sai);
+    const idades=o.criancas.split(/[^0-9]+/).filter(Boolean).map(Number);const pax=o.adultos+idades.length;
+    lat.append(el('p',{class:'lat-txt',style:'font-size:12px',text:n+' noite(s) · '+pax+' pessoa(s) no quarto'+(idades.some(i=>i<=5)?' · crianças até 5 anos: regra de cobrança a confirmar':'')}));
+    lat.append(el('button',{class:'btn btn-enviar',type:'button',text:'Buscar no motor (vagas, valores e fotos)',onclick:()=>{o.buscado=true;renderLateral(c);}}));
+    if(!o.buscado)return;
+    const ops=TIPOS_AC.map(([cod,nome])=>{const l=[...Array(n)].map((_,k)=>livres(cod,TIPOS_AC.find(t=>t[0]===cod)[2],isoMais(o.ent,k)));const min=n?Math.min(...l):0;return{cod,nome,cap:CAP[cod],livres:min,total:cotar(cod,o.ent,o.sai)};})
+      .filter(x=>x.cap>=pax).sort((a,b)=>(b.livres>0)-(a.livres>0)||a.total-b.total);
+    if(!ops.length){lat.append(el('p',{class:'lat-txt',text:'Nenhuma acomodação comporta '+pax+' pessoas em um só quarto. Sugestão: dividir em 2 acomodações.'}));return;}
+    lat.append(el('span',{class:'rotulo',text:'Escolha até 3 opções'}));
+    ops.forEach(x=>{const sel=o.sel.includes(x.cod);
+      lat.append(el('div',{class:'orc-op'+(sel?' sel':'')+(x.livres?'':' off'),role:'checkbox','aria-checked':String(sel),tabindex:'0',onclick:()=>{if(!x.livres)return;if(sel)o.sel=o.sel.filter(k=>k!==x.cod);else if(o.sel.length<3)o.sel.push(x.cod);else toast('Máximo de 3 opções.');renderLateral(c);}},
+        el('div',{class:'orc-foto',text:x.cod}),
+        el('div',{},el('b',{text:x.nome}),el('small',{text:'Até '+x.cap+' pessoas · '+(x.livres?x.livres+' livre(s) no período':'sem vaga nessas datas')}),
+          el('div',{class:'v',text:'R$ '+x.total.toLocaleString('pt-BR')+' total'}),el('small',{text:'média R$ '+Math.round(x.total/Math.max(1,n)).toLocaleString('pt-BR')+' por noite'}))));});
+    const wk=[...Array(n)].some((_,k)=>[5,6].includes(new Date(isoMais(o.ent,k)+'T12:00:00').getDay()));
+    if(wk)lat.append(el('p',{class:'lat-txt',style:'font-size:12px',text:'Dica: de domingo a quinta o valor é menor e o hotel está mais tranquilo.'}));
+    lat.append(el('label',{style:'display:flex;gap:8px;align-items:center;font-size:14px'},el('input',{type:'checkbox',checked:o.combo,onchange:e=>{o.combo=e.target.checked;renderLateral(c);}}),'Sugerir o combo boia cross + arvorismo (R$ 170/pessoa)'));
+    if(!o.sel.length)return;
+    const linhas=o.sel.map((cod,i)=>{const x=ops.find(y=>y.cod===cod);return (i+1)+') *'+x.nome+'*: R$ '+x.total.toLocaleString('pt-BR')+' ('+n+' noite'+(n>1?'s':'')+')';});
+    const nome=c.nome.split(' ')[0].replace(/[^A-Za-zÀ-ú]/g,'');
+    const txt='Oi, '+nome+'! Separei estas opções para '+fmtData(o.ent)+' a '+fmtData(o.sai)+', '+o.adultos+' adulto(s)'+(idades.length?' e '+idades.length+' criança(s)':'')+':\n\n'+linhas.join('\n')+'\n\nNa diária: café da manhã, piscina climatizada, sauna e trilhas com caiaque, SUP e tirolesa com monitor.'+(o.combo?'\nPara a aventura: combo boia cross + arvorismo por R$ 170 por pessoa.':'')+'\n\nReserva com 50% de sinal (Pix ou cartão em até 6x). Valores com desconto para quem reserva direto, válidos por '+o.validade+'. Qual opção prefere? 😊';
+    const prev=el('textarea',{class:'orc-prev','aria-label':'Prévia da mensagem'});prev.value=txt;
+    lat.append(el('span',{class:'rotulo',text:'Prévia (pode editar)'}),prev,el('small',{class:'lat-txt',text:'Vai com '+o.sel.length+' foto(s) das acomodações escolhidas.'}),
+      el('button',{class:'btn btn-destaque',type:'button',text:'Enviar orçamento',onclick:()=>{
+        c.msgs.push(['eq',prev.value,'agora',c.agente?'Gilberto':USUARIOS[c.resp]||'Você']);c.msgs.push(['sis','Orçamento enviado com '+o.sel.length+' foto(s) · valores do motor da Silbeck · válido por '+o.validade]);
+        o.sel.forEach(cod=>{const x=ops.find(y=>y.cod===cod);c.reservas.push([x.nome+' · '+fmtData(o.ent)+' a '+fmtData(o.sai),'Orçamento enviado · R$ '+x.total.toLocaleString('pt-BR'),'t-util']);});
+        c.etapa='orc';c.orc=null;painelLat='res';renderInbox();toast('Orçamento enviado e salvo no card do cliente.');}}));
+  }
   renderBoard();renderRegua();iniciarV4();renderProdutos();renderAgencias();
 })();
 </script>
