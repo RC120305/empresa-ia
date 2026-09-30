@@ -501,3 +501,4 @@ Lido da página (16 de 16; nada acrescentado):
 - **Na página:** o cliente vê as opções e clica "Quero reservar esta" → o CRM **confere vaga e preço de novo**, cria a reserva no Silbeck (P46) e manda a cobrança (Pix ou Cielo) no WhatsApp. Se o preço mudou, a página mostra o valor novo antes de confirmar.
 - **Sinal para a equipe:** o CRM registra quando o cliente **abre** a página e qual opção olhou; isso aparece na conversa e alimenta o follow-up ("vi que você gostou da Cabana Casal…").
 - **Protótipo v27:** ao enviar o orçamento, a mensagem leva o link, a conversa registra a página criada e, segundos depois, "Mariana abriu a página do orçamento"; no painel, "Ver como a cliente vê a página".
+- **Protótipo v28:** o link do orçamento na conversa (crm.hotelcabanas.com.br/o/…) ficou clicável e abre a página de exemplo; o endereço real só passa a existir quando o CRM estiver no ar (domínio do hotel apontado para o Cloud Run).

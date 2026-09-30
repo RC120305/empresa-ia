@@ -330,6 +330,7 @@ button,input,select{font:inherit;color:inherit}
 .simular-wrap{position:relative}
 .cx-novo-wrap{position:relative;display:flex}
 .orc-idades{display:flex;flex-direction:column;gap:6px}
+.link-orc{color:var(--cor-primaria-texto);font-weight:600;text-decoration:underline;text-underline-offset:3px;word-break:break-all}
 .cx-cab .cx-contato{min-width:0;flex:1 1 320px;justify-content:flex-end}
 .cx-cab .cx-contato .dado{min-width:0;flex-wrap:wrap}
 .orc-idades-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
@@ -1397,6 +1398,10 @@ body.sem-rolagem .principal{padding-block-end:12px}
     });
     renderChat();
   }
+  // v28: o link do orçamento abre a página de exemplo (o endereço crm.hotelcabanas.com.br só existe quando o CRM estiver no ar)
+  const EX_ORC='https://claude.ai/artifact/DfYcXJAbqr3ZaXyZyHKDU8';
+  function linkar(t){if(typeof t!=='string'||!/crm\.hotelcabanas\.com\.br\/o\//.test(t))return t;const f=document.createDocumentFragment();
+    t.split(/(crm\.hotelcabanas\.com\.br\/o\/\w+)/).forEach((p,i)=>f.append(i%2?el('a',{href:EX_ORC,target:'_blank',rel:'noopener',class:'link-orc',title:'No protótipo, abre a página de exemplo'},p+' ↗'):p));return f;}
   function renderChat(){
     const c=CONVS.find(x=>x.id===convSel);const box=$('cx-chat'),lat=$('cx-lateral');box.textContent='';lat.textContent='';if(!c)return;
     const o=ORIGENS[c.origem],e=ETQ_ETAPA[c.etapa];
@@ -1416,7 +1421,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
       if(m[0]==='cli'){ms.append(el('div',{class:'balao in'},m[1],el('div',{class:'hora num',text:m[2]})));return;}
       const ia=m[0]==='ia';
       const fonte=ia&&m[3]?el('div',{class:'fonte-resp',hidden:true,text:'Fonte: '+m[3]}):null;
-      ms.append(el('div',{class:'balao out'+(ia?' ia':'')},el('div',{class:'autor',text:ia?'Gilberto':(m[3]||'Equipe')}),m[1],el('div',{class:'hora num',text:m[2]+' ✓✓'}),
+      ms.append(el('div',{class:'balao out'+(ia?' ia':'')},el('div',{class:'autor',text:ia?'Gilberto':(m[3]||'Equipe')}),linkar(m[1]),el('div',{class:'hora num',text:m[2]+' ✓✓'}),
         fonte,ia&&m[3]?el('button',{class:'ver-fonte',type:'button',text:'Ver fonte da resposta',onclick:ev=>{fonte.hidden=!fonte.hidden;ev.currentTarget.textContent=fonte.hidden?'Ver fonte da resposta':'Ocultar fonte';}}):null));
     });
     box.append(ms);
@@ -2087,7 +2092,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
       el('button',{class:'btn btn-destaque',type:'button',text:'Enviar orçamento',onclick:()=>{
         const link='crm.hotelcabanas.com.br/o/'+Math.random().toString(36).slice(2,8);
         c.msgs.push(['eq',prev.value+'\n\n📄 Veja as fotos e reserve pelo link: '+link,'agora',c.agente?'Gilberto':USUARIOS[c.resp]||'Você']);
-        c.msgs.push(['sis','Página do orçamento criada ('+link+') com '+o.sel.length+' opção(ões), fotos do banco e valores do Silbeck. Abrir exemplo: claude.ai/artifact/DfYcXJAbqr3ZaXyZyHKDU8']);
+        c.msgs.push(['sis','Página do orçamento criada com '+o.sel.length+' opção(ões), fotos do banco e valores do Silbeck. No protótipo, o link na mensagem abre a página de exemplo.']);
         setTimeout(()=>{c.msgs.push(['sis','👁 '+c.nome.split(' ')[0]+' abriu a página do orçamento e olhou a '+(ops.find(y=>y.cod===o.sel[0])||{nome:'primeira opção'}).nome+'. O follow-up usa essa informação.']);if(convSel===c.id)renderChat();},4000);
         o.sel.forEach(cod=>{const x=ops.find(y=>y.cod===cod);c.reservas.push([x.nome+' · '+fmtData(o.ent)+' a '+fmtData(o.sai),'Orçamento enviado · R$ '+x.total.toLocaleString('pt-BR'),'t-util']);});
         c.etapa='orc';c.orc=null;painelLat='res';renderInbox();toast('Orçamento enviado e salvo no card do cliente.');}}));
