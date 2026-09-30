@@ -2,28 +2,30 @@
 
 Complementa a pauta de stories do Marketing (`stories.md`: enquetes, caixinha, prova social). Estes são os stories **feitos com as artes dos posts**.
 
-Pedido do dono (28/09): 2 ou 3 stories por semana reaproveitando as artes do mês, com figurinha de link.
+Pedido do dono (28/09): stories reaproveitando as artes do mês, com figurinha de link.
+**Regra do dono (30/09): um story com figurinha de link logo depois de cada post** (no mesmo dia, 30 minutos depois do post). As artes dos posts não trazem mais link nem WhatsApp (não são clicáveis); o clique fica no story e no link da bio.
 A API da Meta publica o story, mas **não coloca figurinha de link**: a figurinha é posta no aplicativo (cerca de 30 s por story).
-Artes: `design/pecas/2026-10-instagram/stories/STORY-DDMM.png` (1080 × 1920; gerador `design/ferramentas/story-de-post.py`, dados em `stories.json`).
-Visão geral: `design/pecas/2026-10-instagram/stories/visao-geral.jpg`.
+Artes: `design/pecas/2026-10-instagram/stories/STORY-DDMM.png` (1080 × 1920; gerador `design/ferramentas/story-de-post.py`, dados em `stories.json`). Visão geral: `design/pecas/2026-10-instagram/stories/visao-geral.jpg`. Os stories do plano anterior (dia seguinte, 12h) estão em `stories/descartadas/`.
 
 **Regra:** cada story só vai ao ar depois que o dono aprovar o story **e** o post de origem (as artes seguem a versão final do post; se o post mudar, o story é regerado).
-Horário: 12h, nos dias sem post no feed (segunda, quarta e sexta), no dia seguinte ao post de origem.
 
-| Story | Data | Arte de origem | Texto | Figurinha de link |
+| Story | Data | Post de origem | Texto | Figurinha de link |
 |---|---|---|---|---|
-| STORY-0710 | qua 07/10, 12h | POST 01 (06/10) | Uma noite a *3 metros* do chão · Reserve direto pelo link | Motor de reservas |
-| STORY-0910 | sex 09/10, 12h | POST 14 (publicado em 28/09) | Já tem os *5 motivos*. Falta a **data** · Chame no WhatsApp pelo link | WhatsApp |
-| STORY-1210 | seg 12/10, 12h | POST 03 (10/10) | 20 de novembro entre *dois rios* · Pergunte as vagas pelo link | WhatsApp (só se houver vaga de 20 a 23/11, como o POST 03) |
-| STORY-1410 | qua 14/10, 12h | POST 04 (13/10) | Bonito, *sem pressa* · Reserve direto pelo link | Motor de reservas |
-| STORY-1910 | seg 19/10, 12h | POST 06 (17/10) | Cinco sentidos, *uma* estadia · Reserve direto pelo link | Motor de reservas |
-| STORY-2110 | qua 21/10, 12h | POST 07 (20/10) | Planeje *dezembro* agora · Pergunte as datas pelo link | WhatsApp |
-| STORY-2610 | seg 26/10, 12h | POST 13 (25/10) | A varanda é *de vocês* · Reserve direto pelo link | Motor de reservas |
-| STORY-2810 | qua 28/10, 12h | POST 10 (27/10) | Bonito *sem pressa*, em 4 noites · Monte a estadia pelo link | WhatsApp |
-| STORY-3010 | sex 30/10, 12h | POST 09 (24/10) | A natureza é a *nossa casa* · Reserve direto pelo link | Motor de reservas |
+| STORY-0610 | 06/10 terça 18h30 | POST 01 | Uma noite a *3 metros* do chão · Reserve direto pelo link | Motor de reservas |
+| STORY-0910 | 09/10 sexta 12h | POST 14 (publicado em 28/09; story extra) | Já tem os *5 motivos*. Falta a **data** · Chame no WhatsApp pelo link | WhatsApp |
+| STORY-1010 | 10/10 sábado 9h30 | POST 03 | 20 de novembro entre *dois rios* · Pergunte as vagas pelo link | WhatsApp |
+| STORY-1110 | 11/10 domingo 18h30 | POST 15 | Dúvida no *caminho*? · Chame no WhatsApp pelo link | WhatsApp |
+| STORY-1310 | 13/10 terça 18h30 | POST 04 | Bonito, *sem pressa* · Reserve direto pelo link | Motor de reservas |
+| STORY-1710 | 17/10 sábado 9h30 | POST 06 | Cinco sentidos, *uma* estadia · Reserve direto pelo link | Motor de reservas |
+| STORY-1810 | 18/10 domingo 18h30 | POST 16 | Espaço para *quatro*, em meio à natureza · Reserve direto pelo link | Motor de reservas |
+| STORY-2010 | 20/10 terça 18h30 | POST 07 | Planeje *dezembro* agora · Pergunte as datas pelo link | WhatsApp |
+| STORY-2410 | 24/10 sábado 9h30 | POST 09 | A natureza é a *nossa casa* · Reserve direto pelo link | Motor de reservas |
+| STORY-2510 | 25/10 domingo 18h30 | POST 13 | A varanda é *de vocês* · Reserve direto pelo link | Motor de reservas |
+| STORY-2710 | 27/10 terça 18h30 | POST 10 | Bonito *sem pressa*, em 4 noites · Monte a estadia pelo link | WhatsApp |
+| STORY-3110 | 31/10 sábado 9h30 | POST 12 | 8h30: a *diversão* garantida · Reserve direto pelo link | Motor de reservas |
 
-Semanas: 05 a 10/10 = 2 · 12 a 17/10 = 2 · 19 a 24/10 = 2 · 26 a 31/10 = 3.
-Os Reels (POST 02, 05, 08 e 11) ficam de fora até o vídeo chegar: quando chegar, dá para compartilhar o próprio Reels no story com a figurinha.
+**Reels (POST 02 em 08/10, 05 em 15/10, 08 em 22/10 e 11 em 29/10):** logo depois de publicar o Reels, compartilhar o próprio Reels no story e pôr a figurinha de link (motor ou WhatsApp). Não precisa de arte: fica pronto quando o vídeo chegar.
+O STORY-0910 (POST 14, publicado em 28/09) é um extra do plano anterior.
 
 ## Links para a figurinha (copiar e colar no aplicativo)
 - **Motor de reservas:** `https://sbreserva.silbeck.com.br/hotelcabanas?utm_source=instagram&utm_medium=stories&utm_campaign=2026-10` · texto da figurinha: **RESERVAR**
