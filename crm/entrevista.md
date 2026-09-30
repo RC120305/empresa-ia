@@ -458,3 +458,9 @@ Lido da página (16 de 16 avaliadas; nada acrescentado): **9 aprovadas, 6 com "A
   3. **Notificação no celular:** o CRM instalado no celular mostra a notificação mesmo fechado (no protótipo, o aviso aparece no canto inferior esquerdo).
   4. **Métrica no Painel:** "Tempo até a equipe assumir" por tipo de pedido, com meta de 10 min (vermelho quando acima).
   5. **Aprender com as passagens:** quando o Gilberto passa por não saber, a pergunta do cliente entra na **Biblioteca de respostas** como "Sem resposta · veio de uma passagem para a equipe", com botão "Cadastrar resposta"; depois de cadastrada e publicada, o Gilberto responde sozinho.
+
+### P53. Iniciar conversa e completar o contato do Instagram (30/09/2026)
+- **Pedido do dono (com telas da Asksuite como referência):** iniciar conversa com lead novo pelo painel do chat; e inserir WhatsApp e e-mail de quem chega pelo Instagram sem esses dados.
+- **Protótipo v23:**
+  - **"+ Nova conversa"** no topo da lista → "Iniciar conversa no WhatsApp" (e "Novo e-mail", fase 2). Janela com celular (+55, validação), aviso quando o número **já é de um contato** (abre a conversa existente em vez de duplicar), nome, número de envio (99117/99110), **modelo aprovado pela Meta** com categoria (utilidade: mais barata; marketing: exige consentimento marcado) e **prévia no estilo WhatsApp**; "+ Cadastrar novo modelo" leva à Régua (aprovação da Meta). Depois de enviar, a conversa fica "aguardando resposta" e só abre para texto livre quando o cliente responde.
+  - **Cabeçalho da conversa:** WhatsApp e e-mail com ✎ para inserir/editar (validação). Em conversa do Instagram/Messenger sem telefone, aviso "Sem WhatsApp: follow-up só dentro de 24 h"; com telefone, botão **"Continuar pelo WhatsApp"** (modelo "Continuação do atendimento do Instagram"), mantendo a origem e o perfil. Número que já existe → os contatos são juntados.

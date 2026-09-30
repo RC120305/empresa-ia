@@ -328,6 +328,37 @@ button,input,select{font:inherit;color:inherit}
 .acoes-res{display:flex;gap:6px;flex-wrap:wrap}
 .acoes-card{display:flex;gap:6px;flex-wrap:wrap}
 .simular-wrap{position:relative}
+.cx-novo-wrap{position:relative;display:flex}
+.cx-novo-wrap .btn{flex:1}
+.nova-menu{left:0;right:auto}
+.cx-contato{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--cor-texto-sec);align-items:center}
+.cx-contato .dado{display:flex;gap:4px;align-items:center}
+.cx-contato .vazio-dado{font-style:italic}
+.cx-contato input{font:inherit;font-size:13px;border:1px solid var(--cor-borda-forte);border-radius:var(--r-sm);padding:4px 6px;background:var(--cor-superficie);color:var(--cor-texto);width:170px}
+.cx-contato .lapis{all:unset;cursor:pointer;padding:2px 4px;border-radius:4px;color:var(--cor-primaria-texto)}
+.cx-contato .lapis:hover{background:var(--cor-primaria-suave)}
+.dlg-fundo{position:fixed;inset:0;z-index:60;background:rgba(20,15,10,.45);display:grid;place-items:center;padding:16px}
+.dlg{background:var(--cor-superficie);border-radius:var(--r-lg);box-shadow:var(--sombra-2);width:min(920px,100%);max-height:calc(100dvh - 32px);overflow:auto;display:flex;flex-direction:column}
+.dlg-cab{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--cor-borda)}
+.dlg-cab h2{margin:0;font-size:18px}
+.dlg-cab .fechar{all:unset;cursor:pointer;padding:6px 8px;border-radius:var(--r-md)}
+.dlg-aviso{margin:12px 18px 0;font-size:13px;padding:8px 10px;border-radius:var(--r-md);background:var(--cor-info-suave,var(--cor-primaria-suave));color:var(--cor-texto)}
+.dlg-grade{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;padding:14px 18px}
+@media (max-width:760px){.dlg-grade{grid-template-columns:minmax(0,1fr)}}
+.dlg-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.dlg .campo{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--cor-texto-sec)}
+.dlg .campo input,.dlg .campo select{font:inherit;font-size:15px;font-weight:400;border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:9px 10px;background:var(--cor-superficie);color:var(--cor-texto)}
+.tel-linha{display:flex;gap:6px;align-items:stretch}
+.tel-linha input{flex:1;min-width:0}
+.ddi{display:grid;place-items:center;padding:0 10px;border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);font-weight:400;color:var(--cor-texto)}
+.dn-erro{font-size:13px;color:var(--cor-erro)}
+.dn-existe{font-size:13px;padding:8px 10px;border-radius:var(--r-md);background:var(--cor-alerta-suave);color:var(--cor-alerta);display:flex;flex-direction:column;gap:6px}
+.dn-cat{font-size:12px}
+.dn-consent{display:flex;gap:8px;align-items:flex-start;font-size:13px}
+.wa-prev{background:#E5DDD5;border-radius:var(--r-lg);padding:18px;min-height:220px;display:flex;align-items:flex-start;justify-content:flex-end}
+.wa-balao{background:#DCF8C6;color:#1f1f1f;border-radius:10px 0 10px 10px;padding:10px 12px;font-size:14px;line-height:1.45;max-width:92%;white-space:pre-wrap;box-shadow:0 1px 1px rgba(0,0,0,.15)}
+.dlg-rodape{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--cor-borda)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
 .plantao{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--lat-texto);padding:10px 12px;border-radius:var(--r-md);background:rgba(255,255,255,.06)}
 .plantao label{font-weight:600}
 .plantao select{background:var(--lat-fundo);color:var(--lat-texto);border:1px solid rgba(255,255,255,.25);border-radius:var(--r-sm);padding:6px 8px;font:inherit}
@@ -679,6 +710,8 @@ body.sem-rolagem .principal{padding-block-end:12px}
     <section data-painel="conversas">
       <div class="cx" id="cx">
         <div class="cx-col">
+          <div class="cx-novo-wrap"><button class="btn btn-enviar" type="button" id="bt-nova-conv" aria-haspopup="true" aria-expanded="false">+ Nova conversa</button>
+            <div class="simular-menu nova-menu" id="nova-menu" hidden><button type="button" data-nova="wa">Iniciar conversa no WhatsApp</button><button type="button" data-nova="email">Novo e-mail (fase 2: caixa de reservas no CRM)</button></div></div>
           <div class="cx-abas" id="cx-status" role="tablist"><button role="tab" aria-selected="true" data-st="aberto">Abertas</button><button role="tab" aria-selected="false" data-st="resolvido">Resolvidas</button><button role="tab" aria-selected="false" data-st="arquivado">Arquivadas</button></div>
           <input type="search" id="cx-busca" placeholder="Buscar conversa" aria-label="Buscar conversa" style="border:1px solid var(--cor-borda-forte);border-radius:8px;padding:8px 10px;background:var(--cor-superficie);min-height:40px;font:inherit;color:var(--cor-texto)">
           <div class="filtros" id="cx-filtros" style="display:flex;gap:6px;flex-wrap:wrap">
@@ -957,6 +990,25 @@ body.sem-rolagem .principal{padding-block-end:12px}
 <div class="aviso-toast" id="toast" hidden role="status"></div>
 <div class="alertas" id="alertas" hidden role="alert"></div>
 <div class="push-cel" id="push-cel" hidden role="status"></div>
+<div class="dlg-fundo" id="dlg-nova" hidden><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dn-tit">
+  <div class="dlg-cab"><h2 id="dn-tit">Iniciar conversa pelo WhatsApp</h2><button class="fechar" type="button" id="dn-fechar" aria-label="Fechar"><span>✕</span></button></div>
+  <p class="dlg-aviso">Contato novo (ou que não fala com o hotel há mais de 24 h): a primeira mensagem precisa ser um <b>modelo aprovado pela Meta</b>. Quando o cliente responder, a conversa abre e você escreve livremente.</p>
+  <div class="dlg-grade">
+    <div class="dlg-col">
+      <label class="campo">Celular (WhatsApp) *<span class="tel-linha"><span class="ddi">🇧🇷 +55</span><input id="dn-tel" type="tel" inputmode="tel" placeholder="(67) 99999-9999" autocomplete="off"></span></label>
+      <span class="dn-erro" id="dn-erro" hidden>Número inválido: use DDD + número (ex.: 67 99999-9999).</span>
+      <div class="dn-existe" id="dn-existe" hidden></div>
+      <label class="campo">Nome do contato<input id="dn-nome" type="text" placeholder="Ex.: Ana Souza"></label>
+      <label class="campo">Enviar pelo número<select id="dn-num"><option value="w99117">WhatsApp 99117 (reservas)</option><option value="w99110">WhatsApp 99110</option></select></label>
+      <label class="campo">Modelo da mensagem<select id="dn-modelo"></select></label>
+      <span class="dn-cat" id="dn-cat"></span>
+      <label class="dn-consent" id="dn-consent-l" hidden><input type="checkbox" id="dn-consent"> O cliente autorizou receber mensagens de ofertas (consentimento registrado)</label>
+      <button class="btn-mini" type="button" id="dn-novo-modelo">+ Cadastrar novo modelo</button>
+    </div>
+    <div class="dlg-col"><span class="rotulo">Prévia da mensagem</span><div class="wa-prev"><div class="wa-balao" id="dn-prev"></div></div></div>
+  </div>
+  <div class="dlg-rodape"><button class="btn btn-editar" type="button" id="dn-cancelar">Cancelar</button><button class="btn btn-destaque" type="button" id="dn-enviar" disabled>Enviar mensagem</button></div>
+</div></div>
 
 <script>
 (function(){
@@ -1048,7 +1100,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
   const dia=(d,h='10:00')=>{const x=new Date(hoje);x.setDate(x.getDate()+d);return x.toISOString().slice(0,10)+'T'+h;};
 
   const ETAPAS=[['novo','Novo','p-novo','--cat-novo'],['atend','Em atendimento','p-atend','--cat-atend'],['orc','Orçamento enviado','p-orc','--cat-orc'],['pag','Aguardando pagamento','p-pag','--cor-alerta'],['res','Reservado','p-res','--cat-res'],['perd','Perdido','p-perd','--cat-perd']];
-  const ORIGENS={meta:['Anúncio Meta','o-meta'],insta:['Instagram','o-insta'],google:['Google','o-google'],site:['Site','o-site'],ret:['Hóspede que volta','o-ret'],ind:['Indicação','o-ind'],ag:['Agência','o-ag'],ota:['Booking','o-ota']};
+  const ORIGENS={meta:['Anúncio Meta','o-meta'],insta:['Instagram','o-insta'],google:['Google','o-google'],site:['Site','o-site'],ret:['Hóspede que volta','o-ret'],ind:['Indicação','o-ind'],ag:['Agência','o-ag'],ota:['Booking','o-ota'],ativo:['Contato ativo','o-site']};
   const PERFIS=['Casal','Família com filhos','Grupo de amigos','55+','Observador de aves','Ciclista','Agência'];
   const USUARIOS={voce:'Você',renata:'Renata',jagles:'Jagles',marcio:'Márcio',agente:'Gilberto'};
   const MOTIVOS=['Sem vaga na data','Preço','Parou de responder','Mudou de planos','Escolheu outro hotel','Outro'];
@@ -1347,6 +1399,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
     const rSel=el('select',{'aria-label':'Responsável',onchange:ev=>{c.resp=ev.target.value;c.agente=c.resp==='agente';renderInbox();toast('Conversa transferida para '+USUARIOS[c.resp]+'.');}},Object.entries(USUARIOS).map(([k,v])=>el('option',{value:k,text:v,selected:k===c.resp})));
     const cab=$('cx-cab');cab.textContent='';cab.append(el('div',{class:'cx-topo'},
       el('div',{class:'cx-quem'},el('strong',{text:c.nome}),el('span',{class:'canal',text:CANAL[c.canal]+(c.hospedado?' · '+c.hospedado:'')})),
+      linhaContato(c),
       el('div',{class:'cx-ctrl'},el('span',{class:'pilula '+o[1],text:o[0]}),el('span',{class:'pilula '+e[1],text:e[0]}),el('span',{class:'pilula',text:c.perfil}),
         el('label',{class:'cx-sw'},swA,'Agente'),stSel,rSel,
         c.lead?el('button',{class:'btn-mini',type:'button',text:'Ficha e histórico',onclick:()=>abrirFicha(c.lead)}):null)));
@@ -1367,6 +1420,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
     requestAnimationFrame(()=>{ms.scrollTop=ms.scrollHeight;});
     // rodapé
     if(c.status!=='aberto'){box.append(el('div',{class:'cx-rodape'},el('span',{text:'Conversa '+c.status+'.'}),el('button',{class:'btn btn-editar',type:'button',text:'Reabrir',onclick:()=>{c.status='aberto';convStatus='aberto';syncStatusTabs();renderInbox();}})));}
+    else if(c.aguardandoResp){box.append(el('div',{class:'cx-rodape'},el('span',{text:'Modelo enviado. Assim que o cliente responder, a janela de 24 h abre e você escreve livremente.'}),el('button',{class:'btn btn-editar',type:'button',text:'Simular resposta do cliente',onclick:()=>{c.aguardandoResp=false;c.janela=true;c.msgs.push(['cli','Oi! Pode sim, quero saber os valores 😊',agora()]);c.naoLidas=0;renderInbox();}})));}
     else if(c.agente){box.append(el('div',{class:'cx-rodape'},el('span',{text:'O Gilberto está atendendo esta conversa.'}),el('button',{class:'btn btn-destaque',type:'button',text:'Assumir atendimento',onclick:()=>{c.agente=false;c.resp='voce';c.fila=null;c.msgs.push(['sis','Você assumiu o atendimento']);renderInbox();}})));}
     else if(!c.janela){box.append(el('div',{class:'cx-rodape'},el('span',{text:'A janela de 24 h expirou: só dá para enviar um modelo aprovado pela Meta (mensagem paga).'}),el('button',{class:'btn btn-editar',type:'button',text:'Enviar modelo',onclick:()=>{c.msgs.push(['eq','[Modelo “2ª tentativa · 55+” com foto do deck e rede]','agora','Você']);renderChat();toast('Modelo enviado (mensagem de marketing, paga).');}})));}
     else{
@@ -1506,6 +1560,57 @@ body.sem-rolagem .principal{padding-block-end:12px}
   let somLigado=true;
   function novoAlerta(a){a.etapa='novo';a.hora=agora();a.desde=Date.now();ALERTAS.push(a);a.c.urg={tipo:a.tipo,desde:a.desde};a.c.status='aberto';a.c.naoLidas=(a.c.naoLidas||0)+1;
     pushCel(ROT_URG[a.tipo].replace('⚑ ',''),a.c.nome+' · '+CANAL[a.c.canal],a.info);if(somLigado)bip();const s=$('bt-sino');s.classList.remove('ativo');void s.offsetWidth;s.classList.add('ativo');painelAlertas=true;renderAlertas();renderInbox();}
+  // v23: WhatsApp/e-mail do contato e conversa iniciada pela equipe
+  const TELS={1:'67999112233',2:'67998123344',3:'67996550011',4:'11987654321',5:'6733211100',6:'67991234567',8:'67998887766'};
+  CONVS.forEach(c=>{if(TELS[c.id])c.tel=TELS[c.id];});
+  const soDig=t=>(t||'').replace(/\D/g,'').replace(/^55(?=\d{10,11}$)/,'');
+  const telOk=t=>/^[1-9]{2}9?\d{8}$/.test(soDig(t));
+  const fmtTel=t=>{const d=soDig(t);return d.length===11?'('+d.slice(0,2)+') '+d.slice(2,7)+'-'+d.slice(7):d.length===10?'('+d.slice(0,2)+') '+d.slice(2,6)+'-'+d.slice(6):t;};
+  function linhaContato(c){
+    const campo=(k,rot,ph,tipo)=>{const v=c[k];
+      if(c['_ed'+k]){const i=el('input',{type:tipo,value:v?(k==='tel'?fmtTel(v):v):'',placeholder:ph,'aria-label':rot});
+        const salvar=()=>{const val=i.value.trim();if(k==='tel'&&val&&!telOk(val)){toast('Número inválido: use DDD + número.');i.focus();return;}if(k==='email'&&val&&!/^\S+@\S+\.\S+$/.test(val)){toast('E-mail inválido.');i.focus();return;}
+          c[k]=k==='tel'?soDig(val):val;c['_ed'+k]=false;
+          if(val){const dup=k==='tel'&&CONVS.find(x=>x!==c&&x.tel===c.tel);c.msgs.push(['sis',(k==='tel'?'WhatsApp '+fmtTel(val):'E-mail '+val)+' adicionado ao contato'+(dup?'. Já existe conversa com este número ('+dup.nome+'): os dois contatos foram juntados no mesmo cliente.':'.')]);}
+          renderChat();toast(rot+' salvo.');};
+        setTimeout(()=>i.focus(),0);i.addEventListener('keydown',e=>{if(e.key==='Enter')salvar();if(e.key==='Escape'){c['_ed'+k]=false;renderChat();}});
+        return el('span',{class:'dado'},rot+':',i,el('button',{class:'btn-mini',type:'button',text:'Salvar',onclick:salvar}));}
+      return el('span',{class:'dado'},rot+': ',v?el('b',{text:k==='tel'?fmtTel(v):v}):el('span',{class:'vazio-dado',text:'inserir'}),el('button',{class:'lapis',type:'button','aria-label':'Editar '+rot,text:'✎',onclick:()=>{c['_ed'+k]=true;renderChat();}}));};
+    const ig=c.canal==='ig'||c.canal==='fb';
+    return el('div',{class:'cx-contato'},campo('tel','WhatsApp','(67) 99999-9999','tel'),campo('email','E-mail','nome@exemplo.com','email'),
+      ig&&c.tel?el('button',{class:'btn-mini',type:'button',text:'Continuar pelo WhatsApp',onclick:()=>abrirNova({tel:c.tel,nome:c.nome,de:c})}):null,
+      ig&&!c.tel?el('span',{class:'tipo t-mkt',text:'Sem WhatsApp: follow-up só dentro de 24 h'}):null);
+  }
+  const MODELOS=[
+    {n:'Retorno de contato',cat:'Utilidade',t:'Olá, {nome}! Aqui é a equipe do Hotel Cabanas 🌿 Recebemos seu contato e vamos continuar seu atendimento por aqui. Podemos seguir?'},
+    {n:'Continuação do atendimento do Instagram',cat:'Utilidade',t:'Olá, {nome}! Aqui é a equipe do Hotel Cabanas 🌿 Você falou com a gente pelo Instagram e, como combinado, seguimos por aqui com as fotos e os valores. Podemos continuar?'},
+    {n:'Boas-vindas à reserva',cat:'Utilidade',t:'Olá, {nome}, sejam bem-vindos ao Hotel Cabanas! 🌿 Sua reserva está confirmada. Este é o nosso canal de atendimento para dúvidas antes do check-in. Precisando de uma pessoa da equipe, é só pedir por aqui. Desejamos uma ótima estadia! 😊'},
+    {n:'Convite para voltar',cat:'Marketing',t:'Oi, {nome}! Saudade de vocês por aqui 🌿 Temos datas tranquilas de domingo a quinta nas próximas semanas, com os dois rios e as atividades com monitor. Quer que eu veja uma data para vocês?'}];
+  let novaCtx=null;
+  function abrirNova(pre){novaCtx=pre||{};$('dlg-nova').hidden=false;$('dn-tel').value=pre&&pre.tel?fmtTel(pre.tel):'';$('dn-nome').value=pre&&pre.nome?pre.nome:'';
+    $('dn-modelo').textContent='';MODELOS.forEach((m,i)=>$('dn-modelo').append(el('option',{value:String(i),text:m.n+' · '+m.cat,selected:pre&&pre.de?i===1:i===0})));
+    $('dn-consent').checked=false;atualizarNova();setTimeout(()=>$(pre&&pre.tel?'dn-nome':'dn-tel').focus(),0);}
+  function atualizarNova(){const tel=$('dn-tel').value,ok=telOk(tel);$('dn-erro').hidden=!tel||ok;
+    const ex=ok&&CONVS.find(x=>x.tel===soDig(tel)&&x!==(novaCtx&&novaCtx.de));const ed=$('dn-existe');ed.textContent='';ed.hidden=!ex;
+    if(ex)ed.append(el('span',{text:'Este número já é de um contato: '+ex.nome+' ('+CANAL[ex.canal]+', último atendimento '+ex.hora+'). A mensagem entra na mesma conversa.'}),el('button',{class:'btn-mini',type:'button',text:'Abrir a conversa existente',onclick:()=>{$('dlg-nova').hidden=true;convSel=ex.id;renderInbox();}}));
+    const m=MODELOS[+$('dn-modelo').value||0],mk=m.cat==='Marketing';const nome=($('dn-nome').value.trim().split(' ')[0])||'@nome';
+    $('dn-cat').textContent='Modelo aprovado pela Meta · categoria '+m.cat+(mk?' (mais cara; exige consentimento do cliente)':' (mais barata)');$('dn-cat').className='dn-cat tipo '+(mk?'t-mkt':'t-livre');
+    $('dn-consent-l').hidden=!mk;$('dn-prev').textContent=m.t.replace('{nome}',nome);
+    $('dn-enviar').disabled=!ok||(mk&&!$('dn-consent').checked);}
+  ['dn-tel','dn-nome','dn-modelo','dn-consent'].forEach(id=>$(id).addEventListener(id==='dn-modelo'||id==='dn-consent'?'change':'input',atualizarNova));
+  const fecharNova=()=>{$('dlg-nova').hidden=true;};$('dn-fechar').addEventListener('click',fecharNova);$('dn-cancelar').addEventListener('click',fecharNova);
+  $('dlg-nova').addEventListener('click',e=>{if(e.target.id==='dlg-nova')fecharNova();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('dlg-nova').hidden)fecharNova();});
+  $('dn-novo-modelo').addEventListener('click',()=>toast('Novos modelos são cadastrados na Régua de mensagens e enviados para aprovação da Meta (de minutos a 24 h).'));
+  $('dn-enviar').addEventListener('click',()=>{const tel=soDig($('dn-tel').value),m=MODELOS[+$('dn-modelo').value],nome=$('dn-nome').value.trim()||fmtTel(tel);
+    const txt=m.t.replace('{nome}',nome.split(' ')[0]);let c=CONVS.find(x=>x.tel===tel&&x.canal!=='ig'&&x.canal!=='fb');
+    if(!c){c={id:Math.max(...CONVS.map(x=>x.id))+1,lead:null,nome,canal:$('dn-num').value,origem:novaCtx&&novaCtx.de?novaCtx.de.origem:'ativo',origemDet:novaCtx&&novaCtx.de?'Veio do '+CANAL[novaCtx.de.canal]+' ('+ORIGENS[novaCtx.de.origem][0]+'); continuou no WhatsApp':'Contato ativo: a equipe iniciou a conversa',etapa:novaCtx&&novaCtx.de?novaCtx.de.etapa:'novo',perfil:novaCtx&&novaCtx.de?novaCtx.de.perfil:'A identificar',agente:false,resp:'voce',status:'aberto',naoLidas:0,hora:agora(),janela:false,reservas:[],pagamentos:[],msgs:[],tel};CONVS.unshift(c);}
+    if(novaCtx&&novaCtx.de)novaCtx.de.msgs.push(['sis','Conversa continuada no WhatsApp '+fmtTel(tel)+'.']);
+    c.msgs.push(['sis','Modelo “'+m.n+'” ('+m.cat+') enviado pelo '+CANAL[$('dn-num').value]]);c.msgs.push(['eq',txt,agora(),'Você']);c.aguardandoResp=true;c.status='aberto';
+    fecharNova();convSel=c.id;convStatus='aberto';syncStatusTabs();renderInbox();toast('Mensagem enviada. A conversa abre quando o cliente responder.');});
+  $('bt-nova-conv').addEventListener('click',e=>{const m=$('nova-menu');m.hidden=!m.hidden;e.currentTarget.setAttribute('aria-expanded',String(!m.hidden));});
+  $('nova-menu').addEventListener('click',e=>{const b=e.target.closest('[data-nova]');if(!b)return;$('nova-menu').hidden=true;
+    if(b.dataset.nova==='wa')abrirNova();else toast('E-mail entra na fase 2: a caixa de reservas@ passa a ser lida e respondida dentro do CRM.');});
+  document.addEventListener('click',e=>{if(!e.target.closest('.cx-novo-wrap'))$('nova-menu').hidden=true;});
   function plantao(){const v=$('sel-plantao').value;return v==='todos'?'Jagles, Márcio e Ricardo':v;}
   function pushCel(t1,t2,t3){const p=$('push-cel');p.textContent='';p.append(el('div',{class:'app-n'},el('span',{text:'Cabanas CRM · celular de '+(plantao().includes(',')?'todos':plantao())}),el('span',{text:'agora'})),el('b',{text:t1}),el('span',{text:t2}),t3?el('span',{style:'opacity:.8',text:t3}):null);
     p.hidden=false;clearTimeout(pushCel.h);pushCel.h=setTimeout(()=>p.hidden=true,5000);}

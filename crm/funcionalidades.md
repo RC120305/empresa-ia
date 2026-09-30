@@ -56,6 +56,8 @@
 | 4.5 | Enviar foto, PDF, áudio e localização; ouvir áudio do cliente (e transcrição) | 💡 | 1 |
 | 4.7 | Botão "Enviar do banco de imagens e vídeos" na conversa, com busca por etiqueta | 🆕 | 2 |
 | 4.6 | Filtros: aguardando, com o agente, minhas, por canal | ✅ | 1 |
+| 4.8 | **Iniciar conversa** com lead novo pelo WhatsApp (botão "+ Nova conversa"): número validado, aviso de contato já existente, número de envio (99110/99117), **modelo aprovado pela Meta** com prévia, consentimento obrigatório nos modelos de marketing; a conversa abre quando o cliente responde (P53) | 🆕 | 1 |
+| 4.9 | **Inserir WhatsApp e e-mail** no cabeçalho da conversa (leads do Instagram/Messenger), com junção automática se o número já existir e botão "Continuar pelo WhatsApp" (P53) | 🆕 | 1 |
 
 ## 5. Agente de IA (aba Ajustes do agente)
 | # | Funcionalidade | Status | Fase |
