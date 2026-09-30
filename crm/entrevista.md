@@ -492,3 +492,4 @@ Lido da página (16 de 16; nada acrescentado):
 | D14 | Faturamento visível para **dono, Renata e Márcio** |
 | D15 | Guardar conversas por **5 anos** (exclusão antes, se o cliente pedir) |
 | D16 | Google Cloud na **conta pessoal do dono** (créditos do Google AI Ultra); recomendação: incluir Renata e Márcio como administradores do projeto para não depender de uma pessoa só |
+- **Exemplo da página do orçamento (D5):** `crm/prototipo/orcamento-exemplo.html`, https://claude.ai/artifact/DfYcXJAbqr3ZaXyZyHKDU8. Página de celular na identidade do Cabanas: saudação do Gilberto, 3 opções com fotos reais que deslizam, destaques, total e média por noite, "Quero reservar esta"; incluso na diária; combo boia cross + arvorismo com opção de incluir; condições (sinal 50%, 6x, check-in/out, cancelamento, distância); ao reservar, resumo com sinal e saldo no check-out e escolha Pix ou cartão (Cielo), criando a reserva e enviando a cobrança no WhatsApp.
