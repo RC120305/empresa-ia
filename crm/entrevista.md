@@ -404,3 +404,9 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
   - **Tarefa esquecida:** se a reserva vencida continuar ativa no Silbeck depois de X horas, o alerta sobe para Renata/dono.
 - **Prazos aprovados pelo dono (30/09/2026):** 24 h e 2 h (check-in em até 3 dias), contados da criação da reserva.
 - **Painel "Reservas a receber":** todas as reservas sem sinal (do CRM, do motor com Pix e do Booking), com valor, prazo e cor (no prazo, vence hoje, vencida), para o dia a dia da equipe.
+
+### P47. Análise da jornada do lead e teste de cenários (30/09/2026)
+- **Pedido do dono:** analisar a trajetória completa do lead, testar se as ferramentas estão conectadas e achar lacunas.
+- **Feito:** teste automático do protótipo v16 (10 telas, 7 conversas × 5 painéis, fluxo orçamento → reserva → cobrança; sem erros) e **24 cenários** percorridos passo a passo: **7 cobertos, 12 com lacuna, 5 não cobertos**. Documento: `crm/analise-jornada.md`.
+- **16 lacunas (G1–G16)**, 7 para resolver antes de construir: pagamento depois do prazo (G1), overbooking pela API (G2), orçamento com várias acomodações (G3), alteração e cancelamento depois de pagar (G4), contato × negócio (G5), dados para reservar e aceite da política (G6), regras de venda que a API não traz (G7).
+- **Página de aprovação:** `crm/prototipo/analise-jornada.html`, https://claude.ai/artifact/5v2KBzG1zgW42rezdU723K (coleções `respostas` e `faltas`). 4 perguntas novas para a Silbeck acrescentadas em `crm/silbeck/mensagem-pedro.md`.
