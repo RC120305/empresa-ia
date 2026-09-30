@@ -7,15 +7,21 @@
 2. **A coexistência só é ligada pelo "cadastro incorporado" (Embedded Signup) de um app da Meta.** É uma tela de conexão da Meta que abre dentro de uma página nossa, com leitura de QR code no celular. Ela precisa de uma página em HTTPS e do servidor que troca o código de acesso, ou seja, do CRM.
 3. **Conectar sem o CRM não traz ganho.** O app continuaria igual no celular, e as mensagens não teriam para onde ir.
 
-## Ordem proposta
+## Plano do dono (30/09/2026): número de teste primeiro
+1. **Número de teste** para desenvolver e testar o CRM, sem tocar nos números reais.
+2. **99117 por coexistência**, em modo **observação**: o CRM só registra e o Gilberto fica desligado nesse número até ser liberado.
+3. Com o CRM consolidado: **cancelar a Asksuite** (depois de exportar tudo) e **conectar o 99110** na conta do hotel em reais.
+
 | # | Etapa | Quem | Depende de |
 |---|---|---|---|
 | 1 | Criar o projeto no **Google Cloud** (conta pessoal do dono, D16) e dar acesso de administrador à equipe | Dono | — |
-| 2 | Criar o app **"Cabanas CRM"** na Meta (tipo Empresa, no portfólio Hotel Cabanas) com os produtos WhatsApp e "Login do Facebook para Empresas" (configuração do cadastro incorporado) | Dono, com o passo a passo abaixo | — |
-| 3 | Subir o **mínimo do CRM**: página de conexão + webhook + gravação das mensagens no Supabase | Equipe | 1 e 2 |
-| 4 | **Dia da conexão:** no computador, abrir a página de conexão do CRM → "Conectar WhatsApp Business app" → entrar com o Facebook do dono → criar a **conta nova em Real (BRL)**, fuso de São Paulo → informar o 99117 → **ler o QR code com o celular da recepção** (WhatsApp Business → Configurações → Dispositivos conectados) → aceitar o compartilhamento do histórico | Dono + celular da recepção | 3 |
-| 5 | O CRM pede, na hora, o **histórico e os contatos** e confere se chegaram | Equipe | 4 |
-| 6 | Teste: mensagem de um celular de fora → aparece no app **e** no CRM; resposta pelo app aparece no CRM | Dono + equipe | 5 |
+| 2 | Criar o app **"Cabanas CRM"** na Meta (tipo Empresa, portfólio Hotel Cabanas) com o produto WhatsApp. A Meta cria junto **um número de teste gratuito**, que envia para até 5 celulares cadastrados | Dono, com o passo a passo | — |
+| 3 | Subir o **mínimo do CRM**: webhook + gravação no Supabase + caixa de entrada. Testes com o número da Meta | Equipe | 1 e 2 |
+| 4 | (Opcional) **Chip de teste real**: número novo, **sem WhatsApp instalado** (ou apagar a conta do app antes), para testar com qualquer pessoa, Instagram e modelos. Entra numa conta nova **em reais (BRL)** | Dono | 3 |
+| 5 | Página de conexão (cadastro incorporado) + configuração no app ("Login do Facebook para Empresas") | Equipe + dono | 3 |
+| 6 | **Coexistência do 99117:** abrir a página de conexão → "Conectar WhatsApp Business app" → conta **em reais**, fuso de São Paulo → informar o 99117 → **ler o QR code no celular da recepção** (WhatsApp Business → Dispositivos conectados) → aceitar o histórico. O CRM pede **na hora** o histórico (6 meses) e os contatos. **Modo observação:** Gilberto desligado no 99117 | Dono + recepção | 5 |
+| 7 | Teste: mensagem de fora aparece no app **e** no CRM; resposta pelo app aparece no CRM | Dono + equipe | 6 |
+| 8 | CRM consolidado: exportar da Asksuite (biblioteca, conversas, contatos) → pedir o cancelamento → a Asksuite libera o 99110 (desligar a verificação em duas etapas) → migrar o 99110 para a conta em reais → retirar o parceiro Text Wave | Dono + equipe | 7 e testes |
 
 ## Antes do dia da conexão (checklist do celular da recepção)
 - [ ] WhatsApp Business **atualizado** (loja de apps).
