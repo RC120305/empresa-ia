@@ -1557,9 +1557,9 @@ body.sem-rolagem .principal{padding-block-end:12px}
   function bip(){try{const a=new (window.AudioContext||window.webkitAudioContext)();[0,.3].forEach(t=>{const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.12,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+t+.22);o.start(a.currentTime+t);o.stop(a.currentTime+t+.25);});}catch(e){}}
   const ROT_URG={humano:'⚑ Pede atendimento humano',reclamacao:'⚑ Reclamação · passar para a equipe',naosabe:'⚑ Gilberto passou para a equipe','alteração':'⚑ Pedido de alteração',cancelamento:'⚑ Pedido de cancelamento'};
   const minDesde=d=>{const m=Math.max(0,Math.round((Date.now()-d)/6e4));return m<1?'agora':m+' min';};
-  let somLigado=true;
+  let somLigado=true,silencioIni=false;
   function novoAlerta(a){a.etapa='novo';a.hora=agora();a.desde=Date.now();ALERTAS.push(a);a.c.urg={tipo:a.tipo,desde:a.desde};a.c.status='aberto';a.c.naoLidas=(a.c.naoLidas||0)+1;
-    pushCel(ROT_URG[a.tipo].replace('⚑ ',''),a.c.nome+' · '+CANAL[a.c.canal],a.info);if(somLigado)bip();const s=$('bt-sino');s.classList.remove('ativo');void s.offsetWidth;s.classList.add('ativo');painelAlertas=true;renderAlertas();renderInbox();}
+    if(!silencioIni){pushCel(ROT_URG[a.tipo].replace('⚑ ',''),a.c.nome+' · '+CANAL[a.c.canal],a.info);if(somLigado)bip();}const s=$('bt-sino');s.classList.remove('ativo');void s.offsetWidth;s.classList.add('ativo');painelAlertas=true;renderAlertas();renderInbox();}
   // v23: WhatsApp/e-mail do contato e conversa iniciada pela equipe
   const TELS={1:'67999112233',2:'67998123344',3:'67996550011',4:'11987654321',5:'6733211100',6:'67991234567',8:'67998887766'};
   CONVS.forEach(c=>{if(TELS[c.id])c.tel=TELS[c.id];});
@@ -2071,6 +2071,12 @@ body.sem-rolagem .principal{padding-block-end:12px}
         c.etapa='orc';c.orc=null;painelLat='res';renderInbox();toast('Orçamento enviado e salvo no card do cliente.');}}));
   }
   renderBoard();renderRegua();iniciarV4();renderProdutos();renderAgencias();renderAssumir();
+  // v24: a tela já abre com 3 alertas de exemplo (atendimento humano, cancelamento e alteração); o botão Simular cria outros
+  (function(){silencioIni=true;const cv=id=>CONVS.find(c=>c.id===id);
+    humano(cv(7),'humano');const r=cv(2),x=r.reservas.find(y=>/^Reservado · pago/.test(y[1]));pedido(r,x,'cancelamento');
+    const j=cv(8),y=j.reservas.find(z=>/^Reservado · pago/.test(z[1]));pedido(j,y,'alteração');
+    [[7,3],[2,6],[8,9]].forEach(([id,m])=>{const a=ALERTAS.find(k=>k.c.id===id);a.desde-=m*6e4;a.c.urg.desde=a.desde;a.hora=new Date(a.desde).toTimeString().slice(0,5);});
+    silencioIni=false;convSel=7;painelAlertas=true;renderAlertas();renderInbox();$('toast').hidden=true;})();
   $('sel-plantao').addEventListener('change',e=>{const v=e.target.value;$('plantao-txt').textContent=v==='todos'?'Todos recebem os alertas. Sem plantão, cada um pode achar que outro vai pegar.':v+' recebe os alertas no celular. Se ninguém assumir em 10 min, sobe para a Renata e o Ricardo.';toast(v==='todos'?'Plantão desligado: alertas para todos.':v+' está de plantão.');renderAlertas();});
 })();
 </script>
