@@ -1,45 +1,5 @@
 {
  "1": {
-  "titulo": "Espaço para **quatro**,\nem meio à *natureza*",
-  "apoio": "Bangalô · 40 m² · 2 a 4 pessoas",
-  "apoio_cc": "Bangalô · 40 m² · 2 a 4 pessoas",
-  "pos": "62% center",
-  "cc_duas": true,
-  "sf_sombras": [
-   [
-    -200,
-    880,
-    1200,
-    480,
-    0.8
-   ],
-   [
-    440,
-    1170,
-    820,
-    380,
-    0.8
-   ]
-  ],
-  "cc_topo": 900,
-  "cc_sombras": [
-   [
-    190,
-    1100,
-    700,
-    140,
-    0.8
-   ],
-   [
-    290,
-    1215,
-    500,
-    250,
-    0.75
-   ]
-  ]
- },
- "2": {
   "titulo": "Privacidade **aqui** é *garantida*",
   "apoio": "Acomodação sem vizinhos",
   "apoio_cc": "Acomodação sem vizinhos",
@@ -92,19 +52,19 @@
    ]
   ]
  },
- "3": {
-  "titulo": "A **rede** *espera* depois da trilha",
-  "apoio": "Varanda privativa com rede",
-  "apoio_cc": "Varanda privativa com rede",
-  "pos": "50% center",
-  "sf_lado": "cima",
+ "2": {
+  "titulo": "Espaço para **quatro**,\nem meio à *natureza*",
+  "apoio": "Bangalô · 40 m² · 2 a 4 pessoas",
+  "apoio_cc": "Bangalô · 40 m² · 2 a 4 pessoas",
+  "pos": "62% center",
+  "cc_duas": true,
   "sf_sombras": [
    [
     -200,
-    -60,
+    880,
     1200,
-    460,
-    0.75
+    480,
+    0.8
    ],
    [
     440,
@@ -112,22 +72,15 @@
     820,
     380,
     0.8
-   ],
-   [
-    860,
-    10,
-    320,
-    190,
-    0.5
    ]
   ],
-  "cc_topo": 150,
+  "cc_topo": 900,
   "cc_sombras": [
    [
-    160,
-    235,
-    760,
-    110,
+    190,
+    1100,
+    700,
+    140,
     0.8
    ],
    [
@@ -136,71 +89,10 @@
     500,
     250,
     0.75
-   ],
-   [
-    900,
-    25,
-    200,
-    120,
-    0.55
    ]
   ]
  },
- "4": {
-  "titulo": "Conversa **longa**, *vista* para *natureza*",
-  "apoio": "Varanda privativa",
-  "apoio_cc": "Varanda privativa",
-  "pos": "35% center",
-  "sf_lado": "cima",
-  "sf_sombras": [
-   [
-    -200,
-    -60,
-    1250,
-    460,
-    0.75
-   ],
-   [
-    440,
-    1170,
-    820,
-    380,
-    0.8
-   ],
-   [
-    860,
-    10,
-    320,
-    190,
-    0.5
-   ]
-  ],
-  "cc_topo": 150,
-  "cc_sombras": [
-   [
-    120,
-    235,
-    840,
-    110,
-    0.8
-   ],
-   [
-    290,
-    1215,
-    500,
-    250,
-    0.75
-   ],
-   [
-    900,
-    25,
-    200,
-    120,
-    0.55
-   ]
-  ]
- },
- "5": {
+ "3": {
   "titulo": "Espaço **amplo**,\ne *confortável*",
   "apoio": "Cama de casal + 2 camas de solteiro",
   "apoio_cc": "Cama de casal + 2 camas de solteiro",
@@ -255,60 +147,7 @@
    ]
   ]
  },
- "6": {
-  "titulo": "**Banho** quente depois do *rio*",
-  "apoio": "Ducha com aquecimento solar e a gás",
-  "apoio_cc": "Ducha com aquecimento solar e a gás",
-  "pos": "88% center",
-  "sf_sombras": [
-   [
-    -200,
-    880,
-    1250,
-    480,
-    0.85
-   ],
-   [
-    440,
-    1170,
-    820,
-    380,
-    0.8
-   ],
-   [
-    860,
-    10,
-    320,
-    190,
-    0.5
-   ]
-  ],
-  "cc_topo": 1000,
-  "cc_sombras": [
-   [
-    140,
-    1080,
-    800,
-    140,
-    0.85
-   ],
-   [
-    290,
-    1215,
-    500,
-    250,
-    0.75
-   ],
-   [
-    900,
-    25,
-    200,
-    120,
-    0.55
-   ]
-  ]
- },
- "7": {
+ "4": {
   "titulo": "Seu **lugar** de *conexão*,\nem família",
   "apoio": "Reserve pelo link da bio",
   "apoio_cc": "Reserve pelo link da bio",
@@ -362,5 +201,166 @@
    ]
   ],
   "sf_lado": "cima"
+ },
+ "5": {
+  "titulo": "A **rede** *espera* depois da trilha",
+  "apoio": "Varanda privativa com rede",
+  "apoio_cc": "Varanda privativa com rede",
+  "pos": "50% center",
+  "sf_lado": "cima",
+  "sf_sombras": [
+   [
+    -200,
+    -60,
+    1200,
+    460,
+    0.75
+   ],
+   [
+    440,
+    1170,
+    820,
+    380,
+    0.8
+   ],
+   [
+    860,
+    10,
+    320,
+    190,
+    0.5
+   ]
+  ],
+  "cc_topo": 150,
+  "cc_sombras": [
+   [
+    160,
+    235,
+    760,
+    110,
+    0.8
+   ],
+   [
+    290,
+    1215,
+    500,
+    250,
+    0.75
+   ],
+   [
+    900,
+    25,
+    200,
+    120,
+    0.55
+   ]
+  ]
+ },
+ "6": {
+  "titulo": "Conversa **longa**, *vista* para *natureza*",
+  "apoio": "Varanda privativa",
+  "apoio_cc": "Varanda privativa",
+  "pos": "35% center",
+  "sf_lado": "cima",
+  "sf_sombras": [
+   [
+    -200,
+    -60,
+    1250,
+    460,
+    0.75
+   ],
+   [
+    440,
+    1170,
+    820,
+    380,
+    0.8
+   ],
+   [
+    860,
+    10,
+    320,
+    190,
+    0.5
+   ]
+  ],
+  "cc_topo": 150,
+  "cc_sombras": [
+   [
+    120,
+    235,
+    840,
+    110,
+    0.8
+   ],
+   [
+    290,
+    1215,
+    500,
+    250,
+    0.75
+   ],
+   [
+    900,
+    25,
+    200,
+    120,
+    0.55
+   ]
+  ]
+ },
+ "7": {
+  "titulo": "**Banho** quente depois do *rio*",
+  "apoio": "Ducha com aquecimento solar e a gás",
+  "apoio_cc": "Ducha com aquecimento solar e a gás",
+  "pos": "88% center",
+  "sf_sombras": [
+   [
+    -200,
+    880,
+    1250,
+    480,
+    0.85
+   ],
+   [
+    440,
+    1170,
+    820,
+    380,
+    0.8
+   ],
+   [
+    860,
+    10,
+    320,
+    190,
+    0.5
+   ]
+  ],
+  "cc_topo": 1000,
+  "cc_sombras": [
+   [
+    140,
+    1080,
+    800,
+    140,
+    0.85
+   ],
+   [
+    290,
+    1215,
+    500,
+    250,
+    0.75
+   ],
+   [
+    900,
+    25,
+    200,
+    120,
+    0.55
+   ]
+  ]
  }
 }

@@ -17,7 +17,7 @@ Artes: `design/pecas/2026-10-instagram/stories/STORY-DDMM.png` (1080 × 1920; ge
 | STORY-1110 | 11/10 domingo 18h30 | POST 15 | Dúvida no *caminho*? · Chame no WhatsApp pelo link | WhatsApp |
 | STORY-1310 | 13/10 terça 18h30 | POST 04 | Bonito, *sem pressa* · Reserve direto pelo link | Motor de reservas |
 | STORY-1710 | 17/10 sábado 9h30 | POST 06 | Cinco sentidos, *uma* estadia · Reserve direto pelo link | Motor de reservas |
-| STORY-1810 | 18/10 domingo 18h30 | POST 16 | Espaço para *quatro*, em meio à natureza · Reserve direto pelo link | Motor de reservas |
+| STORY-1810 | 18/10 domingo 18h30 | POST 16 | Privacidade *aqui* é garantida · Reserve direto pelo link | Motor de reservas |
 | STORY-2010 | 20/10 terça 18h30 | POST 07 | Planeje *dezembro* agora · Pergunte as datas pelo link | WhatsApp |
 | STORY-2410 | 24/10 sábado 9h30 | POST 09 | A natureza é a *nossa casa* · Reserve direto pelo link | Motor de reservas |
 | STORY-2510 | 25/10 domingo 18h30 | POST 13 | A varanda é *de vocês* · Reserve direto pelo link | Motor de reservas |
