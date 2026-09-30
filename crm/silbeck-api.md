@@ -63,3 +63,14 @@ Em ordem de prioridade, abrir cada um na documentação e enviar o print dos **p
 7. `GET /v1/ListaEstadia` (e **ListaEstadiaResultado**)
 8. `GET /v1/ExtratoConta`
 9. `GET /v1/TipoApartamento` e `GET /v1/Produto`
+
+## 5. Acesso externo à API (orientação da Silbeck, técnico Pedro, 30/09/2026)
+- **O link da documentação** mostra o catálogo do que a Silbeck **pode liberar** para o hotel. Cada endpoint é liberado nas credenciais (hoje: `Ocupacao`, pelo exemplo enviado).
+- **Credenciais JWT** (Client ID/Secret) já emitidas pela Silbeck e enviadas ao dono. **Não ficam no repositório**; no CRM vão para o Secret Manager. Como passaram pelo chat, pedir **nova geração** antes da produção.
+- **Token:** `POST /v1/liberar` com autenticação básica → `access_token` com `expires_in: 30` (unidade a confirmar; o CRM renova o token a cada chamada ou ao expirar).
+- **Rede:** hoje só funciona **dentro da rede do hotel**. Proposta da Silbeck: **IP fixo externo** no provedor + redirecionar as portas **8365, 8366 e 8367** para o servidor interno (192.168.132.242).
+- **Parecer (segurança):** o servidor fala **HTTP sem criptografia**; abrir as portas deixa o sistema do hotel exposto na internet e o usuário/senha e os dados de hóspedes trafegando em texto aberto. Alternativas, em ordem:
+  1. **Recomendado: túnel de saída** (Cloudflare Tunnel, gratuito) num micro/servidor do hotel: nenhuma porta aberta, sem IP fixo, HTTPS de ponta a ponta, acesso só com chave do CRM. Configuração: Márcio.
+  2. **VPN** entre o hotel e o Google Cloud (mais cara e complexa).
+  3. **IP fixo + portas** (proposta da Silbeck) **só com**: firewall liberando as portas **apenas para o IP fixo de saída do CRM** (Cloud NAT no Google Cloud) e, se a Silbeck suportar, HTTPS na porta. Nunca aberto para qualquer IP.
+- **Documentação:** o site segue bloqueado para servidores de nuvem; pedir à Silbeck o arquivo **OpenAPI/Swagger** (e a documentação da API do motor).
