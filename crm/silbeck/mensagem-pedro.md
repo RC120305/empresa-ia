@@ -28,7 +28,13 @@ No tipoFormaPagamento 8 (Pix), precisa informar alguma conta corrente? E, no car
 *6. Motor de reservas*
 Vocês têm a documentação da API do motor de reservas (sbreserva), com tipos de acomodação, fotos e tarifas? A Asksuite usa essa integração hoje, e precisamos da mesma para substituí-la.
 
-*7. Credenciais*
+*7. Regras da reserva*
+a) O POST reserva recusa a reserva quando não há vaga no período, ou aceita mesmo assim (overbooking)?
+b) O maximoOcupantes do tipo de apartamento conta as crianças pequenas?
+c) A API respeita estadia mínima ou fechamento de venda por período (feriados, pacotes)? Onde isso fica?
+d) O FichaHospede consegue incluir acompanhantes que não foram informados na reserva?
+
+*8. Credenciais*
 Quando formos para produção, pedimos que gerem credenciais novas.
 
 Obrigado!
