@@ -15,6 +15,10 @@ Os arquivos de cada `POST-NN/final/` (`POST-NN-1.png`, `-2.png`…) são **cópi
 | POST-12 | Sem faixa | Texto sobre a camiseta azul, bem abaixo do rosto, e logo sobre o cascalho escuro: leitura boa. | `POST-12/final/POST-12-1.png` (de `POST-12-sem-faixa-1.png`) |
 | POST-15 | Sem faixa | As 6 telas leem bem sem faixa (sombra localizada mais firme nas telas 3 e 4; na 6 o texto e os contatos ficam sobre o azul da piscina, sem véu); na caixa central o apoio ficava fraco sobre a madeira clara (telas 3 a 5). | `POST-15/final/POST-15-1.png` a `-6.png` (de `POST-15/estilos/estilo-1/`) |
 
+## Atualização 30/09/2026: CTA sem link nem WhatsApp na arte
+Pedido do dono: na arte nada é clicável, então saíram o endereço do motor de reservas e o número do WhatsApp das telas de CTA. O apoio "Reserve direto" virou **"Reserve pelo link da bio"** (POST-01 tela 5, POST-03 tela 5, POST-06 tela 6, POST-07 tela 6, POST-10 tela 6, POST-16 tela 7) e, no POST-15 tela 6, **"Tire dúvidas pelo link da bio"**. Títulos e fotos não mudaram. Alterado nos 3 estilos (HTML, `estilos/estilo-1..3`, cópias soltas e `final/`); POST-15 e POST-16 também em `fonte/textos.json` (sem o campo `contato`).
+- **Atenção:** o `final/` do **POST-01** está com a **faixa discreta (estilo 3)** desde 27/09 13h06, e não com o "sem faixa (v2)" da tabela acima. Mantive a faixa discreta; confirmar com o dono qual layout vale.
+
 ## Fontes editáveis
 - Telas v2: `POST-NN/peca-sem-faixa-N-v2.html` + `carrossel-sem-faixa.css` da pasta. Os HTML originais (sem `-v2`) continuam intactos.
 - POST-06: `POST-06/peca-caixa-1.html` a `-6.html`. As telas 2 a 6 usam o kit oficial (`design/modelos/estilo-caixa-central.css`); a tela 1 usa a cópia de teste `../estilo-caixa-central.css`, que tem o mesmo conteúdo.

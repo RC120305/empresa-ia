@@ -310,12 +310,8 @@
  },
  "7": {
   "titulo": "Seu **lugar** de *conexão*,\nem família",
-  "apoio": "Reserve direto",
-  "apoio_cc": "Reserve direto",
-  "contato": [
-   "(67) 99117-1648",
-   "sbreserva.silbeck.com.br/hotelcabanas"
-  ],
+  "apoio": "Reserve pelo link da bio",
+  "apoio_cc": "Reserve pelo link da bio",
   "pos": "38% center",
   "cc_duas": true,
   "sf_sombras": [
@@ -323,7 +319,7 @@
     -220,
     -80,
     1300,
-    720,
+    580,
     0.85
    ],
    [
