@@ -328,6 +328,18 @@ button,input,select{font:inherit;color:inherit}
 .acoes-res{display:flex;gap:6px;flex-wrap:wrap}
 .acoes-card{display:flex;gap:6px;flex-wrap:wrap}
 .simular-wrap{position:relative}
+.plantao{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--lat-texto);padding:10px 12px;border-radius:var(--r-md);background:rgba(255,255,255,.06)}
+.plantao label{font-weight:600}
+.plantao select{background:var(--lat-fundo);color:var(--lat-texto);border:1px solid rgba(255,255,255,.25);border-radius:var(--r-sm);padding:6px 8px;font:inherit}
+.plantao small{opacity:.8;line-height:1.35}
+.push-cel{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:48;width:min(330px,calc(100% - 32px));background:#1f1b17;color:#f7f1e6;border-radius:18px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:2px;font-size:13px}
+.push-cel .app-n{display:flex;justify-content:space-between;font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.05em}
+.push-cel b{font-size:14px}
+.tab-assumir{width:100%;border-collapse:collapse;font-size:14px}
+.tab-assumir th,.tab-assumir td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--cor-borda)}
+.tab-assumir td.num,.tab-assumir th.num{text-align:right;font-variant-numeric:tabular-nums}
+.barra-min{display:inline-block;height:8px;border-radius:999px;background:var(--cor-primaria);vertical-align:middle;margin-right:6px}
+.barra-min.ruim{background:var(--cor-erro)}
 .simular-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:46;width:340px;max-width:calc(100vw - 32px);background:var(--cor-elevada);border:1px solid var(--cor-borda);border-radius:var(--r-md);box-shadow:var(--sombra-2);display:flex;flex-direction:column}
 .simular-menu button{all:unset;cursor:pointer;padding:10px 12px;font-size:14px;border-bottom:1px solid var(--cor-borda)}
 .simular-menu button:hover{background:var(--cor-primaria-suave)}
@@ -643,6 +655,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
       <span id="agente-txt-1">Atendendo sozinho das 17h às 7h30. Revisão depois, em Ajustes.</span>
       <span class="num">Acerto da semana: <b style="color:var(--lat-texto)">87%</b> · meta 90%</span>
     </div>
+    <div class="plantao"><label for="sel-plantao">De plantão agora</label><select id="sel-plantao"><option value="Jagles">Jagles</option><option value="Márcio">Márcio</option><option value="Ricardo">Ricardo</option><option value="Renata">Renata</option><option value="todos">Todos (sem plantão)</option></select><small id="plantao-txt">Recebe os alertas no celular. Se ninguém assumir em 10 min, sobe para a Renata e o Ricardo.</small></div>
   </aside>
 
   <main class="principal">
@@ -656,6 +669,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
           <button type="button" data-sim="naosabe">Gilberto passa para a equipe (não sabe responder)</button>
           <button type="button" data-sim="alteracao">Cliente pede alteração da reserva</button>
           <button type="button" data-sim="cancelamento">Cliente pede cancelamento</button>
+          <button type="button" data-sim="tempo">⏱ Passar 10 minutos sem ninguém assumir</button>
         </div></div>
       <button class="sino" type="button" id="bt-sino" aria-label="Alertas da equipe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="sino-n num" id="sino-n" hidden>0</span></button>
       <button class="tema" id="bt-tema" type="button">Tema: automático</button>
@@ -824,6 +838,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
           </div>
         </div>
       </div>
+      <div class="cartao bloco"><h3>Tempo até a equipe assumir</h3><span class="sub">Da hora do alerta até alguém assumir, por tipo de pedido. Meta: até 10 min no expediente.</span><div id="pn-assumir" class="rolagem"></div></div>
     </section>
 
     <!-- RÉGUA -->
@@ -941,6 +956,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="m-titulo"><h3 id="m-titulo">Por que perdemos este lead?</h3><div class="opcoes" id="m-opcoes"></div><div class="acoes"><button class="btn btn-enviar" id="m-ok" type="button">Mover para Perdido</button><button class="btn btn-editar" id="m-cancelar" type="button">Cancelar</button></div></div>
 <div class="aviso-toast" id="toast" hidden role="status"></div>
 <div class="alertas" id="alertas" hidden role="alert"></div>
+<div class="push-cel" id="push-cel" hidden role="status"></div>
 
 <script>
 (function(){
@@ -1489,7 +1505,10 @@ body.sem-rolagem .principal{padding-block-end:12px}
   const minDesde=d=>{const m=Math.max(0,Math.round((Date.now()-d)/6e4));return m<1?'agora':m+' min';};
   let somLigado=true;
   function novoAlerta(a){a.etapa='novo';a.hora=agora();a.desde=Date.now();ALERTAS.push(a);a.c.urg={tipo:a.tipo,desde:a.desde};a.c.status='aberto';a.c.naoLidas=(a.c.naoLidas||0)+1;
-    if(somLigado)bip();const s=$('bt-sino');s.classList.remove('ativo');void s.offsetWidth;s.classList.add('ativo');painelAlertas=true;renderAlertas();renderInbox();}
+    pushCel(ROT_URG[a.tipo].replace('⚑ ',''),a.c.nome+' · '+CANAL[a.c.canal],a.info);if(somLigado)bip();const s=$('bt-sino');s.classList.remove('ativo');void s.offsetWidth;s.classList.add('ativo');painelAlertas=true;renderAlertas();renderInbox();}
+  function plantao(){const v=$('sel-plantao').value;return v==='todos'?'Jagles, Márcio e Ricardo':v;}
+  function pushCel(t1,t2,t3){const p=$('push-cel');p.textContent='';p.append(el('div',{class:'app-n'},el('span',{text:'Cabanas CRM · celular de '+(plantao().includes(',')?'todos':plantao())}),el('span',{text:'agora'})),el('b',{text:t1}),el('span',{text:t2}),t3?el('span',{style:'opacity:.8',text:t3}):null);
+    p.hidden=false;clearTimeout(pushCel.h);pushCel.h=setTimeout(()=>p.hidden=true,5000);}
   function humano(c,tipo){
     const fora=!expediente();
     const falas={humano:['cli','Prefiro falar com uma pessoa, pode ser?'],reclamacao:['cli','O ar-condicionado do quarto não está gelando e está muito calor 😓'],naosabe:['cli','Vocês conseguem organizar um jantar surpresa com decoração e músico no deck para o meu pedido de casamento?']};
@@ -1499,7 +1518,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
     const info={humano:'Cliente pediu atendimento humano. Gilberto: perfil '+c.perfil+(c.reservas.length?' · '+c.reservas[0][0]:''),reclamacao:'Hóspede no Bangalô 3 · encaminhar à manutenção · prioridade alta',naosabe:'Pedido fora da base (evento especial). Gilberto não inventa: passou para a equipe'};
     const f=falas[tipo];c.msgs.push([f[0],f[1],agora()]);c.msgs.push(['ia',resp[tipo],agora(),'Regra: '+(tipo==='humano'?'cliente pede pessoa → passar para a equipe':tipo==='reclamacao'?'reclamação → alerta imediato':'sem resposta na base → passar para a equipe')]);
     c.fila=tipo==='humano'?'Pediu atendimento humano':tipo==='reclamacao'?'Reclamação durante a estadia':'Pedido especial fora da base';
-    novoAlerta({c,tipo,info:info[tipo]});toast('Alerta enviado a Jagles, Márcio e Ricardo, no CRM e no WhatsApp.');
+    novoAlerta({c,tipo,info:info[tipo]});toast('Alerta enviado a '+plantao()+' (plantão), no CRM, no celular e no WhatsApp.');
   }
   function pedido(c,x,tipo){
     const alt=tipo==='alteração';
@@ -1507,33 +1526,48 @@ body.sem-rolagem .principal{padding-block-end:12px}
     c.msgs.push(['ia',expediente()?'Recebi o seu pedido de '+tipo+'. Nossa equipe já está verificando no sistema e te confirmo por aqui assim que estiver feito.':'Recebi o seu pedido de '+tipo+'. Logo pela manhã nossa equipe verifica e te confirma por aqui.',agora(),'Regra: alteração e cancelamento só são confirmados depois de feitos no Silbeck']);
     novoAlerta({c,x,tipo,info:alt?'Gilberto conferiu: há vaga de 15 a 17/11 no mesmo tipo · diferença estimada R$ 180':'Valor a devolver conforme a política de cancelamento (calculado pelo CRM)'});
     x[1]='Reservado · '+tipo+' pedida · aguardando a equipe';x[2]='t-mkt';renderAlertas();renderInbox();
-    toast('Alerta enviado a Jagles, Márcio e Ricardo, no CRM e no WhatsApp.');
+    toast('Alerta enviado a '+plantao()+' (plantão), no CRM, no celular e no WhatsApp.');
   }
   let painelAlertas=false;
+  function aprender(a){const perg=(a.c.msgs.filter(m=>m[0]==='cli').pop()||['',''])[1];
+    BIBLIO.unshift([perg,'','agora',false,'',0,'',true]);if(typeof marcarPendente==='function')marcarPendente();renderBiblio();
+    const n=$('n-pend');if(n)n.textContent=(+n.textContent||0)+1;}
+  const BASE_ASSUMIR={reclamacao:[3,12],cancelamento:[6,9],humano:[4,27],naosabe:[14,11],'alteração':[8,15]};
+  function renderAssumir(){const box=$('pn-assumir');if(!box)return;box.textContent='';
+    const linhas=Object.keys(BASE_ASSUMIR).map(k=>{let [m,n]=BASE_ASSUMIR[k];const vivos=ALERTAS.filter(a=>a.tipo===k&&a.assumido);
+      if(vivos.length){const tot=m*n+vivos.reduce((s,a)=>s+Math.max(0,(a.assumido-a.desde)/6e4),0);n+=vivos.length;m=tot/n;}return [k,Math.round(m*10)/10,n];});
+    const max=Math.max(...linhas.map(l=>l[1]),10);
+    box.append(el('table',{class:'tab-assumir'},el('thead',{},el('tr',{},el('th',{text:'Tipo de pedido'}),el('th',{text:'Tempo médio até assumir'}),el('th',{class:'num',text:'Pedidos no período'}))),
+      el('tbody',{},linhas.map(([k,m,n])=>el('tr',{},el('td',{text:ROT_URG[k].replace('⚑ ','')}),el('td',{},el('span',{class:'barra-min'+(m>10?' ruim':''),style:'width:'+Math.round(m/max*140)+'px'}),el('span',{class:'num',text:String(m).replace('.',',')+' min'+(m>10?' · acima da meta':'')})),el('td',{class:'num',text:String(n)}))))));}
   function renderAlertas(){
     const box=$('alertas');box.textContent='';const ab=ALERTAS.filter(a=>a.etapa!=='fim');const nv=ab.filter(a=>a.etapa==='novo').length;
     const n=$('sino-n');n.hidden=!ab.length;n.textContent=ab.length;if(!nv)$('bt-sino').classList.remove('ativo');
     $('bt-sino').setAttribute('aria-label',ab.length?ab.length+' alertas da equipe':'Sem alertas');
     box.hidden=!(painelAlertas&&ab.length);if(box.hidden)return;
     box.append(el('div',{class:'al-cab'},el('b',{text:ab.length+(ab.length>1?' pedidos aguardando':' pedido aguardando')+' a equipe'}),
-      el('small',{text:'Avisados no CRM (com som) e no WhatsApp: Jagles, Márcio e Ricardo. Sem ninguém assumir em 10 min, o alerta repete e sobe para a Renata.'}),
+      el('small',{text:'De plantão: '+plantao()+' (CRM com som, notificação no celular e WhatsApp). Sem ninguém assumir em 10 min, o alerta repete e sobe para a Renata e o Ricardo.'}),
       el('div',{class:'al-acoes'},el('button',{class:'btn-mini',type:'button',text:somLigado?'Silenciar som':'Ligar som',onclick:()=>{somLigado=!somLigado;renderAlertas();}}),el('button',{class:'btn-mini',type:'button',text:'Minimizar',onclick:()=>{painelAlertas=false;renderAlertas();}}))));
     const ordem={reclamacao:0,cancelamento:1,humano:2,naosabe:3,'alteração':4};
     ab.slice().sort((a,z)=>(a.etapa!=='novo')-(z.etapa!=='novo')||ordem[a.tipo]-ordem[z.tipo]).forEach(a=>{
       const silbeck=a.tipo==='alteração'||a.tipo==='cancelamento';
       const abrir=()=>{convSel=a.c.id;a.c.naoLidas=0;document.querySelector('[data-vista="conversas"]').click();renderInbox();};
       box.append(el('div',{class:'al-item'},el('span',{class:'al-tipo',text:ROT_URG[a.tipo].replace('⚑ ','')}),el('b',{text:a.c.nome+' · '+a.hora+' · '+CANAL[a.c.canal]}),a.x?el('span',{text:a.x[0]}):null,el('span',{class:'lat-txt',text:a.info}),
+        a.escalado&&!a.quem?el('span',{class:'tipo t-erro',text:'Escalado há 10 min sem dono · Renata e Ricardo avisados'}):null,
         a.quem?el('span',{class:'tipo t-util',text:a.quem+(silbeck?' está fazendo no Silbeck':' assumiu a conversa')}):null,
         el('div',{class:'acoes-res'},
-          silbeck?(a.etapa==='novo'?el('button',{class:'btn-mini',type:'button',text:'Assumir e fazer no Silbeck',onclick:()=>{a.etapa='exec';a.quem='Jagles';a.c.urg.quem='Jagles';renderAlertas();renderInbox();toast('Jagles assumiu. O alerta sai do WhatsApp dos outros.');}}):
+          silbeck?(a.etapa==='novo'?el('button',{class:'btn-mini',type:'button',text:'Assumir e fazer no Silbeck',onclick:()=>{a.etapa='exec';a.quem=plantao().includes(',')?'Jagles':plantao();a.c.urg.quem=a.quem;a.assumido=Date.now();renderAssumir();renderAlertas();renderInbox();toast('Jagles assumiu. O alerta sai do WhatsApp dos outros.');}}):
             el('button',{class:'btn-mini',type:'button',text:'Feito no Silbeck',onclick:()=>concluir(a)})):
-          el('button',{class:'btn-mini',type:'button',text:'Assumir atendimento',onclick:()=>{a.etapa='fim';const c=a.c;c.agente=false;c.resp='voce';c.fila=null;c.urg=null;c.msgs.push(['sis','Você assumiu o atendimento. O Gilberto sai desta conversa.']);abrir();renderAlertas();toast('Você assumiu. O cliente passa a falar com a equipe.');}}),
+          el('button',{class:'btn-mini',type:'button',text:'Assumir atendimento',onclick:()=>{a.etapa='fim';a.assumido=Date.now();const c=a.c;c.agente=false;c.resp='voce';c.fila=null;c.urg=null;c.msgs.push(['sis','Você assumiu o atendimento. O Gilberto sai desta conversa.']);
+            if(a.tipo==='naosabe')aprender(a);abrir();renderAlertas();renderAssumir();toast(a.tipo==='naosabe'?'Você assumiu. A pergunta foi para a Biblioteca, esperando a resposta da equipe.':'Você assumiu. O cliente passa a falar com a equipe.');}}),
           el('button',{class:'btn-mini',type:'button',text:'Abrir conversa',onclick:abrir}))));});
   }
   $('bt-sino').addEventListener('click',()=>{painelAlertas=!painelAlertas;if(!ALERTAS.some(a=>a.etapa!=='fim')){toast('Nenhum pedido aguardando a equipe.');painelAlertas=false;}renderAlertas();});
   $('bt-simular').addEventListener('click',e=>{const m=$('simular-menu');m.hidden=!m.hidden;e.currentTarget.setAttribute('aria-expanded',String(!m.hidden));});
   $('simular-menu').addEventListener('click',e=>{const b=e.target.closest('[data-sim]');if(!b)return;$('simular-menu').hidden=true;$('bt-simular').setAttribute('aria-expanded','false');
     const conv=id=>CONVS.find(c=>c.id===id);const t=b.dataset.sim;
+    if(t==='tempo'){const ab=ALERTAS.filter(a=>a.etapa==='novo');if(!ab.length){toast('Nenhum alerta sem dono. Simule um pedido primeiro.');return;}
+      ab.forEach(a=>{a.desde-=6e5;a.c.urg.desde=a.desde;a.escalado=true;});if(somLigado)bip();painelAlertas=true;renderAlertas();renderInbox();
+      pushCel('Alerta escalado','Ninguém assumiu '+ab.length+' pedido(s) em 10 min','Renata e Ricardo foram avisados.');toast('10 min sem ninguém assumir: o alerta repetiu e subiu para a Renata e o Ricardo.');return;}
     if(t==='humano')humano(conv(7),'humano');
     else if(t==='reclamacao')humano(conv(4),'reclamacao');
     else if(t==='naosabe')humano(conv(6),'naosabe');
@@ -1718,7 +1752,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
     BIBLIO.forEach((b,i)=>{const venc=b[4]&&b[4]<hojeIso;
       tb.append(el('tr',{class:venc?'vencida':''},
         el('td',{},el('div',{text:b[0]}),el('div',{class:'bib-selos'},b[6]?el('span',{class:'tipo t-livre',text:'/'+b[6]}):null,b[3]?el('span',{class:'tipo t-util',text:'Resposta fixa'}):null,b[4]?el('span',{class:'tipo '+(venc?'t-erro':'t-mkt'),text:(venc?'Vencida em ':'Vale até ')+b[4].split('-').reverse().join('/')}):null)),
-        el('td',{text:b[1]}),el('td',{class:'num',text:String(b[5]||0)}),el('td',{class:'num',text:b[2]}),
+        b[7]&&!b[1]?el('td',{},el('span',{class:'tipo t-mkt',text:'Sem resposta · veio de uma passagem para a equipe'}),' ',el('button',{class:'btn-mini',type:'button',text:'Cadastrar resposta',onclick:()=>editarBib(i)})):el('td',{text:b[1]}),el('td',{class:'num',text:String(b[5]||0)}),el('td',{class:'num',text:b[2]}),
         el('td',{},el('button',{class:'btn-mini',type:'button',text:'Editar',onclick:()=>editarBib(i)}),el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{BIBLIO.splice(i,1);marcarPendente();renderBiblio();}}))));});
   }
   function editarBib(i){const b=BIBLIO[i];const f=$('bib-form');f.hidden=false;$('bib-p').value=b[0];$('bib-r').value=b[1];$('bib-fixa').checked=!!b[3];$('bib-val').value=b[4]||'';$('bib-at').value=b[6]||'';f.dataset.i=i;$('bib-p').focus();}
@@ -1931,6 +1965,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
         o.sel.forEach(cod=>{const x=ops.find(y=>y.cod===cod);c.reservas.push([x.nome+' · '+fmtData(o.ent)+' a '+fmtData(o.sai),'Orçamento enviado · R$ '+x.total.toLocaleString('pt-BR'),'t-util']);});
         c.etapa='orc';c.orc=null;painelLat='res';renderInbox();toast('Orçamento enviado e salvo no card do cliente.');}}));
   }
-  renderBoard();renderRegua();iniciarV4();renderProdutos();renderAgencias();
+  renderBoard();renderRegua();iniciarV4();renderProdutos();renderAgencias();renderAssumir();
+  $('sel-plantao').addEventListener('change',e=>{const v=e.target.value;$('plantao-txt').textContent=v==='todos'?'Todos recebem os alertas. Sem plantão, cada um pode achar que outro vai pegar.':v+' recebe os alertas no celular. Se ninguém assumir em 10 min, sobe para a Renata e o Ricardo.';toast(v==='todos'?'Plantão desligado: alertas para todos.':v+' está de plantão.');renderAlertas();});
 })();
 </script>
