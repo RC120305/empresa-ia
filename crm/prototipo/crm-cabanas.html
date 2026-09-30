@@ -388,7 +388,8 @@ button,input,select{font:inherit;color:inherit}
 .u-assumido .cx-urg{color:var(--cor-texto-sec)}
 .cx-urg small{font-weight:600;text-transform:none;letter-spacing:0}
 .al-tipo{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--cor-erro)}
-.al-cab .al-acoes{display:flex;gap:6px}
+.al-cab .al-acoes{display:flex;gap:6px;flex-wrap:wrap}
+.btn-mini.resolver{color:var(--cor-sucesso,#3E7B2F)}
 .cx-barra{position:absolute;bottom:100%;left:12px;right:12px;z-index:7;background:var(--cor-elevada);border:1px solid var(--cor-borda);border-radius:var(--r-md);box-shadow:var(--sombra-2);display:flex;flex-direction:column;max-height:280px;overflow-y:auto}
 .cx-barra button{all:unset;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;padding:8px 12px;border-bottom:1px solid var(--cor-borda);font-size:14px}
 .cx-barra button b{color:var(--cor-destaque-texto,var(--cor-primaria-texto));font-family:ui-monospace,Menlo,monospace}
@@ -1554,7 +1555,12 @@ body.sem-rolagem .principal{padding-block-end:12px}
     renderInbox();toast('Pagamento confirmado: card em “Reservado” e cliente avisado.');
   }
   const ALERTAS=[];
-  function bip(){try{const a=new (window.AudioContext||window.webkitAudioContext)();[0,.3].forEach(t=>{const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.12,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+t+.22);o.start(a.currentTime+t);o.stop(a.currentTime+t+.25);});}catch(e){}}
+  let AC=null;
+  function bip(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t0=AC.currentTime+.05;
+    [[0,880],[.22,1175],[.44,1568]].forEach(([t,f])=>{const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=f;o.connect(g);g.connect(AC.destination);
+      g.gain.setValueAtTime(.0001,t0+t);g.gain.exponentialRampToValueAtTime(.35,t0+t+.02);g.gain.exponentialRampToValueAtTime(.0001,t0+t+.3);o.start(t0+t);o.stop(t0+t+.32);});}catch(e){}}
+  // o navegador só libera som depois do primeiro clique na página: no primeiro clique, toca se houver alerta sem dono
+  document.addEventListener('pointerdown',function lib(){document.removeEventListener('pointerdown',lib);setTimeout(()=>{if(somLigado&&ALERTAS.some(a=>a.etapa==='novo'))bip();},150);});
   const ROT_URG={humano:'⚑ Pede atendimento humano',reclamacao:'⚑ Reclamação · passar para a equipe',naosabe:'⚑ Gilberto passou para a equipe','alteração':'⚑ Pedido de alteração',cancelamento:'⚑ Pedido de cancelamento'};
   const minDesde=d=>{const m=Math.max(0,Math.round((Date.now()-d)/6e4));return m<1?'agora':m+' min';};
   let somLigado=true,silencioIni=false;
@@ -1651,7 +1657,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
     box.hidden=!(painelAlertas&&ab.length);if(box.hidden)return;
     box.append(el('div',{class:'al-cab'},el('b',{text:ab.length+(ab.length>1?' pedidos aguardando':' pedido aguardando')+' a equipe'}),
       el('small',{text:'De plantão: '+plantao()+' (CRM com som, notificação no celular e WhatsApp). Sem ninguém assumir em 10 min, o alerta repete e sobe para a Renata e o Ricardo.'}),
-      el('div',{class:'al-acoes'},el('button',{class:'btn-mini',type:'button',text:somLigado?'Silenciar som':'Ligar som',onclick:()=>{somLigado=!somLigado;renderAlertas();}}),el('button',{class:'btn-mini',type:'button',text:'Minimizar',onclick:()=>{painelAlertas=false;renderAlertas();}}))));
+      el('div',{class:'al-acoes'},el('button',{class:'btn-mini',type:'button',text:'🔊 Testar som',onclick:()=>{bip();}}),el('button',{class:'btn-mini',type:'button',text:somLigado?'Silenciar som':'Ligar som',onclick:()=>{somLigado=!somLigado;renderAlertas();}}),el('button',{class:'btn-mini',type:'button',text:'Minimizar',onclick:()=>{painelAlertas=false;renderAlertas();}}))));
     const ordem={reclamacao:0,cancelamento:1,humano:2,naosabe:3,'alteração':4};
     ab.slice().sort((a,z)=>(a.etapa!=='novo')-(z.etapa!=='novo')||ordem[a.tipo]-ordem[z.tipo]).forEach(a=>{
       const silbeck=a.tipo==='alteração'||a.tipo==='cancelamento';
@@ -1664,7 +1670,10 @@ body.sem-rolagem .principal{padding-block-end:12px}
             el('button',{class:'btn-mini',type:'button',text:'Feito no Silbeck',onclick:()=>concluir(a)})):
           el('button',{class:'btn-mini',type:'button',text:'Assumir atendimento',onclick:()=>{a.etapa='fim';a.assumido=Date.now();const c=a.c;c.agente=false;c.resp='voce';c.fila=null;c.urg=null;c.msgs.push(['sis','Você assumiu o atendimento. O Gilberto sai desta conversa.']);
             if(a.tipo==='naosabe')aprender(a);abrir();renderAlertas();renderAssumir();toast(a.tipo==='naosabe'?'Você assumiu. A pergunta foi para a Biblioteca, esperando a resposta da equipe.':'Você assumiu. O cliente passa a falar com a equipe.');}}),
-          el('button',{class:'btn-mini',type:'button',text:'Abrir conversa',onclick:abrir}))));});
+          el('button',{class:'btn-mini',type:'button',text:'Abrir conversa',onclick:abrir}),
+          el('button',{class:'btn-mini resolver',type:'button',text:'✓ Resolvido',onclick:()=>{a.etapa='fim';a.assumido=a.assumido||Date.now();const c=a.c;c.urg=null;c.fila=null;
+            if(a.x&&/pedida · aguardando a equipe/.test(a.x[1])){a.x[1]='Reservado · pago';a.x[2]='t-livre';}
+            c.msgs.push(['sis','Aviso de '+ROT_URG[a.tipo].replace('⚑ ','').toLowerCase()+' marcado como resolvido por '+(a.quem||'Você')+'.']);renderAlertas();renderInbox();renderAssumir();toast('Aviso resolvido e retirado da lista.');}}))));});
   }
   $('bt-sino').addEventListener('click',()=>{painelAlertas=!painelAlertas;if(!ALERTAS.some(a=>a.etapa!=='fim')){toast('Nenhum pedido aguardando a equipe.');painelAlertas=false;}renderAlertas();});
   $('bt-simular').addEventListener('click',e=>{const m=$('simular-menu');m.hidden=!m.hidden;e.currentTarget.setAttribute('aria-expanded',String(!m.hidden));});
