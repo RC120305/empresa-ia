@@ -409,6 +409,12 @@ body.sem-rolagem .principal{padding-block-end:12px}
 .dia.n3{background:color-mix(in srgb,var(--cor-primaria) 30%,var(--cor-superficie))}.dia.n4{background:var(--cor-primaria);color:var(--cor-sobre-primaria)}
 .dia.fds{outline:2px solid var(--cor-borda-forte);outline-offset:-2px}
 .dia-vazio{min-height:52px}
+.filtros-pag{display:flex;flex-direction:column;gap:10px}
+.chips-pag{display:flex;gap:6px;flex-wrap:wrap}
+.campo-data{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--cor-texto-sec)}
+.campo-data input{border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:8px 10px;background:var(--cor-superficie);color:var(--cor-texto);min-height:40px;font:inherit}
+.cont-pag{font-size:13px;font-weight:500;color:var(--cor-texto-sec);font-variant-numeric:tabular-nums}
+.sem-result{font-size:13px;color:var(--cor-texto-sec);margin:0}
 .pag-grade{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;align-items:start}
 .q-layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:12px;align-items:start}
 .q-topicos{display:flex;flex-direction:column;gap:2px;padding:8px}
@@ -693,11 +699,16 @@ body.sem-rolagem .principal{padding-block-end:12px}
 
     <!-- PAGAMENTOS -->
     <section data-painel="pagamentos" hidden style="display:flex;flex-direction:column;gap:12px">
-      <div class="cartao bloco"><h3>Reservas a receber</h3><span class="sub">Reservas já criadas no Silbeck esperando o sinal (CRM, Pix do motor e Booking). Prazo de 24 h, ou 2 h com check-in em até 3 dias. Pix e link vencem junto com o prazo.</span><div id="pag-receber" style="display:flex;flex-direction:column;gap:8px"></div></div>
+      <div class="cartao bloco filtros-pag">
+        <div class="chips-pag" id="pag-tipos" role="group" aria-label="Tipos de pagamento"><button class="chip" type="button" aria-pressed="true" data-t="todos">Todos</button><button class="chip" type="button" aria-pressed="false" data-t="receber">Reservas a receber</button><button class="chip" type="button" aria-pressed="false" data-t="pix">Pix do motor</button><button class="chip" type="button" aria-pressed="false" data-t="booking">Booking</button><button class="chip" type="button" aria-pressed="false" data-t="env">Cobranças do CRM</button></div>
+        <div class="barra-ferr"><input type="search" id="pag-busca" placeholder="Buscar por nome ou nº da reserva (ex.: Souza, 48231)" aria-label="Buscar pagamento"><label class="campo-data">Data da estadia<input type="date" id="pag-data" aria-label="Data da estadia"></label><button class="btn btn-editar" type="button" id="pag-limpar">Limpar filtros</button></div>
+        <span class="sub" id="pag-resumo"></span>
+      </div>
+      <div class="cartao bloco" data-tipo="receber"><h3>Reservas a receber <small class="cont-pag"></small></h3><span class="sub">Reservas já criadas no Silbeck esperando o sinal (CRM, Pix do motor e Booking). Prazo de 24 h, ou 2 h com check-in em até 3 dias. Pix e link vencem junto com o prazo.</span><div id="pag-receber" style="display:flex;flex-direction:column;gap:8px"></div></div>
       <div class="pag-grade">
-        <div class="cartao bloco"><h3>Pix do motor aguardando</h3><span class="sub">O CRM lê os Pix recebidos no Banco do Brasil e casa com as pré-reservas do motor.</span><div id="pag-pix" style="display:flex;flex-direction:column;gap:8px"></div></div>
-        <div class="cartao bloco"><h3>Cobranças do Booking</h3><span class="sub">Tarefas de cobrança com prazo. Baixa automática quando o pagamento aparece no Silbeck.</span><div id="pag-booking" style="display:flex;flex-direction:column;gap:8px"></div></div>
-        <div class="cartao bloco"><h3>Cobranças enviadas pelo CRM</h3><span class="sub">Pix do Banco do Brasil e links da Cielo, com confirmação automática.</span><div id="pag-env" style="display:flex;flex-direction:column;gap:8px"></div></div>
+        <div class="cartao bloco" data-tipo="pix"><h3>Pix do motor aguardando <small class="cont-pag"></small></h3><span class="sub">O CRM lê os Pix recebidos no Banco do Brasil e casa com as pré-reservas do motor.</span><div id="pag-pix" style="display:flex;flex-direction:column;gap:8px"></div></div>
+        <div class="cartao bloco" data-tipo="booking"><h3>Cobranças do Booking <small class="cont-pag"></small></h3><span class="sub">Tarefas de cobrança com prazo. Baixa automática quando o pagamento aparece no Silbeck.</span><div id="pag-booking" style="display:flex;flex-direction:column;gap:8px"></div></div>
+        <div class="cartao bloco" data-tipo="env"><h3>Cobranças enviadas pelo CRM <small class="cont-pag"></small></h3><span class="sub">Pix do Banco do Brasil e links da Cielo, com confirmação automática.</span><div id="pag-env" style="display:flex;flex-direction:column;gap:8px"></div></div>
       </div>
     </section>
 
@@ -1475,17 +1486,41 @@ body.sem-rolagem .principal{padding-block-end:12px}
 
   // ================= Pagamentos =================
   const PIX_MOTOR=[{id:1,res:'#48231 · Ana P. Souza · Bangalô 18 a 20/10',valor:1120,pix:'Pix de R$ 1.120,00 recebido hoje 14:02 · pagador ANA P SOUZA',conf:'alta',ok:false},{id:2,res:'#48236 · Marcos T. · Apto Standard 25 a 26/10',valor:430,pix:'Dois Pix de R$ 430,00 hoje (MARCOS TEIXEIRA e M T SILVA)',conf:'duvida',ok:false}];
-  const BOOKING=[{id:1,txt:'Família Souza · Bangalô 01 a 03/11 · R$ 2.240',prazo:'Cobrar até hoje',ok:false},{id:2,txt:'Hóspede Booking #7781 · Apto Superior 15 a 17/10 · R$ 1.180',prazo:'Cobrar até 03/10',ok:false}];
-  const ENVIADAS=[['Link Cielo · João P. · R$ 1.490 (3x)','Pago','t-livre'],['Pix BB · Mariana S. · R$ 740','Aguardando · vence em 22 h','t-mkt'],['Link Cielo · Pedro e Ana · R$ 2.100','Recusado · agente ofereceu Pix','t-erro']];
+  const BOOKING=[{id:1,txt:'#48228 · Família Souza · Bangalô 01 a 03/11 · R$ 2.240',prazo:'Cobrar até hoje',ok:false},{id:2,txt:'#48240 · Hóspede Booking 7781 · Apto Superior 15 a 17/10 · R$ 1.180',prazo:'Cobrar até 03/10',ok:false},{id:3,txt:'#48251 · Roberto e Clara · Cabana duplo 22 a 24/10 · R$ 1.560',prazo:'Cobrar até 06/10',ok:false}];
+  const ENVIADAS=[['Link Cielo · #48213 · João P. · Cabana Master 20 a 22/11 · R$ 1.490 (3x)','Pago','t-livre'],['Pix BB · #48190 · Mariana S. · Cabana suspensa 16 a 18/11 · R$ 740','Aguardando · vence em 22 h','t-mkt'],['Link Cielo · #48247 · Pedro e Ana · Bangalô especial 08 a 11/10 · R$ 2.100','Recusado · agente ofereceu Pix','t-erro'],['Pix BB · #48252 · Lúcia M. · Apto Standard 12 a 14/10 · R$ 480','Pago','t-livre'],['Pix BB · #48255 · Rafael e família · Quádruplo standard 30/10 a 02/11 · R$ 1.150','Aguardando · vence em 3 h','t-mkt']];
   const RECEBER=[{txt:'#48231 · Ana P. Souza · Bangalô 18 a 20/10 · sinal R$ 560',h:5,orig:'CRM'},{txt:'#48244 · Carlos M. · Apto Superior 03 a 04/10 · sinal R$ 280',h:1,orig:'CRM · check-in em 3 dias (prazo de 2 h)'},{txt:'#48219 · Juliana R. · Cabana duplo 25 a 27/10 · sinal R$ 690',h:0,orig:'CRM'},{txt:'#48236 · Marcos T. · Apto Standard 25 a 26/10 · R$ 430',h:9,orig:'Pix do motor'}];
   function renderReceber(){
-    const r=$('pag-receber');r.textContent='';
+    const r=$('pag-receber');r.textContent='';setTimeout(()=>{try{filtrarPag()}catch(e){}},0);
     RECEBER.forEach(x=>{const cor=x.cancel?'t-livre':x.h<=0?'t-erro':x.h<=2?'t-mkt':'t-util';
       const st=x.cancel==='feito'?'Cancelada no Silbeck · cobrança anulada · lista de espera avisada':x.cancel?'Tarefa “Cancelar no Silbeck” criada · cobrança anulada':x.h<=0?'Vencida':'Vence em '+x.h+' h';
       r.append(el('div',{class:'lat-card'},el('b',{text:x.txt}),el('span',{class:'lat-txt',text:'Origem: '+x.orig}),el('span',{class:'tipo '+cor,text:st}),
         x.cancel==='feito'?null:x.cancel?el('div',{class:'acoes-res'},el('button',{class:'btn-mini',type:'button',text:'Feito no Silbeck',onclick:()=>{x.cancel='feito';renderReceber();toast('CRM conferiu o cancelamento (status 3). Card em Perdido: “não pagou”.');}})):
         x.h<=0?el('div',{class:'acoes-res'},el('button',{class:'btn-mini',type:'button',text:'Enviar novo link',onclick:()=>{x.h=24;renderReceber();toast('Novo Pix e novo link Cielo enviados, com prazo de mais 24 h.');}}),el('button',{class:'btn-mini',type:'button',text:'Vou cancelar',onclick:()=>{x.cancel=true;renderReceber();toast('Cobranças anuladas. Tarefa “Cancelar no Silbeck” criada para a equipe.');}})):null));});
   }
+  // v19: filtros da tela de Pagamentos (tipo, nome/nº da reserva, data da estadia)
+  const semAcento=t=>t.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  const pagTipos=new Set(['todos']);
+  function periodos(t){const ps=[];const ano=new Date().getFullYear();
+    for(const m of t.matchAll(/(\d{2})(?:\/(\d{2}))? a (\d{2})\/(\d{2})/g)){const m2=+m[4],m1=m[2]?+m[2]:m2;ps.push([new Date(ano,m1-1,+m[1]),new Date(ano,m2-1,+m[3])]);}return ps;}
+  function filtrarPag(){
+    const q=semAcento(($('pag-busca').value||'').trim()).replace('#','');const dv=$('pag-data').value;const d=dv?new Date(dv+'T12:00:00'):null;
+    let tot=0,vis=0;
+    document.querySelectorAll('section[data-painel="pagamentos"] [data-tipo]').forEach(b=>{
+      const ativo=pagTipos.has('todos')||pagTipos.has(b.dataset.tipo);b.hidden=!ativo;
+      const cards=[...b.querySelectorAll('.lat-card')];let n=0;
+      cards.forEach(c=>{const t=c.textContent;const tit=(c.querySelector('b')||c).textContent;const pal=semAcento(tit).split(/[^a-z0-9]+/);const okQ=!q||q.split(/\s+/).every(w=>pal.some(x=>x.startsWith(w)));
+        const okD=!d||periodos(t).some(([a,z])=>d>=new Date(a.getTime()-432e5)&&d<=new Date(z.getTime()+432e5));
+        c.hidden=!(okQ&&okD);if(!c.hidden)n++;});
+      b.querySelector('.cont-pag').textContent=(q||d)?n+' de '+cards.length:String(cards.length);
+      let v=b.querySelector('.sem-result');if(!v){v=el('p',{class:'sem-result',text:'Nenhum pagamento com esses filtros.'});b.append(v);}v.hidden=n>0;
+      if(ativo){tot+=cards.length;vis+=n;}});
+    $('pag-resumo').textContent=(q||d)?'Mostrando '+vis+' de '+tot+' pagamentos.':'Mostrando todos os '+tot+' pagamentos dos tipos selecionados.';
+  }
+  $('pag-tipos').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;const t=b.dataset.t;
+    if(t==='todos'){pagTipos.clear();pagTipos.add('todos');}else{pagTipos.delete('todos');pagTipos.has(t)?pagTipos.delete(t):pagTipos.add(t);if(!pagTipos.size)pagTipos.add('todos');}
+    $('pag-tipos').querySelectorAll('[data-t]').forEach(x=>x.setAttribute('aria-pressed',String(pagTipos.has(x.dataset.t))));filtrarPag();});
+  $('pag-busca').addEventListener('input',filtrarPag);$('pag-data').addEventListener('input',filtrarPag);
+  $('pag-limpar').addEventListener('click',()=>{$('pag-busca').value='';$('pag-data').value='';pagTipos.clear();pagTipos.add('todos');$('pag-tipos').querySelectorAll('[data-t]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.t==='todos')));filtrarPag();});
   function renderPag(){
     renderReceber();
     const a=$('pag-pix');a.textContent='';
@@ -1498,6 +1533,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
       el('span',{class:'lat-txt',text:'Cobrança na extranet do Booking e na maquininha. O CRM não guarda dados de cartão.'}),
       x.ok?null:el('button',{class:'btn-mini',type:'button',text:'Marcar como cobrado',onclick:()=>{x.ok=true;renderPag();toast('Tarefa concluída. O CRM confirma quando o pagamento aparecer no Silbeck.');}}))));
     const c=$('pag-env');c.textContent='';ENVIADAS.forEach(e=>c.append(el('div',{class:'lat-card'},el('b',{text:e[0]}),el('span',{class:'tipo '+e[2],text:e[1]}))));
+    filtrarPag();
   }
 
   // ================= Ajustes: questionário, biblioteca, testar, publicar =================
