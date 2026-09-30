@@ -396,7 +396,7 @@ Lido da página de aprovação: **18 de 18 avaliados — 14 aprovados, 4 com "Aj
 - **Decisão do dono:** a reserva entra no Silbeck **assim que o cliente aceita** (equipe ou Gilberto), para a vaga não ser vendida por outro canal (Booking, telefone, balcão) enquanto o cliente paga. O CRM **controla o pagamento** e **alerta** as reservas não pagas; se for preciso cancelar, **a equipe cancela manualmente no Silbeck** (a API não cancela).
 - **Fluxo:** aceite → confere a vaga → `POST reserva` (guarda `idReserva` e `idReservaItem`) → cobrança do sinal de 50% (Pix BB ou link Cielo) → card em **Aguardando pagamento** com contagem regressiva → pagamento confirmado → `POST Adiantamento` → card em **Reservado** e confirmação ao cliente.
 - **Alertas (prazos editáveis em Ajustes):**
-  - **Prazo para pagar:** 24 h; se o check-in for em até 3 dias, **2 h**.
+  - **Prazo para pagar:** contado **a partir da criação da reserva** (hora em que a cobrança é enviada): 24 h; se o check-in for em até 3 dias, **2 h**. O prazo nunca passa do dia do check-in. Ex.: reserva às 10h de segunda para daqui a 20 dias → vence às 10h de terça.
   - **Lembretes ao cliente** (pelo Gilberto, tom gentil): no meio do prazo e 2 h antes de vencer.
   - **Venceu sem pagamento:** alerta para a equipe (no CRM e no celular, em horário comercial) e **tarefa "Cancelar no Silbeck"** com o número da reserva, o valor e o histórico; botões **Dar mais prazo** (com novo lembrete) ou **Vou cancelar**.
   - **Pagamento parcial** (menos de 50%) ou valor diferente: alerta para conferência.
