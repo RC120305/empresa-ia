@@ -321,6 +321,11 @@ button,input,select{font:inherit;color:inherit}
 .opcoes{display:flex;flex-direction:column;gap:6px}
 .opcoes label{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--cor-borda);border-radius:var(--r-md);cursor:pointer;font-size:15px}
 .opcoes input{accent-color:var(--cor-primaria);width:18px;height:18px}
+.alertas{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:16px;z-index:45;width:min(380px,calc(100% - 32px));background:var(--cor-superficie);border:2px solid var(--cor-erro);border-radius:var(--r-lg);box-shadow:var(--sombra-2);padding:10px 12px;display:flex;flex-direction:column;gap:8px;max-height:70vh;overflow:auto}
+.alertas .al-cab{display:flex;flex-direction:column;gap:2px;color:var(--cor-erro)}
+.alertas .al-cab small{color:var(--cor-texto-sec)}
+.alertas .al-item{border-top:1px solid var(--cor-borda);padding-top:8px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.acoes-res{display:flex;gap:6px;flex-wrap:wrap}
 .aviso-toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--cor-texto);color:var(--cor-fundo);padding:10px 16px;border-radius:999px;font-size:14px;z-index:40;box-shadow:var(--sombra-2);max-width:calc(100% - 32px);text-align:center}
 .grupo-tarefas{display:flex;flex-direction:column;gap:8px}
 .grupo-tarefas h3{margin:6px 0 0;font-size:16px;display:flex;gap:8px;align-items:baseline}
@@ -676,6 +681,7 @@ button,input,select{font:inherit;color:inherit}
 
     <!-- PAGAMENTOS -->
     <section data-painel="pagamentos" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="cartao bloco"><h3>Reservas a receber</h3><span class="sub">Reservas já criadas no Silbeck esperando o sinal (CRM, Pix do motor e Booking). Prazo de 24 h, ou 2 h com check-in em até 3 dias. Pix e link vencem junto com o prazo.</span><div id="pag-receber" style="display:flex;flex-direction:column;gap:8px"></div></div>
       <div class="pag-grade">
         <div class="cartao bloco"><h3>Pix do motor aguardando</h3><span class="sub">O CRM lê os Pix recebidos no Banco do Brasil e casa com as pré-reservas do motor.</span><div id="pag-pix" style="display:flex;flex-direction:column;gap:8px"></div></div>
         <div class="cartao bloco"><h3>Cobranças do Booking</h3><span class="sub">Tarefas de cobrança com prazo. Baixa automática quando o pagamento aparece no Silbeck.</span><div id="pag-booking" style="display:flex;flex-direction:column;gap:8px"></div></div>
@@ -857,6 +863,7 @@ button,input,select{font:inherit;color:inherit}
 <div class="modal-fundo" id="m-fundo" hidden></div>
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="m-titulo"><h3 id="m-titulo">Por que perdemos este lead?</h3><div class="opcoes" id="m-opcoes"></div><div class="acoes"><button class="btn btn-enviar" id="m-ok" type="button">Mover para Perdido</button><button class="btn btn-editar" id="m-cancelar" type="button">Cancelar</button></div></div>
 <div class="aviso-toast" id="toast" hidden role="status"></div>
+<div class="alertas" id="alertas" hidden role="alert"></div>
 
 <script>
 (function(){
@@ -1002,6 +1009,7 @@ button,input,select{font:inherit;color:inherit}
       el('div',{class:'linha num'},el('span',{text:brl(l.valor)}),pend?el('span',{text:'· '+pend+' tarefa'+(pend>1?'s':'')}):null),
       l.motivo?el('div',{class:'linha',text:'Motivo: '+l.motivo}):null,
       l.pag?el('div',{class:'linha'},el('span',{class:'tipo '+(l.pagCls||'t-util'),text:l.pag})):null,
+      l.etapa==='pag'&&l.vence!=null?el('div',{class:'linha'},el('span',{class:'tipo '+(l.vence<=0?'t-erro':l.vence<=6?'t-mkt':'t-util'),text:l.vence<=0?'Prazo vencido · ver Pagamentos':'Pagamento vence em '+l.vence+' h'})):null,
       l.janela===false?el('div',{class:'cx-janela',text:'A janela de 24 h expirou'}):null,
       alerta,
       el('div',{class:'rodape'},sel,el('span',{class:'resp'+(l.resp==='agente'?' ia':''),title:USUARIOS[l.resp],text:l.resp==='agente'?'IA':inic(USUARIOS[l.resp])})));
@@ -1184,6 +1192,7 @@ button,input,select{font:inherit;color:inherit}
   const CANAL={w99117:'WhatsApp 99117',w99110:'WhatsApp 99110',ig:'Direct Instagram',fb:'Messenger'};
   const RAPIDAS=['Oi! Aqui é a equipe do Hotel Cabanas. Como posso ajudar? 🌿','Estamos a 6 km do centro, com acesso asfaltado. Localização: bit.ly/2PfI7Am','Na diária já estão o café da manhã, a piscina climatizada, a sauna e as trilhas com caiaque, SUP e tirolesa com monitor.'];
   const MIDIAS=['Cabana suspensa · varanda','Cabana Master · hidromassagem','Bangalô · área externa','Boia cross no Rio Formoso','Arvorismo · tirolesa aquática','Café da manhã','Deck do Rio Formosinho'];
+  {const l10=LEADS.find(l=>l.id===10);if(l10)l10.vence=5;}
   const CONVS=[
     {id:1,lead:5,nome:'Mariana S.',canal:'w99117',origem:'meta',origemDet:'Anúncio Meta · campanha “Casal: domingo a quinta” (código ADS-CASAL)',etapa:'orc',perfil:'Casal',agente:true,resp:'agente',status:'aberto',naoLidas:0,hora:'21:42',janela:true,
       reservas:[['Cabana suspensa · 16 a 18/11','Orçamento enviado · R$ 1.480','t-util']],pagamentos:[],
@@ -1292,7 +1301,7 @@ button,input,select{font:inherit;color:inherit}
     if(painelLat==='res'){
       lat.append(el('div',{class:'lat-sec'},el('span',{class:'rotulo',text:'Reservas nesta conversa'}),el('button',{class:'btn-mini',type:'button',text:'+ Registrar',onclick:()=>{c.reservas.push(['Nova reserva (exemplo)','Pré-reserva · aguardando pagamento','t-mkt']);c.etapa='pag';renderInbox();toast('Reserva criada no Silbeck pela API (POST reserva). Card em “Aguardando pagamento”.');}})));
       if(!c.reservas.length)lat.append(el('p',{class:'lat-txt',text:'Quando uma reserva for registrada, ela aparece aqui.'}));
-      c.reservas.forEach(x=>lat.append(el('div',{class:'lat-card'},el('b',{text:x[0]}),el('span',{class:'tipo '+x[2],text:x[1]}))));
+      c.reservas.forEach(x=>lat.append(cardReserva(c,x)));
       lat.append(el('div',{class:'lat-sec'},el('span',{class:'rotulo',text:'Pagamentos'})));
       if(!c.pagamentos.length)lat.append(el('p',{class:'lat-txt',text:'Nenhuma cobrança. Use “Cobrar” na conversa.'}));
       c.pagamentos.forEach(x=>lat.append(el('div',{class:'lat-card'},el('b',{text:x[0]}),el('span',{class:'tipo '+x[2],text:x[1]}))));
@@ -1321,6 +1330,65 @@ button,input,select{font:inherit;color:inherit}
       lat.append(el('span',{class:'rotulo',text:'Adicionar tarefa'}),el('div',{class:'edit-inline'},tipo,desc,quando,
         el('button',{class:'btn btn-enviar',type:'button',text:'Adicionar tarefa',onclick:()=>{lista.push({t:tipo.value,d:desc.value||tipo.value,q:quando.value,r:c.resp==='agente'?'jagles':c.resp,f:false});renderBoard();renderLateral(c);toast('Tarefa adicionada. Ela aparece também na aba Tarefas.');}})));
     }
+  }
+  // v17: aceite, pagamento, alteração e cancelamento (P46, P48, P49)
+  const agora=()=>new Date().toTimeString().slice(0,5);
+  const expediente=()=>{const d=new Date(),h=d.getHours()+d.getMinutes()/60;return h>=7.5&&h<17;};
+  let numRes=48290;
+  function cardReserva(c,x){
+    const ac=[];
+    if(/^Orçamento enviado/.test(x[1]))ac.push(el('button',{class:'btn-mini',type:'button',text:'Cliente aceitou esta opção',onclick:()=>aceitar(c,x)}));
+    else if(/aguardando pagamento/i.test(x[1]))ac.push(el('button',{class:'btn-mini',type:'button',text:'Simular pagamento confirmado',onclick:()=>pagou(c,x)}));
+    else if(/^Reservado · pago|^Reservado · alterado/.test(x[1]))ac.push(el('button',{class:'btn-mini',type:'button',text:'Pedir alteração',onclick:()=>pedido(c,x,'alteração')}),el('button',{class:'btn-mini',type:'button',text:'Pedir cancelamento',onclick:()=>pedido(c,x,'cancelamento')}));
+    return el('div',{class:'lat-card'},el('b',{text:x[0]}),el('span',{class:'tipo '+x[2],text:x[1]}),ac.length?el('div',{class:'acoes-res'},ac):null);
+  }
+  function aceitar(c,x){
+    const val=+(x[1].match(/R\$ ([\d.]+)/)||[0,'1480'])[1].replace(/\./g,'');const sinal=Math.round(val/2);const n='#'+(++numRes);
+    c.reservas.forEach(y=>{if(y!==x&&/^Orçamento enviado/.test(y[1])){y[1]=y[1].replace('Orçamento enviado','Opção não escolhida');y[2]='t-livre';}});
+    x[1]='Reserva '+n+' criada no Silbeck · aguardando pagamento · vence em 24 h';x[2]='t-mkt';
+    c.msgs.push(['sis','Silbeck: vaga conferida (Disponibilidade) e reserva '+n+' criada (POST reserva). Titular, e-mail e acompanhantes confirmados com o cliente.']);
+    c.pagamentos.push(['Pix BB · R$ '+sinal.toLocaleString('pt-BR')+' (sinal de 50%)','Aguardando · vence em 24 h, junto com a reserva','t-mkt']);
+    c.msgs.push(['ia','Reserva feita! 🌿 Para garantir, o sinal é de R$ '+sinal.toLocaleString('pt-BR')+' (50%). Te mandei o Pix aqui embaixo, válido por 24 h. Segue também nossa política de cancelamento.',agora(),'Silbeck: POST reserva '+n+' · Biblioteca: “Política de cancelamento” (resposta fixa)']);
+    c.etapa='pag';const l=c.lead&&leadPor(c.lead);if(l){l.etapa='pag';l.vence=24;renderBoard();}
+    renderInbox();toast('Reserva '+n+' criada no Silbeck. Card em “Aguardando pagamento”, com prazo de 24 h.');
+  }
+  function pagou(c,x){
+    x[1]='Reservado · pago · sinal lançado no Silbeck';x[2]='t-livre';
+    c.pagamentos.forEach(p=>{if(/^Aguardando/.test(p[1])){p[1]='Pago · adiantamento lançado no Silbeck (Pix, tipo 8)';p[2]='t-livre';}});
+    c.msgs.push(['sis','Pagamento confirmado pelo banco. CRM lançou o adiantamento no Silbeck (POST Adiantamento).']);
+    c.msgs.push(['ia','Recebemos o seu pagamento. Está tudo confirmado! Uns dias antes da chegada te mando o pré-check-in e as dicas de como chegar. 😊',agora(),'Régua: “Reserva confirmada”']);
+    c.etapa='res';const l=c.lead&&leadPor(c.lead);if(l){l.etapa='res';l.vence=null;renderBoard();}
+    renderInbox();toast('Pagamento confirmado: card em “Reservado” e cliente avisado.');
+  }
+  const ALERTAS=[];
+  function bip(){try{const a=new (window.AudioContext||window.webkitAudioContext)();[0,.3].forEach(t=>{const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.12,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+t+.22);o.start(a.currentTime+t);o.stop(a.currentTime+t+.25);});}catch(e){}}
+  function pedido(c,x,tipo){
+    const alt=tipo==='alteração';
+    c.msgs.push(['cli',alt?'Oi! Consigo mudar a reserva para 15 a 17/11?':'Oi, infelizmente vou precisar cancelar a reserva.',agora()]);
+    c.msgs.push(['ia',expediente()?'Recebi o seu pedido de '+tipo+'. Nossa equipe já está verificando no sistema e te confirmo por aqui assim que estiver feito.':'Recebi o seu pedido de '+tipo+'. Logo pela manhã nossa equipe verifica e te confirma por aqui.',agora(),'Regra: alteração e cancelamento só são confirmados depois de feitos no Silbeck']);
+    ALERTAS.push({c,x,tipo,etapa:'novo',hora:agora(),info:alt?'Gilberto conferiu: há vaga de 15 a 17/11 no mesmo tipo · diferença estimada R$ 180':'Valor a devolver conforme a política de cancelamento (calculado pelo CRM)'});
+    x[1]='Reservado · '+tipo+' pedida · aguardando a equipe';x[2]='t-mkt';
+    bip();renderAlertas();renderInbox();toast('Alerta enviado a Jagles, Márcio e Ricardo, no CRM e no WhatsApp.');
+  }
+  function renderAlertas(){
+    const box=$('alertas');box.textContent='';const ab=ALERTAS.filter(a=>a.etapa!=='fim');box.hidden=!ab.length;if(!ab.length)return;
+    box.append(el('div',{class:'al-cab'},el('b',{text:ab.length+(ab.length>1?' pedidos aguardando':' pedido aguardando')+' a equipe'}),el('small',{text:'Avisados no CRM (com som) e no WhatsApp: Jagles, Márcio e Ricardo. Sem ação, o alerta repete.'})));
+    ab.forEach(a=>box.append(el('div',{class:'al-item'},el('b',{text:'Pedido de '+a.tipo+' · '+a.c.nome+' · '+a.hora}),el('span',{text:a.x[0]}),el('span',{class:'lat-txt',text:a.info}),
+      a.quem?el('span',{class:'tipo t-util',text:a.quem+' está fazendo no Silbeck'}):null,
+      el('div',{class:'acoes-res'},a.etapa==='novo'?el('button',{class:'btn-mini',type:'button',text:'Assumir e fazer no Silbeck',onclick:()=>{a.etapa='exec';a.quem='Jagles';renderAlertas();toast('Jagles assumiu. O alerta sai do WhatsApp dos outros.');}}):
+        el('button',{class:'btn-mini',type:'button',text:'Feito no Silbeck',onclick:()=>concluir(a)}),
+        el('button',{class:'btn-mini',type:'button',text:'Abrir conversa',onclick:()=>{convSel=a.c.id;document.querySelector('[data-vista="conversas"]').click();renderInbox();}})))));
+  }
+  function concluir(a){
+    a.etapa='fim';const c=a.c,x=a.x;
+    if(a.tipo==='alteração'){x[0]=x[0].replace(/·[^·]*$/,'· 15 a 17/11');x[1]='Reservado · alterado no Silbeck · diferença R$ 180 cobrada';x[2]='t-livre';
+      c.msgs.push(['sis','CRM conferiu no Silbeck (ListaReserva): datas alteradas. Pix da diferença enviado; boia cross e mensagens de pré-chegada remarcadas.']);
+      c.msgs.push(['ia','Pronto, sua reserva foi alterada para 15 a 17/11! A diferença ficou em R$ 180 e o Pix está aqui embaixo.',agora(),'Silbeck: ListaReserva (datas novas conferidas)']);
+      c.pagamentos.push(['Pix BB · R$ 180 (diferença da alteração)','Aguardando · vence em 24 h','t-mkt']);}
+    else{x[1]='Cancelada no Silbeck · devolução pela política (tarefa criada)';x[2]='t-erro';c.etapa='perd';
+      c.msgs.push(['sis','CRM conferiu no Silbeck (status 3, cancelada). Tarefa de devolução criada, atividades desfeitas, mensagens programadas canceladas e lista de espera avisada.']);
+      c.msgs.push(['ia','Sua reserva foi cancelada. A devolução segue a nossa política, e a equipe te avisa assim que concluir. Esperamos te receber em outra oportunidade! 🌿',agora(),'Silbeck: ListaReserva status 3 · Biblioteca: “Política de cancelamento”']);}
+    renderAlertas();renderInbox();toast('Confirmado ao cliente só depois de conferir no Silbeck.');
   }
   function cobrar(c,tipo){
     const val=c.lead&&leadPor(c.lead)?Math.round((leadPor(c.lead).valor||1480)/2):740;
@@ -1396,7 +1464,17 @@ button,input,select{font:inherit;color:inherit}
   const PIX_MOTOR=[{id:1,res:'#48231 · Ana P. Souza · Bangalô 18 a 20/10',valor:1120,pix:'Pix de R$ 1.120,00 recebido hoje 14:02 · pagador ANA P SOUZA',conf:'alta',ok:false},{id:2,res:'#48236 · Marcos T. · Apto Standard 25 a 26/10',valor:430,pix:'Dois Pix de R$ 430,00 hoje (MARCOS TEIXEIRA e M T SILVA)',conf:'duvida',ok:false}];
   const BOOKING=[{id:1,txt:'Família Souza · Bangalô 01 a 03/11 · R$ 2.240',prazo:'Cobrar até hoje',ok:false},{id:2,txt:'Hóspede Booking #7781 · Apto Superior 15 a 17/10 · R$ 1.180',prazo:'Cobrar até 03/10',ok:false}];
   const ENVIADAS=[['Link Cielo · João P. · R$ 1.490 (3x)','Pago','t-livre'],['Pix BB · Mariana S. · R$ 740','Aguardando · vence em 22 h','t-mkt'],['Link Cielo · Pedro e Ana · R$ 2.100','Recusado · agente ofereceu Pix','t-erro']];
+  const RECEBER=[{txt:'#48231 · Ana P. Souza · Bangalô 18 a 20/10 · sinal R$ 560',h:5,orig:'CRM'},{txt:'#48244 · Carlos M. · Apto Superior 03 a 04/10 · sinal R$ 280',h:1,orig:'CRM · check-in em 3 dias (prazo de 2 h)'},{txt:'#48219 · Juliana R. · Cabana duplo 25 a 27/10 · sinal R$ 690',h:0,orig:'CRM'},{txt:'#48236 · Marcos T. · Apto Standard 25 a 26/10 · R$ 430',h:9,orig:'Pix do motor'}];
+  function renderReceber(){
+    const r=$('pag-receber');r.textContent='';
+    RECEBER.forEach(x=>{const cor=x.cancel?'t-livre':x.h<=0?'t-erro':x.h<=2?'t-mkt':'t-util';
+      const st=x.cancel==='feito'?'Cancelada no Silbeck · cobrança anulada · lista de espera avisada':x.cancel?'Tarefa “Cancelar no Silbeck” criada · cobrança anulada':x.h<=0?'Vencida':'Vence em '+x.h+' h';
+      r.append(el('div',{class:'lat-card'},el('b',{text:x.txt}),el('span',{class:'lat-txt',text:'Origem: '+x.orig}),el('span',{class:'tipo '+cor,text:st}),
+        x.cancel==='feito'?null:x.cancel?el('div',{class:'acoes-res'},el('button',{class:'btn-mini',type:'button',text:'Feito no Silbeck',onclick:()=>{x.cancel='feito';renderReceber();toast('CRM conferiu o cancelamento (status 3). Card em Perdido: “não pagou”.');}})):
+        x.h<=0?el('div',{class:'acoes-res'},el('button',{class:'btn-mini',type:'button',text:'Enviar novo link',onclick:()=>{x.h=24;renderReceber();toast('Novo Pix e novo link Cielo enviados, com prazo de mais 24 h.');}}),el('button',{class:'btn-mini',type:'button',text:'Vou cancelar',onclick:()=>{x.cancel=true;renderReceber();toast('Cobranças anuladas. Tarefa “Cancelar no Silbeck” criada para a equipe.');}})):null));});
+  }
   function renderPag(){
+    renderReceber();
     const a=$('pag-pix');a.textContent='';
     PIX_MOTOR.forEach(p=>a.append(el('div',{class:'lat-card'},el('b',{text:'Reserva '+p.res}),el('span',{text:p.pix}),
       p.ok?el('span',{class:'tipo t-livre',text:'Confirmado · adiantamento lançado no Silbeck'}):
