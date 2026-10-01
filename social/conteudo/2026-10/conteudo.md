@@ -497,11 +497,11 @@ Detalhes para o Designer (fotos com ID completo, cuidados e texto alternativo): 
 ### Legenda
 Avião, carro e os últimos 6 km em asfalto: o caminho até o Hotel Cabanas, em Bonito/MS. Salva este guia.
 
-De avião: há voos diretos da região de São Paulo para o Aeroporto de Bonito, que fica a 8 km do hotel.
+De avião: há voos diretos da região de São Paulo para o Aeroporto de Bonito, que fica a 8 km do hotel. Em outubro:
 Azul, de Viracopos (Campinas): terça, quinta e domingo.
-Gol, de Congonhas (São Paulo): terça, sábado e domingo.
-Latam, de Guarulhos (São Paulo): quarta, sexta e domingo.
-Aos domingos, dá para chegar a tempo do check-in. [confirmar dias e horários vigentes]
+Gol, de Congonhas (São Paulo): terça e domingo.
+Latam, de Guarulhos (São Paulo): quarta e sábado.
+Aos domingos, os voos da Azul e da Gol chegam a tempo do check-in. Dias e horários podem mudar: confira com a companhia.
 
 Pelo Aeroporto de Campo Grande: ficamos a 280 km dele. De lá, há vans, carros privativos, ônibus e locação de carros.
 
@@ -521,7 +521,7 @@ Reserve pelo link na bio.
 *1ª linha: 105 caracteres (até "Salva este guia."). Hashtags: 5, da lista oficial.*
 
 ### A confirmar com o dono
-- **Dias dos voos:** reconfirmar a malha na semana da publicação e tirar a marca "[confirmar dias e horários vigentes]" (a Latam passa a 3 voos por semana a partir de 25/10/2026, segundo `destino-bonito.md`). Se algum dia mudar, ajustar só a legenda (a arte não cita dias).
+- **Dias dos voos:** ~~reconfirmar a malha~~ feito em 01/10: malha de outubro do Bonito Convention & Visitors Bureau (`contexto/voos/2026-10-voos-bonito.md`), enviada pelo dono. Gol: terça e domingo; Latam: quarta e sábado. A arte não cita dias.
 - **Link na bio:** o Linktree está com o motor de reservas e o WhatsApp em destaque no dia 11/10?
 
 ---
