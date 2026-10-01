@@ -584,3 +584,21 @@ Resumo em `crm/silbeck-api-detalhes.md` (seção 6):
 - **CRM no ar (fase 0, 01/10/2026):** publicação automática GitHub → Cloud Run funcionando, sem chaves (federação de identidade). Endereço: https://crm-377803250649.southamerica-east1.run.app (página de teste e `/saude`). A primeira tentativa falhou porque o nome do repositório tem maiúsculas (RC120305); o dono corrigiu no Cloud Shell. Próximo: fase 1 (caixa de entrada única).
 - **App da Meta (dono, 01/10/2026):** "Cabanas CRM", ID **1149692087640848** (conferido na tela Configurações > Básico), modo de desenvolvimento, empresa Hotel Cabanas, caso de uso WhatsApp. Número de teste da Meta disponível. Avisos no painel: alertas pendentes no Gerenciador do WhatsApp (não mexer) e forma de pagamento faltando em 3 contas antigas (não adicionar; o pagamento entra só na conta nova em BRL).
 - **WhatsApp de teste (01/10/2026):** número de teste da Meta +1 555 182 9766; ID do número 1426678220518247; ID da conta WhatsApp Business (WABA de teste) 1755686848881908. Webhook configurado (`/webhook/meta`, campo `messages` assinado); segredos `meta-app-secret` e `meta-verify-token` no Secret Manager; deploy 7 com os dois segredos ativos.
+
+## Perguntas das conversas reais (01/10/2026, aguardando o dono)
+Origem: análise de 47 conversas do WhatsApp (`crm/gilberto/conversas-reais.md`). A equipe praticou regras diferentes da base; o Gilberto precisa de uma regra só.
+- **P59 Desconto:** a equipe deu 10% no Pix, 20% para cliente antigo, "1 hóspede grátis". Regra do Gilberto continua **sem desconto** (exceções só a equipe/dono)?
+- **P60 "De/por":** os cards mostram "valor promocional de X por Y". O Gilberto mantém esse formato?
+- **P61 Pagamento:** confirmar as 4 opções: 50% no cartão até 3x; 100% no cartão até 6x; Pix 50% ou 100% (chave CNPJ). Sinal pode ser dividido em 2 cartões?
+- **P62 Prazo do link:** na prática a equipe deu até 3 dias (ou mais) para pagar. Mantém o link de 24h do CRM (2h se o check-in for em até 3 dias)?
+- **P63 Cancelamento e troca de data:** regra exata (30 dias integral / 15 dias 50% / menos de 15 sem reembolso?); troca grátis até quantos dias antes? Fora do prazo: diferença vira crédito? Crédito vale só 1 reagendamento e tem validade?
+- **P64 Early check-in:** "se o quarto estiver liberado, entra antes" ou "não liberamos antes das 15h"? Lazer liberado a partir das 9h para quem chega cedo?
+- **P65 Decoração:** antecedência de 2 ou 3 dias? Existe alguma decoração ou mimo gratuito?
+- **P66 Aniversário:** existe cortesia (ex.: uma atividade paga grátis) ou "não temos benefício"?
+- **P67 Cofre:** há cofre na recepção ou não?
+- **P68 Crianças:** criança de exatamente 5 anos paga? Tirolesa tem idade mínima? Há ponto raso para crianças (Formosinho)?
+- **P69 Temporadas e pacotes:** alta = 20/12 a 09/02 + feriados e férias? Réveillon mínimo de 4 noites (30/12 a 03/01)? Sem tarifa single (mínimo 2)?
+- **P70 Agência parceira (Ecotrip, dentro do hotel):** o Gilberto pode indicar e passar o contato oficial?
+- **P71 Boia cross:** horários 9h e 10h, agendada no check-in e paga no check-out? Não hóspede pode fazer? Combo boia + arvorismo R$ 170 vale?
+- **P72 Outros:** não há café da tarde (confirmar); Superior só no andar de cima; cama da Cabana Casal não separa; Conjugado tem 2 banheiros; saída antecipada paga o pacote todo.
+- **P73 Telefone fixo:** o número divulgado para ligar está recusando chamadas. Qual número o Gilberto indica para ligação?
