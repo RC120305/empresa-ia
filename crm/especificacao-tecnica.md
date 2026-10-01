@@ -820,6 +820,9 @@ Atendimento automatizado do próprio negócio, com caminho para humano a qualque
 > **Resumo para o dono.** Abaixo estão as decisões que ainda faltam (algumas são suas, outras de fornecedores) e os riscos que a construção precisa vigiar. Nada aqui impede começar a fase 0 e a fase 1.
 
 ### 11.1 Decisões em aberto (do dono)
+
+> **Atualização 01/10/2026:** todas respondidas pelo dono (ver `crm/entrevista.md`, "Decisões da especificação técnica"). A6 aguarda só a estimativa de custo; A5 aceita com mitigação mínima (IP restrito e troca do secret).
+
 | # | Decisão | Contexto |
 |---|---|---|
 | A1 | **Follow-up: 2 tentativas (P12) ou "até 4 toques"** (cargo do Gilberto) | Divergência entre a entrevista e o cargo; a especificação segue P12 |

@@ -538,3 +538,24 @@ Resumo em `crm/silbeck-api-detalhes.md` (seção 6):
   - **Setores (D12):** nova aba em Ajustes. Todo pedido de hóspede vai para a **recepção**, que repassa: manutenção, governança, lanchonete, atividades e massagem (parceiro). O retorno ao hóspede é configurável e não promete minutos.
   - O exemplo do chuveiro passa a ir para a recepção.
   - Em Regras, "sábado e domingo o dia todo" fica desmarcado, porque a equipe atende todos os dias.
+
+## Decisões da especificação técnica (dono, 01/10/2026; página de decisões, seção E)
+| # | Decisão |
+|---|---|
+| A1 | Follow-up: **2 toques** para quem nunca respondeu; **até 4** para quem conversou e sumiu. O dono pede que **o sistema avalie se está dando resultado** (custo dos modelos pagos × conversão por toque) e recomende ajuste: entra no Painel ("Follow-up: custo e retorno por toque") |
+| A2 | Reserva vencida e ainda ativa: tarefa para **Jagles, Márcio e Ricardo** |
+| A3 | Ricardo é o dono: administrador, vê faturamento |
+| A4 | 99110: **migrar para a conta nova em reais** no dia da troca |
+| A5 | Ligação com o Silbeck: dono **aceita o plano B (IP fixo) como está**. ⚠️ A equipe registrou o risco (senha na URL, sem criptografia) e aplica o mínimo: portas liberadas **só para o IP do CRM**, troca do client secret e preferência pelo túnel quando o Márcio puder |
+| A6 | IA: **direto com a Anthropic, Sonnet 5.5 no dia a dia e Opus 5.5 nos casos difíceis**, mas o dono quer ver **custo e forma de contratação** antes de bater o martelo (respondido no chat em 01/10) |
+| A7 | Equipe fala fora do CRM → Gilberto **pausa até a equipe devolver**; se ninguém devolver em **2 h**, ele assume de novo (para casos esquecidos) |
+| A8 | Alerta interno: só som no CRM + notificação no celular (sem WhatsApp pago) |
+| A9 | Reclamação de hospedado à noite: recepção + **notificação imediata para quem está de plantão** |
+| A10 | **Jagles, Márcio e Ricardo** editam e publicam as respostas e regras do Gilberto |
+| A11 | Marketing: das 8h às 20h, até 2 mensagens por mês por contato |
+| A12 | Pré-check-in na **véspera**. O link vem de um **sistema interno feito pelo Márcio**, hoje enviado à mão: estudar com o Márcio como automatizar (régua do CRM) |
+| A13 | E-mail (fase 2): o Gilberto **sugere** a resposta e a equipe envia |
+| D1 | Crianças até 5 anos não pagam (controlado no Silbeck) |
+| D3 | Tarifa de agência: **depende da agência** (campo no cadastro), mudou de "comissionada" |
+| D4 | Preços enviados pelo dono no Drive (decoração e massagem): ver `crm/upsell-catalogo.md` |
+| D5 | Mensagem + página do orçamento ("adorei essa página") |

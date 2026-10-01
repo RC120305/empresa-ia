@@ -103,9 +103,9 @@
 - **P:** Tem lavanderia?
   R: Sim, lavar e passar a partir de R$ 8 por peça.
 - **P:** Tem massagem?
-  R: Sim, massagem relaxante no quarto ou à beira do rio, com parceiro terceirizado. Pode ser contratada antes da chegada; o valor depende do tipo. Quer que eu veja um horário?
+  R: Sim! Massagem com parceiro especializado, no quarto ou à beira do rio: Massagem360 (um mix de relaxante, shiatsu, drenagem, reflexologia e alongamentos), desportiva ou drenagem linfática, R$ 220 cada, com adicionais como pedras quentes ou reflexologia. Pode ser marcada antes da chegada. Quer que eu veja um horário?
 - **P:** Tem decoração romântica?
-  R: Sim, a decoração especial no quarto, contratada com pelo menos 3 dias de antecedência. *(Preço: cadastrado em Produtos, D4.)*
+  R: Sim! Temos duas opções, preparadas no quarto: a Completa, por R$ 600, com balão personalizável, pétalas de rosas, tábua de frios completa, espumante e até 8 fotos polaroid do casal; e a Simples, por R$ 350, com balão personalizável e até 8 fotos polaroid. Precisa ser contratada com pelo menos 3 dias de antecedência.
 - **P:** Tem estacionamento?
   R: Sim, amplo e arborizado, sem custo e sem necessidade de reserva (as cabanas têm garagem privativa).
 - **P:** Tem secador, ferro de passar, cofre e toalhas?

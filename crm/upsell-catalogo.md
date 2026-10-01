@@ -26,8 +26,9 @@ Um lugar único para tudo o que o hotel vende além da diária. Cada produto tem
 | BOIA | Boia cross | R$ 100/pessoa | Atividade com horário | 2 |
 | ARVO | Arvorismo | R$ 120/pessoa | Atividade com horário | 3 |
 | FLUT | Flutuação | — | **Não é mais oferecida** (dono, 29/09) | — |
-| MASS | Massagem (avulsa ou pacote) | varia | Terceiro: pedido ao parceiro pelo WhatsApp | 5 |
-| DECO | Decoração especial | [a confirmar] | Simples, ≥ 3 dias de antecedência | 6 |
+| MASS | Massagem (parceiro Massagem 360): Massagem360, desportiva ou drenagem linfática | R$ 220 cada (adicionais: máscara de argila R$ 50 · reflexologia 15 min R$ 50 · cone hindu R$ 80 · +30 min R$ 150 · pedras quentes R$ 50) | Terceiro: pedido ao parceiro pelo WhatsApp | 5 |
+| DECO-C | Decoração romântica **Completa**: balão personalizável, pétalas de rosas, tábua de frios completa, espumante e até 8 fotos polaroid do casal | R$ 600 | Simples, ≥ 3 dias de antecedência | 6 |
+| DECO-S | Decoração romântica **Simples**: balão personalizável e até 8 fotos polaroid do casal | R$ 350 | Simples, ≥ 3 dias de antecedência | 6 |
 | PIQ | Piquenique Sunset | — | **Inativo** | — |
 
 ## 2. Reserva de atividades pelo sistema interno do hotel (API)
@@ -75,3 +76,11 @@ Receita de upsell por produto · taxa de aceite por momento (cotação, pré-che
 2. **Documentação da API do sistema interno** das atividades: com o **Márcio**. O sistema **já controla horários e limite por horário**.
 3. ~~Horários e capacidade~~: controlados pelo sistema interno. Flutuação: não existe mais.
 4. Preço da decoração especial e dos pacotes de massagem.
+
+## Preços enviados pelo dono (Drive, 01/10/2026)
+- **Decoração:** Completa R$ 600 · Simples R$ 350 (arquivo "Decoração romântica no quarto", pasta "CRM - material Asksuite").
+- **Massagem (parceiro Massagem 360):** Massagem360, desportiva e drenagem linfática a R$ 220. Adicionais: máscara de argila R$ 50, reflexologia 15 min R$ 50, cone hindu R$ 80, acréscimo de 30 min R$ 150, pedras quentes R$ 50.
+- ⚠️ A confirmar com o dono:
+  - a "massagem relaxante" aparece descrita, mas sem preço;
+  - os valores são os cobrados do hóspede ou o hotel acrescenta algo?
+  - o contato do parceiro fica no cadastro de parceiros do CRM, fora do repositório.

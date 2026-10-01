@@ -55,8 +55,8 @@
 
 ## 5. Serviços opcionais
 - ~~Piquenique Sunset~~: **retirado da oferta** (dono, 29/09/2026). Não oferecer nem divulgar.
-- **Decoração especial no quarto:** contratada antes do check-in, pelo WhatsApp de reservas, com **no mínimo 3 dias de antecedência** (para encomendar os itens; dono, 29/09/2026).
-- **Massagem relaxante** no quarto ou **à margem dos rios**. Serviço terceirizado; o valor varia. **Pode ser vendida antecipadamente** (dono, 29/09/2026): um tipo avulso ou um **pacote de massagens** montado pelo hóspede; o agendamento com o terceiro é integrado ao sistema dele ou feito manualmente pela equipe.
+- **Decoração especial no quarto:** contratada antes do check-in, pelo WhatsApp de reservas, com **no mínimo 3 dias de antecedência** (para encomendar os itens; dono, 29/09/2026). **Duas opções (dono, 01/10/2026):** **Completa, R$ 600** (balão personalizável, pétalas de rosas, tábua de frios completa, espumante e até 8 fotos polaroid do casal) e **Simples, R$ 350** (balão personalizável e até 8 fotos polaroid do casal).
+- **Massagem relaxante** no quarto ou **à margem dos rios**. Serviço terceirizado (parceiro **Massagem 360**). **Valores (dono, 01/10/2026):** Massagem360 (mix de relaxante, shiatsu, drenagem, reflexologia e alongamentos), desportiva ou drenagem linfática, **R$ 220** cada; adicionais: máscara de argila R$ 50, reflexologia 15 min R$ 50, cone hindu R$ 80, +30 min R$ 150, pedras quentes R$ 50. **Pode ser vendida antecipadamente** (dono, 29/09/2026): um tipo avulso ou um **pacote de massagens** montado pelo hóspede; o agendamento com o terceiro é integrado ao sistema dele ou feito manualmente pela equipe.
 - **Aula de ioga:** aos **sábados, às 8h30**, à margem do Rio Formosinho.
 - **Lavanderia:** a partir de R$ 8 por peça.
 
