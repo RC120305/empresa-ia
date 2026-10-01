@@ -2,16 +2,20 @@
 """Stories "Este ou aquele no Cabanas" (enquete), 9:16.
 
 Uso (na raiz do repositório):
-  python3 design/pecas/2026-10-instagram/STORIES-ENQUETE/gera-enquetes.py
+  python3 design/pecas/2026-10-instagram/STORIES-ENQUETE/gera-enquetes.py [sem-faixa]
+Com "sem-faixa": a pergunta vai só como texto sobre a foto (véu mais forte em cima), sem a faixa
+marrom; gera ENQUETE-N-sem-faixa.html/.png.
 
 Lê enquetes.json, gera ENQUETE-N.html e renderiza ENQUETE-N.png (1080 x 1920).
 Cada story: duas fotos empilhadas, pergunta em cima numa faixa marrom e uma área livre
 no meio (a emenda das fotos) para a figurinha de enquete, que é colocada no app do Instagram.
 """
-import html, json, os, subprocess
+import html, json, os, subprocess, sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.abspath(os.path.join(AQUI, "../../../.."))
+SEM_FAIXA = len(sys.argv) > 1 and sys.argv[1] == "sem-faixa"
+SUF = "-sem-faixa" if SEM_FAIXA else ""
 E = json.load(open(os.path.join(AQUI, "enquetes.json"), encoding="utf-8"))
 
 MODELO = """<!doctype html>
@@ -33,6 +37,10 @@ MODELO = """<!doctype html>
 .pergunta .linha {{ margin: 22px auto; }}
 .pergunta .faixa {{ padding: 20px 40px 26px; }}
 .pergunta .titulo {{ font-size: 76px; text-shadow: none; }}
+.sf .veu-topo {{ height: 720px; background: linear-gradient(to bottom, rgba(20,14,8,.72), rgba(20,14,8,.35) 55%, rgba(20,14,8,0)); }}
+.sf .pergunta .faixa {{ background: none; padding: 0 60px; }}
+.sf .pergunta .titulo {{ font-size: 92px; text-shadow: 0 2px 22px rgba(0,0,0,.55); }}
+.sf .pergunta .apoio {{ font-size: 26px; }}
 .rotulo {{ position: absolute; left: 72px; font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 26px;
   letter-spacing: .32em; text-transform: uppercase; color: var(--creme); padding: 12px 20px 10px;
   border: 1.5px solid rgba(247,241,230,.85); background: rgba(20,14,8,.28); }}
@@ -44,7 +52,7 @@ MODELO = """<!doctype html>
 </style>
 </head>
 <body>
-<div class="peca story">
+<div class="peca story{classe}">
   <div class="metade a"><img src="fotos/{foto_a}" style="object-position: {pos_a};" alt=""></div>
   <div class="metade b"><img src="fotos/{foto_b}" style="object-position: {pos_b};" alt=""></div>
   <div class="veu-topo"></div>
@@ -77,10 +85,10 @@ def titulo_html(t):
 
 
 for n, e in enumerate(E, 1):
-    arq = os.path.join(AQUI, f"ENQUETE-{n}.html")
+    arq = os.path.join(AQUI, f"ENQUETE-{n}{SUF}.html")
     open(arq, "w", encoding="utf-8").write(MODELO.format(
-        n=n, total=len(E), pergunta=html.escape(e["pergunta"]), apoio=html.escape(e["apoio"]),
+        n=n, total=len(E), classe=" sf" if SEM_FAIXA else "", pergunta=html.escape(e["pergunta"]), apoio=html.escape(e["apoio"]),
         titulo=titulo_html(e["titulo"]), op_a=html.escape(e["op_a"]), op_b=html.escape(e["op_b"]),
         foto_a=e["foto_a"], foto_b=e["foto_b"], pos_a=e.get("pos_a", "center"), pos_b=e.get("pos_b", "center")))
     subprocess.run(["node", os.path.join(RAIZ, "design/ferramentas/renderizar.js"), arq,
-                    os.path.join(AQUI, f"ENQUETE-{n}.png"), "story"], check=True)
+                    os.path.join(AQUI, f"ENQUETE-{n}{SUF}.png"), "story"], check=True)
