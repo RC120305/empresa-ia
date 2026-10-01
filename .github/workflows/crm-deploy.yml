@@ -1,0 +1,56 @@
+name: CRM - publicar no Cloud Run
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'crm/app/**'
+      - '.github/workflows/crm-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write   # federação de identidade com o Google (sem chave)
+
+env:
+  PROJECT_ID: cabanas-crm
+  REGION: southamerica-east1
+  SERVICE: crm
+  IMAGE: southamerica-east1-docker.pkg.dev/cabanas-crm/crm/crm
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Autenticar no Google Cloud (sem chave)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/377803250649/locations/global/workloadIdentityPools/github/providers/github-provider
+          service_account: github-deploy@cabanas-crm.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Montar e enviar a imagem
+        run: |
+          gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+          docker build -t "${IMAGE}:${GITHUB_SHA}" crm/app
+          docker push "${IMAGE}:${GITHUB_SHA}"
+
+      - name: Publicar no Cloud Run
+        run: |
+          gcloud run deploy "${SERVICE}" \
+            --image "${IMAGE}:${GITHUB_SHA}" \
+            --region "${REGION}" \
+            --service-account "crm-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --set-env-vars "VERSAO=${GITHUB_SHA::7}" \
+            --allow-unauthenticated \
+            --min-instances 0 --max-instances 2 --memory 256Mi \
+            --quiet
+
+      - name: Conferir /saude
+        run: |
+          URL="$(gcloud run services describe "${SERVICE}" --region "${REGION}" --format='value(status.url)')"
+          echo "Endereço: ${URL}"
+          curl -fsS "${URL}/saude"
