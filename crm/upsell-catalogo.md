@@ -48,13 +48,20 @@ O hotel tem um **sistema interno de reservas da boia cross e do arvorismo que ac
 ## 2b. Massagem: pedido à parceira pelo WhatsApp (dono, 29/09; revisto em 01/10/2026, combinado com a Natália)
 1. **Lado do cliente:** pelo **link de agendamento**, uma página como a do orçamento (`crm.hotelcabanas.com.br/m/…`, exemplo: https://claude.ai/artifact/PFzy7ZxGDHhcFhAxvrfF7D), o hóspede escolhe **tipo**, **onde** (à beira do rio ou no quarto), **dia** (dentro da estadia) e **horário**, além dos adicionais. Os horários já ocupados aparecem riscados. O Gilberto ou a equipe envia o link. Também dá para fazer o pedido pela conversa. São **6 horários por dia: 8h, 9h, 10h, 14h, 15h e 16h**. Tipos: Massagem360, relaxante ou linfática (R$ 220), com adicionais opcionais.
 2. **Mensagem interna do sistema** para o WhatsApp da Natália, pelo número oficial do hotel, com modelo de utilidade aprovado pela Meta: "Reserva de massagem para hóspede do Hotel Cabanas: Massagem360 · 16/11 às 15h. Confirma?" com botões **[Confirmo] [Não posso]**.
-3. **Confirmo:** a confirmação aparece no CRM, com alerta no card. O sistema avisa o hóspede no WhatsApp e na própria página. O hóspede escolhe **pagar agora** (Pix ou cartão) ou **incluir na conta do hotel**, para pagar no check-out (tarefa de lançamento no Silbeck). Tudo fica no histórico do cliente.
-4. **Não posso:**
+3. **Confirmo:** a confirmação aparece no CRM e o sistema avisa o hóspede no WhatsApp e na página. **Não se pergunta sobre pagamento** (dono, 01/10/2026): o valor vai **sempre para a conta do hóspede**, acertada no check-out. Tudo fica no histórico do cliente.
+4. **Lançamento na comanda:**
+   - A conta do hóspede fica no **sistema de comandas do hotel**, separado do Silbeck, e o lançamento é **manual**.
+   - Na confirmação, o CRM cria a tarefa **"Lançar na comanda"** (tipo, data e valor), para quem está de plantão.
+   - **Alertas para não esquecer:**
+     - com som para o plantão, se a tarefa não for marcada até as 18h do dia da massagem;
+     - na manhã do check-out, a lista de **lançamentos pendentes** do hóspede aparece para a recepção antes de fechar a conta.
+   - Concluir = botão "Lançado na comanda".
+5. **Não posso:**
    - o sistema **pergunta à Natália quais datas e horários têm vaga** (dentro dos 6 horários; ela responde em texto ou por lista);
    - as opções aparecem para o hóspede na página e no WhatsApp, e ele escolhe;
    - o horário escolhido vira um **novo pedido** com os mesmos botões;
    - os horários indicados por ela ficam guardados para aquele hóspede por 2 h.
-5. **Sem resposta em 2 h** no expediente: alerta para a equipe.
+6. **Sem resposta em 2 h** no expediente: alerta para a equipe.
 
 ### Cadastro de parceiros
 | Parceiro | Serviço | WhatsApp |
@@ -87,5 +94,4 @@ Receita de upsell por produto · taxa de aceite por momento (cotação, pré-che
 - **Decoração:** Completa R$ 600 · Simples R$ 350 (arquivo "Decoração romântica no quarto", pasta "CRM - material Asksuite").
 - **Massagem (parceiro Massagem 360):** Massagem360, Massagem relaxante e Massagem linfática, a R$ 220 cada (dono confirmou os 3 tipos em 01/10/2026; a "desportiva" da lista de preços saiu). Adicionais: máscara de argila R$ 50, reflexologia 15 min R$ 50, cone hindu R$ 80, acréscimo de 30 min R$ 150, pedras quentes R$ 50.
 - **Descrições (do arquivo do dono):** Massagem360 é um mix de massagem relaxante, shiatsu, drenagem, reflexologia e alongamentos básicos. A Massagem relaxante aplica pressão suave a moderada nos músculos e tecidos, para relaxar e aliviar o estresse. A Massagem linfática é suave, com movimentos leves que estimulam a circulação da linfa e reduzem a sensação de inchaço e retenção de líquidos; boa para quem busca leveza e bem-estar.
-- ⚠️ A confirmar com o dono:
-  - os valores são os cobrados do hóspede ou o hotel acrescenta algo?
+- ✅ **Os valores são os do hóspede** (dono, 01/10/2026). A Natália paga uma **comissão ao hotel**: o CRM gera o relatório mensal de massagens realizadas para a conferência. Percentual: [a confirmar com o dono].

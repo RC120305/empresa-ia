@@ -131,19 +131,14 @@ footer{max-width:560px;margin:0 auto;padding:0 16px 32px;font-size:13px;color:va
   function bts(lista){const c=$("sim-bts");c.textContent="";lista.forEach(([t,f])=>{const b=document.createElement("button");b.type="button";b.textContent=t;b.onclick=f;c.appendChild(b);});$("sim").hidden=!lista.length;}
   function mostrar(fase,alt){$("form").hidden=true;$("estado").hidden=false;window.scrollTo(0,0);const a=$("st-acao");a.textContent="";
     if(fase==="aguardando"){$("st-tit").textContent="Pedido enviado!";$("st-desc").textContent=texto()+" · "+brl(valor());
-      etapas([["ok","Pedido enviado à massoterapeuta","Ficou registrado no seu atendimento com a nossa equipe"],["agora","Confirmação da massoterapeuta","Você recebe a resposta aqui e no WhatsApp"],["","Pagamento",""]]);
+      etapas([["ok","Pedido enviado à massoterapeuta","Ficou registrado no seu atendimento com a nossa equipe"],["agora","Confirmação da massoterapeuta","Você recebe a resposta aqui e no WhatsApp"],["","Valor na sua conta do hotel","Acertado no check-out"]]);
       bts([["✓ Confirmo",()=>mostrar("confirmado")],["✕ Não posso",()=>mostrar("recusado")]]);}
     if(fase==="recusado"){$("st-tit").textContent="Esse horário não deu 😕";$("st-desc").textContent="A massoterapeuta não tem "+fdia(st.dia)+" às "+st.hora.replace(":00","h")+". Ela tem vaga nestes horários:";
       etapas([]);const ch=document.createElement("div");ch.className="chips";
       [["2026-11-16","09:00"],["2026-11-17","15:00"]].forEach(([d,h])=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=fdia(d)+" às "+h.replace(":00","h");b.onclick=()=>{st.dia=d;st.hora=h;mostrar("aguardando");};ch.appendChild(b);});
       a.append(ch);const sm=document.createElement("p");sm.className="nota";sm.textContent="Esses horários ficam guardados para você por 2 horas.";a.append(sm);bts([]);}
     if(fase==="confirmado"){$("st-tit").textContent="Massagem confirmada! 🌿";$("st-desc").textContent=texto()+" · "+brl(valor());
-      etapas([["ok","Pedido enviado à massoterapeuta",""],["ok","Confirmada pela massoterapeuta","Também te avisamos no WhatsApp"],["agora","Pagamento","Escolha como prefere pagar"]]);
-      const p=document.createElement("div");p.className="pag";
-      [["Pagar agora (Pix ou cartão)","pago"],["Incluir na conta do hotel (pagar no check-out)","conta"]].forEach(([t,f],i)=>{const b=document.createElement("button");b.type="button";b.className="btn"+(i?" sec":"");b.textContent=t;b.onclick=()=>mostrar(f);p.appendChild(b);});
-      a.append(p);bts([]);}
-    if(fase==="pago"||fase==="conta"){$("st-tit").textContent="Tudo certo! Até lá 🌿";$("st-desc").textContent=texto()+" · "+brl(valor());
-      etapas([["ok","Pedido enviado à massoterapeuta",""],["ok","Confirmada pela massoterapeuta",""],["ok",fase==="pago"?"Pagamento recebido":"Valor incluído na conta do hotel","Pode ser acertado no check-out"]]);bts([]);}
+      etapas([["ok","Pedido enviado à massoterapeuta",""],["ok","Confirmada pela massoterapeuta","Também te avisamos no WhatsApp"],["ok","Valor na sua conta do hotel","É acertado no check-out, junto com os outros consumos"]]);bts([]);}
   }
   desenharHoras();atualizar();
 })();

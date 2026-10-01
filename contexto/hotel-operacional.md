@@ -73,6 +73,7 @@
 - Check-in a partir das 15h; check-out até as 13h. **Não há early check-in nem late check-out**, mas o hóspede pode continuar usando a estrutura (há vestiários, duchas e guarda-volumes).
 - **Piscina, hidromassagem, sauna, academia e sala de jogos: das 7h às 22h**, todos os dias.
 - Recepção: 24h, com check-in online enviado na véspera.
+- **Conta do hóspede (dono, 01/10/2026):** o hotel usa um **sistema de contas/comandas separado do Silbeck**. A hospedagem é cadastrada nele, e o hóspede recebe uma **pulseira/comanda** para os consumos no bar, restaurante e loja, no aluguel de equipamentos e no controle de empréstimo de equipamentos. A conta é acertada no check-out. A massagem é lançada **manualmente** nesse sistema.
 - **Equipe de reservas:** atende **todos os dias, das 7h30 às 17h** (dono, 01/10/2026).
 
 ## 8. Crianças, famílias e acessibilidade

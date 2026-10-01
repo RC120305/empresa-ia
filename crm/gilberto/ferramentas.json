@@ -372,7 +372,7 @@
   },
   {
     "name": "pedir_horario_parceiro",
-    "description": "Pede à massoterapeuta parceira (Natália, Massagem 360), pelo WhatsApp oficial do hotel, a confirmação de uma massagem para um hóspede. Horários possíveis por dia: 08:00, 09:00, 10:00, 14:00, 15:00 e 16:00 (ofereça só esses). Tipos: Massagem360, Massagem relaxante ou Massagem linfática (R$ 220 cada), com adicionais opcionais. Antes de chamar, o cliente precisa ter escolhido data, horário e tipo. A parceira responde [Confirmo] ou [Não posso]: se confirma, o CRM confirma ao hóspede e gera a cobrança; se recusa, o CRM pergunta a ela quais datas e horários têm vaga e te devolve as opções para oferecer ao cliente (o horário escolhido vira um novo pedido). Sem resposta em 2 h no expediente, alerta a equipe. Ao cliente, diga que está confirmando o horário com a massoterapeuta; nunca dê como confirmado antes da resposta dela.",
+    "description": "Pede à massoterapeuta parceira (Natália, Massagem 360), pelo WhatsApp oficial do hotel, a confirmação de uma massagem para um hóspede. Horários possíveis por dia: 08:00, 09:00, 10:00, 14:00, 15:00 e 16:00 (ofereça só esses). Tipos: Massagem360, Massagem relaxante ou Massagem linfática (R$ 220 cada), com adicionais opcionais. Antes de chamar, o cliente precisa ter escolhido data, horário e tipo. A parceira responde [Confirmo] ou [Não posso]: se confirma, o CRM confirma ao hóspede (o valor vai para a conta do hóspede no hotel, sem cobrança à parte) e cria a tarefa de lançar na comanda; se recusa, o CRM pergunta a ela quais datas e horários têm vaga e te devolve as opções para oferecer ao cliente (o horário escolhido vira um novo pedido). Sem resposta em 2 h no expediente, alerta a equipe. Ao cliente, diga que está confirmando o horário com a massoterapeuta; nunca dê como confirmado antes da resposta dela.",
     "strict": true,
     "input_schema": {
       "type": "object",
@@ -672,6 +672,24 @@
       "required": [
         "categoria",
         "texto"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "enviar_link_massagem",
+    "description": "Envia ao hóspede o link da página de agendamento de massagem (crm.hotelcabanas.com.br/m/…), em que ele escolhe sozinho o tipo (Massagem360, relaxante ou linfática, R$ 220), o local (à beira do rio ou no quarto), o dia dentro da estadia, o horário (8h, 9h, 10h, 14h, 15h ou 16h; os ocupados aparecem riscados) e os adicionais. O pedido vai direto para a massoterapeuta e a resposta dela volta ao hóspede pela página e pelo WhatsApp. Use quando o cliente demonstrar interesse em massagem; escreva uma frase curta convidando a escolher pelo link.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "reserva_id": {
+          "type": "string",
+          "description": "Reserva do hóspede (as datas da estadia limitam os dias da página)."
+        }
+      },
+      "required": [
+        "reserva_id"
       ],
       "additionalProperties": false
     }

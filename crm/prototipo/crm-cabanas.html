@@ -1146,7 +1146,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
   const PERFIS=['Casal','Família com filhos','Grupo de amigos','55+','Observador de aves','Ciclista','Agência'];
   const USUARIOS={voce:'Você',renata:'Renata',jagles:'Jagles',marcio:'Márcio',agente:'Gilberto'};
   const MOTIVOS=['Sem vaga na data','Preço','Parou de responder','Mudou de planos','Escolheu outro hotel','Outro'];
-  const TIPOS_TAREFA=['Ligar','Enviar proposta','Follow-up','Confirmar pagamento','Agendar massagem','Encomendar decoração','Outro'];
+  const TIPOS_TAREFA=['Ligar','Enviar proposta','Follow-up','Confirmar pagamento','Agendar massagem','Lançar na comanda','Encomendar decoração','Outro'];
   let seq=100;
   const LEADS=[
     {id:1,nome:'Cláudia L.',tel:'(67) 9xxxx-2231',email:'',cidade:'Campo Grande/MS',nasc:'',etapa:'novo',origem:'insta',perfil:'Casal',resp:'agente',entrada:'2026-12-05',saida:'2026-12-07',hosp:'2 adultos',acom:'Cabana suspensa',valor:1480,parado:3,tags:['Aniversário de casamento'],notas:'',tarefas:[],hist:[['Chegou pelo direct do Instagram','hoje, 17:20']]},
@@ -2070,7 +2070,11 @@ body.sem-rolagem .principal{padding-block-end:12px}
       const st=el('div',{class:'lat-card'},el('b',{text:'Pedido à parceira: '+m.txt}),el('span',{class:'tipo '+rot[0],text:rot[1]}),el('small',{text:'Valor ao hóspede: R$ '+m.valor.toLocaleString('pt-BR')}));
       const simular=(...bts)=>st.append(el('small',{text:'Exemplo: simular a resposta da Natália'}),el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'},...bts));
       if(m.status==='aguardando')simular(
-        el('button',{class:'btn-mini',type:'button',text:'✓ Confirmo',onclick:()=>{m.status='confirmado';c.reservas.push([m.txt,'Massagem confirmada pela parceira · R$ '+m.valor.toLocaleString('pt-BR'),'t-livre']);c.msgs.push(['sis','Natália respondeu “Confirmo” · CRM confirmou ao hóspede e gerou a cobrança']);c.msgs.push(['ia','Tudo certo! Sua massagem está confirmada: '+m.txt+'. 🌿','agora','Resposta da parceira (botão “Confirmo”)']);renderChat();toast('Natália confirmou. O hóspede recebeu a confirmação.');}}),
+        el('button',{class:'btn-mini',type:'button',text:'✓ Confirmo',onclick:()=>{m.status='confirmado';m.lancado=false;c.reservas.push([m.txt,'Massagem confirmada pela parceira · R$ '+m.valor.toLocaleString('pt-BR')+' na conta do hóspede','t-livre']);
+          c.msgs.push(['sis','Natália respondeu “Confirmo” · CRM confirmou ao hóspede · tarefa criada: lançar R$ '+m.valor.toLocaleString('pt-BR')+' na comanda do hóspede (sistema de contas)']);
+          c.msgs.push(['ia','Tudo certo! Sua massagem está confirmada: '+m.txt+'. O valor vai para a sua conta no hotel e é acertado no check-out. 🌿','agora','Resposta da parceira (botão “Confirmo”)']);
+          const l=c.lead&&leadPor(c.lead)||LEADS[0];if(l){l.tarefas.push({t:'Lançar na comanda',d:'Massagem '+m.txt+' · R$ '+m.valor.toLocaleString('pt-BR')+' · lançar na conta do hóspede (sistema de comandas)',q:m.data+'T'+m.hora,r:'equipe',f:false});m.tarefa=l.tarefas[l.tarefas.length-1];renderBoard();}
+          renderChat();toast('Natália confirmou. Hóspede avisado e tarefa "Lançar na comanda" criada.');}}),
         el('button',{class:'btn-mini',type:'button',text:'✕ Não posso',onclick:()=>{m.status='perguntando';c.msgs.push(['sis','Natália respondeu “Não posso” · o sistema perguntou a ela pelo WhatsApp: “Quais datas e horários você tem vaga? (8h, 9h, 10h, 14h, 15h ou 16h)”']);c.msgs.push(['ia','Deixa eu confirmar outro horário com a massoterapeuta e já te passo as opções 🙂','agora','Parceira recusou: aguardando as vagas dela']);renderChat();}}));
       if(m.status==='perguntando')simular(
         el('button',{class:'btn-mini',type:'button',text:'Natália: “mesmo dia às 9h ou dia seguinte às 15h”',onclick:()=>{m.status='alternativas';m.alt=[m.data+' às 09:00',isoMais(m.data,1)+' às 15:00'];
@@ -2079,6 +2083,9 @@ body.sem-rolagem .principal{padding-block-end:12px}
       if(m.status==='alternativas')simular(...m.alt.map(x=>el('button',{class:'btn-mini',type:'button',text:'Hóspede escolhe '+fmtData(x.slice(0,10))+x.slice(10),onclick:()=>{
           c.massagem={...m,data:x.slice(0,10),hora:x.slice(-5),txt:m.tipo+' · '+fmtData(x.slice(0,10))+' às '+x.slice(-5),status:'aguardando'};
           c.msgs.push(['sis','Novo pedido enviado à Natália: “'+c.massagem.txt+' (horário que você indicou). Confirma?” [Confirmo] [Não posso]']);renderChat();}})));
+      if(m.status==='confirmado')st.append(el('span',{class:'tipo '+(m.lancado?'t-livre':'t-erro'),text:m.lancado?'✓ Lançado na comanda do hóspede':'⚑ Lançar R$ '+m.valor.toLocaleString('pt-BR')+' na comanda do hóspede: pendente'}),
+        m.lancado?null:el('small',{text:'Se não for marcado até as 18h do dia da massagem, o alerta toca para o plantão; no dia do check-out, aparece na lista da recepção.'}),
+        m.lancado?null:el('button',{class:'btn-mini',type:'button',text:'Lançado na comanda',onclick:()=>{m.lancado=true;if(m.tarefa)m.tarefa.f=true;c.msgs.push(['sis','Massagem lançada na comanda do hóspede (sistema de contas) · tarefa concluída']);renderBoard();renderChat();toast('Lançamento registrado.');}}));
       return el('div',{class:'res-hor'},st,m.status==='confirmado'?el('button',{class:'btn-mini',type:'button',text:'Novo pedido',onclick:()=>{c.massagem=null;renderLateral(c);}}):null);
     }
     const data=el('input',{type:'date',value:c.datas?c.datas[0]:isoMais(hoje.toISOString().slice(0,10),1),'aria-label':'Data'});

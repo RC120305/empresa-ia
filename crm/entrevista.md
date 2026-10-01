@@ -563,3 +563,10 @@ Resumo em `crm/silbeck-api-detalhes.md` (seção 6):
 - **Massagem por link (dono, 01/10/2026):** o hóspede recebe um **link de agendamento** e escolhe sozinho tipo, local, dia, horário e adicionais. O pedido vai direto para a Natália e fica no histórico. A resposta dela aparece no CRM, e o sistema avisa o hóspede. Exemplo: https://claude.ai/artifact/PFzy7ZxGDHhcFhAxvrfF7D. No protótipo v34, o botão é "Enviar link para o cliente escolher".
 - **Volume (dono, 01/10/2026):** média de **20 conversas novas por dia** somando os canais (de 10 a 40), cerca de **600 por mês**. Estimativa de IA com Sonnet 5.5: cerca de US$ 50 a 110 por mês (R$ 270 a 600, câmbio ~R$ 5,50 [confirmar]), dentro do teto de R$ 800.
 - **Massagem: 3 tipos (dono, 01/10/2026):** Massagem360, Massagem relaxante e Massagem linfática, R$ 220 cada. A "desportiva" da lista de preços saiu. Atualizado em toda parte.
+- **Massagem: pagamento e comanda (dono, 01/10/2026):**
+  - Os R$ 220 são o valor do hóspede, e a Natália paga comissão ao hotel.
+  - **Não se pergunta sobre pagamento:** a massagem vai sempre para a conta do hóspede.
+  - O hotel tem um **sistema de contas/comandas separado do Silbeck** (pulseira/comanda para bar, restaurante, loja, aluguel e empréstimo de equipamentos). A massagem é lançada **à mão** nele.
+  - O CRM cria a tarefa "Lançar na comanda", com alerta às 18h do dia se não for marcada e lista de pendentes na manhã do check-out.
+  - Gilberto ganha a ferramenta `enviar_link_massagem`. Protótipo v36.
+  - Pendências: percentual da comissão; se o sistema de comandas tem API (para lançar sozinho no futuro: perguntar ao Márcio).
