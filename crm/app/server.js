@@ -12,8 +12,13 @@ const APP_SECRET = process.env.META_APP_SECRET || '';
 const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
 const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || '';
 const bancoLigado = () => !!(SUPABASE_URL && SUPABASE_KEY);
+// Chaves novas (sb_secret_…) vão só no cabeçalho apikey. Chaves antigas (JWT "eyJ…") precisam também do
+// Authorization, senão o banco trata a chamada como visitante (anon) e nega as funções do servidor.
+const cabecalhosBanco = () => Object.assign({ apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+  SUPABASE_KEY.startsWith('eyJ') ? { Authorization: 'Bearer ' + SUPABASE_KEY } : {});
 
 const recentes = []; // últimos eventos (sem conteúdo), só para a página de status
+let ultimoErroBanco = null; // código e mensagem do banco (sem dados de cliente), para diagnóstico
 const mascarar = n => (n ? String(n).replace(/^(\d{4})\d+(\d{3})$/, '$1•••••$2') : '?');
 
 function assinaturaValida(corpo, cabecalho) {
@@ -28,11 +33,16 @@ function assinaturaValida(corpo, cabecalho) {
 async function rpc(funcao, args, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/rpc/${funcao}`, {
     method: 'POST',
-    headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+    headers: cabecalhosBanco(),
     body: JSON.stringify(args),
     signal: AbortSignal.timeout(5000),
   });
-  if (!r.ok) throw new Error(`banco ${funcao}: ${r.status}`);
+  if (!r.ok) {
+    let det = {};
+    try { det = await r.json(); } catch (e) { /* sem corpo */ }
+    ultimoErroBanco = { quando: new Date().toISOString(), funcao, http: r.status, codigo: det.code || null, mensagem: String(det.message || '').slice(0, 200), dica: String(det.hint || '').slice(0, 200) };
+    throw new Error(`banco ${funcao}: ${r.status} ${det.code || ''}`);
+  }
   return r.status === 204 ? null : r.json();
 }
 
@@ -94,9 +104,11 @@ const servidor = http.createServer((req, res) => {
   if (url.pathname === '/saude') {
     const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado() } };
     if (!bancoLigado()) return json(res, 200, base);
-    // Confere se o banco responde e se as tabelas existem (sem ler dados).
-    fetch(`${SUPABASE_URL}/rest/v1/conversas?select=id&limit=0`, { headers: { apikey: SUPABASE_KEY }, signal: AbortSignal.timeout(5000) })
-      .then(r => json(res, 200, { ...base, banco: r.ok ? 'ok' : 'erro ' + r.status }))
+    // Confere se o banco responde e se a chave tem permissão de servidor: chama a função de status com um
+    // ID que não existe (não altera nada). Chave sem permissão de servidor recebe 401/403.
+    rpc('registrar_status_whatsapp', { p_wamid: 'diagnostico', p_status: 'read', p_erro: null })
+      .then(() => json(res, 200, { ...base, banco: 'ok' }))
+      .catch(() => json(res, 200, { ...base, banco: 'erro', erro: ultimoErroBanco }))
       .catch(() => json(res, 200, { ...base, banco: 'sem conexão' }));
     return;
   }
@@ -128,7 +140,7 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
-  if (url.pathname === '/webhook/status') return json(res, 200, { recebidos: recentes.length, ultimos: recentes });
+  if (url.pathname === '/webhook/status') return json(res, 200, { recebidos: recentes.length, ultimoErroBanco, ultimos: recentes });
 
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end('<!doctype html><meta charset="utf-8"><title>CRM Cabanas</title><p style="font-family:sans-serif">CRM Cabanas no ar 🌿 · versão ' + versao.replace(/[^\w.-]/g, '') + '</p>');
