@@ -5,7 +5,8 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
    └── RH (Diretora de Pessoas)
          ├── Estrategista de Social Media e Tráfego (social-media-trafego)   ← planeja: o que, quando, para quem, com quanto
          ├── Especialista em Marketing e Anúncios (marketing-anuncios)   ← escreve
-         └── Designer de Criativos (designer-criativos)   ← monta as artes
+         ├── Designer de Criativos (designer-criativos)   ← monta as artes
+         └── Gilberto, Vendas e Reservas no Chat (gilberto-vendas)   ← atende e vende (no CRM; aqui só simula)
 ```
 
 ## Equipe ativa
@@ -15,6 +16,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.8 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
 | Estrategista de Social Media e Tráfego | `.claude/agents/social-media-trafego.md` | **Ativo, v1.6 (aprovado)** | 2026-09-26 | Transformar Instagram e tráfego em reservas diretas | **4,81** (teste simulado); ver `rh/avaliacoes/social-media-trafego.md` |
 | Designer de Criativos | `.claude/agents/designer-criativos.md` | **Efetivado, v1.6 (aprovado pelo dono)** | 2026-09-26 | Transformar a direção de arte em peças prontas (PNG) com fotos reais | **4,53** (teste simulado); ver `rh/avaliacoes/designer-criativos.md` |
+| Gilberto, Vendas e Reservas no Chat | `.claude/agents/gilberto-vendas.md` | **Contratado, v1 (em experiência; v1.1 proposta)** | 2026-10-01 | Transformar conversas do chat em reservas diretas pagas | **4,17** (teste simulado); ver `rh/avaliacoes/gilberto-vendas.md` |
 
 ## Matriz RACI (decisões da empresa)
 | Decisão | R (executa) | A (aprova) | C (consultado) | I (informado) |
@@ -27,6 +29,8 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Calendário, pauta e plano de tráfego (verba em cenários) | social-media-trafego | Dono | marketing-anuncios, designer-criativos | — |
 | Executar campanhas e publicar | Dono | Dono | social-media-trafego | Equipe |
 | Atualizar o contexto do hotel | Dono | Dono | RH | Equipe |
+| Atender e cotar no chat (no CRM) | gilberto-vendas | Dono (regras) | Jagles | Equipe |
+| Alterar, cancelar, exceção ou desconto | Equipe (Jagles, Márcio, Ricardo) | Dono | gilberto-vendas (informa vaga e valor) | — |
 
 ## Vagas sugeridas (aguardando o diagnóstico do RH e a aprovação do dono)
 | Prioridade | Vaga | Justificativa estratégica |
@@ -42,6 +46,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 |---|---|---|
 | marketing-anuncios | Reduzir o marketing genérico; comunicar os 4 diferenciais e o custo-benefício | Nota do dono ≥ 4; ≥ 80% sem retrabalho; zero fatos inventados *(meta proposta, a validar)*; reservas e engajamento a medir |
 | social-media-trafego | Reservas diretas via Instagram e tráfego | Nota do dono ≥ 4; zero fatos ou resultados inventados *(meta proposta, a validar)*; reservas diretas, custo por reserva direta e envios por alcance a medir |
+| gilberto-vendas | Reservas diretas pagas pelo chat, com atendimento que parece humano | Nota do avaliador ≥ 4; zero fatos inventados, zero descontos e 100% dos casos sensíveis passados à equipe *(meta proposta, a validar)*; no CRM: 1ª resposta, conversão conversa → reserva paga, % com boia/arvorismo/combo, diária média |
 | designer-criativos | Peças prontas, bonitas e verdadeiras, sem etapa manual | Nota do dono ≥ 4; ≥ 80% sem retrabalho; zero fatos não confirmados e zero imagens de IA *(meta proposta, a validar)*; engajamento por pilar a medir |
 
 ## Histórico
@@ -102,3 +107,5 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-10-01 | **Vaga proposta:** Consultor de Vendas e Reservas no Chat, o "Gilberto" (`rh/vagas/gilberto-vendas.md`), a pedido do dono ("um grande agente vendedor"). Primeiro cargo que, no CRM, envia mensagens a clientes (exceção P3). Aguardando aprovação. | Meta de 60% de ocupação; gargalo de meio de semana e baixa temporada; substituir a Asksuite |
 | 2026-10-01 | `/aprender-youtube` com o canal @EduardoTevahOficial (vendas): 10 vídeos lidos (8 úteis). Caderno em `contexto/aprendizados/2026-10-01-eduardotevah-vendas-chat.md`, para a formação do Gilberto (vaga ainda em aprovação). | Referência de vendas indicada pelo dono |
 | 2026-10-01 | `/aprender-youtube` com @thaize.tavares (vendas): aula de 2h11, 1 live e 7 vídeos curtos; 3 lives sem legenda ficaram de fora. Caderno em `contexto/aprendizados/2026-10-01-thaizetavares-conexao-e-fechamento.md`, para a formação do Gilberto. | Referência de vendas indicada pelo dono |
+| 2026-10-01 | **Contratado o Gilberto** (`gilberto-vendas`), vaga aprovada pelo dono. Característica principal: parecer humano (dizendo a verdade se perguntarem). Formação: base de conhecimento do questionário e cadernos Tevah e Thaize. Experiência simulada: média 4,17 (T1 4,00; T2 4,25; T3 4,25). Proposta v1.1 (fechamento por escolha, combo no orçamento, investigar a objeção, mensagens curtas, honestidade sobre o horário da equipe), aguardando o dono. | Aprovação do dono |
+| 2026-10-01 | Dono decidiu: orçamento **sem validade** ("valores de hoje, sujeitos à disponibilidade"). | Decisão do dono |
