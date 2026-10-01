@@ -40,6 +40,7 @@ Fonte: exportação do WhatsApp do hotel enviada pelo dono ao Drive (pasta "Conv
 Ver lista em `crm/entrevista.md` (perguntas P59 em diante). Até a resposta, o Gilberto segue a base atual e, na dúvida, **passa para a equipe** em vez de inventar.
 
 ## 6. Casos de teste (simulado do Gilberto)
+> **Atenção:** os "Esperados" abaixo são de antes das regras do dono (P59–P73). Use junto os ajustes de `simulados/2026-10-01.md` e atualize as datas que já passaram antes de cada simulado.
 Cada caso traz a(s) mensagem(ns) do cliente e o comportamento esperado. Itens marcados como "a confirmar" dependem das respostas do dono.
 
 ### Grupo A

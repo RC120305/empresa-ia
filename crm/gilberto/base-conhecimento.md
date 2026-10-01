@@ -59,7 +59,7 @@
 - **P:** Tem quarto para fumantes?
   R: Não. As áreas externas e descobertas do hotel podem ser usadas por fumantes.
 - **P:** O hotel tem acessibilidade?
-  R: Não temos apartamentos adaptados para pessoas com deficiência. Para entender a sua necessidade e orientar com honestidade, vou chamar alguém da equipe. *(Passa para humano. Nunca prometer acessibilidade.)*
+  R: Não temos apartamentos adaptados para pessoas com deficiência. Me conta qual é a necessidade? Assim te digo com honestidade o que funciona aqui, e nossa equipe confere os detalhes. *(Alerta `acessibilidade` para a equipe e segue a conversa; nunca prometer acessibilidade. As cabanas têm escada; os Superior ficam no andar de cima; há quartos com rampa, mas os banheiros não têm barras.)*
 - **P:** Qual a voltagem?
   R: 110V em todas as acomodações.
 
