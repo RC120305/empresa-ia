@@ -819,7 +819,7 @@ Atendimento automatizado do próprio negócio, com caminho para humano a qualque
 
 > **Resumo para o dono.** Abaixo estão as decisões que ainda faltam (algumas são suas, outras de fornecedores) e os riscos que a construção precisa vigiar. Nada aqui impede começar a fase 0 e a fase 1.
 
-> **Conta do hóspede (01/10/2026):** os consumos ficam num **sistema de comandas separado do Silbeck**. A massagem confirmada vira a tarefa "Lançar na comanda", com alertas, até existir integração (perguntar ao Márcio se esse sistema tem API). Relatório mensal de massagens realizadas, para conferir a comissão da parceira.
+> **Conta do hóspede (01/10/2026):** os consumos ficam num **sistema de comandas separado do Silbeck**. A massagem confirmada vira a tarefa "Lançar na comanda", com **alerta no sino no dia do check-in** (às 8h, ou na hora se o hóspede já estiver hospedado; tipo de alerta `comanda`, prioridade abaixo de alteração), até existir integração (perguntar ao Márcio se esse sistema tem API). Relatório mensal de massagens realizadas, para conferir a comissão da parceira.
 
 > **Massagem (01/10/2026):** o fluxo está em `crm/upsell-catalogo.md` §2b. São 6 horários fixos e a Natália confirma ou recusa pelo WhatsApp; se recusar, o sistema pergunta as vagas dela. A tabela de horários fica no cadastro de Produtos.
 

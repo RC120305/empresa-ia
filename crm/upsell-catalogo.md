@@ -53,7 +53,7 @@ O hotel tem um **sistema interno de reservas da boia cross e do arvorismo que ac
    - A conta do hóspede fica no **sistema de comandas do hotel**, separado do Silbeck, e o lançamento é **manual**.
    - Na confirmação, o CRM cria a tarefa **"Lançar na comanda"** (tipo, data e valor), para quem está de plantão.
    - **Alertas para não esquecer:**
-     - com som para o plantão, se a tarefa não for marcada até as 18h do dia da massagem;
+     - **no dia do check-in do hóspede** (dono, 01/10/2026): alerta **no sino**, com som e notificação no celular, "Lançar massagem na comanda". Toca às 8h, quando a conta do hóspede já existe no sistema de comandas. Se a massagem for confirmada com o hóspede já hospedado, toca na hora. O alerta sai com o botão "✓ Lançado na comanda";
      - na manhã do check-out, a lista de **lançamentos pendentes** do hóspede aparece para a recepção antes de fechar a conta.
    - Concluir = botão "Lançado na comanda".
 5. **Não posso:**

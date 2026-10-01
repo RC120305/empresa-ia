@@ -1635,7 +1635,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
       g.gain.setValueAtTime(.0001,t0+t);g.gain.exponentialRampToValueAtTime(.35,t0+t+.02);g.gain.exponentialRampToValueAtTime(.0001,t0+t+.3);o.start(t0+t);o.stop(t0+t+.32);});}catch(e){}}
   // o navegador só libera som depois do primeiro clique na página: no primeiro clique, toca se houver alerta sem dono
   document.addEventListener('pointerdown',function lib(){document.removeEventListener('pointerdown',lib);setTimeout(()=>{if(somLigado&&ALERTAS.some(a=>a.etapa==='novo'))bip();},150);});
-  const ROT_URG={humano:'⚑ Pede atendimento humano',reclamacao:'⚑ Reclamação · passar para a equipe',naosabe:'⚑ Gilberto passou para a equipe','alteração':'⚑ Pedido de alteração',cancelamento:'⚑ Pedido de cancelamento'};
+  const ROT_URG={comanda:'⚑ Lançar massagem na comanda',humano:'⚑ Pede atendimento humano',reclamacao:'⚑ Reclamação · passar para a equipe',naosabe:'⚑ Gilberto passou para a equipe','alteração':'⚑ Pedido de alteração',cancelamento:'⚑ Pedido de cancelamento'};
   const minDesde=d=>{const m=Math.max(0,Math.round((Date.now()-d)/6e4));return m<1?'agora':m+' min';};
   let somLigado=true,silencioIni=false;
   function novoAlerta(a){a.etapa='novo';a.hora=agora();a.desde=Date.now();ALERTAS.push(a);a.c.urg={tipo:a.tipo,desde:a.desde};a.c.status='aberto';a.c.naoLidas=(a.c.naoLidas||0)+1;
@@ -1732,13 +1732,17 @@ body.sem-rolagem .principal{padding-block-end:12px}
     box.append(el('div',{class:'al-cab'},el('b',{text:ab.length+(ab.length>1?' pedidos aguardando':' pedido aguardando')+' a equipe'}),
       el('small',{text:'De plantão: '+plantao()+' (CRM com som, notificação no celular e WhatsApp). Sem ninguém assumir em 10 min, o alerta repete para Márcio, Jagles e Ricardo.'}),
       el('div',{class:'al-acoes'},el('button',{class:'btn-mini',type:'button',text:'🔊 Testar som',onclick:()=>{bip();}}),el('button',{class:'btn-mini',type:'button',text:somLigado?'Silenciar som':'Ligar som',onclick:()=>{somLigado=!somLigado;renderAlertas();}}),el('button',{class:'btn-mini',type:'button',text:'Minimizar',onclick:()=>{painelAlertas=false;renderAlertas();}}))));
-    const ordem={reclamacao:0,cancelamento:1,humano:2,naosabe:3,'alteração':4};
+    const ordem={reclamacao:0,cancelamento:1,humano:2,naosabe:3,'alteração':4,comanda:5};
     ab.slice().sort((a,z)=>(a.etapa!=='novo')-(z.etapa!=='novo')||ordem[a.tipo]-ordem[z.tipo]).forEach(a=>{
       const silbeck=a.tipo==='alteração'||a.tipo==='cancelamento';
       const abrir=()=>{convSel=a.c.id;a.c.naoLidas=0;document.querySelector('[data-vista="conversas"]').click();renderInbox();};
       box.append(el('div',{class:'al-item'},el('span',{class:'al-tipo',text:ROT_URG[a.tipo].replace('⚑ ','')}),el('b',{text:a.c.nome+' · '+a.hora+' · '+CANAL[a.c.canal]}),a.x?el('span',{text:a.x[0]}):null,el('span',{class:'lat-txt',text:a.info}),
         a.escalado&&!a.quem?el('span',{class:'tipo t-erro',text:'Escalado há 10 min sem dono · Márcio, Jagles e Ricardo avisados'}):null,
         a.quem?el('span',{class:'tipo t-util',text:a.quem+(silbeck?' está fazendo no Silbeck':' assumiu a conversa')}):null,
+        a.tipo==='comanda'?el('div',{class:'acoes-res'},
+          el('button',{class:'btn-mini resolver',type:'button',text:'✓ Lançado na comanda',onclick:()=>{a.etapa='fim';const c=a.c;c.urg=null;if(c.massagem){c.massagem.lancado=true;if(c.massagem.tarefa)c.massagem.tarefa.f=true;}
+            c.msgs.push(['sis','Massagem lançada na comanda do hóspede por '+(plantao().includes(',')?'Jagles':plantao())+' · tarefa concluída']);renderBoard();renderAlertas();renderInbox();toast('Lançamento registrado. Alerta resolvido.');}}),
+          el('button',{class:'btn-mini',type:'button',text:'Abrir conversa',onclick:abrir})):
         el('div',{class:'acoes-res'},
           silbeck?(a.etapa==='novo'?el('button',{class:'btn-mini',type:'button',text:'Assumir e fazer no Silbeck',onclick:()=>{a.etapa='exec';a.quem=plantao().includes(',')?'Jagles':plantao();a.c.urg.quem=a.quem;a.assumido=Date.now();renderAssumir();renderAlertas();renderInbox();toast('Jagles assumiu. O alerta sai do WhatsApp dos outros.');}}):
             el('button',{class:'btn-mini',type:'button',text:'Feito no Silbeck',onclick:()=>concluir(a)})):
@@ -2107,7 +2111,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
           c.msgs.push(['sis','📲 Natália respondeu no WhatsApp: “Confirmo” ✓']);
           c.msgs.push(['sis','CRM confirmou ao hóspede · tarefa criada: lançar R$ '+m.valor.toLocaleString('pt-BR')+' na comanda do hóspede (sistema de contas)']);
           c.msgs.push(['ia','Tudo certo! Sua massagem está confirmada: '+m.txt+'. O valor vai para a sua conta no hotel e é acertado no check-out. 🌿','agora','Resposta da parceira (botão “Confirmo”)']);
-          const l=c.lead&&leadPor(c.lead)||LEADS[0];if(l){if(!l.tags.includes('Massagem confirmada'))l.tags.push('Massagem confirmada');l.tarefas.push({t:'Lançar na comanda',d:'Massagem '+m.txt+' · R$ '+m.valor.toLocaleString('pt-BR')+' · lançar na conta do hóspede (sistema de comandas)',q:m.data+'T'+m.hora,r:'equipe',f:false});m.tarefa=l.tarefas[l.tarefas.length-1];renderBoard();}
+          const l=c.lead&&leadPor(c.lead)||LEADS[0];if(l){if(!l.tags.includes('Massagem confirmada'))l.tags.push('Massagem confirmada');l.tarefas.push({t:'Lançar na comanda',d:'Massagem '+m.txt+' · R$ '+m.valor.toLocaleString('pt-BR')+' · lançar na conta do hóspede (sistema de comandas) no dia do check-in',q:(l.entrada||m.data)+'T08:00',r:'equipe',f:false});m.tarefa=l.tarefas[l.tarefas.length-1];renderBoard();}
           faseMass('confirmado');pushCel('✓ Natália confirmou a massagem',c.nome+' · '+m.txt,'Lançar R$ '+m.valor.toLocaleString('pt-BR')+' na comanda do hóspede');if(somLigado)bip();
           renderInbox();toast('Natália confirmou. Hóspede avisado e tarefa "Lançar na comanda" criada.');}}),
         el('button',{class:'btn-mini',type:'button',text:'✕ Não posso',onclick:()=>{m.status='perguntando';c.msgs.push(['sis','Natália respondeu “Não posso” · o sistema perguntou a ela pelo WhatsApp: “Quais datas e horários você tem vaga? (8h, 9h, 10h, 14h, 15h ou 16h)”']);c.msgs.push(['ia','Deixa eu confirmar outro horário com a massoterapeuta e já te passo as opções 🙂','agora','Parceira recusou: aguardando as vagas dela']);renderChat();}}));
@@ -2119,7 +2123,8 @@ body.sem-rolagem .principal{padding-block-end:12px}
           c.massagem={...m,data:x.slice(0,10),hora:x.slice(-5),txt:m.tipo+' · '+fmtData(x.slice(0,10))+' às '+x.slice(-5),status:'aguardando'};
           c.msgs.push(['sis','Novo pedido enviado à Natália: “'+c.massagem.txt+' (horário que você indicou). Confirma?” [Confirmo] [Não posso]']);renderChat();}})));
       if(m.status==='confirmado')st.append(el('span',{class:'tipo '+(m.lancado?'t-livre':'t-erro'),text:m.lancado?'✓ Lançado na comanda do hóspede':'⚑ Lançar R$ '+m.valor.toLocaleString('pt-BR')+' na comanda do hóspede: pendente'}),
-        m.lancado?null:el('small',{text:'Se não for marcado até as 18h do dia da massagem, o alerta toca para o plantão; no dia do check-out, aparece na lista da recepção.'}),
+        m.lancado?null:el('small',{text:'No dia do check-in do hóspede (às 8h, ou na hora, se ele já estiver hospedado), o alerta toca no sino para a equipe lançar. No check-out, se ainda faltar, aparece na lista da recepção.'}),
+        m.lancado||m.alertou?null:el('button',{class:'btn-mini',type:'button',text:'Simular: chegou o dia do check-in',onclick:()=>{m.alertou=true;novoAlerta({tipo:'comanda',c,info:'Hóspede faz check-in hoje: lançar '+m.txt+' · R$ '+m.valor.toLocaleString('pt-BR')+' na conta dele (sistema de comandas)'});renderInbox();toast('Alerta no sino: lançar a massagem na comanda.');}}),
         m.lancado?null:el('button',{class:'btn-mini',type:'button',text:'Lançado na comanda',onclick:()=>{m.lancado=true;if(m.tarefa)m.tarefa.f=true;c.msgs.push(['sis','Massagem lançada na comanda do hóspede (sistema de contas) · tarefa concluída']);renderBoard();renderInbox();toast('Lançamento registrado.');}}));
       return el('div',{class:'res-hor'},st,m.status==='confirmado'?el('button',{class:'btn-mini',type:'button',text:'Novo pedido',onclick:()=>{c.massagem=null;renderLateral(c);}}):null);
     }
