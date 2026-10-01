@@ -105,7 +105,7 @@
         },
         "pessoas_aptas_combo": {
           "type": "integer",
-          "description": "Quantas pessoas do grupo têm 5 anos ou mais e pelo menos 1,15 m (0 se ninguém ou se não se sabe). A página mostra o combo só para elas."
+          "description": "Quantas pessoas do grupo podem fazer o combo (5 anos ou mais e pelo menos 1,15 m). Adultos contam como aptos, salvo se o cliente disser o contrário; criança sem altura informada não conta. 0 se ninguém. A página mostra o combo só para elas."
         },
         "frase_de_abertura": {
           "type": "string",
@@ -180,7 +180,7 @@
   },
   {
     "name": "gerar_cobranca",
-    "description": "Gera o link de pagamento do sinal (50% da reserva; o restante é pago no check-out) por Pix (Banco do Brasil) ou cartão de crédito em até 6x (link Cielo). Use logo depois de criar_reserva, na forma que o cliente escolheu, ou para mandar um novo link quando o prazo venceu e a reserva ainda está ativa. Devolve o link, o valor do sinal e o prazo-limite calculado pelo CRM (48 h; 2 h se o check-in for em até 3 dias; nunca depois do check-in). O CRM envia junto, sozinho, a política de cancelamento (resposta fixa) e registra o envio. O pagamento é sempre pelo link: nunca peça nem aceite número de cartão no chat.",
+    "description": "Gera o link de pagamento por Pix (Banco do Brasil) ou cartão de crédito (link Cielo), em uma das 4 opções do hotel (P61): 50% de sinal no cartão em até 3x · 100% no cartão em até 6x sem juros · Pix de 50% · Pix de 100%. Com sinal, o restante é pago no check-out. O sinal no cartão pode ser dividido em 2 cartões (2 links). Use logo depois de criar_reserva, na forma que o cliente escolheu, ou para mandar um novo link quando o prazo venceu e a reserva ainda está ativa. Devolve o(s) link(s), o valor e o prazo-limite calculado pelo CRM (48 h; 2 h se o check-in for em até 3 dias; nunca depois do check-in). O CRM envia junto, sozinho, a política de cancelamento (resposta fixa) e registra o envio. O pagamento é sempre pelo link: nunca peça nem aceite número de cartão no chat.",
     "strict": true,
     "input_schema": {
       "type": "object",
@@ -194,11 +194,28 @@
             "pix",
             "cartao"
           ]
+        },
+        "percentual": {
+          "type": "integer",
+          "enum": [
+            50,
+            100
+          ],
+          "description": "50 = sinal (cartão até 3x ou Pix); 100 = valor total (cartão até 6x ou Pix)."
+        },
+        "cartoes": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ],
+          "description": "Só para cartão com percentual 50: em quantos cartões o cliente quer dividir o sinal. O CRM divide o valor e gera um link por cartão."
         }
       },
       "required": [
         "reserva_id",
-        "forma"
+        "forma",
+        "percentual"
       ],
       "additionalProperties": false
     }
@@ -301,7 +318,7 @@
   },
   {
     "name": "agendar_atividade",
-    "description": "Reserva boia cross, arvorismo ou combo (com horário vindo de consultar_horarios_atividade) ou decoração especial (sem horário; só com 3 dias ou mais de antecedência da data). Use SOMENTE depois de o cliente aceitar explicitamente. O CRM recusa participante com menos de 5 anos ou menos de 1,15 m, horário sem vaga e decoração com menos de 3 dias; registra no card e cria a cobrança ou o lançamento na conta. Antes, confirme com o cliente que nenhum participante é gestante e lembre que não se participa depois de ingerir álcool.",
+    "description": "Reserva boia cross, arvorismo ou combo (com horário vindo de consultar_horarios_atividade) ou decoração especial (sem horário; só com 3 dias ou mais de antecedência da data). Use SOMENTE depois de o cliente aceitar explicitamente. O CRM recusa participante com menos de 5 anos ou menos de 1,15 m, horário sem vaga e decoração com menos de 3 dias; registra no card e cria a cobrança ou o lançamento na conta. Antes, confirme com o cliente que nenhum participante é gestante e lembre que não se participa depois de ingerir álcool. Boia cross e arvorismo têm vagas limitadas: sempre consulte antes. Cada atividade agendada gera uma tarefa \"agendar atividade\" para a equipe (P71a): enquanto o sistema de atividades não estiver ligado ao CRM, é a equipe que confirma a vaga lá; diga ao cliente que o horário fica confirmado pela equipe.",
     "strict": true,
     "input_schema": {
       "type": "object",
@@ -593,12 +610,16 @@
             "desconto_insistente",
             "problema_pagamento",
             "dado_sensivel_recebido",
-            "pedido_especial_outro"
+            "pedido_especial_outro",
+            "comprovante_recebido",
+            "reserva_urgente",
+            "atividade_escolhida",
+            "seguranca"
           ]
         },
         "prioridade": {
           "type": "integer",
-          "description": "1 (mais alta) a 5. Referência: 4 para fora da base, exceção, acessibilidade, desconto insistente e pedido especial; 5 para alteração."
+          "description": "1 (mais alta) a 5. Referência: 4 para fora da base, exceção, acessibilidade, desconto insistente e pedido especial; 5 para alteração. Reserva urgente (check-in em até 3 dias): 3. Comprovante recebido: 4. Atividade escolhida: 5 (o CRM já cria sozinho ao agendar)."
         },
         "resumo": {
           "type": "string",

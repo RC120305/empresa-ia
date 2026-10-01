@@ -548,7 +548,7 @@ De `silbeck/mapa-ids.md`: pensão das reservas diretas, tarifário direto (e de 
 | `enviar_midias` | `etiquetas[]` ou `midia_ids[]`, `quantidade` (≤ 3) | Envia fotos/vídeos do banco | Só mídias ativas e revisadas |
 | `registrar_consentimento` | `resposta` (sim/não) | Grava consentimento de marketing | Pergunta 1 vez, ao enviar o orçamento (G8) |
 | `criar_reserva` | `opcao_id`, `titular_nome`, `email`, `acompanhantes[]`, `agrupamento` (uma reserva / separadas) | Reconfere vaga e preço, cria no Silbeck, envia a política de cancelamento (resposta fixa) | Só após **aceite explícito** registrado; recotação; grupos > 10 bloqueado; agência bloqueado; nunca para hospedado |
-| `gerar_cobranca` | `reserva_id`, `meio` (pix/cartao), `parcelas?` (≤ 6) | Cobrança com prazo = prazo da reserva | Só com reserva criada e conferida; valor = 50% calculado pelo servidor |
+| `gerar_cobranca` | `reserva_id`, `forma` (pix/cartao), `percentual` (50/100), `cartoes?` (1/2) | Cobrança com prazo = prazo da reserva | Só com reserva criada e conferida; valor calculado pelo servidor; cartão: 50% até 3x, 100% até 6x (P61) |
 | `consultar_horarios_atividade` | `produto`, `data`, `pessoas` | Horários com vaga | Regras de idade/altura |
 | `reservar_atividade` | `produto`, `data`, `horarios[]`, `participantes[]` | Reserva no sistema interno | Só BOIA, ARVO, COMBO, DECO (P39); DECO ≥ 3 dias; 1 oferta por conversa |
 | `pedir_horario_parceira` | `servico`, `data`, `horario` | Modelo com botões para a parceira | Fluxo 2b de `upsell-catalogo.md` |
