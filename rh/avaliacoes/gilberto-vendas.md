@@ -65,3 +65,32 @@
 | "Está caro" → incluso + parcelamento | **Primeiro investiga** ("o que pesou mais: o valor total ou a comparação com outro lugar?") e usa **nota pública com fonte**; abre pelo valor, não pelo "não" |
 | Sem limite de tamanho | Cada balão com **até ~50 palavras**; no máximo 3 balões |
 | "A equipe confere pela manhã" / "eu chamo" | Ser exato: "a equipe volta às 7h30 do próximo dia de atendimento" **[confirmar se há atendimento no domingo]**; à noite, não oferecer "eu chamo agora" |
+
+## v1.1 aplicada (aprovada pelo dono em 2026-10-01)
+v1 guardada em `rh/avaliacoes/versoes/gilberto-vendas-v1.md`.
+
+**Mudanças:**
+- fecha com escolha;
+- combo no orçamento para famílias e grupos;
+- usa o roteiro de diferenciais com o custo-benefício;
+- investiga o "está caro" e abre pelo valor;
+- balões de até ~50 palavras;
+- expediente de todos os dias e exatidão fora do horário ("a equipe volta às 7h30"; à noite, sem "chamo agora").
+
+**Reteste (simulado, avaliador independente):**
+- Na 1ª tentativa, pela ferramenta Agent com o tipo `gilberto-vendas`, a resposta ainda seguia a v1: a definição do agente fica guardada na sessão.
+- O reteste valido foi feito com o corpo da v1.1.
+
+| Tarefa | Humano | Rigor | Venda | Processo | Média | v1 |
+|---|---|---|---|---|---|---|
+| T1. Família | 4 | 5 | 4 | 5 | **4,5** | 4,00 |
+| T2. Caro + acessibilidade | 4 | 5 | 4 | 5 | **4,5** | 4,25 |
+| T3. Não retestado (a mudança é só de horário e de "chamo agora") | | | | | 4,25 | 4,25 |
+| **Média** | | | | | **4,42** | 4,17 |
+
+**Para a próxima rodada (ainda sem ajuste):**
+- naturalidade: evitar aberturas repetidas ("Sobre o…/Sobre o…") e frases de folheto;
+- em T1, não misturar o combo com a pergunta de fechamento no mesmo balão;
+- em T2, depois de uma notícia delicada, dar uma pausa antes da pergunta comercial.
+
+As notas públicas citadas nas notas internas têm fonte em `hotel-cabanas.md` §9.
