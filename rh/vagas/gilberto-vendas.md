@@ -87,5 +87,6 @@ Dono. Supervisão do dia a dia: Jagles (assume conversas).
 
 ## 11. Informações a confirmar com o dono
 - Aprovar a vaga e a exceção de envio de mensagens no CRM (P3).
-- (Opcional) Referências de vendas que você admira (livros, cursos, canais do YouTube) para a formação via `/aprender-youtube`.
+- ✅ Referência de vendas do dono: **Eduardo Tevah**. Caderno em `contexto/aprendizados/2026-10-01-eduardotevah-vendas-chat.md` (10 vídeos; urgência falsa e desconto ficam de fora). Entra na formação do Gilberto quando a vaga for aprovada.
+- Aprovar o roteiro de diferenciais (rascunho no caderno, seção 4) e decidir se o orçamento terá validade fixa.
 - (Opcional) Aprovar o banco de objeções do Marketing (`marketing/2026-09-banco-de-objecoes.md`) como material de formação.
