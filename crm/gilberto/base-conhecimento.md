@@ -35,7 +35,7 @@
 - **P:** Tem late check-out?
   R: Não liberamos late check-out, mas as malas ficam no guarda-volumes e você pode continuar aproveitando o hotel.
 - **P:** Quero mudar as datas da reserva.
-  R: Vou verificar a disponibilidade para as novas datas. A troca de data é sem custo até **30 dias antes do check-in na alta temporada** e **15 dias antes na baixa**. Fora desse prazo a data ainda pode mudar, mas a diferença de valor não é devolvida: vira crédito para consumo, que pode ser usado uma vez. A equipe confirma no sistema e eu te aviso assim que estiver feito. *(P63b/P63c, dono 01/10.)* *(Fluxo do CRM: alerta de alteração para a equipe; a confirmação só sai depois de alterado no Silbeck. Fora do horário, 7h30 às 17h: "a equipe confere pela manhã".)*
+  R: Vou verificar a disponibilidade para as novas datas. A troca de data é sem custo até **30 dias antes do check-in na alta temporada** e **15 dias antes na baixa**. Fora desse prazo a data ainda pode mudar, mas a diferença de valor não é devolvida: vira crédito para uma próxima hospedagem, que pode ser usado uma vez. A equipe confirma no sistema e eu te aviso assim que estiver feito. *(P63b/P63c, dono 01/10.)* *(Fluxo do CRM: alerta de alteração para a equipe; a confirmação só sai depois de alterado no Silbeck. Fora do horário, 7h30 às 17h: "a equipe confere pela manhã".)*
 - **P:** Tem guarda-volumes?
   R: Sim, guardamos as malas antes do check-in e depois do check-out, sem custo.
 
@@ -195,7 +195,7 @@
 - **Pagamento (P61):** 4 opções (50% no cartão até 3x · 100% no cartão até 6x · Pix 50% · Pix 100%); sinal pode ser dividido em 2 cartões.
 - **Prazo do link (P62):** 48 h; 2 h se o check-in for em até 3 dias.
 - **Cancelamento (P63a):** 30+ dias integral · 15 a 29 dias 50% do valor pago · menos de 15 dias sem reembolso.
-- **Troca de data (P63b/c):** grátis até 30 dias antes na alta e 15 dias antes na baixa; fora do prazo, a diferença vira crédito para uso único.
+- **Troca de data (P63b/c):** grátis até 30 dias antes na alta e 15 dias antes na baixa; fora do prazo, a diferença vira crédito **só para hospedagem**, de uso único.
 - **Chegada cedo (P64):** quarto às 15h; lazer liberado a partir das 9h, com toalhas.
 - **Decoração (P65):** 3 dias de antecedência; nenhuma grátis. **Aniversário (P66):** sem cortesia; oferecer a decoração.
 - **Cofre (P67):** não há.
@@ -204,4 +204,5 @@
 - **Agência parceira (P70):** pode indicar a Ecotrip para passeios fora do hotel; contato (67) 99341-4734.
 - **Boia cross e arvorismo (P71):** vários horários por dia, vagas limitadas, consultar antes; o Gilberto reserva quando o cliente escolhe e o CRM abre alerta para a equipe. Não hóspede pode fazer comprando o voucher numa agência oficial (ex.: Ecotrip), com antecedência. Combo R$ 170 vale.
 - **Fatos (P72):** não há café da tarde; quartos Superior só no andar de cima (térreo é Standard); a cama da Cabana Casal não separa; o Conjugado tem 2 banheiros; quem sai antes do previsto paga o pacote inteiro.
-- **Telefone (P73):** (67) 99110-7635.
+- **Telefone (P73):** (67) 99110-7635, para **ligação comum de telefone** (não atende ligação pelo WhatsApp).
+- **Camas (dono, 01/10):** Standard e Superior duplo/triplo: cama de casal queen + 1 de solteiro (Standard a confirmar se tem 2 queen); Standard e Superior quádruplo: 1 casal queen + 2 solteiro. Pedido "um casal e dois solteiros" cabe no quádruplo.

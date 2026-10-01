@@ -21,8 +21,8 @@
 | **Bangalô** | 40 m² | 2 a 4 pessoas (casal + 2 solteiro); aceita crianças | Alvenaria **elevada do chão**, **não divide paredes** com outra acomodação, **varanda privativa** com vista para a natureza, mesa, cadeiras e rede; garagem em frente; TV 40" |
 | **Bangalô Especial** | 45 m² | **Até 4 pessoas** (2 camas de casal **king**); aceita crianças; indicado para **famílias com filhos** | Alvenaria **elevada do chão**, **não divide paredes** com outra acomodação, **ampla varanda privativa** com vista para a natureza, mesa, cadeiras, **rede e banco**; garagem em frente; TV 40" (informado pelo dono em 2026-09-26) |
 | **Apartamento Conjugado** | 55 m², em dois pisos | Até 5 pessoas; indicado para famílias com filhos | Térreo com 3 camas de solteiro e banheiro; em cima, suíte queen com **varanda com vista para a natureza** |
-| **Apartamento Superior** | 25 m² | **Duplo/triplo superior: 2 a 3 pessoas · Quádruplo superior: até 4 pessoas** (dono, 30/09/2026) | Em blocos; espaço mais amplo que o standard |
-| **Apartamento Standard** | 20 a 25 m² | 2 a 4 pessoas | O mais econômico; em blocos; estacionamento em frente |
+| **Apartamento Superior** | 25 m² | **Duplo/triplo superior: 2 a 3 pessoas · Quádruplo superior: até 4 pessoas** (dono, 30/09/2026) | Em blocos; espaço mais amplo que o standard; **só no andar de cima**. **Camas (dono, 01/10/2026):** duplo/triplo = 1 casal queen + 1 solteiro; quádruplo = 1 casal queen + 2 solteiro |
+| **Apartamento Standard** | 20 a 25 m² | 2 a 4 pessoas | O mais econômico; em blocos; térreo; estacionamento em frente. **Camas (dono, 01/10/2026):** duplo/triplo = camas de casal queen + 1 solteiro (dono escreveu "2 camas de casal queen e uma de solteiro"; a confirmar se são 2 queen); quádruplo = 1 casal queen + 2 solteiro |
 
 **Itens em todas as acomodações:** Smart TV a cabo, ar-condicionado split inverter **quente e frio**, aquecimento **solar e a gás** nas duchas, secador, frigobar, amenities (shampoo, condicionador, sabonete), Wi-Fi, armário, bancada de trabalho, roupa de cama e toalhas.
 - **Toalhas dobradas em forma de bichos** (ex.: cisnes) sobre a cama: **arrumação padrão** do hotel (confirmado pelo dono em 2026-09-26). Pétalas, rosa e plaquinha "LOVE" que aparecem em algumas fotos: **são da decoração especial (opcional)**, confirmado pelo dono em 2026-09-27. Legenda ou anúncio com essas fotos sempre indica "decoração especial (opcional)".
@@ -88,7 +88,7 @@
 - **Pagamento:** 50% antecipado; **Pix ou cartão de crédito (até 6x)**; no hotel também débito. **Não aceita depósito bancário** (dono, 30/09/2026) **nem boleto.**
 - **Estadia mínima / pacotes (confirmado pelo dono em 2026-09-27):** só nos **pacotes de Réveillon e de Carnaval, com 4 noites**. Pacote de Réveillon 2026/27: **29/12 a 02/01** (dono, na Central, 27/09). Nos demais feriados não há estadia mínima. Valores e o que o pacote inclui: [a confirmar com o dono].
 - **Cancelamento:** reembolso integral com 30 dias ou mais de antecedência; 50% do valor pago de 15 a 29 dias; sem reembolso com menos de 15 dias (dono, 01/10/2026, P63a).
-- **Troca de data:** sem custo até 30 dias antes na alta temporada e 15 dias antes na baixa; fora do prazo, a diferença não é devolvida e vira crédito para uso único (P63b/c).
+- **Troca de data:** sem custo até 30 dias antes na alta temporada e 15 dias antes na baixa; fora do prazo, a diferença não é devolvida e vira crédito **só para hospedagem**, de uso único (P63b/c; dono, 01/10/2026).
 - **Pagamento:** 50% no cartão até 3x, 100% no cartão até 6x, Pix 50% ou Pix 100%; o sinal pode ser dividido em 2 cartões (P61). Uma pessoa paga o mesmo que duas (P69c).
 - **Chegada antes das 15h:** quarto só às 15h; lazer liberado a partir das 9h, com toalhas para piscina e rios (P64). Não há café da tarde (P72a). Saída antecipada paga o pacote inteiro (P72e). Reservas feitas por agência ou canal online seguem a política deles.
 - **Não há:** day use, espaço para eventos, transfer próprio (a equipe indica quem faça), desconto para terceira idade, oferta para aniversariantes, tarifa para longa estadia nem convênio com Bancorbrás.
@@ -102,7 +102,7 @@
 ## 11. Links e contatos oficiais
 - **Reservas (motor):** https://sbreserva.silbeck.com.br/hotelcabanas (conferido pelo dono no celular em 28/09/2026)
 - **Site oficial (usar em anúncios):** **https://hotelcabanas.com.br/** (confirmado pelo dono em 2026-09-26) · Outro endereço informado, que **não** deve ser usado em anúncios: hotelcabanasbonito.ai.studio
-- **WhatsApp de reservas:** +55 67 99117-1648 · **Telefone:** +55 67 99110-7635 · **E-mail:** contato@hotelcabanas.com.br
+- **WhatsApp de reservas:** +55 67 99117-1648 · **Telefone:** +55 67 99110-7635 (recebe **ligação comum de telefone**, não ligação pelo WhatsApp; dono, 01/10/2026) · **E-mail:** contato@hotelcabanas.com.br
   - ⚠️ **(dono, 29/09/2026):** o 99117-1648 é um **WhatsApp Business comum, fora da Asksuite**; o número oficial na Asksuite (API da Meta) é o **99110-7635**. Qual número os materiais devem divulgar está em decisão no projeto do CRM (`crm/entrevista.md`); até lá, manter o 99117-1648.
 - **Instagram:** https://www.instagram.com/hotelcabanasbonito/ · **Facebook:** https://www.facebook.com/hotelcabanasms · **YouTube:** https://www.youtube.com/@hotelcabanasbonitoms
 - **Bio do Instagram (dono, 28/09/2026):** um **Linktree** com site, motor de reservas, WhatsApp, tour virtual e acomodações. Nas legendas, "link na bio" leva a ele. Link clicável dentro do Instagram orgânico só existe na bio, na figurinha de link dos stories e no botão de WhatsApp do perfil.
