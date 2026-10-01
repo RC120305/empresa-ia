@@ -360,6 +360,16 @@ button,input,select{font:inherit;color:inherit}
 .dn-erro{font-size:13px;color:var(--cor-erro)}
 .dn-existe{font-size:13px;padding:8px 10px;border-radius:var(--r-md);background:var(--cor-alerta-suave);color:var(--cor-alerta);display:flex;flex-direction:column;gap:6px}
 .dn-cat{font-size:12px}
+.dlg-peq{width:min(520px,100%)}
+.dr-corpo{padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.dr-op{font-weight:600;color:var(--cor-texto)}
+.dr-modo{border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.dr-modo legend{font-size:13px;font-weight:600;color:var(--cor-texto-sec);padding:0 4px}
+.dr-modo label{display:flex;gap:8px;align-items:flex-start;font-size:14px;cursor:pointer}
+.dr-modo small{display:block;color:var(--cor-texto-sec);font-size:12px}
+.dr-dica{margin:0}
+.set-campo{max-width:420px;display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--cor-texto-sec)}
+.set-campo select,.set-tab select,.set-tab input{font:inherit;font-size:14px;border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:6px 8px;background:var(--cor-superficie);color:var(--cor-texto)}
 .dn-consent{display:flex;gap:8px;align-items:flex-start;font-size:13px}
 .wa-prev{background:#E5DDD5;border-radius:var(--r-lg);padding:18px;min-height:220px;display:flex;align-items:flex-start;justify-content:flex-end}
 .wa-balao{background:#DCF8C6;color:#1f1f1f;border-radius:10px 0 10px 10px;padding:10px 12px;font-size:14px;line-height:1.45;max-width:92%;white-space:pre-wrap;box-shadow:0 1px 1px rgba(0,0,0,.15)}
@@ -899,6 +909,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
         <button role="tab" aria-selected="false" data-sub="con">Questionário</button>
         <button role="tab" aria-selected="false" data-sub="bib">Biblioteca de respostas</button>
         <button role="tab" aria-selected="false" data-sub="reg">Regras</button>
+        <button role="tab" aria-selected="false" data-sub="set">Setores</button>
       </div>
       <button class="btn btn-editar" type="button" id="bt-teste" aria-expanded="true" aria-controls="aj-teste">✦ Testar o agente</button>
       </div>
@@ -949,11 +960,20 @@ body.sem-rolagem .principal{padding-block-end:12px}
         <div class="cartao rolagem"><table class="bib"><thead><tr><th>Pergunta</th><th>Resposta</th><th>Usos</th><th>Alterada</th><th></th></tr></thead><tbody id="bib-corpo"></tbody></table></div>
       </div>
 
+      <div data-subpainel="set" hidden style="display:flex;flex-direction:column;gap:12px">
+        <div class="cartao bloco set-intro"><h3>Pedidos dos hóspedes: tudo passa pela recepção</h3>
+          <p class="lat-txt">Decisão do dono (D12): quando um hóspede hospedado pede algo (chuveiro, toalha, lanche, horário de atividade), o Gilberto ou a equipe registra o pedido e ele vai <b>para a recepção</b>, que repassa ao setor certo. O hóspede recebe a confirmação de que a recepção já está cuidando, sem promessa de minutos.</p>
+          <label class="campo set-campo">Quem recebe os pedidos<select id="set-dest"><option>Recepção (alerta no CRM + som)</option><option>Recepção (alerta no CRM + WhatsApp interno da recepção)</option></select></label>
+        </div>
+        <div class="cartao rolagem"><table class="bib set-tab"><thead><tr><th>Tipo de pedido</th><th>Exemplos</th><th>Vai para</th><th>Retorno ao hóspede</th><th></th></tr></thead><tbody id="set-corpo"></tbody></table></div>
+        <div><button class="btn btn-editar" type="button" id="set-novo">+ Novo tipo de pedido</button></div>
+        <p class="lat-txt">Reclamação não é pedido: vira alerta de prioridade 1 para Jagles, Márcio e Ricardo (aba Regras).</p>
+      </div>
       <div data-subpainel="reg" hidden>
         <div class="regras">
           <div class="cartao bloco"><h3>Quando o agente atende sozinho</h3>
             <div class="horas"><label for="h-ini">Das<input type="time" id="h-ini" value="17:00"></label><label for="h-fim">Até<input type="time" id="h-fim" value="07:30"></label></div>
-            <label for="r-fds"><input type="checkbox" id="r-fds" checked>Também sábado e domingo o dia todo</label>
+            <label for="r-fds"><input type="checkbox" id="r-fds">Também sábado e domingo o dia todo <small>(a equipe atende todos os dias, 7h30 às 17h)</small></label>
             <label for="r-fila"><input type="checkbox" id="r-fila">Durante o dia, responder se ninguém atender em 5 minutos</label>
           </div>
           <div class="cartao bloco"><h3>Sempre passar para uma pessoa</h3>
@@ -1015,6 +1035,21 @@ body.sem-rolagem .principal{padding-block-end:12px}
     <div class="dlg-col"><span class="rotulo">Prévia da mensagem</span><div class="wa-prev"><div class="wa-balao" id="dn-prev"></div></div></div>
   </div>
   <div class="dlg-rodape"><button class="btn btn-editar" type="button" id="dn-cancelar">Cancelar</button><button class="btn btn-destaque" type="button" id="dn-enviar" disabled>Enviar mensagem</button></div>
+</div></div>
+
+<div class="dlg-fundo" id="dlg-res" hidden><div class="dlg dlg-peq" role="dialog" aria-modal="true" aria-labelledby="dr-tit">
+  <div class="dlg-cab"><h2 id="dr-tit">Confirmar a reserva</h2><button class="fechar" type="button" id="dr-fechar" aria-label="Fechar"><span>✕</span></button></div>
+  <div class="dlg-col dr-corpo">
+    <p class="dr-op" id="dr-op"></p>
+    <label class="campo">Quantas acomodações nesta opção?<select id="dr-n"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+    <fieldset class="dr-modo" id="dr-modo" hidden><legend>Mais de uma acomodação: como fica a reserva?</legend>
+      <label><input type="radio" name="dr-modo" value="uma" checked> <span><b>Tudo em um nome só</b><small>1 reserva no Silbeck com todas as acomodações e 1 cobrança de sinal</small></span></label>
+      <label><input type="radio" name="dr-modo" value="sep"> <span><b>Reservas separadas</b><small>1 reserva por titular (ex.: uma por família), cada uma com o seu sinal</small></span></label>
+    </fieldset>
+    <div id="dr-nomes"></div>
+    <p class="dlg-aviso dr-dica">Com mais de uma acomodação, o Gilberto pergunta ao cliente antes de reservar: “Fica tudo em um nome só ou cada família prefere a sua reserva?” (G3).</p>
+  </div>
+  <div class="dlg-rodape"><button class="btn btn-editar" type="button" id="dr-cancelar">Cancelar</button><button class="btn btn-destaque" type="button" id="dr-ok">Criar reserva no Silbeck</button></div>
 </div></div>
 
 <script>
@@ -1361,7 +1396,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
       msgs:[['cli','Boa noite! Vocês fazem um valor especial para um grupo de 12 pessoas de 10 a 13 de março?','01:12'],['ia','Ótima pergunta, Thiago! Grupos são com a nossa equipe, que responde a partir das 7h30. Já deixei o seu pedido anotado e amanhã cedo alguém fala com você. 🌿','01:14','Regra: grupo acima de 8 pessoas → passar para a equipe'],['sis','Passada para a equipe às 01:14 · aviso para Jagles às 7h30 · repete para Márcio, Jagles e Ricardo se ninguém responder']]},
     {id:4,lead:null,nome:'Paula R. · Bangalô 3',canal:'w99117',origem:'site',origemDet:'Hospedada agora (Silbeck: estadia 28/09 a 30/09)',etapa:'hosp',perfil:'Casal',agente:true,resp:'agente',status:'aberto',naoLidas:0,hora:'20:58',janela:true,hospedado:'Bangalô 3 · sai em 30/09',
       reservas:[['Bangalô 3 · 28 a 30/09','Hospedada · pago','t-livre']],pagamentos:[],
-      msgs:[['cli','Oi, o chuveiro do bangalô não está esquentando','20:55'],['ia','Poxa, Paula, sinto muito! Já avisei a manutenção e alguém passa aí em alguns minutos. Se precisar de mais alguma coisa, é só chamar. 🌿','20:56','Regra: hóspede hospedado → pedido para o setor · Silbeck: GET Setor (Manutenção)'],['sis','Chamado aberto para Manutenção: “Chuveiro sem água quente · Bangalô 3” · plantão avisado']]},
+      msgs:[['cli','Oi, o chuveiro do bangalô não está esquentando','20:55'],['ia','Poxa, Paula, sinto muito! Já passei para a recepção, que está acionando a manutenção agora. Te aviso assim que alguém estiver a caminho. 🌿','20:56','Regra (D12): hóspede hospedado → pedido para a recepção, que repassa ao setor'],['sis','Pedido enviado à recepção: “Chuveiro sem água quente · Bangalô 3” → Manutenção · alerta com som na recepção']]},
     {id:5,lead:4,nome:'Ecotur Agência',canal:'w99110',origem:'ag',origemDet:'Agência Ecotur (link rastreável AG-ECOTUR)',etapa:'atend',perfil:'Agência',agente:false,resp:'jagles',status:'aberto',naoLidas:0,hora:'18:55',janela:true,
       reservas:[],pagamentos:[],
       msgs:[['cli','Boa tarde! Temos um grupo de 8 pax para 10 a 13/03. Podem mandar proposta com a comissão?','18:40'],['eq','Boa tarde! Mando ainda hoje, com a comissão de 10%.','18:55','Jagles']]},
@@ -1546,19 +1581,37 @@ body.sem-rolagem .principal{padding-block-end:12px}
     else if(/^Reservado · pago|^Reservado · alterado/.test(x[1]))ac.push(el('button',{class:'btn-mini',type:'button',text:'Pedir alteração',onclick:()=>pedido(c,x,'alteração')}),el('button',{class:'btn-mini',type:'button',text:'Pedir cancelamento',onclick:()=>pedido(c,x,'cancelamento')}));
     return el('div',{class:'lat-card'},el('b',{text:x[0]}),el('span',{class:'tipo '+x[2],text:x[1]}),ac.length?el('div',{class:'acoes-res'},ac):null);
   }
-  function aceitar(c,x){
-    const val=+(x[1].match(/R\$ ([\d.]+)/)||[0,'1480'])[1].replace(/\./g,'');const sinal=Math.round(val/2);const n='#'+(++numRes);
+  let resCtx=null;
+  function aceitar(c,x){resCtx={c,x};$('dr-op').textContent=x[0]+' · '+x[1].replace('Orçamento enviado · ','');$('dr-n').value='1';$('dr-modo').hidden=true;
+    document.querySelector('input[name=dr-modo][value=uma]').checked=true;desenharNomes();$('dlg-res').hidden=false;$('dr-n').focus();}
+  function desenharNomes(){const n=+$('dr-n').value,sep=document.querySelector('input[name=dr-modo]:checked').value==='sep';$('dr-modo').hidden=n<2;
+    const box=$('dr-nomes');box.textContent='';const tot=n>1&&sep?n:1;
+    for(let i=0;i<tot;i++)box.append(el('label',{class:'campo'},tot>1?'Titular da reserva '+(i+1):'Titular da reserva',el('input',{type:'text',class:'dr-nome',value:i===0&&resCtx?resCtx.c.nome:'',placeholder:'Nome completo do titular'})));
+    $('dr-ok').textContent=tot>1?'Criar '+tot+' reservas no Silbeck':'Criar reserva no Silbeck';}
+  $('dr-n').addEventListener('change',desenharNomes);document.querySelectorAll('input[name=dr-modo]').forEach(i=>i.addEventListener('change',desenharNomes));
+  const fecharRes=()=>{$('dlg-res').hidden=true;resCtx=null;};$('dr-fechar').addEventListener('click',fecharRes);$('dr-cancelar').addEventListener('click',fecharRes);
+  $('dlg-res').addEventListener('click',e=>{if(e.target.id==='dlg-res')fecharRes();});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('dlg-res').hidden)fecharRes();});
+  $('dr-ok').addEventListener('click',()=>{const nomes=[...document.querySelectorAll('.dr-nome')].map(i=>i.value.trim());
+    if(nomes.some(v=>!v)){toast('Preencha o nome de cada titular.');return;}
+    const n=+$('dr-n').value,{c,x}=resCtx;fecharRes();criarReservas(c,x,n,nomes);});
+  function criarReservas(c,x,n,nomes){
+    const val=+(x[1].match(/R\$ ([\d.]+)/)||[0,'1480'])[1].replace(/\./g,'');
     c.reservas.forEach(y=>{if(y!==x&&/^Orçamento enviado/.test(y[1])){y[1]=y[1].replace('Orçamento enviado','Opção não escolhida');y[2]='t-livre';}});
-    x[1]='Reserva '+n+' criada no Silbeck · aguardando pagamento · vence em 24 h';x[2]='t-mkt';
-    c.msgs.push(['sis','Silbeck: vaga conferida (Disponibilidade) e reserva '+n+' criada (POST reserva). Titular, e-mail e acompanhantes confirmados com o cliente.']);
-    c.pagamentos.push(['Pix BB · R$ '+sinal.toLocaleString('pt-BR')+' (sinal de 50%)','Aguardando · vence em 24 h, junto com a reserva','t-mkt']);
-    c.msgs.push(['ia','Reserva feita! 🌿 Para garantir, o sinal é de R$ '+sinal.toLocaleString('pt-BR')+' (50%). Te mandei o Pix aqui embaixo, válido por 24 h. Segue também nossa política de cancelamento.',agora(),'Silbeck: POST reserva '+n+' · Biblioteca: “Política de cancelamento” (resposta fixa)']);
+    const nums=nomes.map(()=>'#'+(++numRes));const parte=Math.round(val/nomes.length),sinal=Math.round(parte/2);
+    const acs=n>1?' · '+n+' acomodações':'';
+    if(nomes.length===1){x[1]='Reserva '+nums[0]+' criada no Silbeck'+acs+' · titular '+nomes[0]+' · aguardando pagamento · vence em 24 h';x[2]='t-mkt';}
+    else{x[1]=nomes.length+' reservas separadas criadas no Silbeck ('+nums.join(', ')+') · cada uma com o seu sinal, abaixo';x[2]='t-util';
+      nomes.forEach((nm,i)=>c.reservas.push([x[0].split(' · ')[0]+' · titular '+nm,'Reserva '+nums[i]+' · aguardando pagamento · vence em 24 h','t-mkt']));}
+    c.msgs.push(['sis','Silbeck: vaga conferida (Disponibilidade) e '+(nomes.length>1?nomes.length+' reservas criadas ('+nums.join(', ')+'), uma por titular':'reserva '+nums[0]+' criada'+(n>1?' com '+n+' acomodações em um nome só':''))+' (POST reserva).']);
+    nomes.forEach((nm,i)=>c.pagamentos.push(['Pix BB · R$ '+sinal.toLocaleString('pt-BR')+' (sinal de 50%)'+(nomes.length>1?' · '+nm+' '+nums[i]:''),'Aguardando · vence em 24 h, junto com a reserva','t-mkt']));
+    c.msgs.push(['ia',nomes.length>1?'Prontinho! 🌿 Fiz '+nomes.length+' reservas separadas, uma para cada titular ('+nomes.join(' e ')+'). Cada uma tem o seu Pix do sinal de R$ '+sinal.toLocaleString('pt-BR')+' (50%), válido por 24 h. Pode encaminhar para cada um pagar o seu.':'Reserva feita! 🌿 Para garantir, o sinal é de R$ '+sinal.toLocaleString('pt-BR')+' (50%). Te mandei o Pix aqui embaixo, válido por 24 h. Segue também nossa política de cancelamento.',agora(),'Silbeck: POST reserva '+nums.join(', ')+' · G3: '+(nomes.length>1?'reservas separadas':'um nome só')+' · Biblioteca: “Política de cancelamento”']);
     c.etapa='pag';const l=c.lead&&leadPor(c.lead);if(l){l.etapa='pag';l.vence=24;renderBoard();}
-    renderInbox();toast('Reserva '+n+' criada no Silbeck. Card em “Aguardando pagamento”, com prazo de 24 h.');
+    renderInbox();toast(nomes.length>1?nomes.length+' reservas criadas no Silbeck, cada uma com o seu sinal.':'Reserva '+nums[0]+' criada no Silbeck. Card em “Aguardando pagamento”, com prazo de 24 h.');
   }
   function pagou(c,x){
-    x[1]='Reservado · pago · sinal lançado no Silbeck';x[2]='t-livre';
-    c.pagamentos.forEach(p=>{if(/^Aguardando/.test(p[1])){p[1]='Pago · adiantamento lançado no Silbeck (Pix, tipo 8)';p[2]='t-livre';}});
+    const numR=(x[1].match(/#\d+/)||[''])[0];
+    x[1]='Reservado · pago · sinal lançado no Silbeck'+(numR?' · '+numR:'');x[2]='t-livre';
+    c.pagamentos.forEach(p=>{if(/^Aguardando/.test(p[1])&&(!/titular/.test(x[0])||p[0].includes(numR))){p[1]='Pago · adiantamento lançado no Silbeck (Pix, tipo 8)';p[2]='t-livre';}});
     c.msgs.push(['sis','Pagamento confirmado pelo banco. CRM lançou o adiantamento no Silbeck (POST Adiantamento).']);
     c.msgs.push(['ia','Recebemos o seu pagamento. Está tudo confirmado! Uns dias antes da chegada te mando o pré-check-in e as dicas de como chegar. 😊',agora(),'Régua: “Reserva confirmada”']);
     c.etapa='res';const l=c.lead&&leadPor(c.lead);if(l){l.etapa='res';l.vence=null;renderBoard();}
@@ -1855,6 +1908,18 @@ body.sem-rolagem .principal{padding-block-end:12px}
     ['Tem pacote de Réveillon?','Sim! Pacote de 4 noites, de 29/12 a 02/01, com restaurante funcionando normalmente.','28/09 09:30',false,'2027-01-02',17,'reveillon'],
     ['Até que horas é o café da manhã?','O café é servido das 7h às 10h.','20/08 18:12',false,'',9,'']];
   let topSel=0,pendentes=0;
+  const SETORES=[['Manutenção','Chuveiro sem água quente, ar-condicionado, lâmpada','Recepção → Manutenção','Assim que a recepção acionar'],
+    ['Governança (arrumação)','Toalha extra, travesseiro, berço, limpeza','Recepção → Governança','Assim que a recepção acionar'],
+    ['Lanchonete e restaurante','Pedido no quarto, na piscina ou nos decks 11 e 12','Recepção → Lanchonete','Assim que a recepção acionar'],
+    ['Atividades','Horário de boia cross, arvorismo, trilha','Recepção → Atividades','Confirmar o horário com o hóspede'],
+    ['Massagem (parceiro)','Agendar ou mudar horário','Recepção → Parceiro','Depois da resposta do parceiro'],
+    ['Outros','Cofre, guarda-volumes, informação','Recepção','Assim que a recepção responder']];
+  function renderSetores(){const tb=$('set-corpo');if(!tb)return;tb.textContent='';
+    SETORES.forEach((x,i)=>tb.append(el('tr',{},el('td',{},el('input',{type:'text',value:x[0],'aria-label':'Tipo de pedido',onchange:e=>{x[0]=e.target.value;marcarPendente();}})),el('td',{text:x[1]}),el('td',{},el('span',{class:'tipo t-util',text:x[2]})),
+      el('td',{},el('select',{'aria-label':'Retorno ao hóspede',onchange:e=>{x[3]=e.target.value;marcarPendente();}},['Assim que a recepção acionar','Confirmar o horário com o hóspede','Depois da resposta do parceiro','Assim que a recepção responder'].map(o=>el('option',{selected:o===x[3]},o)))),
+      el('td',{},el('button',{class:'btn-mini perigo',type:'button',text:'Excluir',onclick:()=>{SETORES.splice(i,1);marcarPendente();renderSetores();}})))));}
+  $('set-novo').addEventListener('click',()=>{SETORES.push(['Novo tipo de pedido','—','Recepção','Assim que a recepção acionar']);marcarPendente();renderSetores();});
+  setTimeout(renderSetores,0);
   function marcarPendente(){pendentes++;$('pub-barra').hidden=false;$('pub-n').textContent=pendentes+(pendentes===1?' alteração não publicada':' alterações não publicadas');}
   function renderQuest(){
     const tl=$('q-topicos');tl.textContent='';
