@@ -236,7 +236,7 @@ Permissões por papel (resumo; matriz completa no §8.3):
 | Publicar mudanças do Gilberto, ligar modo automático | ✔ | ✔ [a confirmar] | ✘ | ✘ | ✘ |
 | Saúde do sistema, reprocessar | ✔ | ✘ | ✔ | ✘ | ✘ |
 
-> Ricardo: papel no sistema [a confirmar] (recebe alertas por D10).
+> Ricardo é o **dono** (Ricardo Constantino): administrador, recebe alertas (D10) e vê faturamento (D14).
 
 ### 3.3 Contatos, negócios e conversas
 
@@ -824,7 +824,7 @@ Atendimento automatizado do próprio negócio, com caminho para humano a qualque
 |---|---|---|
 | A1 | **Follow-up: 2 tentativas (P12) ou "até 4 toques"** (cargo do Gilberto) | Divergência entre a entrevista e o cargo; a especificação segue P12 |
 | A2 | **Quem recebe a "tarefa esquecida"** (reserva vencida ainda ativa) | P46 dizia Renata/dono; D10 tirou a Renata dos alertas |
-| A3 | **Papel de Ricardo** no sistema e se vê faturamento | Recebe alertas (D10); não está na lista de faturamento (D14) |
+| A3 | ~~Papel de Ricardo~~ | **Resolvido:** Ricardo é o dono (administrador, vê faturamento) |
 | A4 | **WABA do 99110 em INR:** manter ou migrar para a conta nova em BRL | Plano proposto em P58: migrar no dia da troca |
 | A5 | **Plano B da ponte** (IP fixo sem túnel) aceitável? | Tráfego HTTP com segredo na URL pela internet |
 | A6 | **Provedor da IA:** API da Anthropic direto ou Claude pelo Vertex AI (créditos do Google); modelo Opus 5.5 × Sonnet 5.5 | Custo × qualidade (§10) |
