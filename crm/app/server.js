@@ -10,14 +10,14 @@ const versao = process.env.VERSAO || 'local';
 const VERIFY = process.env.META_VERIFY_TOKEN || '';
 const APP_SECRET = process.env.META_APP_SECRET || '';
 const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
-const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || '';
+const SUPABASE_KEY = (process.env.SUPABASE_SECRET_KEY || '').trim(); // tira espaço/quebra de linha colados por engano
 const bancoLigado = () => !!(SUPABASE_URL && SUPABASE_KEY);
 // Chaves novas (sb_secret_…) vão só no cabeçalho apikey. Chaves antigas (JWT "eyJ…") precisam também do
 // Authorization, senão o banco trata a chamada como visitante (anon) e nega as funções do servidor.
 // Tipo da chave (nunca a chave): ajuda a ver se colaram a chave errada no Secret Manager.
 function tipoChave(k) {
   if (!k) return 'nenhuma';
-  if (k.startsWith('sb_secret_')) return 'secreta (sb_secret)';
+  if (k.startsWith('sb_secret_')) return `secreta (sb_secret), ${k.length} caracteres` + (/[^\w-]/.test(k) ? ', COM caracteres estranhos (copiada mascarada?)' : '');
   if (k.startsWith('sb_publishable_')) return 'PÚBLICA (sb_publishable): trocar pela secreta';
   if (k.startsWith('eyJ')) {
     try { const papel = JSON.parse(Buffer.from(k.split('.')[1], 'base64url').toString()).role; return 'antiga (JWT) papel=' + papel; } catch (e) { return 'antiga (JWT) ilegível'; }
