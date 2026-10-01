@@ -34,6 +34,9 @@
 3. **Protótipo:** "reserva em um nome ou separada" (G3) e a tela Setores simplificada (D12).
 4. **Prompt de sistema do Gilberto para o CRM**, gerado a partir de `.claude/agents/gilberto-vendas.md` + base de conhecimento.
 
+## 2c. Para estudar no futuro
+- **Lançamento automático na comanda** (dono, 01/10/2026): ver se o sistema de contas e comandas do hotel aceita lançamentos automáticos (API ou importação), para o CRM lançar a massagem sozinho e acabar com a tarefa manual "Lançar na comanda". Conversar com o Márcio depois da fase 3.
+
 ## 3. Especificação técnica
 Documento com modelo de dados, telas, integrações, regras do Gilberto, alertas e segurança. O dono aprova antes da construção.
 
