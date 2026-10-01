@@ -1,6 +1,7 @@
 // CRM Cabanas: fase 1 (início). Recebe os eventos da Meta (WhatsApp) com verificação de assinatura.
-// Segredos vêm do Secret Manager como variáveis de ambiente: META_VERIFY_TOKEN e META_APP_SECRET.
-// Nada de chave no código. Conteúdo de mensagens não é exibido em página pública: só no log privado.
+// Segredos vêm do Secret Manager como variáveis de ambiente: META_VERIFY_TOKEN, META_APP_SECRET e
+// SUPABASE_SECRET_KEY. Nada de chave no código. Conteúdo de mensagens vai para o banco (Supabase,
+// São Paulo), nunca para página pública nem para o log.
 const http = require('http');
 const crypto = require('crypto');
 
@@ -8,6 +9,9 @@ const porta = process.env.PORT || 8080;
 const versao = process.env.VERSAO || 'local';
 const VERIFY = process.env.META_VERIFY_TOKEN || '';
 const APP_SECRET = process.env.META_APP_SECRET || '';
+const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || '';
+const bancoLigado = () => !!(SUPABASE_URL && SUPABASE_KEY);
 
 const recentes = []; // últimos eventos (sem conteúdo), só para a página de status
 const mascarar = n => (n ? String(n).replace(/^(\d{4})\d+(\d{3})$/, '$1•••••$2') : '?');
@@ -20,21 +24,63 @@ function assinaturaValida(corpo, cabecalho) {
     crypto.timingSafeEqual(Buffer.from(recebido, 'hex'), Buffer.from(esperado, 'hex'));
 }
 
-function registrar(evento) {
+// Chama uma função do banco (RPC do Supabase) com a chave secreta do servidor.
+async function rpc(funcao, args, buscar = fetch) {
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/rpc/${funcao}`, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(args),
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!r.ok) throw new Error(`banco ${funcao}: ${r.status}`);
+  return r.status === 204 ? null : r.json();
+}
+
+// Texto legível de cada tipo de mensagem (mídias são baixadas numa próxima etapa).
+function corpoDe(m) {
+  if (m.type === 'text') return m.text && m.text.body;
+  if (m.type === 'button') return m.button && m.button.text;
+  if (m.type === 'interactive') { const i = m.interactive || {}; return (i.button_reply || i.list_reply || {}).title; }
+  if (m.type === 'reaction') return m.reaction && m.reaction.emoji;
+  if (m.type === 'location') { const l = m.location || {}; return [l.name, l.address, l.latitude && `${l.latitude},${l.longitude}`].filter(Boolean).join(' · '); }
+  const midia = m[m.type];
+  return midia && midia.caption || null;
+}
+
+async function registrar(evento, buscar = fetch) {
+  let gravadas = 0;
   for (const entrada of evento.entry || []) {
     for (const mudanca of entrada.changes || []) {
       const v = mudanca.value || {};
+      const numeroId = (v.metadata && v.metadata.phone_number_id) || '?';
+      const nomes = {};
+      for (const c of v.contacts || []) nomes[c.wa_id] = c.profile && c.profile.name;
       for (const m of v.messages || []) {
-        recentes.unshift({ quando: new Date().toISOString(), tipo: m.type, de: mascarar(m.from) });
-        // Log privado (Cloud Logging): o texto ajuda no teste; na fase 1 completa vai para o banco.
-        console.log(JSON.stringify({ evento: 'mensagem', tipo: m.type, de: mascarar(m.from), texto: m.text && m.text.body }));
+        const item = { quando: new Date().toISOString(), tipo: m.type, de: mascarar(m.from), gravado: false };
+        recentes.unshift(item);
+        if (bancoLigado()) {
+          const midia = m[m.type];
+          await rpc('registrar_entrada_whatsapp', {
+            p_numero_id: numeroId, p_de: m.from, p_nome: nomes[m.from] || null, p_wamid: m.id, p_tipo: m.type,
+            p_corpo: corpoDe(m) || null, p_midia_id: (midia && midia.id) || null,
+            p_quando: m.timestamp ? new Date(Number(m.timestamp) * 1000).toISOString() : null,
+          }, buscar);
+          item.gravado = true; gravadas++;
+        }
       }
       for (const s of v.statuses || []) {
-        recentes.unshift({ quando: new Date().toISOString(), tipo: 'status:' + s.status, de: mascarar(s.recipient_id) });
+        const item = { quando: new Date().toISOString(), tipo: 'status:' + s.status, de: mascarar(s.recipient_id), gravado: false };
+        recentes.unshift(item);
+        if (bancoLigado()) {
+          const erro = (s.errors || []).map(e => `${e.code} ${e.title}`).join('; ') || null;
+          await rpc('registrar_status_whatsapp', { p_wamid: s.id, p_status: s.status, p_erro: erro }, buscar);
+          item.gravado = true;
+        }
       }
     }
   }
   recentes.splice(10);
+  return gravadas;
 }
 
 function json(res, cod, obj) {
@@ -45,7 +91,15 @@ function json(res, cod, obj) {
 const servidor = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
-  if (url.pathname === '/saude') return json(res, 200, { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET } });
+  if (url.pathname === '/saude') {
+    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado() } };
+    if (!bancoLigado()) return json(res, 200, base);
+    // Confere se o banco responde e se as tabelas existem (sem ler dados).
+    fetch(`${SUPABASE_URL}/rest/v1/conversas?select=id&limit=0`, { headers: { apikey: SUPABASE_KEY }, signal: AbortSignal.timeout(5000) })
+      .then(r => json(res, 200, { ...base, banco: r.ok ? 'ok' : 'erro ' + r.status }))
+      .catch(() => json(res, 200, { ...base, banco: 'sem conexão' }));
+    return;
+  }
 
   if (url.pathname === '/webhook/meta' && req.method === 'GET') {
     const ok = VERIFY && url.searchParams.get('hub.mode') === 'subscribe' && url.searchParams.get('hub.verify_token') === VERIFY;
@@ -63,8 +117,13 @@ const servidor = http.createServer((req, res) => {
         console.warn(JSON.stringify({ evento: 'assinatura_invalida' }));
         return json(res, 401, { ok: false });
       }
-      json(res, 200, { ok: true }); // responde rápido; a Meta reenvia se demorar
-      try { registrar(JSON.parse(corpo.toString('utf8'))); } catch (e) { console.error('evento ilegível'); }
+      let evento;
+      try { evento = JSON.parse(corpo.toString('utf8')); } catch (e) { console.error('evento ilegível'); return json(res, 200, { ok: true }); }
+      // Grava antes de responder (o banco fica na mesma região, leva milissegundos). Se o banco falhar,
+      // responde 500 e a Meta reenvia depois; a gravação é idempotente, então não duplica nada.
+      registrar(evento)
+        .then(() => json(res, 200, { ok: true }))
+        .catch(e => { console.error(JSON.stringify({ evento: 'falha_banco', erro: String(e.message || e) })); json(res, 500, { ok: false }); });
     });
     return;
   }
@@ -76,4 +135,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => console.log('CRM Cabanas ouvindo na porta ' + porta));
-module.exports = { servidor, assinaturaValida };
+module.exports = { servidor, assinaturaValida, registrar, corpoDe };
