@@ -6,13 +6,44 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "data_entrada": { "type": "string", "format": "date", "description": "Check-in (AAAA-MM-DD). Se o cliente não disse o ano, use a próxima ocorrência da data a partir de hoje." },
-        "data_saida": { "type": "string", "format": "date", "description": "Check-out (AAAA-MM-DD)." },
-        "adultos": { "type": "integer", "description": "Número de adultos (a partir de 18 anos)." },
-        "idades_criancas": { "type": "array", "items": { "type": "integer" }, "description": "Idade de cada criança, em anos completos (0 para menos de 1 ano). Lista vazia se não houver crianças." },
-        "finalidade": { "type": "string", "enum": ["cotacao", "alteracao_informar_equipe", "upsell_ou_estadia"], "description": "cotacao: novo orçamento. alteracao_informar_equipe: conferir datas novas de uma reserva existente (o resultado NÃO é confirmado ao cliente). upsell_ou_estadia: conferir algo para quem já tem reserva." }
+        "data_entrada": {
+          "type": "string",
+          "format": "date",
+          "description": "Check-in (AAAA-MM-DD). Se o cliente não disse o ano, use a próxima ocorrência da data a partir de hoje."
+        },
+        "data_saida": {
+          "type": "string",
+          "format": "date",
+          "description": "Check-out (AAAA-MM-DD)."
+        },
+        "adultos": {
+          "type": "integer",
+          "description": "Número de adultos (a partir de 18 anos)."
+        },
+        "idades_criancas": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "description": "Idade de cada criança, em anos completos (0 para menos de 1 ano). Lista vazia se não houver crianças."
+        },
+        "finalidade": {
+          "type": "string",
+          "enum": [
+            "cotacao",
+            "alteracao_informar_equipe",
+            "upsell_ou_estadia"
+          ],
+          "description": "cotacao: novo orçamento. alteracao_informar_equipe: conferir datas novas de uma reserva existente (o resultado NÃO é confirmado ao cliente). upsell_ou_estadia: conferir algo para quem já tem reserva."
+        }
       },
-      "required": ["data_entrada", "data_saida", "adultos", "idades_criancas", "finalidade"],
+      "required": [
+        "data_entrada",
+        "data_saida",
+        "adultos",
+        "idades_criancas",
+        "finalidade"
+      ],
       "additionalProperties": false
     }
   },
@@ -23,27 +54,74 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "data_entrada": { "type": "string", "format": "date" },
-        "data_saida": { "type": "string", "format": "date" },
-        "adultos": { "type": "integer" },
-        "idades_criancas": { "type": "array", "items": { "type": "integer" } },
+        "data_entrada": {
+          "type": "string",
+          "format": "date"
+        },
+        "data_saida": {
+          "type": "string",
+          "format": "date"
+        },
+        "adultos": {
+          "type": "integer"
+        },
+        "idades_criancas": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
         "opcoes": {
           "type": "array",
           "description": "De 1 a 3 opções, na ordem em que devem aparecer. Cada opção é uma lista de códigos de acomodação (uma acomodação, ou uma combinação quando o grupo precisa de mais de uma).",
           "items": {
             "type": "object",
             "properties": {
-              "acomodacoes": { "type": "array", "items": { "type": "string" }, "description": "Códigos devolvidos por consultar_disponibilidade (ex.: [\"BGE\"] ou [\"CBM\", \"STD\"])." }
+              "acomodacoes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Códigos devolvidos por consultar_disponibilidade (ex.: [\"BGE\"] ou [\"CBM\", \"STD\"])."
+              }
             },
-            "required": ["acomodacoes"],
+            "required": [
+              "acomodacoes"
+            ],
             "additionalProperties": false
           }
         },
-        "persona": { "type": "string", "enum": ["familia", "casal", "jovens_aventura", "55_mais", "eco_aves", "grupo", "indefinida"] },
-        "pessoas_aptas_combo": { "type": "integer", "description": "Quantas pessoas do grupo têm 5 anos ou mais e pelo menos 1,15 m (0 se ninguém ou se não se sabe). A página mostra o combo só para elas." },
-        "frase_de_abertura": { "type": "string", "description": "Uma frase curta e pessoal para o topo da página (ex.: 'Mariana, separei as opções para os quatro aproveitarem os rios'). Sem preço e sem promessa." }
+        "persona": {
+          "type": "string",
+          "enum": [
+            "familia",
+            "casal",
+            "jovens_aventura",
+            "55_mais",
+            "eco_aves",
+            "grupo",
+            "indefinida"
+          ]
+        },
+        "pessoas_aptas_combo": {
+          "type": "integer",
+          "description": "Quantas pessoas do grupo têm 5 anos ou mais e pelo menos 1,15 m (0 se ninguém ou se não se sabe). A página mostra o combo só para elas."
+        },
+        "frase_de_abertura": {
+          "type": "string",
+          "description": "Uma frase curta e pessoal para o topo da página (ex.: 'Mariana, separei as opções para os quatro aproveitarem os rios'). Sem preço e sem promessa."
+        }
       },
-      "required": ["data_entrada", "data_saida", "adultos", "idades_criancas", "opcoes", "persona", "pessoas_aptas_combo", "frase_de_abertura"],
+      "required": [
+        "data_entrada",
+        "data_saida",
+        "adultos",
+        "idades_criancas",
+        "opcoes",
+        "persona",
+        "pessoas_aptas_combo",
+        "frase_de_abertura"
+      ],
       "additionalProperties": false
     }
   },
@@ -54,15 +132,49 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "orcamento_id": { "type": "string" },
-        "opcao_escolhida": { "type": "integer", "description": "Número da opção no orçamento (1, 2 ou 3)." },
-        "aceite_cliente_literal": { "type": "string", "description": "Trecho exato da mensagem do cliente em que ele aceita. O CRM confere se o trecho existe numa mensagem do cliente." },
-        "titular_nome_completo": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "acompanhantes": { "type": "array", "items": { "type": "string" }, "description": "Nomes dos acompanhantes; lista vazia se o cliente ainda não informou." },
-        "estrutura": { "type": "string", "enum": ["uma_acomodacao", "varias_em_um_nome", "reservas_separadas"] }
+        "orcamento_id": {
+          "type": "string"
+        },
+        "opcao_escolhida": {
+          "type": "integer",
+          "description": "Número da opção no orçamento (1, 2 ou 3)."
+        },
+        "aceite_cliente_literal": {
+          "type": "string",
+          "description": "Trecho exato da mensagem do cliente em que ele aceita. O CRM confere se o trecho existe numa mensagem do cliente."
+        },
+        "titular_nome_completo": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "acompanhantes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Nomes dos acompanhantes; lista vazia se o cliente ainda não informou."
+        },
+        "estrutura": {
+          "type": "string",
+          "enum": [
+            "uma_acomodacao",
+            "varias_em_um_nome",
+            "reservas_separadas"
+          ]
+        }
       },
-      "required": ["orcamento_id", "opcao_escolhida", "aceite_cliente_literal", "titular_nome_completo", "email", "acompanhantes", "estrutura"],
+      "required": [
+        "orcamento_id",
+        "opcao_escolhida",
+        "aceite_cliente_literal",
+        "titular_nome_completo",
+        "email",
+        "acompanhantes",
+        "estrutura"
+      ],
       "additionalProperties": false
     }
   },
@@ -73,10 +185,21 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "reserva_id": { "type": "string" },
-        "forma": { "type": "string", "enum": ["pix", "cartao"] }
+        "reserva_id": {
+          "type": "string"
+        },
+        "forma": {
+          "type": "string",
+          "enum": [
+            "pix",
+            "cartao"
+          ]
+        }
       },
-      "required": ["reserva_id", "forma"],
+      "required": [
+        "reserva_id",
+        "forma"
+      ],
       "additionalProperties": false
     }
   },
@@ -87,9 +210,13 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "incluir_canceladas": { "type": "boolean" }
+        "incluir_canceladas": {
+          "type": "boolean"
+        }
       },
-      "required": ["incluir_canceladas"],
+      "required": [
+        "incluir_canceladas"
+      ],
       "additionalProperties": false
     }
   },
@@ -100,11 +227,27 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "codigo_acomodacao": { "type": "string", "description": "Código da acomodação (ex.: CBM, BGE) ou string vazia se o pedido não for de acomodação." },
-        "etiquetas": { "type": "array", "items": { "type": "string" }, "description": "Ex.: [\"rio formoso\", \"piscina\", \"cafe da manha\", \"boia cross\"]." },
-        "quantidade": { "type": "integer", "description": "De 1 a 5." }
+        "codigo_acomodacao": {
+          "type": "string",
+          "description": "Código da acomodação (ex.: CBM, BGE) ou string vazia se o pedido não for de acomodação."
+        },
+        "etiquetas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Ex.: [\"rio formoso\", \"piscina\", \"cafe da manha\", \"boia cross\"]."
+        },
+        "quantidade": {
+          "type": "integer",
+          "description": "De 1 a 5."
+        }
       },
-      "required": ["codigo_acomodacao", "etiquetas", "quantidade"],
+      "required": [
+        "codigo_acomodacao",
+        "etiquetas",
+        "quantidade"
+      ],
       "additionalProperties": false
     }
   },
@@ -115,9 +258,13 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "resposta_id": { "type": "string" }
+        "resposta_id": {
+          "type": "string"
+        }
       },
-      "required": ["resposta_id"],
+      "required": [
+        "resposta_id"
+      ],
       "additionalProperties": false
     }
   },
@@ -128,11 +275,27 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "produto": { "type": "string", "enum": ["COMBO", "BOIA", "ARVO"] },
-        "data": { "type": "string", "format": "date" },
-        "pessoas": { "type": "integer" }
+        "produto": {
+          "type": "string",
+          "enum": [
+            "COMBO",
+            "BOIA",
+            "ARVO"
+          ]
+        },
+        "data": {
+          "type": "string",
+          "format": "date"
+        },
+        "pessoas": {
+          "type": "integer"
+        }
       },
-      "required": ["produto", "data", "pessoas"],
+      "required": [
+        "produto",
+        "data",
+        "pessoas"
+      ],
       "additionalProperties": false
     }
   },
@@ -143,45 +306,138 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "produto": { "type": "string", "enum": ["COMBO", "BOIA", "ARVO", "DECO"] },
-        "reserva_id": { "type": "string" },
-        "data": { "type": "string", "format": "date" },
-        "horario": { "type": "string", "description": "HH:MM vindo de consultar_horarios_atividade; string vazia para DECO. No COMBO, o horário da primeira atividade (o CRM reserva a segunda na sequência devolvida pela consulta)." },
+        "produto": {
+          "type": "string",
+          "enum": [
+            "COMBO",
+            "BOIA",
+            "ARVO",
+            "DECO"
+          ]
+        },
+        "reserva_id": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string",
+          "format": "date"
+        },
+        "horario": {
+          "type": "string",
+          "description": "HH:MM vindo de consultar_horarios_atividade; string vazia para DECO. No COMBO, o horário da primeira atividade (o CRM reserva a segunda na sequência devolvida pela consulta)."
+        },
         "participantes": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "nome": { "type": "string" },
-              "idade": { "type": "integer" },
-              "altura_cm": { "type": ["integer", "null"], "description": "Altura em cm, se informada; null se não informada (o CRM pede a conferência no check-in)." }
+              "nome": {
+                "type": "string"
+              },
+              "idade": {
+                "type": "integer"
+              },
+              "altura_cm": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "description": "Altura em cm, se informada; null se não informada (o CRM pede a conferência no check-in)."
+              }
             },
-            "required": ["nome", "idade", "altura_cm"],
+            "required": [
+              "nome",
+              "idade",
+              "altura_cm"
+            ],
             "additionalProperties": false
           },
           "description": "Para DECO, lista vazia."
         },
-        "aceite_cliente_literal": { "type": "string", "description": "Trecho exato da mensagem do cliente em que ele aceita." }
+        "aceite_cliente_literal": {
+          "type": "string",
+          "description": "Trecho exato da mensagem do cliente em que ele aceita."
+        }
       },
-      "required": ["produto", "reserva_id", "data", "horario", "participantes", "aceite_cliente_literal"],
+      "required": [
+        "produto",
+        "reserva_id",
+        "data",
+        "horario",
+        "participantes",
+        "aceite_cliente_literal"
+      ],
       "additionalProperties": false
     }
   },
   {
     "name": "pedir_horario_parceiro",
-    "description": "Pede à massoterapeuta parceira (serviço terceirizado), pelo WhatsApp oficial do hotel, a confirmação de uma massagem (avulsa ou pacote) para um hóspede. A resposta da parceira chega depois: o CRM confirma ao hóspede sozinho quando ela aceita, avisa você quando ela recusa ou propõe outro horário, e alerta a equipe se ela não responder em 2 h. Ao cliente, diga que está confirmando o horário com a profissional; nunca dê como confirmado. Valor: o que estiver em <produtos_ativos>; se não houver, diga que a equipe confirma o valor.",
+    "description": "Pede à massoterapeuta parceira (Natália, Massagem 360), pelo WhatsApp oficial do hotel, a confirmação de uma massagem para um hóspede. Horários possíveis por dia: 08:00, 09:00, 10:00, 14:00, 15:00 e 16:00 (ofereça só esses). Tipos: Massagem360, Massagem desportiva ou Drenagem linfática (R$ 220 cada), com adicionais opcionais. Antes de chamar, o cliente precisa ter escolhido data, horário e tipo. A parceira responde [Confirmo] ou [Não posso]: se confirma, o CRM confirma ao hóspede e gera a cobrança; se recusa, o CRM pergunta a ela quais datas e horários têm vaga e te devolve as opções para oferecer ao cliente (o horário escolhido vira um novo pedido). Sem resposta em 2 h no expediente, alerta a equipe. Ao cliente, diga que está confirmando o horário com a massoterapeuta; nunca dê como confirmado antes da resposta dela.",
     "strict": true,
     "input_schema": {
       "type": "object",
       "properties": {
-        "reserva_id": { "type": "string" },
-        "tipo": { "type": "string", "description": "Tipo de massagem ou pacote, como o cliente pediu (ex.: 'massagem relaxante, 1 sessão para 2 pessoas')." },
-        "data": { "type": "string", "format": "date" },
-        "horario": { "type": "string", "description": "HH:MM desejado pelo cliente." },
-        "local": { "type": "string", "enum": ["quarto", "margem_do_rio", "a_combinar"] },
-        "pessoas": { "type": "integer" }
+        "reserva_id": {
+          "type": "string"
+        },
+        "tipo": {
+          "type": "string",
+          "enum": [
+            "Massagem360",
+            "Massagem desportiva",
+            "Drenagem linfática"
+          ]
+        },
+        "data": {
+          "type": "string",
+          "format": "date"
+        },
+        "horario": {
+          "type": "string",
+          "enum": [
+            "08:00",
+            "09:00",
+            "10:00",
+            "14:00",
+            "15:00",
+            "16:00"
+          ]
+        },
+        "local": {
+          "type": "string",
+          "enum": [
+            "quarto",
+            "margem_do_rio",
+            "a_combinar"
+          ]
+        },
+        "pessoas": {
+          "type": "integer"
+        },
+        "adicionais": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Máscara de argila",
+              "Reflexologia 15 min",
+              "Cone hindu",
+              "Acréscimo de 30 min",
+              "Pedras quentes"
+            ]
+          },
+          "description": "Opcionais escolhidos pelo cliente; lista vazia se nenhum."
+        }
       },
-      "required": ["reserva_id", "tipo", "data", "horario", "local", "pessoas"],
+      "required": [
+        "reserva_id",
+        "tipo",
+        "data",
+        "horario",
+        "local",
+        "pessoas",
+        "adicionais"
+      ],
       "additionalProperties": false
     }
   },
@@ -192,31 +448,131 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "nome": { "type": ["string", "null"] },
-        "sobrenome": { "type": ["string", "null"] },
-        "email": { "type": ["string", "null"] },
-        "whatsapp": { "type": ["string", "null"], "description": "Com DDD; o CRM valida e junta contatos duplicados." },
-        "data_entrada": { "type": ["string", "null"], "format": "date" },
-        "data_saida": { "type": ["string", "null"], "format": "date" },
-        "adultos": { "type": ["integer", "null"] },
+        "nome": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sobrenome": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "email": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "whatsapp": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Com DDD; o CRM valida e junta contatos duplicados."
+        },
+        "data_entrada": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "data_saida": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "adultos": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "criancas": {
-          "type": ["array", "null"],
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "type": "object",
             "properties": {
-              "nome": { "type": ["string", "null"] },
-              "idade": { "type": ["integer", "null"] },
-              "altura_cm": { "type": ["integer", "null"] }
+              "nome": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "idade": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "altura_cm": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
             },
-            "required": ["nome", "idade", "altura_cm"],
+            "required": [
+              "nome",
+              "idade",
+              "altura_cm"
+            ],
             "additionalProperties": false
           }
         },
-        "ocasiao": { "type": ["string", "null"], "description": "Ex.: aniversário de casamento, férias das crianças, lua de mel." },
-        "persona": { "type": ["string", "null"], "enum": ["familia", "casal", "jovens_aventura", "55_mais", "eco_aves", "grupo", "agencia", "indefinida", null] },
-        "consentimento_novidades": { "type": ["boolean", "null"], "description": "true só se o cliente disse sim à pergunta sobre receber novidades por aqui." }
+        "ocasiao": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Ex.: aniversário de casamento, férias das crianças, lua de mel."
+        },
+        "persona": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "familia",
+            "casal",
+            "jovens_aventura",
+            "55_mais",
+            "eco_aves",
+            "grupo",
+            "agencia",
+            "indefinida",
+            null
+          ]
+        },
+        "consentimento_novidades": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "true só se o cliente disse sim à pergunta sobre receber novidades por aqui."
+        }
       },
-      "required": ["nome", "sobrenome", "email", "whatsapp", "data_entrada", "data_saida", "adultos", "criancas", "ocasiao", "persona", "consentimento_novidades"],
+      "required": [
+        "nome",
+        "sobrenome",
+        "email",
+        "whatsapp",
+        "data_entrada",
+        "data_saida",
+        "adultos",
+        "criancas",
+        "ocasiao",
+        "persona",
+        "consentimento_novidades"
+      ],
       "additionalProperties": false
     }
   },
@@ -227,11 +583,33 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "motivo": { "type": "string", "enum": ["alteracao", "fora_da_base", "excecao_politica", "acessibilidade", "desconto_insistente", "problema_pagamento", "dado_sensivel_recebido", "pedido_especial_outro"] },
-        "prioridade": { "type": "integer", "description": "1 (mais alta) a 5. Referência: 4 para fora da base, exceção, acessibilidade, desconto insistente e pedido especial; 5 para alteração." },
-        "resumo": { "type": "string", "description": "1 a 3 frases para a equipe: o que o cliente quer, o que você já respondeu e o que falta decidir. Inclua reserva, datas e o resultado da consulta de vaga, quando houver." }
+        "motivo": {
+          "type": "string",
+          "enum": [
+            "alteracao",
+            "fora_da_base",
+            "excecao_politica",
+            "acessibilidade",
+            "desconto_insistente",
+            "problema_pagamento",
+            "dado_sensivel_recebido",
+            "pedido_especial_outro"
+          ]
+        },
+        "prioridade": {
+          "type": "integer",
+          "description": "1 (mais alta) a 5. Referência: 4 para fora da base, exceção, acessibilidade, desconto insistente e pedido especial; 5 para alteração."
+        },
+        "resumo": {
+          "type": "string",
+          "description": "1 a 3 frases para a equipe: o que o cliente quer, o que você já respondeu e o que falta decidir. Inclua reserva, datas e o resultado da consulta de vaga, quando houver."
+        }
       },
-      "required": ["motivo", "prioridade", "resumo"],
+      "required": [
+        "motivo",
+        "prioridade",
+        "resumo"
+      ],
       "additionalProperties": false
     }
   },
@@ -242,11 +620,31 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "motivo": { "type": "string", "enum": ["reclamacao", "cancelamento", "pede_pessoa", "grupo_acima_10", "agencia_operadora", "evento"] },
-        "prioridade": { "type": "integer", "description": "1 reclamação, 2 cancelamento, 3 pede pessoa, 4 grupo/agência/evento. O CRM confere." },
-        "resumo": { "type": "string", "description": "1 a 3 frases para quem assumir: quem é, o que quer, o que já foi dito, reserva envolvida (se houver), se está hospedado." }
+        "motivo": {
+          "type": "string",
+          "enum": [
+            "reclamacao",
+            "cancelamento",
+            "pede_pessoa",
+            "grupo_acima_10",
+            "agencia_operadora",
+            "evento"
+          ]
+        },
+        "prioridade": {
+          "type": "integer",
+          "description": "1 reclamação, 2 cancelamento, 3 pede pessoa, 4 grupo/agência/evento. O CRM confere."
+        },
+        "resumo": {
+          "type": "string",
+          "description": "1 a 3 frases para quem assumir: quem é, o que quer, o que já foi dito, reserva envolvida (se houver), se está hospedado."
+        }
       },
-      "required": ["motivo", "prioridade", "resumo"],
+      "required": [
+        "motivo",
+        "prioridade",
+        "resumo"
+      ],
       "additionalProperties": false
     }
   },
@@ -257,10 +655,24 @@
     "input_schema": {
       "type": "object",
       "properties": {
-        "categoria": { "type": "string", "enum": ["persona_funil", "objecao", "fato_a_confirmar", "contexto_para_equipe", "seguranca"] },
-        "texto": { "type": "string" }
+        "categoria": {
+          "type": "string",
+          "enum": [
+            "persona_funil",
+            "objecao",
+            "fato_a_confirmar",
+            "contexto_para_equipe",
+            "seguranca"
+          ]
+        },
+        "texto": {
+          "type": "string"
+        }
       },
-      "required": ["categoria", "texto"],
+      "required": [
+        "categoria",
+        "texto"
+      ],
       "additionalProperties": false
     }
   }

@@ -1996,8 +1996,9 @@ body.sem-rolagem .principal{padding-block-end:12px}
     {cod:'BOIA',nome:'Boia cross',preco:100,tipo:'ativ',regras:'A partir de 5 anos e 1,15 m; sem gestantes; sem álcool',quando:'Cotação e estadia',ant:0,prio:2,ativo:true,perfis:'Família, grupo',idade:5},
     {cod:'ARVO',nome:'Arvorismo',preco:120,tipo:'ativ',regras:'A partir de 5 anos e 1,15 m; 18 obstáculos + tirolesa aquática',quando:'Cotação e estadia',ant:0,prio:3,ativo:true,perfis:'Família, grupo, casal',idade:5},
     {cod:'FLUT',nome:'Flutuação',preco:null,tipo:'simples',regras:'Não oferecemos mais (dono, 29/09/2026)',quando:'—',ant:0,prio:8,ativo:false,perfis:'—',idade:7},
-    {cod:'MASS',nome:'Massagem (avulsa ou pacote)',preco:null,tipo:'terc',regras:'Terceirizada: o CRM pede o horário ao parceiro pelo WhatsApp e confirma ao hóspede quando ele responder',quando:'3 dias antes da chegada',ant:1,prio:5,ativo:true,perfis:'Casal, 55+',idade:0},
-    {cod:'DECO',nome:'Decoração especial',preco:null,tipo:'simples',regras:'Encomendar os itens',quando:'Na cotação',ant:3,prio:6,ativo:true,perfis:'Casal',idade:0},
+    {cod:'MASS',nome:'Massagem (Massagem 360): Massagem360, desportiva ou drenagem',preco:220,tipo:'terc',regras:'Terceirizada: o CRM pede o horário ao parceiro pelo WhatsApp e confirma ao hóspede quando ele responder',quando:'3 dias antes da chegada',ant:1,prio:5,ativo:true,perfis:'Casal, 55+',idade:0},
+    {cod:'DECO-C',nome:'Decoração romântica Completa',preco:600,tipo:'simples',regras:'Balão personalizável, pétalas, tábua de frios, espumante e até 8 polaroids · encomendar os itens',quando:'Na cotação',ant:3,prio:6,ativo:true,perfis:'Casal',idade:0},
+    {cod:'DECO-S',nome:'Decoração romântica Simples',preco:350,tipo:'simples',regras:'Balão personalizável e até 8 polaroids · encomendar os itens',quando:'Na cotação',ant:3,prio:6,ativo:true,perfis:'Casal',idade:0},
     {cod:'PIQ',nome:'Piquenique Sunset',preco:null,tipo:'simples',regras:'Retirado da oferta',quando:'—',ant:0,prio:9,ativo:false,perfis:'Casal',idade:0},
   ];
   const TIPO_RES={ativ:'Atividade com horário · sistema interno · o agente confirma sozinho',terc:'Terceiro · pedido ao parceiro pelo WhatsApp',simples:'Simples, sem horário · o agente confirma sozinho'};
@@ -2057,25 +2058,42 @@ body.sem-rolagem .principal{padding-block-end:12px}
   }
 
   // v12: massagem com parceiro pelo WhatsApp
-  const PARCEIRO={nome:'Natália (massoterapeuta)',fone:'+55 67 99228-6365'};
+  const PARCEIRO={nome:'Natália (Massagem 360)',fone:'+55 67 99228-6365'};
+  const MASS_TIPOS=[['Massagem360',220],['Massagem desportiva',220],['Drenagem linfática',220]];
+  const MASS_ADIC=[['Máscara de argila',50],['Reflexologia 15 min',50],['Cone hindu',80],['Acréscimo de 30 min',150],['Pedras quentes',50]];
+  const MASS_HORAS=['08:00','09:00','10:00','14:00','15:00','16:00'];
+  // v33: 6 horários fixos; parceira confirma ou recusa pelo WhatsApp; se recusar, o sistema pergunta quais datas e horários têm vaga
   function widgetParceiro(c,p){
     c.massagem=c.massagem||null;
     if(c.massagem){const m=c.massagem;
-      const st=el('div',{class:'lat-card'},el('b',{text:'Pedido ao parceiro: '+m.txt}),el('span',{class:'tipo '+(m.status==='confirmado'?'t-livre':m.status==='recusado'?'t-erro':'t-mkt'),text:m.status==='confirmado'?'Parceiro confirmou · hóspede avisado':m.status==='recusado'?'Parceiro não pode · sugerir outro horário':'Aguardando resposta do parceiro'}));
-      if(m.status==='aguardando')st.append(el('small',{text:'Exemplo: simular a resposta do parceiro'}),el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'},
-        el('button',{class:'btn-mini',type:'button',text:'✓ Confirmo',onclick:()=>{m.status='confirmado';c.reservas.push([m.txt,'Massagem confirmada pelo parceiro','t-livre']);c.msgs.push(['sis','Parceiro respondeu “Confirmo” · CRM confirmou ao hóspede automaticamente']);c.msgs.push(['ia','Tudo certo! Sua massagem está confirmada: '+m.txt+'. 🌿','agora','Resposta do parceiro recebida pelo CRM (botão “Confirmo”)']);renderChat();toast('Parceiro confirmou. O hóspede recebeu a confirmação.');}}),
-        el('button',{class:'btn-mini',type:'button',text:'✕ Não posso',onclick:()=>{m.status='recusado';c.msgs.push(['sis','Parceiro respondeu “Não posso” · o agente vai oferecer outro horário ao hóspede']);renderChat();}}),
-        el('button',{class:'btn-mini',type:'button',text:'Outro horário',onclick:()=>{m.status='recusado';c.msgs.push(['sis','Parceiro sugeriu 16:00 · o agente pergunta ao hóspede se serve']);renderChat();}})));
-      return el('div',{class:'res-hor'},st,m.status!=='aguardando'?el('button',{class:'btn-mini',type:'button',text:'Novo pedido',onclick:()=>{c.massagem=null;renderLateral(c);}}):null);
+      const rot={aguardando:['t-mkt','Aguardando a Natália confirmar'],confirmado:['t-livre','Natália confirmou · hóspede avisado'],perguntando:['t-mkt','Natália recusou · sistema perguntou quais horários têm vaga'],alternativas:['t-util','Natália indicou vagas · Gilberto ofereceu ao hóspede']}[m.status];
+      const st=el('div',{class:'lat-card'},el('b',{text:'Pedido à parceira: '+m.txt}),el('span',{class:'tipo '+rot[0],text:rot[1]}),el('small',{text:'Valor ao hóspede: R$ '+m.valor.toLocaleString('pt-BR')}));
+      const simular=(...bts)=>st.append(el('small',{text:'Exemplo: simular a resposta da Natália'}),el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'},...bts));
+      if(m.status==='aguardando')simular(
+        el('button',{class:'btn-mini',type:'button',text:'✓ Confirmo',onclick:()=>{m.status='confirmado';c.reservas.push([m.txt,'Massagem confirmada pela parceira · R$ '+m.valor.toLocaleString('pt-BR'),'t-livre']);c.msgs.push(['sis','Natália respondeu “Confirmo” · CRM confirmou ao hóspede e gerou a cobrança']);c.msgs.push(['ia','Tudo certo! Sua massagem está confirmada: '+m.txt+'. 🌿','agora','Resposta da parceira (botão “Confirmo”)']);renderChat();toast('Natália confirmou. O hóspede recebeu a confirmação.');}}),
+        el('button',{class:'btn-mini',type:'button',text:'✕ Não posso',onclick:()=>{m.status='perguntando';c.msgs.push(['sis','Natália respondeu “Não posso” · o sistema perguntou a ela pelo WhatsApp: “Quais datas e horários você tem vaga? (8h, 9h, 10h, 14h, 15h ou 16h)”']);c.msgs.push(['ia','Deixa eu confirmar outro horário com a massoterapeuta e já te passo as opções 🙂','agora','Parceira recusou: aguardando as vagas dela']);renderChat();}}));
+      if(m.status==='perguntando')simular(
+        el('button',{class:'btn-mini',type:'button',text:'Natália: “mesmo dia às 9h ou dia seguinte às 15h”',onclick:()=>{m.status='alternativas';m.alt=[m.data+' às 09:00',isoMais(m.data,1)+' às 15:00'];
+          c.msgs.push(['sis','Natália respondeu as vagas: '+m.alt.map(x=>fmtData(x.slice(0,10))+x.slice(10)).join(' ou ')+' (horários reservados para este hóspede por 2 h)']);
+          c.msgs.push(['ia','Para '+m.tipo+', ela tem '+m.alt.map(x=>fmtData(x.slice(0,10))+x.slice(10)).join(' ou ')+'. Qual fica melhor para você?','agora','Vagas informadas pela parceira']);renderChat();}}));
+      if(m.status==='alternativas')simular(...m.alt.map(x=>el('button',{class:'btn-mini',type:'button',text:'Hóspede escolhe '+fmtData(x.slice(0,10))+x.slice(10),onclick:()=>{
+          c.massagem={...m,data:x.slice(0,10),hora:x.slice(-5),txt:m.tipo+' · '+fmtData(x.slice(0,10))+' às '+x.slice(-5),status:'aguardando'};
+          c.msgs.push(['sis','Novo pedido enviado à Natália: “'+c.massagem.txt+' (horário que você indicou). Confirma?” [Confirmo] [Não posso]']);renderChat();}})));
+      return el('div',{class:'res-hor'},st,m.status==='confirmado'?el('button',{class:'btn-mini',type:'button',text:'Novo pedido',onclick:()=>{c.massagem=null;renderLateral(c);}}):null);
     }
     const data=el('input',{type:'date',value:c.datas?c.datas[0]:isoMais(hoje.toISOString().slice(0,10),1),'aria-label':'Data'});
-    const hora=el('input',{type:'time',value:'15:00','aria-label':'Horário'});
-    const tipo=el('select',{'aria-label':'Tipo'},['Relaxante 50 min','Relaxante à beira do rio','Pacote casal (2 pessoas)'].map(t=>el('option',{value:t,text:t})));
-    return el('div',{class:'res-hor'},el('small',{text:'Parceiro: '+PARCEIRO.nome+' · '+PARCEIRO.fone}),el('div',{style:'display:flex;gap:8px;flex-wrap:wrap'},el('label',{class:'campo'},'Data',data),el('label',{class:'campo'},'Horário',hora)),el('label',{class:'campo'},'Tipo',tipo),
-      el('button',{class:'btn btn-enviar',type:'button',text:'Enviar pedido ao parceiro',onclick:()=>{
-        c.massagem={txt:tipo.value+' · '+fmtData(data.value)+' às '+hora.value,status:'aguardando'};
-        c.msgs.push(['sis','Pedido enviado ao parceiro pelo WhatsApp: “'+c.massagem.txt+' para hóspede do Hotel Cabanas. Confirma?” [Confirmo] [Não posso] [Outro horário]']);
-        renderChat();toast('Pedido enviado ao parceiro. Quando ele responder, o CRM confirma ao hóspede.');}}));
+    const hora=el('select',{'aria-label':'Horário'},MASS_HORAS.map(h=>el('option',{value:h,text:h.replace(':00','h')})));
+    const tipo=el('select',{'aria-label':'Tipo de massagem'},MASS_TIPOS.map(([t,v])=>el('option',{value:t,text:t+' · R$ '+v})));
+    const adic=MASS_ADIC.map(([t,v])=>{const cb=el('input',{type:'checkbox',value:t});cb.dataset.v=v;return cb;});
+    return el('div',{class:'res-hor'},el('small',{text:'Parceira: '+PARCEIRO.nome+' · 6 horários por dia: 8h, 9h, 10h, 14h, 15h e 16h'}),
+      el('div',{style:'display:flex;gap:8px;flex-wrap:wrap'},el('label',{class:'campo'},'Data',data),el('label',{class:'campo'},'Horário',hora)),el('label',{class:'campo'},'Tipo',tipo),
+      el('div',{class:'campo'},'Adicionais (opcional)',el('div',{style:'display:flex;flex-direction:column;gap:2px;font-weight:400'},adic.map((cb,i)=>el('label',{style:'display:flex;gap:6px;align-items:center'},cb,MASS_ADIC[i][0]+' · R$ '+MASS_ADIC[i][1])))),
+      el('button',{class:'btn btn-enviar',type:'button',text:'Enviar pedido à Natália',onclick:()=>{
+        const sel=adic.filter(cb=>cb.checked);const valor=MASS_TIPOS.find(x=>x[0]===tipo.value)[1]+sel.reduce((n,cb)=>n+ +cb.dataset.v,0);
+        const tp=tipo.value+(sel.length?' + '+sel.map(cb=>cb.value.toLowerCase()).join(' + '):'');
+        c.massagem={tipo:tp,data:data.value,hora:hora.value,valor,txt:tp+' · '+fmtData(data.value)+' às '+hora.value,status:'aguardando'};
+        c.msgs.push(['sis','Pedido enviado à Natália pelo WhatsApp: “Reserva de massagem para hóspede do Hotel Cabanas: '+c.massagem.txt+'. Confirma?” [Confirmo] [Não posso]']);
+        renderChat();toast('Pedido enviado à Natália. Quando ela responder, o CRM confirma ao hóspede.');}}));
   }
 
   // v14: agências e operadoras sincronizadas com o Silbeck

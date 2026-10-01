@@ -819,6 +819,8 @@ Atendimento automatizado do próprio negócio, com caminho para humano a qualque
 
 > **Resumo para o dono.** Abaixo estão as decisões que ainda faltam (algumas são suas, outras de fornecedores) e os riscos que a construção precisa vigiar. Nada aqui impede começar a fase 0 e a fase 1.
 
+> **Massagem (01/10/2026):** o fluxo está em `crm/upsell-catalogo.md` §2b. São 6 horários fixos e a Natália confirma ou recusa pelo WhatsApp; se recusar, o sistema pergunta as vagas dela. A tabela de horários fica no cadastro de Produtos.
+
 ### 11.1 Decisões em aberto (do dono)
 
 > **Atualização 01/10/2026:** todas respondidas pelo dono (ver `crm/entrevista.md`, "Decisões da especificação técnica"). A6 aguarda só a estimativa de custo; A5 aceita com mitigação mínima (IP restrito e troca do secret).

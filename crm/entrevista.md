@@ -559,3 +559,4 @@ Resumo em `crm/silbeck-api-detalhes.md` (seção 6):
 | D3 | Tarifa de agência: **depende da agência** (campo no cadastro), mudou de "comissionada" |
 | D4 | Preços enviados pelo dono no Drive (decoração e massagem): ver `crm/upsell-catalogo.md` |
 | D5 | Mensagem + página do orçamento ("adorei essa página") |
+- **Massagem (dono, 01/10/2026, combinado com a Natália):** 6 horários por dia (8h, 9h, 10h, 14h, 15h, 16h). O cliente escolhe data, horário e tipo. O sistema manda o pedido no WhatsApp da Natália com [Confirmo] [Não posso]. Se ela recusar, o sistema pergunta quais datas e horários têm vaga e o Gilberto oferece ao cliente. Detalhe em `crm/upsell-catalogo.md` §2b. Protótipo v33 e ferramenta `pedir_horario_parceiro` atualizados.
