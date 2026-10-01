@@ -27,8 +27,8 @@ BASE = """<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
   mask: linear-gradient(to right, #000 calc(50% - 130px), transparent calc(50% - 130px), transparent calc(50% + 130px), #000 calc(50% + 130px)) top / 100% 12px no-repeat, linear-gradient(#000, #000) 0 12px / 100% 100% no-repeat; }}
 .selo {{ position: absolute; left: 50%; top: 170px; transform: translate(-50%, -50%); }}
 .selo img {{ height: 118px; display: block; filter: drop-shadow(0 2px 8px rgba(0,0,0,.35)); }}
-.palavra {{ position: absolute; left: 100px; right: 100px; bottom: 330px; text-align: center; font-family: "Josefin Sans", sans-serif; font-weight: 600;
-  font-size: 48px; line-height: 1.3; letter-spacing: .08em; text-transform: uppercase; color: var(--creme);
+.palavra {{ position: absolute; left: 120px; right: 120px; bottom: 310px; text-align: center; font-family: "Josefin Sans", sans-serif; font-weight: 600;
+  font-size: 38px; line-height: 1.3; letter-spacing: .08em; text-transform: uppercase; color: var(--creme);
   text-shadow: 0 2px 16px rgba(0,0,0,.6), 0 0 4px rgba(0,0,0,.35); }}
 .fim {{ position: absolute; inset: 0; background: rgba(20,14,8,.55); }}
 .fim-box {{ position: absolute; left: 100px; right: 100px; top: 700px; text-align: center; }}
