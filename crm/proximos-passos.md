@@ -1,23 +1,38 @@
-# CRM Cabanas: próximos passos (30/09/2026)
+# CRM Cabanas: próximos passos (atualizado em 01/10/2026)
 
 ## Onde estamos
-Desenho praticamente fechado: entrevista (P1–P53), funcionalidades validadas, análise crítica e da jornada aprovadas, protótipo v25, API da Silbeck lida (swagger).
+- **Desenho fechado:**
+  - entrevista até a P58;
+  - 16 decisões (D1–D16);
+  - análise da jornada;
+  - protótipo v30.
+- **Silbeck:** API lida e respondida pela Silbeck.
+- **Gilberto:** contratado (v1.1, nota 4,42), com base de conhecimento do questionário e formação em vendas (Tevah e Thaize).
+- **WhatsApp:** plano definido: número de teste da Meta → 99117 por coexistência (modo observação) → saída da Asksuite → 99110.
 
-## 1. Fechar o desenho (curto)
-- Protótipo: pergunta "reserva em nome de uma pessoa ou separada" (G3) e tela **Setores** (G12).
-- Decisões do dono: crianças (até que idade não paga), página do orçamento ou só mensagem, tarifa de agência (comissionada ou líquida).
-- Teste do dono no computador e últimos ajustes.
+## 1. O que depende do dono
+| # | O quê | Por quê |
+|---|---|---|
+| 1 | Criar o **projeto no Google Cloud** (conta pessoal, D16) e dar acesso de administrador à equipe | Sem ele, nada vai ao ar |
+| 2 | Criar o **app "Cabanas CRM" na Meta** (vem com o número de teste gratuito) | Caixa de entrada e testes do WhatsApp |
+| 3 | **Exportar da Asksuite** a biblioteca de respostas e 30 a 50 conversas | Teste real do Gilberto e ajuste fino do tom |
+| 4 | Acesso de administrador no portfólio da Meta (aguardando a empresa) → mandar os 6 pedidos | Decidir os pedidos com segurança |
+| 5 | Preços da **decoração** e da **massagem** (cadastro de Produtos, D4) e uma foto de massagem | Gilberto e página do orçamento |
 
-## 2. Pendências com terceiros (em paralelo)
+## 2. Pendências com terceiros
 | Quem | O quê |
 |---|---|
-| Silbeck (Pedro) | Respostas da mensagem (`silbeck/mensagem-pedro.md`): endpoints liberados, ambiente de teste, origem da reserva, API do motor |
-| Márcio | Túnel seguro com o servidor do Silbeck; API do sistema interno de atividades |
-| Meta | Conta do WhatsApp Business no portfólio; coexistência do 99117; migração do 99110 (só no fim) |
-| Banco do Brasil | Acesso à API Pix (cobrança e leitura, nunca envio) e certificado |
-| Cielo | Credenciais da API do link de pagamento |
-| Asksuite | Exportar questionário, biblioteca e histórico antes de cancelar |
-| Google Cloud / Supabase | Conta de faturamento do projeto e projeto novo do Supabase (São Paulo) |
+| Márcio | Túnel ou VPN com o servidor do Silbeck; mapa de IDs (`silbeck/mapa-ids.md`); portal "CRM WhatsApp" no Silbeck; API do sistema de atividades |
+| Banco do Brasil | API Pix (só cobrança e leitura) e certificado |
+| Cielo | Credenciais do link de pagamento (mais adiante) |
+| Supabase | Projeto novo (região São Paulo) |
+| Silbeck (opcional) | Pedido de webhooks e de endpoints de cancelar e alterar |
+
+## 2b. O que a equipe faz agora (não depende de ninguém)
+1. **Especificação técnica** para o dono aprovar.
+2. **Simulador da API do Silbeck**, para construir sem tocar no sistema real.
+3. **Protótipo:** "reserva em um nome ou separada" (G3) e a tela Setores simplificada (D12).
+4. **Prompt de sistema do Gilberto para o CRM**, gerado a partir de `.claude/agents/gilberto-vendas.md` + base de conhecimento.
 
 ## 3. Especificação técnica
 Documento com modelo de dados, telas, integrações, regras do Gilberto, alertas e segurança. O dono aprova antes da construção.
