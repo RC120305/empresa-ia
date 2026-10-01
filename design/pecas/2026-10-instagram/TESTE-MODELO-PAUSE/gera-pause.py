@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""Teste de modelo "Pause a tela" (story/Reels 9:16), inspirado numa referência enviada pelo dono em 01/10/2026.
+
+Uso (na raiz): python3 design/pecas/2026-10-instagram/TESTE-MODELO-PAUSE/gera-pause.py
+Moldura fina arredondada em creme, logo pequeno "furando" a moldura no topo, título grande em
+Playfair itálico, linha de apoio leve e uma etiqueta creme com texto marrom perto da base.
+"""
+import html, json, os, subprocess
+
+AQUI = os.path.dirname(os.path.abspath(__file__))
+RAIZ = os.path.abspath(os.path.join(AQUI, "../../../.."))
+V = json.load(open(os.path.join(AQUI, "versoes.json"), encoding="utf-8"))
+
+MODELO = """<!doctype html>
+<!-- Teste "Pause a tela" {n} | 9:16 (1080 x 1920) -->
+<html lang="pt-BR"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../modelos/marca.css">
+<style>
+.foto {{ object-position: {pos}; }}
+.ceu {{ position: absolute; inset: 0 0 auto 0; height: 1150px; background: linear-gradient(to bottom, rgba(20,14,8,{veu}) 0%, rgba(20,14,8,{veu}) 55%, rgba(20,14,8,0) 100%); }}
+.moldura {{ position: absolute; left: 50px; right: 50px; top: 170px; bottom: 200px; border: 3px solid var(--creme); border-radius: 46px;
+  -webkit-mask: linear-gradient(to right, #000 calc(50% - 130px), transparent calc(50% - 130px), transparent calc(50% + 130px), #000 calc(50% + 130px)) top / 100% 12px no-repeat, linear-gradient(#000, #000) 0 12px / 100% 100% no-repeat;
+  mask: linear-gradient(to right, #000 calc(50% - 130px), transparent calc(50% - 130px), transparent calc(50% + 130px), #000 calc(50% + 130px)) top / 100% 12px no-repeat, linear-gradient(#000, #000) 0 12px / 100% 100% no-repeat; }}
+.selo {{ position: absolute; left: 50%; top: 170px; transform: translate(-50%, -50%); padding: 0 26px; }}
+.selo img {{ height: 118px; display: block; filter: drop-shadow(0 2px 8px rgba(0,0,0,.35)); }}
+.corte {{ position: absolute; left: 50%; top: 168px; width: 200px; height: 8px; transform: translateX(-50%); background: transparent; }}
+.texto {{ position: absolute; left: 90px; right: 90px; top: {topo}px; text-align: center; }}
+.texto h1 {{ font-family: "Playfair Display", serif; font-style: italic; font-weight: 700; font-size: 112px; line-height: 1.06; text-shadow: 0 3px 24px rgba(0,0,0,.35); }}
+.texto p {{ margin-top: 34px; font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 46px; line-height: 1.25; text-shadow: 0 2px 16px rgba(0,0,0,.6), 0 0 4px rgba(0,0,0,.3); }}
+.etiqueta {{ position: absolute; left: 170px; right: 170px; bottom: 300px; background: var(--creme); border-radius: 26px 26px 26px 26px;
+  padding: 30px 36px 26px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.18); }}
+.etiqueta span {{ font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 46px; line-height: 1.2; letter-spacing: .02em; text-transform: uppercase; color: var(--marrom); }}
+</style></head>
+<body><div class="peca story">
+  <img class="foto" src="fotos/{foto}" alt="">
+  <div class="ceu"></div>
+  <div class="moldura"></div>
+  <div class="selo"><img src="../../../../contexto/marca/logo-hotel-cabanas-branco.png" alt="Hotel Cabanas"></div>
+  <div class="texto"><h1>{titulo}</h1><p>{apoio}</p></div>
+  <div class="etiqueta"><span>{etiqueta}</span></div>
+</div></body></html>
+"""
+
+for n, v in enumerate(V, 1):
+    arq = os.path.join(AQUI, f"PAUSE-{n}.html")
+    open(arq, "w", encoding="utf-8").write(MODELO.format(
+        n=n, foto=v["foto"], pos=v.get("pos", "center"), veu=v.get("veu", ".35"), topo=v.get("topo", 470),
+        titulo=html.escape(v["titulo"]).replace("\n", "<br>"), apoio=html.escape(v["apoio"]).replace("\n", "<br>"),
+        etiqueta=html.escape(v["etiqueta"]).replace("\n", "<br>")))
+    subprocess.run(["node", os.path.join(RAIZ, "design/ferramentas/renderizar.js"), arq,
+                    os.path.join(AQUI, f"PAUSE-{n}.png"), "story"], check=True)
