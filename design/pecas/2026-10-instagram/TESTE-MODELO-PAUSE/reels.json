@@ -1,0 +1,15 @@
+{"capa": "PAUSE-3.png",
+ "telas": [
+  {"foto": "piscina.jpg", "pos": "38% center", "texto": "Piscina climatizada"},
+  {"foto": "hidromassagem.jpg", "pos": "50% center", "texto": "Hidromassagem aquecida"},
+  {"foto": "cabana-casal.jpg", "pos": "52% center", "texto": "Cabana a 3 m do chão"},
+  {"foto": "cafe-frutas.jpg", "pos": "40% center", "texto": "Café da manhã incluso"},
+  {"foto": "aerea-hotel.jpg", "pos": "50% center", "texto": "40 hectares de natureza"},
+  {"foto": "rio.jpg", "pos": "45% center", "texto": "Entre dois rios"},
+  {"foto": "caiaque-mulher.jpg", "pos": "45% center", "texto": "Caiaque incluso"},
+  {"foto": "standup-casal.jpg", "pos": "50% center", "texto": "Stand up paddle incluso"},
+  {"foto": "arco-flecha.jpg", "pos": "22% center", "texto": "Arco e flecha incluso"},
+  {"foto": "redario-casal.jpg", "pos": "45% center", "texto": "Redário à beira do rio"},
+  {"foto": "arvorismo-estacao.jpg", "pos": "55% center", "texto": "Arvorismo (opcional)"},
+  {"foto": "boia-cross.jpg", "pos": "50% center", "texto": "Boia cross (opcional)"}
+ ]}
