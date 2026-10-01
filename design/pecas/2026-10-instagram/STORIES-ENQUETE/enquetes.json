@@ -32,19 +32,19 @@
    "figurinha": "Depois do passeio?"
   },
   {
-   "pergunta": "Boia cross ou caiaque?",
-   "apoio": "Aventura no rio",
-   "titulo": "*Boia cross* ou **caiaque**?",
+   "pergunta": "Boia cross ou arvorismo?",
+   "apoio": "Qual aventura?",
+   "titulo": "*Boia cross* ou **arvorismo**?",
    "op_a": "Boia cross",
-   "op_b": "Caiaque",
+   "op_b": "Arvorismo",
    "foto_a": "boia-cross.jpg",
    "pos_a": "50% 50%",
-   "foto_b": "caiaque-rio.jpg",
-   "pos_b": "45% 60%",
+   "foto_b": "arvorismo.jpg",
+   "pos_b": "55% 45%",
    "data": "09/10",
    "dia": "sexta",
    "hora": "20h",
-   "figurinha": "Aventura no rio?"
+   "figurinha": "Qual aventura?"
   },
   {
    "pergunta": "Cabana Casal ou Bangalô?",
