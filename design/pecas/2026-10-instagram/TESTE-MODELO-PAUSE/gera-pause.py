@@ -3,7 +3,7 @@
 
 Uso (na raiz): python3 design/pecas/2026-10-instagram/TESTE-MODELO-PAUSE/gera-pause.py
 Moldura fina arredondada em creme, logo pequeno "furando" a moldura no topo, título grande em
-Playfair itálico, linha de apoio leve e uma etiqueta creme com texto marrom perto da base.
+Playfair itálico, linha de apoio leve e uma legenda em creme perto da base (sem caixa, pedido do dono em 01/10).
 """
 import html, json, os, subprocess
 
@@ -27,13 +27,15 @@ MODELO = """<!doctype html>
 .texto {{ position: absolute; left: 90px; right: 90px; top: {topo}px; text-align: center; }}
 .texto h1 {{ font-family: "Playfair Display", serif; font-style: italic; font-weight: 700; font-size: 112px; line-height: 1.06; text-shadow: 0 3px 24px rgba(0,0,0,.35); }}
 .texto p {{ margin-top: 34px; font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 46px; line-height: 1.25; text-shadow: 0 2px 16px rgba(0,0,0,.6), 0 0 4px rgba(0,0,0,.3); }}
-.etiqueta {{ position: absolute; left: 170px; right: 170px; bottom: 300px; background: var(--creme); border-radius: 26px 26px 26px 26px;
-  padding: 30px 36px 26px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,.18); }}
-.etiqueta span {{ font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 46px; line-height: 1.2; letter-spacing: .02em; text-transform: uppercase; color: var(--marrom); }}
+.pe {{ position: absolute; inset: auto 0 0 0; height: 760px; background: linear-gradient(to top, rgba(20,14,8,.62), rgba(20,14,8,.3) 55%, rgba(20,14,8,0)); }}
+.etiqueta {{ position: absolute; left: 120px; right: 120px; bottom: 310px; text-align: center; }}
+.etiqueta span {{ font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 48px; line-height: 1.25; letter-spacing: .06em; text-transform: uppercase; color: var(--creme);
+  text-shadow: 0 2px 16px rgba(0,0,0,.6), 0 0 4px rgba(0,0,0,.35); }}
 </style></head>
 <body><div class="peca story">
   <img class="foto" src="fotos/{foto}" alt="">
   <div class="ceu"></div>
+  <div class="pe"></div>
   <div class="moldura"></div>
   <div class="selo"><img src="../../../../contexto/marca/logo-hotel-cabanas-branco.png" alt="Hotel Cabanas"></div>
   <div class="texto"><h1>{titulo}</h1><p>{apoio}</p></div>
