@@ -602,3 +602,4 @@ Origem: análise de 47 conversas do WhatsApp (`crm/gilberto/conversas-reais.md`)
 - **P71 Boia cross:** horários 9h e 10h, agendada no check-in e paga no check-out? Não hóspede pode fazer? Combo boia + arvorismo R$ 170 vale?
 - **P72 Outros:** não há café da tarde (confirmar); Superior só no andar de cima; cama da Cabana Casal não separa; Conjugado tem 2 banheiros; saída antecipada paga o pacote todo.
 - **P73 Telefone fixo:** o número divulgado para ligar está recusando chamadas. Qual número o Gilberto indica para ligação?
+- **Supabase (dono, 01/10/2026):** organização "Hotel Cabanas_novo" (já existia uma "Hotel Cabanas" de origem a confirmar), projeto `cabanas-crm`, região **South America (São Paulo) sa-east-1**, plano Free. URL `https://gpvhnclniolxxxjkslkf.supabase.co`. Um 1º projeto criado por engano em East US (Ohio) deve ser apagado. Chaves vão só para o Secret Manager (`supabase-secret-key`, `supabase-db-password`).
