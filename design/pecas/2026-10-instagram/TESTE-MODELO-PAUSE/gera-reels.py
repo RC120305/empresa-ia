@@ -2,7 +2,7 @@
 """Reels "Pause a tela e descubra" (teste de modelo, 01/10/2026).
 
 Uso (na raiz): python3 design/pecas/2026-10-instagram/TESTE-MODELO-PAUSE/gera-reels.py
-Capa (PAUSE-N.png, 2,5 s) → telas rápidas com foto + uma palavra (0,55 s cada, para "pausar e descobrir")
+Capa (PAUSE-N.png, 2,5 s) → telas com foto + uma frase (tempo_tela em reels.json, padrão 1 s; fusão suave entre cenas)
 → fecho com logo e "Reserve pelo link da bio" (2 s). Zoom lento em cada tela. Sai REELS-PAUSE.mp4
 (1080 x 1920, 30 fps, sem áudio: a música em alta é escolhida no app, na hora de publicar).
 Precisa do ffmpeg do pacote imageio-ffmpeg (pip install imageio-ffmpeg).
@@ -54,7 +54,7 @@ cenas = [(os.path.join(AQUI, R["capa"]), 2.5)]
 for i, t in enumerate(R["telas"], 1):
     miolo = (f'<div class="veu"></div><div class="moldura"></div><div class="selo"><img src="{LOGO}" alt=""></div>'
              f'<div class="palavra">{html.escape(t["texto"])}</div>')
-    cenas.append((render(f"tela-{i:02d}", t["foto"], t.get("pos", "center"), miolo), 0.55))
+    cenas.append((render(f"tela-{i:02d}", t["foto"], t.get("pos", "center"), miolo), R.get("tempo_tela", 1.0)))
 fim = (f'<div class="fim"></div><div class="fim-box"><img src="{LOGO}" alt="Hotel Cabanas">'
        f'<div class="local">BONITO - MS</div><div class="chamada">Reserve pelo link da bio</div></div>')
 cenas.append((render("fim", R.get("foto_fim", "aerea-hotel.jpg"), "50% center", fim), 2.0))
@@ -63,6 +63,8 @@ saida = os.path.join(AQUI, "REELS-PAUSE.mp4")
 cmd = [imageio_ffmpeg.get_ffmpeg_exe(), "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
        "-c:v", "libx264", "-pix_fmt", "yuv420p", "-preset", "medium", "-crf", "20", "-movflags", "+faststart", saida]
 ff = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+FUSAO = round(R.get("fusao", 0.2) * FPS)  # quadros de transição suave entre as cenas
+ultimo = None
 for png, dur in cenas:
     im = Image.open(png).convert("RGB")
     n = round(dur * FPS)
@@ -70,6 +72,10 @@ for png, dur in cenas:
         z = 1 + 0.05 * k / max(n - 1, 1)  # zoom lento
         cw, ch = W / z, H / z
         x, y = (W - cw) / 2, (H - ch) / 2
-        ff.stdin.write(im.crop((round(x), round(y), round(x + cw), round(y + ch))).resize((W, H), Image.LANCZOS).tobytes())
+        q = im.crop((round(x), round(y), round(x + cw), round(y + ch))).resize((W, H), Image.LANCZOS)
+        if ultimo is not None and k < FUSAO:
+            q = Image.blend(ultimo, q, (k + 1) / (FUSAO + 1))
+        ff.stdin.write(q.tobytes())
+    ultimo = q
 ff.stdin.close(); ff.wait()
 print(f"{saida}: {sum(d for _, d in cenas):.1f} s, {len(cenas)} cenas")
