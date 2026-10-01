@@ -55,6 +55,7 @@ jobs:
             --region "${REGION}" \
             --service-account "crm-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
             --set-env-vars "VERSAO=${GITHUB_SHA::7}" \
+            --set-secrets "META_APP_SECRET=meta-app-secret:latest,META_VERIFY_TOKEN=meta-verify-token:latest" \
             --allow-unauthenticated \
             --min-instances 0 --max-instances 1 --memory 256Mi \
             --quiet
