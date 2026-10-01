@@ -17,6 +17,8 @@ description: >-
 ## Regra de ouro
 **Só sai o que o dono aprovou.** Um post é publicado apenas se estiver **aprovado na Central de Aprovação** do mês (`../conteudo-mensal/references/central-de-aprovacao.md`, coleção `decisoes`, `status: "aprovado"`) **ou**, na planilha `Calendário <Mês>` mais recente do Drive, a coluna **Status** diz **"Aprovado"** (sem ressalva) e a data e o horário já chegaram. Qualquer dúvida (texto de ajuste na coluna, arte faltando, legenda diferente do repositório, "[a confirmar]" ou "[confirmar valor vigente]" no texto) → **não publica** e avisa o dono.
 
+**Stories com enquete (cartões `E1`, `E2`… da Central, documentos `AAAA-MM_POST-E<n>`) nunca são publicados por esta skill**, mesmo aprovados: a figurinha de enquete só existe no app do Instagram. Quem publica é a pessoa da equipe, pelo app (`social/conteudo/AAAA-MM/stories-enquete.md`). No máximo, avise o dono no dia: "hoje às 20h tem o story com enquete X".
+
 ## Requisitos (checar no início; se faltar, parar e avisar)
 - Variável de ambiente `META_IG_TOKEN` (chave de publicação criada pelo dono; **nunca** pedir no chat nem gravar em arquivo ou log).
 - Rede liberada para `graph.facebook.com`.
