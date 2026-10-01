@@ -3,7 +3,9 @@
 Pedido do dono na Central (30/09 e 01/10). Formato escolhido: **stories com figurinha de enquete**, um por dia, dia sim, dia não. A pergunta 4 original ("Manhã no rio ou fim de tarde na varanda?") foi trocada pelo dono por "Caiaque ou stand-up?". A ordem foi ajustada para as duas perguntas com caiaque não ficarem seguidas.
 
 - **Artes:** `design/pecas/2026-10-instagram/STORIES-ENQUETE/ENQUETE-N.png` (com faixa marrom) e `ENQUETE-N-sem-faixa.png` (só texto sobre a foto, pedido do dono em 01/10), 9:16. Gerador: `gera-enquetes.py [sem-faixa]` + `enquetes.json`.
-- **Status:** aguardando aprovação do dono.
+- **Versão escolhida pelo dono (01/10): sem a faixa** (`ENQUETE-N-sem-faixa.png`).
+- **Status:** aguardando o OK final do dono e a definição de quem publica pelo app.
+- **Sem figurinha não funciona:** se algum story sair sem a enquete, ele precisa de um convite para responder (nos stories a resposta vai para o direct), por exemplo "Responda com a sua escolha".
 
 ## Como publicar (pelo app do Instagram)
 A figurinha de enquete **só pode ser colocada pelo app**: a publicação automática (API da Meta) não coloca figurinhas. Por isso esses stories são publicados à mão, por quem cuida do Instagram.
