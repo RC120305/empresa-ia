@@ -1,0 +1,33 @@
+# Criar os 2 segredos da Meta no Secret Manager (colar no Cloud Shell do projeto cabanas-crm)
+# - meta-verify-token: gerado aqui, aleatório. Aparece só na sua tela do Cloud Shell
+#   (você vai colar no campo "Verificar token" da Meta). Não mande no chat.
+# - meta-app-secret: se já existir, é mantido. Se não existir, o Cloud Shell pede para
+#   você colar a Chave Secreta do app (Meta > Configurações do app > Básico). Ela não aparece na tela.
+
+gcloud config set project cabanas-crm
+gcloud services enable secretmanager.googleapis.com
+
+if gcloud secrets describe meta-verify-token >/dev/null 2>&1; then
+  echo "meta-verify-token já existe (mantido)."
+else
+  TOKEN="cabanas-$(openssl rand -hex 16)"
+  printf '%s' "$TOKEN" | gcloud secrets create meta-verify-token --replication-policy=automatic --data-file=-
+  echo ""
+  echo "=== ANOTE (vai no campo 'Verificar token' da Meta): $TOKEN ==="
+  echo ""
+fi
+
+if gcloud secrets describe meta-app-secret >/dev/null 2>&1; then
+  echo "meta-app-secret já existe (mantido)."
+else
+  read -s -p "Cole a Chave Secreta do app da Meta e tecle Enter: " APPSECRET; echo
+  printf '%s' "$APPSECRET" | gcloud secrets create meta-app-secret --replication-policy=automatic --data-file=-
+  unset APPSECRET
+fi
+
+for S in meta-verify-token meta-app-secret; do
+  gcloud secrets add-iam-policy-binding "$S" \
+    --member="serviceAccount:crm-runtime@cabanas-crm.iam.gserviceaccount.com" \
+    --role="roles/secretmanager.secretAccessor" --quiet >/dev/null
+done
+echo "PRONTO: segredos criados e liberados para o CRM."
