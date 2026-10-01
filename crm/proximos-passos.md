@@ -9,14 +9,15 @@
 - **Silbeck:** API lida e respondida pela Silbeck.
 - **Gilberto:** contratado (v1.1, nota 4,42), com base de conhecimento do questionário e formação em vendas (Tevah e Thaize).
 - **WhatsApp:** plano definido: número de teste da Meta → 99117 por coexistência (modo observação) → saída da Asksuite → 99110.
-- **No ar (01/10/2026):** Google Cloud `cabanas-crm` com publicação automática pelo GitHub (sem chaves); app "Cabanas CRM" na Meta; **webhook do WhatsApp de teste recebendo mensagens no CRM** (texto e status enviado/entregue/lido, assinatura conferida).
+- **No ar (01/10/2026):** Google Cloud `cabanas-crm` com publicação automática pelo GitHub (sem chaves); app "Cabanas CRM" na Meta; **webhook do WhatsApp de teste recebendo mensagens no CRM** (texto e status enviado/entregue/lido, assinatura conferida); **banco Supabase em São Paulo gravando contatos, conversas e mensagens** (migração `crm/banco/001_inicial.sql`).
 
 ## 1. O que depende do dono
 | # | O quê | Por quê |
 |---|---|---|
 | 1 | ~~Projeto no Google Cloud~~ (feito 01/10). Falta: dar acesso de administrador à equipe | Manutenção |
 | 2 | ~~App "Cabanas CRM" na Meta + webhook~~ (feito 01/10) | Caixa de entrada e testes do WhatsApp |
-| 2a | Criar o **projeto no Supabase** (região São Paulo) | Banco de dados e login da caixa de entrada |
+| 2a | ~~Projeto no Supabase (São Paulo)~~ (feito 01/10) | Banco de dados e login da caixa de entrada |
+| 2b | Responder as perguntas P59–P73 (regras das conversas reais) | Base do Gilberto com uma regra só |
 | 3 | **Exportar da Asksuite** a biblioteca de respostas e 30 a 50 conversas | Teste real do Gilberto e ajuste fino do tom |
 | 4 | Acesso de administrador no portfólio da Meta (aguardando a empresa) → mandar os 6 pedidos | Decidir os pedidos com segurança |
 | 5 | Preços da **decoração** e da **massagem** (cadastro de Produtos, D4) e uma foto de massagem | Gilberto e página do orçamento |
