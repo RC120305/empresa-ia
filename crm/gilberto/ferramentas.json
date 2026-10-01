@@ -180,7 +180,7 @@
   },
   {
     "name": "gerar_cobranca",
-    "description": "Gera o link de pagamento do sinal (50% da reserva; o restante é pago no check-out) por Pix (Banco do Brasil) ou cartão de crédito em até 6x (link Cielo). Use logo depois de criar_reserva, na forma que o cliente escolheu, ou para mandar um novo link quando o prazo venceu e a reserva ainda está ativa. Devolve o link, o valor do sinal e o prazo-limite calculado pelo CRM (24 h; 2 h se o check-in for em até 3 dias; nunca depois do check-in). O CRM envia junto, sozinho, a política de cancelamento (resposta fixa) e registra o envio. O pagamento é sempre pelo link: nunca peça nem aceite número de cartão no chat.",
+    "description": "Gera o link de pagamento do sinal (50% da reserva; o restante é pago no check-out) por Pix (Banco do Brasil) ou cartão de crédito em até 6x (link Cielo). Use logo depois de criar_reserva, na forma que o cliente escolheu, ou para mandar um novo link quando o prazo venceu e a reserva ainda está ativa. Devolve o link, o valor do sinal e o prazo-limite calculado pelo CRM (48 h; 2 h se o check-in for em até 3 dias; nunca depois do check-in). O CRM envia junto, sozinho, a política de cancelamento (resposta fixa) e registra o envio. O pagamento é sempre pelo link: nunca peça nem aceite número de cartão no chat.",
     "strict": true,
     "input_schema": {
       "type": "object",

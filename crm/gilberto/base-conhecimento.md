@@ -31,11 +31,11 @@
 - **P:** Como funciona o check-in online?
   R: Na véspera você recebe um link para o check-in online, que agiliza a chegada. Se não conseguir, faz na recepção.
 - **P:** Posso fazer check-in antes do horário (early check-in)?
-  R: Não liberamos o quarto antes das 15h, mas você pode deixar as malas no guarda-volumes (gratuito) e aproveitar o hotel até o quarto ficar pronto. Para garantir o quarto já na chegada, é preciso reservar a noite anterior.
+  R: O quarto é liberado às 15h. Chegando antes, a partir das 9h você já aproveita toda a área de lazer (com toalhas para piscina e rios) e deixa as malas no guarda-volumes (gratuito). Para garantir o quarto já na chegada, é preciso reservar a noite anterior. *(P64, dono 01/10: nunca prometer quarto antes das 15h, nem "se estiver liberado".)*
 - **P:** Tem late check-out?
   R: Não liberamos late check-out, mas as malas ficam no guarda-volumes e você pode continuar aproveitando o hotel.
 - **P:** Quero mudar as datas da reserva.
-  R: Vou verificar a disponibilidade para as novas datas. A mudança pode alterar o valor; a equipe confirma no sistema e eu te aviso assim que estiver feito. *(Fluxo do CRM: alerta de alteração para a equipe; a confirmação só sai depois de alterado no Silbeck. Fora do horário, 7h30 às 17h: "a equipe confere pela manhã".)*
+  R: Vou verificar a disponibilidade para as novas datas. A troca de data é sem custo até **30 dias antes do check-in na alta temporada** e **15 dias antes na baixa**. Fora desse prazo a data ainda pode mudar, mas a diferença de valor não é devolvida: vira crédito para consumo, que pode ser usado uma vez. A equipe confirma no sistema e eu te aviso assim que estiver feito. *(P63b/P63c, dono 01/10.)* *(Fluxo do CRM: alerta de alteração para a equipe; a confirmação só sai depois de alterado no Silbeck. Fora do horário, 7h30 às 17h: "a equipe confere pela manhã".)*
 - **P:** Tem guarda-volumes?
   R: Sim, guardamos as malas antes do check-in e depois do check-out, sem custo.
 
@@ -47,7 +47,7 @@
 - **P:** Qual a capacidade máxima?
   R: Até 5 pessoas na Cabana Master e no Apartamento Conjugado. As demais acomodam até 4 (a Cabana Casal, 2; a Tripla, 3).
 - **P:** Criança paga? A partir de que idade?
-  R: Criança até 5 anos não paga, dormindo na cama dos pais. A partir daí paga normalmente e precisa de acomodação com cama para ela (não temos cama extra). A Cabana Casal e a Tripla não recebem crianças menores de 5 anos; a Cabana Master recebe.
+  R: Criança **até 4 anos** não paga, dormindo na cama dos pais. **A partir de 5 anos** paga normalmente *(P68a, dono 01/10: a criança de 5 anos já paga)* e precisa de acomodação com cama para ela (não temos cama extra). A Cabana Casal e a Tripla não recebem crianças menores de 5 anos; a Cabana Master recebe.
 - **P:** Tem quarto conjugado?
   R: Sim, o Apartamento Conjugado, em dois pisos, para até 5 pessoas.
 - **P:** Tem quarto com hidromassagem?
@@ -83,9 +83,13 @@
 
 ## 6. Atividades e lazer
 - **P:** Quais atividades estão incluídas na diária?
-  R: Com monitor exclusivo: arco e flecha, trilhas pela mata ciliar com banho de rio, tirolesa, stand up paddle e caiaque no Rio Formoso. Valem para todos os hóspedes, inclusive para quem fica só uma diária, e não têm idade mínima.
+  R: Com monitor exclusivo: arco e flecha, trilhas pela mata ciliar com banho de rio, tirolesa, stand up paddle e caiaque no Rio Formoso. Valem para todos os hóspedes, inclusive para quem fica só uma diária. **A tirolesa da trilha é a partir de 8 anos**; as demais atividades da programação não têm idade mínima. *(P68b, dono 01/10.)*
+- **P:** Tem lugar raso no rio para criança pequena?
+  R: Tem, sim: no Rio Formosinho, perto da recepção, há uma área rasa. Sempre com um adulto junto. *(P68c, dono 01/10.)*
 - **P:** Quais atividades são pagas à parte?
-  R: **Boia cross** (1 h, 1.200 m de corredeiras e cachoeiras do Rio Formoso): R$ 100 por pessoa. **Arvorismo** (18 obstáculos e 2 tirolesas, a última aquática no Rio Formoso): R$ 120 por pessoa. **Combo boia cross + arvorismo:** R$ 170 por pessoa. As duas a partir de 5 anos e 1,15 m; não recomendadas para gestantes nem para quem ingeriu álcool. Posso já reservar?
+  R: **Boia cross** (1 h, 1.200 m de corredeiras e cachoeiras do Rio Formoso): R$ 100 por pessoa. **Arvorismo** (18 obstáculos e 2 tirolesas, a última aquática no Rio Formoso): R$ 120 por pessoa. **Combo boia cross + arvorismo:** R$ 170 por pessoa. As duas a partir de 5 anos e 1,15 m; não recomendadas para gestantes nem para quem ingeriu álcool. Há vários horários por dia, mas as **vagas são limitadas**: sempre consultar a vaga antes de prometer horário. Posso ver os horários para você? *(P71a, dono 01/10: o Gilberto reserva quando o cliente escolhe, e o CRM abre um alerta para a equipe.)*
+- **P:** Quem não está hospedado pode fazer boia cross ou arvorismo?
+  R: Pode, sim. O voucher é comprado numa agência oficial de Bonito, como a Ecotrip, e o ideal é reservar com antecedência. *(P71b, dono 01/10.)*
 - **P:** Tem flutuação?
   R: O hotel não oferece mais flutuação. Aqui dentro tem boia cross, arvorismo e as trilhas com banho de rio; se quiser flutuação, a equipe indica passeios em Bonito.
 - **P:** Como funcionam os banhos de rio?
@@ -109,7 +113,7 @@
 - **P:** Tem estacionamento?
   R: Sim, amplo e arborizado, sem custo e sem necessidade de reserva (as cabanas têm garagem privativa).
 - **P:** Tem secador, ferro de passar, cofre e toalhas?
-  R: Secador em todos os quartos. Ferro de passar não temos. Cofre central gratuito na recepção. Toalhas de banho em todos os quartos; extras na recepção.
+  R: Secador em todos os quartos. Ferro de passar e cofre não temos. Toalhas de banho em todos os quartos (e toalhas para piscina e rios); extras na recepção. *(P67, dono 01/10: não há cofre.)*
 - **P:** O que levar?
   R: Roupa de banho, roupa para trilha, protetor solar, calçado que possa molhar e outro para caminhar, e máscara e snorkel se tiver. Shampoo, condicionador, sabonete, secador, roupa de cama e toalhas já estão no quarto.
 - **P:** Tem espaço para eventos? Day use?
@@ -121,11 +125,11 @@
 
 ## 8. Reservas, pagamentos e cancelamento
 - **P:** Quais as formas de pagamento?
-  R: Pix ou cartão de crédito em até 6x sem juros. Para garantir a reserva, pagamos 50% de sinal e o restante no check-out (no hotel também aceitamos débito). Não aceitamos depósito bancário nem boleto. *(No CRM: link Pix ou Cielo com prazo de 24h, ou 2h se o check-in for em até 3 dias; P46.)*
+  R: São 4 opções: **50% de sinal no cartão em até 3x**, **100% no cartão em até 6x sem juros**, **Pix de 50%** ou **Pix de 100%**. Com sinal de 50%, o restante é pago no check-out (no hotel também aceitamos débito). O sinal pode ser dividido em 2 cartões. Não aceitamos depósito bancário nem boleto. *(P61, dono 01/10. No CRM: link com prazo de **48 h**, ou 2 h se o check-in for em até 3 dias; P62.)*
 - **P:** Pagamento à vista tem desconto?
   R: Não trabalhamos com desconto: o valor para quem reserva direto com a gente já é o melhor que você encontra. E dá para parcelar em até 6x sem juros. *(Corrigido: o antigo "condições especiais à vista" contraria a regra "sem desconto".)*
 - **P:** Qual a política de cancelamento?
-  R: Com 30 dias ou mais de antecedência do check-in: reembolso integral. Com 15 dias ou mais: reembolso de 50% do sinal. Com menos de 15 dias: sem reembolso. Reservas por agência ou site de viagem seguem a política deles. *(Pedido de cancelamento: alerta para a equipe.)*
+  R: Com 30 dias ou mais de antecedência do check-in: reembolso integral. De 15 a 29 dias: reembolso de 50% do valor pago. Com menos de 15 dias: sem reembolso. *(P63a, dono 01/10.)* Reservas por agência ou site de viagem seguem a política deles. *(Pedido de cancelamento: alerta para a equipe.)*
 - **P:** Não achei vaga no Booking ou no site para minha data.
   R: Às vezes fechamos a disponibilidade nos sites de viagem e mantemos para reserva direta. Me passa as datas e o número de pessoas que eu confiro agora.
 - **P:** Perdi o prazo de pagamento.
@@ -145,7 +149,7 @@
 - **P:** Tem festa de Réveillon ou ceia de Natal?
   R: Não fazemos festa nem ceia: aqui a noite é de silêncio e natureza. O restaurante funciona normalmente, e a recepção indica restaurantes de Bonito com ceia.
 - **P:** Tem desconto para terceira idade, aniversariante ou estadia longa?
-  R: Não temos esses descontos, mas o valor direto com a gente já é o melhor, e o aniversário aqui fica especial pelo atendimento (e dá para contratar a decoração especial).
+  R: Não temos esses descontos nem cortesia de aniversário, mas o valor direto com a gente já é o melhor, e dá para deixar a data especial com a decoração: Simples R$ 350 ou Completa R$ 600, pedida com 3 dias de antecedência. *(P66 e P65, dono 01/10: não existe decoração ou mimo grátis.)*
 - **P:** Têm convênio com Bancorbrás ou RCI?
   R: Não temos convênio.
 - **P:** Como é o clima em Bonito?
@@ -185,3 +189,19 @@
 
 ## Dúvidas para o dono
 ✅ Respondidas em 30/09/2026: Superior (duplo/triplo 2 a 3; quádruplo até 4) · inclusos valem para uma diária · 110V em todas · só Pix e cartão · bebidas só as que não temos, na acomodação, tereré liberado.
+
+## Regras confirmadas pelo dono a partir das conversas reais (01/10/2026, painel "Regras do Gilberto")
+- **Desconto (P59):** o Gilberto nunca dá desconto. Exceções só a equipe decide (dono, Renata, Jagles ou Márcio), e o Gilberto **não diz ao cliente que exceções existem**. Pedido insistente → alerta para a equipe, sem prometer nada.
+- **Pagamento (P61):** 4 opções (50% no cartão até 3x · 100% no cartão até 6x · Pix 50% · Pix 100%); sinal pode ser dividido em 2 cartões.
+- **Prazo do link (P62):** 48 h; 2 h se o check-in for em até 3 dias.
+- **Cancelamento (P63a):** 30+ dias integral · 15 a 29 dias 50% do valor pago · menos de 15 dias sem reembolso.
+- **Troca de data (P63b/c):** grátis até 30 dias antes na alta e 15 dias antes na baixa; fora do prazo, a diferença vira crédito para uso único.
+- **Chegada cedo (P64):** quarto às 15h; lazer liberado a partir das 9h, com toalhas.
+- **Decoração (P65):** 3 dias de antecedência; nenhuma grátis. **Aniversário (P66):** sem cortesia; oferecer a decoração.
+- **Cofre (P67):** não há.
+- **Crianças (P68):** até 4 anos não pagam; 5 anos ou mais pagam. Tirolesa da trilha a partir de 8 anos. Área rasa no Rio Formosinho, perto da recepção.
+- **Temporada (P69):** alta temporada: **datas a enviar pelo dono** (até lá, o preço do Silbeck manda e o Gilberto não afirma o período). Réveillon: pacote mínimo de 4 noites, com datas que variam por ano (ex.: 29/12 a 02/01 ou 28/12 a 01/01): seguir o pacote cadastrado. **Uma pessoa paga o mesmo valor que duas** (não há tarifa single).
+- **Agência parceira (P70):** pode indicar a Ecotrip para passeios fora do hotel; contato (67) 99341-4734.
+- **Boia cross e arvorismo (P71):** vários horários por dia, vagas limitadas, consultar antes; o Gilberto reserva quando o cliente escolhe e o CRM abre alerta para a equipe. Não hóspede pode fazer comprando o voucher numa agência oficial (ex.: Ecotrip), com antecedência. Combo R$ 170 vale.
+- **Fatos (P72):** não há café da tarde; quartos Superior só no andar de cima (térreo é Standard); a cama da Cabana Casal não separa; o Conjugado tem 2 banheiros; quem sai antes do previsto paga o pacote inteiro.
+- **Telefone (P73):** (67) 99110-7635.

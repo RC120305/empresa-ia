@@ -74,7 +74,7 @@ Reservas de foto: `boia_drone` `1yZX3kyZLZG3YP8jwlV1bO3Bjx6Qq4Dx_` (capa alterna
 | Tela | Conteúdo (fatos de `hotel-operacional.md` §2, §4, §6 e §8) | Foto sugerida (nome e ID) |
 |---|---|---|
 | 1 (capa) | Gancho | `Infraestrutura / play_ground_criancas` · `15dgI8WgKx4U0DqtpXbLftQGTdbmCIR5y` |
-| 2 | **Até 5 anos não pagam**, dormindo na cama dos pais. **Berço** mediante agendamento | `Bangalô Especial / bangalo_especial_interna` · `1Ro_o5YpOp3EI48q3pvM8lWrdX29Io8eE` |
+| 2 | **Até 4 anos não pagam**, dormindo na cama dos pais. **Berço** mediante agendamento | `Bangalô Especial / bangalo_especial_interna` · `1Ro_o5YpOp3EI48q3pvM8lWrdX29Io8eE` |
 | 3 | Onde dormir: **Bangalô Especial** (45 m², até 4 pessoas, 2 camas king), **Cabana Master** e **Apartamento Conjugado** (até 5). A Cabana Casal e a Tripla não acomodam menores de 5 anos | `Bangalô Especial / bangalo_especial_area_com_rede` · `1xXd9JqBVxvPxGZ4t84K_iH-DRgOQyIiD` |
 | 4 | Cada aventura tem sua idade: a programação inclusa **não tem idade mínima**; **boia cross e arvorismo (opcionais)** a partir de 5 anos e 1,15 m; **flutuação (opcional)** a partir de 7 anos | `Arvorismo / arvorismo_estacao_crianca` · `1cNHeXnSbNzxJTdVByt9z208i2UxK5yiM` |
 | 5 | **Playground** com gramado, perto da quadra de beach tênis; **micro-ondas** no receptivo para papinhas e mamadeiras; opções **sem glúten e sem lactose** se pedidas na reserva | `Infraestrutura / play_ground` · `1fikC1STzAl21UtEJXXYsqmmIli80VKYG` |

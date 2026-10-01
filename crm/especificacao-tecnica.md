@@ -250,7 +250,7 @@ Permissões por papel (resumo; matriz completa no §8.3):
 | `conversas` | contato_id, negocio_id (atual), canal (`wa`, `ig`, `fb`, `email`), numero_id (99110/99117/teste), status (aberta/resolvida/arquivada), atribuida_a, modo_gilberto (`herdar`, `desligado`, `sugestao`, `automatico`), gilberto_pausado_ate, ultima_msg_cliente_em (janela 24 h), nao_lidas, etiquetas[] | índice(status, ultima_msg_cliente_em desc), índice(atribuida_a) |
 | `mensagens` | conversa_id, direcao (entrada/saída), autor (cliente, usuario_id, gilberto, sistema, app_externo), tipo (texto, imagem, video, audio, documento, localizacao, botao, modelo, reacao, nota_interna), corpo, midia_id, modelo_id, id_externo (wamid/mid), status_entrega, erro, transcricao (áudio), fontes_usadas jsonb (Gilberto), sugestao_status (pendente/enviada/editada/descartada + motivo), enviada_em | **único(id_externo)**, índice(conversa_id, enviada_em) |
 | `midias_mensagem` | mensagem_id, caminho_storage, mime, tamanho, sha256 | — |
-| `tarefas` | negocio_id/contato_id, tipo (ligar, enviar proposta, follow-up, cancelar no Silbeck, cadastrar agência, lançar consumo, cobrar Booking, agendar massagem, devolução, alteração), titulo, vence_em, responsavel_id, status, criada_por (usuário/sistema/gilberto), dados jsonb (nº reserva, valor) | índice(responsavel_id, status, vence_em) |
+| `tarefas` | negocio_id/contato_id, tipo (ligar, enviar proposta, follow-up, cancelar no Silbeck, cadastrar agência, lançar consumo, cobrar Booking, agendar massagem, agendar atividade (boia/arvorismo), devolução, alteração), titulo, vence_em, responsavel_id, status, criada_por (usuário/sistema/gilberto), dados jsonb (nº reserva, valor) | índice(responsavel_id, status, vence_em) |
 | `links_rastreaveis` | codigo (ex.: `AG-ECOTRIP`, `IG-BIO`), destino (wa.me 99117/99110, motor), origem_real, campanha, criado_por, cliques | único(codigo) |
 | `lista_espera` | negocio_id, data_entrada, data_saida, pessoas, tipos_aceitos[], posicao, avisado_em | índice(data_entrada) |
 
@@ -290,7 +290,7 @@ Permissões por papel (resumo; matriz completa no §8.3):
 | `kb_trechos` | fonte_id/questionario_id/biblioteca_id, texto, embedding `vector` (pgvector, índice HNSW) — busca por sentido |
 | `kb_conflitos` | item_a, item_b, descricao, resolvido (alerta de contradição, P36) |
 | `kb_publicacoes` | versão, publicada_por, quando, resultado da bateria (x de 30), diff — "Publicar alterações" |
-| `agente_config` | horários do modo automático (padrão 17h–7h30), expediente (7h30–17h todos os dias, D8), modo por número/canal, intervalo de agrupamento, ritmo do "digitando…", pausa após mensagem externa, prazos de pagamento (24 h / 2 h), escalonamento (10 min), limite de grupo (10), liga/desliga geral — **versionado**, só vale publicado |
+| `agente_config` | horários do modo automático (padrão 17h–7h30), expediente (7h30–17h todos os dias, D8), modo por número/canal, intervalo de agrupamento, ritmo do "digitando…", pausa após mensagem externa, prazos de pagamento (48 h / 2 h), escalonamento (10 min), limite de grupo (10), liga/desliga geral — **versionado**, só vale publicado |
 | `revisoes` | mensagem_id, revisor_id, veredito (aprovar/corrigir/reprovar), motivo (informação errada, tom, faltou vender, outro), texto_corrigido → vira item da biblioteca |
 | `bateria_testes` | pergunta, resposta_esperada (critérios), ativa — ~30 perguntas reais (C2) |
 | `gilberto_execucoes` | conversa_id, modelo, versão publicada, tokens entrada/saída/cache, custo estimado, ferramentas chamadas (sem dados pessoais nos parâmetros de log), duração, resultado (respondeu, passou, falhou) |
@@ -488,7 +488,8 @@ De `silbeck/mapa-ids.md`: pensão das reservas diretas, tarifário direto (e de 
 ### 5.5 Sistema interno de atividades (boia cross e arvorismo)
 - Aceita API e controla horários e limite por horário (P38, P39). **Documentação com o Márcio** [pendente]. Provavelmente também atrás da ponte do hotel.
 - Funções previstas: consultar horários e vagas do dia, reservar (produto, data, horário, pessoas, idade/altura), cancelar/remarcar (se existir), conferir reservas do hóspede.
-- O Gilberto **pode confirmar sozinho** boia cross, arvorismo e decoração (P39). Combo = 2 horários.
+- O Gilberto **pode confirmar sozinho** boia cross, arvorismo e decoração (P39). Combo = 2 horários. Vagas limitadas: sempre consultar antes (P71a).
+- **Alerta para a equipe a cada atividade escolhida** (dono, 01/10, P71a): quando o cliente escolhe boia cross, arvorismo ou combo, o CRM cria a tarefa "agendar atividade" para a equipe. Enquanto a API do sistema de atividades não estiver ligada, é a equipe que faz a reserva lá; depois, a tarefa vira conferência.
 - Até haver a API: "Reservar horário" vira tarefa para a equipe.
 
 ### 5.6 Google Drive (banco de imagens e vídeos)
@@ -606,7 +607,7 @@ O dono decide, com base no painel de ao menos [2 a 4 semanas] de modo sugestão 
 1. Aceite (na conversa ou na página) → confirmar **nome completo do titular, e-mail e acompanhantes** (sem nomes: "Acompanhante 1, 2…"); com mais de uma acomodação, **perguntar se é uma reserva ou separadas** (D6).
 2. Reconferir vaga e preço → `POST reserva` (origem "CRM WhatsApp") → reconferir (G2).
 3. Cobrança do **sinal de 50%** (Pix BB ou link Cielo até 6x) + **política de cancelamento** (resposta fixa; envio registrado).
-4. **Prazo:** 24 h contadas da criação da reserva; **2 h** se o check-in for em até 3 dias; **nunca além do dia do check-in**. A cobrança **vence junto**.
+4. **Prazo:** **48 h** contadas da criação da reserva (dono, 01/10, P62); **2 h** se o check-in for em até 3 dias; **nunca além do dia do check-in**. A cobrança **vence junto**.
 5. Lembretes gentis no meio do prazo e 2 h antes de vencer (com prazo de 2 h, só o do meio [a confirmar]). Fora da janela de 24 h → modelo de utilidade.
 6. Pago → `Adiantamento` → reserva confirmada → **Reservado** + confirmação ao cliente.
 7. **Venceu:** alerta e tarefa "Cancelar no Silbeck" com **"Enviar novo link"** (nova cobrança, novo prazo, a antiga anulada) ou **"Vou cancelar"** (anula a cobrança primeiro; a equipe fala com o cliente e cancela no Silbeck). O CRM vê o `status=3`, fecha a tarefa, move para **Perdido** ("não pagou") e avisa a lista de espera.
@@ -656,7 +657,7 @@ Reserva confirmada → boas-vindas + resumo · 7 dias antes → link de pré-che
 - Massagem: modelo com botões para a **Natália** (cadastro de parceiros); sem resposta em 2 h no expediente → alerta.
 
 ### 7.10 Crianças e capacidade (D1, D2)
-- Crianças **até 5 anos não pagam** (na cama dos pais); a regra de preço é do **Silbeck** (categorias de hóspede); o CRM envia idades e o preço já vem certo.
+- Crianças **até 4 anos não pagam** (na cama dos pais; a partir de 5 anos pagam — dono, 01/10, P68a); a regra de preço é do **Silbeck** (categorias de hóspede); o CRM envia idades e o preço já vem certo.
 - **Capacidade:** cadastro do Silbeck (`maximoOcupantes`).
 - **Cabana Casal e Tripla não aceitam menores de 5 anos** (`hotel-operacional.md` §8): confirmar se o Silbeck bloqueia; se não, o orçamento **filtra** essas opções quando houver criança < 5 [a confirmar].
 - Sem cama extra, sem recreação infantil (não prometer).

@@ -604,3 +604,20 @@ Origem: análise de 47 conversas do WhatsApp (`crm/gilberto/conversas-reais.md`)
 - **P73 Telefone fixo:** o número divulgado para ligar está recusando chamadas. Qual número o Gilberto indica para ligação?
 - **Supabase (dono, 01/10/2026):** organização "Hotel Cabanas_novo" (já existia uma "Hotel Cabanas" de origem a confirmar), projeto `cabanas-crm`, região **South America (São Paulo) sa-east-1**, plano Free. URL `https://gpvhnclniolxxxjkslkf.supabase.co`. Um 1º projeto criado por engano em East US (Ohio) deve ser apagado. Chaves vão só para o Secret Manager (`supabase-secret-key`, `supabase-db-password`).
 - **CRM gravando no banco (01/10/2026):** migração 001 aplicada; chave secreta do Supabase (`sb_secret`, 41 caracteres) no Secret Manager; `/saude` com `banco: ok` e permissão de servidor conferida. Lição: as 2 primeiras tentativas tinham a chave pública e uma chave incompleta; o `/saude` agora mostra o tipo e o tamanho da chave (nunca a chave).
+
+### Respostas do dono às P59–P73 (01/10/2026, painel "Regras do Gilberto")
+- **P59 Desconto:** nunca pelo Gilberto. Exceções: dono, Renata, Jagles ou Márcio podem autorizar, mas o Gilberto não pode dizer isso ao cliente.
+- **P60 "De/por":** (não estava no painel; mantém o formato dos cards da equipe até nova decisão).
+- **P61:** confirmadas as 4 opções de pagamento; sinal pode ser dividido em 2 cartões.
+- **P62 Prazo do link:** **48 h** (2 h se o check-in for em até 3 dias).
+- **P63:** cancelamento confirmado (30+ dias integral; 15–29 dias 50%; <15 dias nada). Troca grátis até **30 dias antes na alta** e **15 dias na baixa**; fora do prazo, diferença vira crédito de uso único.
+- **P64:** quarto só às 15h; lazer a partir das 9h com toalhas.
+- **P65/P66:** decoração com 3 dias; nenhuma grátis; sem cortesia de aniversário.
+- **P67:** **não há cofre** (corrige a base, que dizia cofre central).
+- **P68:** criança **de 5 anos paga** (grátis só até 4); **tirolesa da trilha a partir de 8 anos**; área rasa no Rio Formosinho perto da recepção.
+- **P69:** datas da alta temporada **o dono vai enviar**; réveillon mínimo 4 noites com datas variáveis (29/12–02/01 ou 28/12–01/01); 1 pessoa paga o mesmo que 2.
+- **P70:** Ecotrip pode ser indicada; contato (67) 99341-4734.
+- **P71:** boia cross e arvorismo com vários horários e vagas limitadas (consultar antes); o Gilberto reserva quando o cliente escolhe e o CRM cria alerta para a equipe; não hóspede compra voucher em agência oficial (ex.: Ecotrip), com antecedência; combo R$ 170 vale.
+- **P72:** confirmados: sem café da tarde; Superior só no andar de cima; cama da Cabana Casal não separa; Conjugado com 2 banheiros; saída antecipada paga o pacote todo.
+- **P73:** telefone (67) 99110-7635.
+- Aplicado em: `crm/gilberto/base-conhecimento.md`, `crm/gilberto/prompt-sistema.md`, `crm/gilberto/ferramentas.json`, `contexto/hotel-operacional.md`, `crm/especificacao-tecnica.md`. **Pendente (precisa do "sim" do dono):** atualizar `.claude/agents/gilberto-vendas.md` com as mesmas regras.

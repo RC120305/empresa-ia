@@ -26,7 +26,7 @@
 
 **Itens em todas as acomodações:** Smart TV a cabo, ar-condicionado split inverter **quente e frio**, aquecimento **solar e a gás** nas duchas, secador, frigobar, amenities (shampoo, condicionador, sabonete), Wi-Fi, armário, bancada de trabalho, roupa de cama e toalhas.
 - **Toalhas dobradas em forma de bichos** (ex.: cisnes) sobre a cama: **arrumação padrão** do hotel (confirmado pelo dono em 2026-09-26). Pétalas, rosa e plaquinha "LOVE" que aparecem em algumas fotos: **são da decoração especial (opcional)**, confirmado pelo dono em 2026-09-27. Legenda ou anúncio com essas fotos sempre indica "decoração especial (opcional)".
-**Voltagem: 110V em todas as acomodações** (dono, 30/09/2026). **Não há:** ferro de passar, camas extras, quartos para fumantes. Há **cofre central** gratuito e **berços** mediante agendamento.
+**Voltagem: 110V em todas as acomodações** (dono, 30/09/2026). **Não há:** ferro de passar, camas extras, quartos para fumantes. Há **berços** mediante agendamento. **Não há cofre** (dono, 01/10/2026, P67).
 
 ## 3. O que está incluído na diária
 - **Café da manhã**, das 6h30 às 9h30.
@@ -47,9 +47,9 @@
 
 **Combo boia cross + arvorismo: R$ 170/pessoa** (dono, 29/09/2026). Boia cross e arvorismo são a **prioridade de venda** (upsell).
 
-**Idade mínima (dono, 2026-09-27):** boia cross e arvorismo: **a partir de 5 anos e com pelo menos 1,15 m**. As atividades da **programação inclusa** (arco e flecha, trilhas com tirolesa, caiaque, SUP) **não têm idade mínima**.
+**Idade mínima (dono, 2026-09-27):** boia cross e arvorismo: **a partir de 5 anos e com pelo menos 1,15 m**. Na **programação inclusa**, a **tirolesa da trilha é a partir de 8 anos** (dono, 01/10/2026, P68b); arco e flecha, trilhas, caiaque e SUP não têm idade mínima. Há **área rasa no Rio Formosinho, perto da recepção** (P68c).
 
-\* Valores do documento: em anúncios, use "[confirmar valor vigente]". Boia cross e arvorismo também atendem não hóspedes (não há day use).
+\* Valores do documento: em anúncios, use "[confirmar valor vigente]". Boia cross e arvorismo também atendem não hóspedes, que compram o voucher numa agência oficial de Bonito (ex.: Ecotrip), de preferência com antecedência (não há day use; P71b). Há vários horários por dia, com vagas limitadas (P71a).
 
 **Rio cheio (dono, 2026-09-27, revisado):** os rios do hotel **raramente enchem** a ponto de parar as atividades; cancelamento é **muito raro**. **Não é preciso** colocar "sujeito às condições do rio" nas peças. Continua proibido prometer "água cristalina garantida" nos meses de chuva (fato do destino).
 
@@ -77,7 +77,7 @@
 - **Equipe de reservas:** atende **todos os dias, das 7h30 às 17h** (dono, 01/10/2026).
 
 ## 8. Crianças, famílias e acessibilidade
-- **Crianças até 5 anos não pagam**, dormindo na cama dos pais. A partir de 5 anos pagam normalmente. A **Cabana Casal e a Tripla não aceitam menores de 5 anos**; a **Cabana Master aceita** (confirmado pelo dono).
+- **Crianças até 4 anos não pagam**, dormindo na cama dos pais. **A partir de 5 anos pagam** normalmente (dono, 01/10/2026, P68a). A **Cabana Casal e a Tripla não aceitam menores de 5 anos**; a **Cabana Master aceita** (confirmado pelo dono).
 - **Existe playground** (próximo à quadra de beach tênis, com gramado) e uma área infantil com brinquedos e casinha no receptivo. **Não há serviço de recreação.**
 - Há micro-ondas no receptivo para papinhas e mamadeiras (não há baby copa).
 - **Acessibilidade (dono, 2026-09-27):** o hotel **não tem apartamentos adaptados** para pessoas com deficiência. **Não fazer posts nem anúncios sobre acessibilidade**; se alguém perguntar, a equipe de reservas orienta com honestidade.
@@ -87,7 +87,10 @@
 - **Bebidas:** o documento traz duas versões (ver a seção 12). **Alimentos:** podem ser trazidos.
 - **Pagamento:** 50% antecipado; **Pix ou cartão de crédito (até 6x)**; no hotel também débito. **Não aceita depósito bancário** (dono, 30/09/2026) **nem boleto.**
 - **Estadia mínima / pacotes (confirmado pelo dono em 2026-09-27):** só nos **pacotes de Réveillon e de Carnaval, com 4 noites**. Pacote de Réveillon 2026/27: **29/12 a 02/01** (dono, na Central, 27/09). Nos demais feriados não há estadia mínima. Valores e o que o pacote inclui: [a confirmar com o dono].
-- **Cancelamento:** reembolso integral com 30 dias de antecedência; 50% do sinal com 15 dias; sem reembolso dentro de 15 dias. Reservas feitas por agência ou canal online seguem a política deles.
+- **Cancelamento:** reembolso integral com 30 dias ou mais de antecedência; 50% do valor pago de 15 a 29 dias; sem reembolso com menos de 15 dias (dono, 01/10/2026, P63a).
+- **Troca de data:** sem custo até 30 dias antes na alta temporada e 15 dias antes na baixa; fora do prazo, a diferença não é devolvida e vira crédito para uso único (P63b/c).
+- **Pagamento:** 50% no cartão até 3x, 100% no cartão até 6x, Pix 50% ou Pix 100%; o sinal pode ser dividido em 2 cartões (P61). Uma pessoa paga o mesmo que duas (P69c).
+- **Chegada antes das 15h:** quarto só às 15h; lazer liberado a partir das 9h, com toalhas para piscina e rios (P64). Não há café da tarde (P72a). Saída antecipada paga o pacote inteiro (P72e). Reservas feitas por agência ou canal online seguem a política deles.
 - **Não há:** day use, espaço para eventos, transfer próprio (a equipe indica quem faça), desconto para terceira idade, oferta para aniversariantes, tarifa para longa estadia nem convênio com Bancorbrás.
 - **Reserva direta:** "nossos valores já possuem desconto para você que reserva direto em nosso site". **Argumento de canal direto.**
 - **Antecedência média de reserva:** de **45 a 50 dias** antes do check-in (informado pelo dono em 2026-09-26). Use para calcular quando cada campanha começa: o **período de venda** termina cerca de 45 dias antes do **período da estadia**, e a divulgação começa antes disso.
