@@ -7,7 +7,7 @@
 1. Acesse **console.cloud.google.com** logado na sua conta pessoal.
 2. No primeiro acesso: país **Brasil**, aceite os termos.
 3. No topo, clique no seletor de projetos → **Novo projeto**.
-4. **Nome do projeto:** `Cabanas CRM`. O ID é gerado sozinho (ex.: `cabanas-crm-123456`): **anote o ID**. Local: **Sem organização**.
+4. **Nome do projeto:** `Cabanas CRM`. O ID é gerado sozinho: **anote o ID**. ✅ Criado em 01/10/2026: `cabanas-crm`. Local: **Sem organização**.
 5. **Criar.**
 
 ## 2. Faturamento (5 min)
