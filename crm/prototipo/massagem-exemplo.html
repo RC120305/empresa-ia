@@ -107,6 +107,7 @@ footer{max-width:560px;margin:0 auto;padding:0 16px 32px;font-size:13px;color:va
   const HORAS=["08:00","09:00","10:00","14:00","15:00","16:00"];
   const OCUP={"2026-11-16":["14:00"],"2026-11-17":["10:00","16:00"],"2026-11-18":["14:00","15:00","16:00"]};
   const st={tipo:0,local:"À beira do rio",dia:DIAS[0][0],hora:null,adic:[]};
+  const EMB=window.parent!==window; // dentro do protótipo do CRM: conversa com ele
   const $=id=>document.getElementById(id);
   const brl=v=>"R$ "+v.toLocaleString("pt-BR");
   const fdia=d=>DIAS.find(x=>x[0]===d)[1];
@@ -126,13 +127,16 @@ footer{max-width:560px;margin:0 auto;padding:0 16px 32px;font-size:13px;color:va
   function texto(){return TIPOS[st.tipo].n+(st.adic.length?" + "+st.adic.join(" + ").toLowerCase():"")+" · "+st.local.toLowerCase()+" · "+fdia(st.dia)+(st.hora?" às "+st.hora.replace(":00","h"):"");}
   function atualizar(){$("valor").textContent=brl(valor());$("resumo-sel").textContent=st.hora?texto():"Escolha um horário";$("pedir").setAttribute("aria-disabled",String(!st.hora));}
   $("pedir").onclick=()=>{if(!st.hora){$("t4").scrollIntoView({behavior:"smooth",block:"center"});return;}mostrar("aguardando");};
+  function avisarCRM(){if(EMB)parent.postMessage({tipo:"mass-pedido",txt:texto(),valor:valor(),dia:st.dia,hora:st.hora},"*");}
+  window.addEventListener("message",e=>{const d=e.data||{};if(d.tipo==="mass-fase")mostrar(d.fase,true);});
   function etapas(lista){$("etapas").innerHTML="";lista.forEach(([cls,t,s])=>{const li=document.createElement("li");li.className=cls;li.innerHTML="<i>"+(cls==="ok"?"✓":cls==="agora"?"•":"")+"</i><span></span>";
     li.querySelector("span").textContent=t;if(s){const sm=document.createElement("small");sm.textContent=s;li.querySelector("span").appendChild(sm);}$("etapas").appendChild(li);});}
   function bts(lista){const c=$("sim-bts");c.textContent="";lista.forEach(([t,f])=>{const b=document.createElement("button");b.type="button";b.textContent=t;b.onclick=f;c.appendChild(b);});$("sim").hidden=!lista.length;}
   function mostrar(fase,alt){$("form").hidden=true;$("estado").hidden=false;window.scrollTo(0,0);const a=$("st-acao");a.textContent="";
-    if(fase==="aguardando"){$("st-tit").textContent="Pedido enviado!";$("st-desc").textContent=texto()+" · "+brl(valor());
+    if(fase==="aguardando"){if(!alt)avisarCRM();$("st-tit").textContent="Pedido enviado!";$("st-desc").textContent=texto()+" · "+brl(valor());
       etapas([["ok","Pedido enviado à massoterapeuta","Ficou registrado no seu atendimento com a nossa equipe"],["agora","Confirmação da massoterapeuta","Você recebe a resposta aqui e no WhatsApp"],["","Valor na sua conta do hotel","Acertado no check-out"]]);
-      bts([["✓ Confirmo",()=>mostrar("confirmado")],["✕ Não posso",()=>mostrar("recusado")]]);}
+      if(EMB){bts([]);const n=document.createElement("p");n.className="nota";n.textContent="No protótipo: a Natália responde pelo WhatsApp dela. Simule a resposta no card da massagem, no CRM ao lado.";a.append(n);}
+      else bts([["✓ Confirmo",()=>mostrar("confirmado")],["✕ Não posso",()=>mostrar("recusado")]]);}
     if(fase==="recusado"){$("st-tit").textContent="Esse horário não deu 😕";$("st-desc").textContent="A massoterapeuta não tem "+fdia(st.dia)+" às "+st.hora.replace(":00","h")+". Ela tem vaga nestes horários:";
       etapas([]);const ch=document.createElement("div");ch.className="chips";
       [["2026-11-16","09:00"],["2026-11-17","15:00"]].forEach(([d,h])=>{const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=fdia(d)+" às "+h.replace(":00","h");b.onclick=()=>{st.dia=d;st.hora=h;mostrar("aguardando");};ch.appendChild(b);});

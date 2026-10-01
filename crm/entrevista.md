@@ -577,3 +577,4 @@ Resumo em `crm/silbeck-api-detalhes.md` (seção 6):
   4. **Aviso no celular da equipe e som:** "Natália confirmou a massagem".
   5. **Etiqueta** na conversa, na lista e no lead: link enviado → aguardando a Natália → confirmada (lançar na comanda) → confirmada e lançada.
   6. **Tarefa "Lançar na comanda".**
+- **Protótipo v38:** o link de massagem enviado na conversa abre a **página do cliente dentro do CRM**, num celular ao lado. A escolha feita ali chega ao CRM (etiqueta, histórico, mensagem à Natália, aviso no celular da equipe), e a confirmação da Natália, simulada no card, volta para a página do cliente. Antes eram dois exemplos separados que não se comunicavam.
