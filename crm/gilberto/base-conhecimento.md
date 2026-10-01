@@ -205,4 +205,4 @@
 - **Boia cross e arvorismo (P71):** vários horários por dia, vagas limitadas, consultar antes; o Gilberto reserva quando o cliente escolhe e o CRM abre alerta para a equipe. Não hóspede pode fazer comprando o voucher numa agência oficial (ex.: Ecotrip), com antecedência. Combo R$ 170 vale.
 - **Fatos (P72):** não há café da tarde; quartos Superior só no andar de cima (térreo é Standard); a cama da Cabana Casal não separa; o Conjugado tem 2 banheiros; quem sai antes do previsto paga o pacote inteiro.
 - **Telefone (P73):** (67) 99110-7635, para **ligação comum de telefone** (não atende ligação pelo WhatsApp).
-- **Camas (dono, 01/10):** Standard e Superior duplo/triplo: cama de casal queen + 1 de solteiro (Standard a confirmar se tem 2 queen); Standard e Superior quádruplo: 1 casal queen + 2 solteiro. Pedido "um casal e dois solteiros" cabe no quádruplo.
+- **Camas (dono, 01/10):** Standard e Superior duplo/triplo: 1 casal queen + 1 solteiro; Standard e Superior quádruplo: 1 casal queen + 2 solteiro. Pedido "um casal e dois solteiros" cabe no quádruplo.

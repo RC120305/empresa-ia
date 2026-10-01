@@ -622,3 +622,4 @@ Origem: análise de 47 conversas do WhatsApp (`crm/gilberto/conversas-reais.md`)
 - **P73:** telefone (67) 99110-7635.
 - Aplicado em: `crm/gilberto/base-conhecimento.md`, `crm/gilberto/prompt-sistema.md`, `crm/gilberto/ferramentas.json`, `contexto/hotel-operacional.md`, `crm/especificacao-tecnica.md`. **Pendente (precisa do "sim" do dono):** atualizar `.claude/agents/gilberto-vendas.md` com as mesmas regras.
 - **Complemento do dono (01/10/2026):** camas: Standard duplo/triplo "2 camas de casal queen e uma de solteiro" (a confirmar se são 2 queen), Superior duplo/triplo 1 queen + 1 solteiro, Standard e Superior quádruplo 1 queen + 2 solteiro. Telefone 99110-7635 recebe ligação comum, não pelo WhatsApp. Crédito da troca fora do prazo: só para hospedagem. Datas da alta temporada: o dono ainda não tem.
+- **Standard duplo/triplo (dono, 01/10/2026):** 1 casal queen + 1 solteiro (corrige a anotação anterior). Dono deu o "sim" para o Gilberto v1.2.
