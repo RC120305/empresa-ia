@@ -14,6 +14,16 @@ const SUPABASE_KEY = process.env.SUPABASE_SECRET_KEY || '';
 const bancoLigado = () => !!(SUPABASE_URL && SUPABASE_KEY);
 // Chaves novas (sb_secret_…) vão só no cabeçalho apikey. Chaves antigas (JWT "eyJ…") precisam também do
 // Authorization, senão o banco trata a chamada como visitante (anon) e nega as funções do servidor.
+// Tipo da chave (nunca a chave): ajuda a ver se colaram a chave errada no Secret Manager.
+function tipoChave(k) {
+  if (!k) return 'nenhuma';
+  if (k.startsWith('sb_secret_')) return 'secreta (sb_secret)';
+  if (k.startsWith('sb_publishable_')) return 'PÚBLICA (sb_publishable): trocar pela secreta';
+  if (k.startsWith('eyJ')) {
+    try { const papel = JSON.parse(Buffer.from(k.split('.')[1], 'base64url').toString()).role; return 'antiga (JWT) papel=' + papel; } catch (e) { return 'antiga (JWT) ilegível'; }
+  }
+  return 'formato desconhecido';
+}
 const cabecalhosBanco = () => Object.assign({ apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
   SUPABASE_KEY.startsWith('eyJ') ? { Authorization: 'Bearer ' + SUPABASE_KEY } : {});
 
@@ -102,7 +112,7 @@ const servidor = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
   if (url.pathname === '/saude') {
-    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado() } };
+    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado() }, chaveSupabase: tipoChave(SUPABASE_KEY) };
     if (!bancoLigado()) return json(res, 200, base);
     // Confere se o banco responde e se a chave tem permissão de servidor: chama a função de status com um
     // ID que não existe (não altera nada). Chave sem permissão de servidor recebe 401/403.
