@@ -1,0 +1,50 @@
+<!doctype html>
+<!-- Story enquete 4/5 | 9:16 (1080 x 1920) | Cabana Casal ou Bangalô? | área livre da figurinha: y 840 a 1080 -->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../../modelos/marca.css">
+<style>
+.metade { position: absolute; left: 0; width: 100%; height: 960px; overflow: hidden; }
+.metade.a { top: 0; }
+.metade.b { top: 960px; }
+.metade img { width: 100%; height: 100%; object-fit: cover; }
+.emenda { position: absolute; left: 0; right: 0; top: 957px; height: 6px; background: var(--creme); }
+.veu-topo { position: absolute; inset: 0 0 auto 0; height: 620px; background: linear-gradient(to bottom, rgba(20,14,8,.55), rgba(20,14,8,0)); }
+.veu-pe { position: absolute; inset: auto 0 0 0; height: 520px; background: linear-gradient(to top, rgba(20,14,8,.6), rgba(20,14,8,0)); }
+.pergunta { position: absolute; top: 250px; left: 0; right: 0; text-align: center; }
+.pergunta .apoio { font-size: 24px; text-shadow: 0 1px 10px rgba(0,0,0,.45); }
+.pergunta .linha { margin: 22px auto; }
+.pergunta .faixa { padding: 20px 40px 26px; }
+.pergunta .titulo { font-size: 76px; text-shadow: none; }
+.rotulo { position: absolute; left: 72px; font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 26px;
+  letter-spacing: .32em; text-transform: uppercase; color: var(--creme); padding: 12px 20px 10px;
+  border: 1.5px solid rgba(247,241,230,.85); background: rgba(20,14,8,.28); }
+.rotulo.a { top: 740px; }
+.rotulo.b { top: 1590px; }
+.assin { position: absolute; right: 72px; top: 1572px; display: flex; align-items: center; gap: 22px; }
+.assin .local { font-family: "Josefin Sans", sans-serif; font-weight: 300; font-size: 20px; letter-spacing: .5em; text-transform: uppercase; }
+.assin img { height: 76px; }
+</style>
+</head>
+<body>
+<div class="peca story">
+  <div class="metade a"><img src="fotos/cabana-casal.jpg" style="object-position: 50% 45%;" alt=""></div>
+  <div class="metade b"><img src="fotos/bangalo.jpg" style="object-position: 50% 50%;" alt=""></div>
+  <div class="veu-topo"></div>
+  <div class="veu-pe"></div>
+  <div class="emenda"></div>
+  <div class="pergunta">
+    <p class="apoio">Para a sua estadia</p>
+    <div class="linha"></div>
+    <div class="faixa"><h1 class="titulo"><i>Cabana</i> ou <b>Bangalô</b>?</h1></div>
+  </div>
+  <span class="rotulo a">Cabana Casal</span>
+  <span class="rotulo b">Bangalô</span>
+  <div class="assin">
+    <span class="local">Bonito · MS</span>
+    <img src="../../../../contexto/marca/logo-hotel-cabanas-branco.png" alt="Hotel Cabanas">
+  </div>
+</div>
+</body>
+</html>
