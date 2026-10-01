@@ -801,7 +801,7 @@ Atendimento automatizado do próprio negócio, com caminho para humano a qualque
 | **IA do Gilberto** | Preços de tabela da Anthropic em 25/09/2026: Claude Opus 5.5 US$ 4 (entrada) / US$ 20 (saída) por milhão de tokens, leitura em cache US$ 0,20; Claude Sonnet 5.5 US$ 2 / US$ 10, cache US$ 0,20 [confirmar preços atuais; pelo Vertex AI os preços são outros] | Ver faixas abaixo |
 | Transcrição de áudio, descrição das fotos (uma vez) | Pequenos | [a confirmar]; descrição das ~500 fotos é custo único baixo |
 
-**Faixas para a IA (estimativa grosseira, a medir na fase 2):** supondo ~15 mil tokens de contexto por turno (a maior parte em cache), ~800 tokens gerados e ~10 turnos por conversa, fica em torno de **US$ 0,15 a 0,35 por conversa com Opus 5.5** e cerca de metade com Sonnet 5.5.
+**Volume informado pelo dono (01/10/2026):** ~20 conversas novas por dia (10 a 40), ~600 por mês. Com Sonnet 5.5 no dia a dia (US$ 2/US$ 10 por milhão de tokens; Opus 5.5 US$ 4/US$ 20; leitura de cache US$ 0,20), a IA custa cerca de **US$ 50 a 110 por mês**. **Faixas para a IA (estimativa grosseira, a medir na fase 2):** supondo ~15 mil tokens de contexto por turno (a maior parte em cache), ~800 tokens gerados e ~10 turnos por conversa, fica em torno de **US$ 0,15 a 0,35 por conversa com Opus 5.5** e cerca de metade com Sonnet 5.5.
 
 | Conversas atendidas pelo Gilberto por mês | Opus 5.5 (estimativa) | Sonnet 5.5 (estimativa) |
 |---|---|---|

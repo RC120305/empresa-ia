@@ -46,12 +46,12 @@ O hotel tem um **sistema interno de reservas da boia cross e do arvorismo que ac
 **Combo:** reserva **dois horários** (boia cross e arvorismo) em sequência compatível, no mesmo dia ou em dias diferentes.
 
 ## 2b. Massagem: pedido à parceira pelo WhatsApp (dono, 29/09; revisto em 01/10/2026, combinado com a Natália)
-1. **Lado do cliente:** escolhe **data**, **horário** e **tipo de massagem** (com o Gilberto ou com a equipe). São **6 horários por dia: 8h, 9h, 10h, 14h, 15h e 16h**. Tipos: Massagem360, desportiva ou drenagem linfática (R$ 220), com adicionais opcionais.
+1. **Lado do cliente:** pelo **link de agendamento**, uma página como a do orçamento (`crm.hotelcabanas.com.br/m/…`, exemplo: https://claude.ai/artifact/PFzy7ZxGDHhcFhAxvrfF7D), o hóspede escolhe **tipo**, **onde** (à beira do rio ou no quarto), **dia** (dentro da estadia) e **horário**, além dos adicionais. Os horários já ocupados aparecem riscados. O Gilberto ou a equipe envia o link. Também dá para fazer o pedido pela conversa. São **6 horários por dia: 8h, 9h, 10h, 14h, 15h e 16h**. Tipos: Massagem360, desportiva ou drenagem linfática (R$ 220), com adicionais opcionais.
 2. **Mensagem interna do sistema** para o WhatsApp da Natália, pelo número oficial do hotel, com modelo de utilidade aprovado pela Meta: "Reserva de massagem para hóspede do Hotel Cabanas: Massagem360 · 16/11 às 15h. Confirma?" com botões **[Confirmo] [Não posso]**.
-3. **Confirmo:** o CRM confirma ao hóspede sozinho, registra na reserva e cria a cobrança ou o lançamento.
+3. **Confirmo:** a confirmação aparece no CRM, com alerta no card. O sistema avisa o hóspede no WhatsApp e na própria página. O hóspede escolhe **pagar agora** (Pix ou cartão) ou **incluir na conta do hotel**, para pagar no check-out (tarefa de lançamento no Silbeck). Tudo fica no histórico do cliente.
 4. **Não posso:**
    - o sistema **pergunta à Natália quais datas e horários têm vaga** (dentro dos 6 horários; ela responde em texto ou por lista);
-   - o Gilberto oferece essas opções ao hóspede, que escolhe;
+   - as opções aparecem para o hóspede na página e no WhatsApp, e ele escolhe;
    - o horário escolhido vira um **novo pedido** com os mesmos botões;
    - os horários indicados por ela ficam guardados para aquele hóspede por 2 h.
 5. **Sem resposta em 2 h** no expediente: alerta para a equipe.

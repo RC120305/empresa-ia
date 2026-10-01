@@ -1434,9 +1434,9 @@ body.sem-rolagem .principal{padding-block-end:12px}
     renderChat();
   }
   // v28: o link do orçamento abre a página de exemplo (o endereço crm.hotelcabanas.com.br só existe quando o CRM estiver no ar)
-  const EX_ORC='https://claude.ai/artifact/DfYcXJAbqr3ZaXyZyHKDU8';
-  function linkar(t){if(typeof t!=='string'||!/crm\.hotelcabanas\.com\.br\/o\//.test(t))return t;const f=document.createDocumentFragment();
-    t.split(/(crm\.hotelcabanas\.com\.br\/o\/\w+)/).forEach((p,i)=>f.append(i%2?el('a',{href:EX_ORC,target:'_blank',rel:'noopener',class:'link-orc',title:'No protótipo, abre a página de exemplo'},p+' ↗'):p));return f;}
+  const EX_ORC='https://claude.ai/artifact/DfYcXJAbqr3ZaXyZyHKDU8';const EX_MASS='https://claude.ai/artifact/PFzy7ZxGDHhcFhAxvrfF7D';
+  function linkar(t){if(typeof t!=='string'||!/crm\.hotelcabanas\.com\.br\/[om]\//.test(t))return t;const f=document.createDocumentFragment();
+    t.split(/(crm\.hotelcabanas\.com\.br\/[om]\/\w+)/).forEach((p,i)=>f.append(i%2?el('a',{href:/\/m\//.test(p)?EX_MASS:EX_ORC,target:'_blank',rel:'noopener',class:'link-orc',title:'No protótipo, abre a página de exemplo'},p+' ↗'):p));return f;}
   function renderChat(){
     const c=CONVS.find(x=>x.id===convSel);const box=$('cx-chat'),lat=$('cx-lateral');box.textContent='';lat.textContent='';if(!c)return;
     const o=ORIGENS[c.origem],e=ETQ_ETAPA[c.etapa];
@@ -2085,7 +2085,12 @@ body.sem-rolagem .principal{padding-block-end:12px}
     const hora=el('select',{'aria-label':'Horário'},MASS_HORAS.map(h=>el('option',{value:h,text:h.replace(':00','h')})));
     const tipo=el('select',{'aria-label':'Tipo de massagem'},MASS_TIPOS.map(([t,v])=>el('option',{value:t,text:t+' · R$ '+v})));
     const adic=MASS_ADIC.map(([t,v])=>{const cb=el('input',{type:'checkbox',value:t});cb.dataset.v=v;return cb;});
-    return el('div',{class:'res-hor'},el('small',{text:'Parceira: '+PARCEIRO.nome+' · 6 horários por dia: 8h, 9h, 10h, 14h, 15h e 16h'}),
+    const enviarLink=el('button',{class:'btn btn-destaque',type:'button',text:'Enviar link para o cliente escolher',onclick:()=>{
+        const link='crm.hotelcabanas.com.br/m/'+Math.random().toString(36).slice(2,8);
+        c.msgs.push(['ia','Que tal uma massagem para relaxar? 🌿 Por este link você escolhe o tipo, o lugar (à beira do rio ou no quarto), o dia e o horário: '+link,'agora','Link de agendamento de massagem (6 horários por dia)']);
+        c.msgs.push(['sis','Link de agendamento enviado. Quando o cliente escolher, o pedido vai direto para a Natália e fica no histórico; a resposta dela aparece aqui e o cliente é avisado sozinho.']);
+        renderChat();toast('Link enviado ao cliente.');}});
+    return el('div',{class:'res-hor'},enviarLink,el('small',{text:'Ou faça o pedido aqui, pelo cliente:'}),el('small',{text:'Parceira: '+PARCEIRO.nome+' · 6 horários por dia: 8h, 9h, 10h, 14h, 15h e 16h'}),
       el('div',{style:'display:flex;gap:8px;flex-wrap:wrap'},el('label',{class:'campo'},'Data',data),el('label',{class:'campo'},'Horário',hora)),el('label',{class:'campo'},'Tipo',tipo),
       el('div',{class:'campo'},'Adicionais (opcional)',el('div',{style:'display:flex;flex-direction:column;gap:2px;font-weight:400'},adic.map((cb,i)=>el('label',{style:'display:flex;gap:6px;align-items:center'},cb,MASS_ADIC[i][0]+' · R$ '+MASS_ADIC[i][1])))),
       el('button',{class:'btn btn-enviar',type:'button',text:'Enviar pedido à Natália',onclick:()=>{
