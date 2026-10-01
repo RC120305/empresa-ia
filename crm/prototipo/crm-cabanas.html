@@ -1427,7 +1427,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
       lista.append(el('button',{class:'cx-item'+(u?' urgente u-'+(u.quem?'assumido':u.tipo==='alteração'?'alteracao':'x'):''),type:'button','aria-selected':String(c.id===convSel),onclick:()=>{convSel=c.id;c.naoLidas=0;renderInbox();}},
         u?el('div',{class:'cx-urg'},el('span',{text:ROT_URG[u.tipo]}),el('small',{text:u.quem?u.quem+' assumiu':(minDesde(u.desde)==='agora'?'agora':'há '+minDesde(u.desde))})):null,
         el('div',{class:'cx-l1'},el('span',{class:'canal-ic '+c.canal,title:CANAL[c.canal],text:c.canal==='ig'?'IG':c.canal==='fb'?'FB':'WA'}),el('strong',{text:c.nome}),el('span',{class:'cx-hora num',text:c.hora}),c.naoLidas?el('span',{class:'cx-nl num',text:c.naoLidas}):null),
-        el('div',{class:'cx-l2'},el('span',{class:'pilula '+o[1],text:o[0]}),el('span',{class:'pilula '+e[1],text:e[0]}),c.fila?el('span',{class:'tipo t-mkt',text:'Aguardando a equipe'}):null),
+        el('div',{class:'cx-l2'},el('span',{class:'pilula '+o[1],text:o[0]}),el('span',{class:'pilula '+e[1],text:e[0]}),c.fila?el('span',{class:'tipo t-mkt',text:'Aguardando a equipe'}):null,tagMass(c)),
         !c.janela?el('div',{class:'cx-janela',text:'A janela de 24 h expirou'}):null,
         el('div',{class:'cx-l3'},el('span',{class:'resp'+(c.agente?' ia':''),text:c.agente?'IA':inic(USUARIOS[c.resp])}),el('span',{text:c.agente?'Agente no comando':USUARIOS[c.resp]}))));
     });
@@ -1446,7 +1446,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
     const cab=$('cx-cab');cab.textContent='';cab.append(el('div',{class:'cx-topo'},
       el('div',{class:'cx-quem'},el('strong',{text:c.nome}),el('span',{class:'canal',text:CANAL[c.canal]+(c.hospedado?' · '+c.hospedado:'')})),
       linhaContato(c),
-      el('div',{class:'cx-ctrl'},el('span',{class:'pilula '+o[1],text:o[0]}),el('span',{class:'pilula '+e[1],text:e[0]}),el('span',{class:'pilula',text:c.perfil}),
+      el('div',{class:'cx-ctrl'},el('span',{class:'pilula '+o[1],text:o[0]}),el('span',{class:'pilula '+e[1],text:e[0]}),el('span',{class:'pilula',text:c.perfil}),tagMass(c),
         el('label',{class:'cx-sw'},swA,'Agente'),stSel,rSel,
         c.lead?el('button',{class:'btn-mini',type:'button',text:'Ficha e histórico',onclick:()=>abrirFicha(c.lead)}):null)));
     const ms=el('div',{class:'mensagens'});
@@ -2037,7 +2037,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
           el('button',{class:'btn-mini',type:'button',text:'Oferecer',onclick:()=>{c.msgs.push(['eq','[Cartão do produto] '+p.nome+' · '+brlP(p.preco)+(p.preco!=null?' por pessoa':'')+' · '+p.regras,'agora',USUARIOS[c.resp==='agente'?'voce':c.resp]||'Você']);renderChat();toast('Oferta enviada com foto e preço.');}}),
           p.tipo==='ativ'?el('button',{class:'btn-mini',type:'button',text:resAberta===p.cod?'Fechar':'Reservar horário',onclick:()=>{resAberta=resAberta===p.cod?null:p.cod;renderLateral(c);}}):
           p.tipo==='terc'?el('button',{class:'btn-mini',type:'button',text:resAberta===p.cod?'Fechar':'Pedir horário ao parceiro',onclick:()=>{resAberta=resAberta===p.cod?null:p.cod;renderLateral(c);}}):null));
-      if(resAberta===p.cod&&p.tipo==='terc')box.append(widgetParceiro(c,p));
+      if((resAberta===p.cod||(p.cod==='MASS'&&c.massagem))&&p.tipo==='terc')box.append(widgetParceiro(c,p));
       if(resAberta===p.cod&&p.tipo==='ativ')box.append(widgetReserva(c,p));
       lat.append(box);
     });
@@ -2060,20 +2060,34 @@ body.sem-rolagem .principal{padding-block-end:12px}
   // v12: massagem com parceiro pelo WhatsApp
   const PARCEIRO={nome:'Natália (Massagem 360)',fone:'+55 67 99228-6365'};
   const MASS_TIPOS=[['Massagem360',220],['Massagem relaxante',220],['Massagem linfática',220]];
+  const MASS_TAG={link:['t-mkt','💆 Massagem: link enviado'],aguardando:['t-mkt','💆 Massagem: aguardando a Natália'],perguntando:['t-mkt','💆 Massagem: Natália sem vaga'],alternativas:['t-util','💆 Massagem: cliente escolhendo outro horário'],confirmado:['t-erro','💆 Massagem confirmada · lançar na comanda'],lancado:['t-livre','💆 Massagem confirmada e lançada']};
+  function tagMass(c){const m=c.massagem;if(!m)return null;const k=m.status==='confirmado'&&m.lancado?'lancado':m.status;const t=MASS_TAG[k];return t?el('span',{class:'tipo '+t[0],text:t[1]}):null;}
   const MASS_ADIC=[['Máscara de argila',50],['Reflexologia 15 min',50],['Cone hindu',80],['Acréscimo de 30 min',150],['Pedras quentes',50]];
   const MASS_HORAS=['08:00','09:00','10:00','14:00','15:00','16:00'];
   // v33: 6 horários fixos; parceira confirma ou recusa pelo WhatsApp; se recusar, o sistema pergunta quais datas e horários têm vaga
   function widgetParceiro(c,p){
     c.massagem=c.massagem||null;
+    if(c.massagem&&c.massagem.status==='link'){
+      const amanha=c.datas?c.datas[0]:isoMais(hoje.toISOString().slice(0,10),1);
+      return el('div',{class:'res-hor'},el('div',{class:'lat-card'},el('b',{text:'Link de agendamento enviado'}),el('span',{class:'tipo t-mkt',text:'Aguardando o cliente escolher na página'}),
+        el('small',{text:'Exemplo: simular a escolha do cliente na página'}),
+        el('button',{class:'btn-mini',type:'button',text:'Cliente escolheu: Massagem360 + pedras quentes · beira do rio · 15h',onclick:()=>{
+          c.massagem={tipo:'Massagem360 + pedras quentes · à beira do rio',data:amanha,hora:'15:00',valor:270,txt:'Massagem360 + pedras quentes · à beira do rio · '+fmtData(amanha)+' às 15:00',status:'aguardando'};
+          c.msgs.push(['sis','Cliente escolheu pelo link de agendamento: '+c.massagem.txt+' · R$ 270 (registrado no histórico)']);
+          c.msgs.push(['sis','📲 WhatsApp enviado à Natália: “Reserva de massagem para hóspede do Hotel Cabanas: '+c.nome+' · '+c.massagem.txt+'. Confirma?” [Confirmo] [Não posso]']);
+          pushCel('Massagem pedida pelo link',c.nome+' · '+c.massagem.txt,'Aguardando a confirmação da Natália');renderChat();toast('O cliente escolheu pelo link. Pedido enviado à Natália.');}})));
+    }
     if(c.massagem){const m=c.massagem;
       const rot={aguardando:['t-mkt','Aguardando a Natália confirmar'],confirmado:['t-livre','Natália confirmou · hóspede avisado'],perguntando:['t-mkt','Natália recusou · sistema perguntou quais horários têm vaga'],alternativas:['t-util','Natália indicou vagas · Gilberto ofereceu ao hóspede']}[m.status];
       const st=el('div',{class:'lat-card'},el('b',{text:'Pedido à parceira: '+m.txt}),el('span',{class:'tipo '+rot[0],text:rot[1]}),el('small',{text:'Valor ao hóspede: R$ '+m.valor.toLocaleString('pt-BR')}));
       const simular=(...bts)=>st.append(el('small',{text:'Exemplo: simular a resposta da Natália'}),el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'},...bts));
       if(m.status==='aguardando')simular(
         el('button',{class:'btn-mini',type:'button',text:'✓ Confirmo',onclick:()=>{m.status='confirmado';m.lancado=false;c.reservas.push([m.txt,'Massagem confirmada pela parceira · R$ '+m.valor.toLocaleString('pt-BR')+' na conta do hóspede','t-livre']);
-          c.msgs.push(['sis','Natália respondeu “Confirmo” · CRM confirmou ao hóspede · tarefa criada: lançar R$ '+m.valor.toLocaleString('pt-BR')+' na comanda do hóspede (sistema de contas)']);
+          c.msgs.push(['sis','📲 Natália respondeu no WhatsApp: “Confirmo” ✓']);
+          c.msgs.push(['sis','CRM confirmou ao hóspede · tarefa criada: lançar R$ '+m.valor.toLocaleString('pt-BR')+' na comanda do hóspede (sistema de contas)']);
           c.msgs.push(['ia','Tudo certo! Sua massagem está confirmada: '+m.txt+'. O valor vai para a sua conta no hotel e é acertado no check-out. 🌿','agora','Resposta da parceira (botão “Confirmo”)']);
-          const l=c.lead&&leadPor(c.lead)||LEADS[0];if(l){l.tarefas.push({t:'Lançar na comanda',d:'Massagem '+m.txt+' · R$ '+m.valor.toLocaleString('pt-BR')+' · lançar na conta do hóspede (sistema de comandas)',q:m.data+'T'+m.hora,r:'equipe',f:false});m.tarefa=l.tarefas[l.tarefas.length-1];renderBoard();}
+          const l=c.lead&&leadPor(c.lead)||LEADS[0];if(l){if(!l.tags.includes('Massagem confirmada'))l.tags.push('Massagem confirmada');l.tarefas.push({t:'Lançar na comanda',d:'Massagem '+m.txt+' · R$ '+m.valor.toLocaleString('pt-BR')+' · lançar na conta do hóspede (sistema de comandas)',q:m.data+'T'+m.hora,r:'equipe',f:false});m.tarefa=l.tarefas[l.tarefas.length-1];renderBoard();}
+          pushCel('✓ Natália confirmou a massagem',c.nome+' · '+m.txt,'Lançar R$ '+m.valor.toLocaleString('pt-BR')+' na comanda do hóspede');if(somLigado)bip();
           renderChat();toast('Natália confirmou. Hóspede avisado e tarefa "Lançar na comanda" criada.');}}),
         el('button',{class:'btn-mini',type:'button',text:'✕ Não posso',onclick:()=>{m.status='perguntando';c.msgs.push(['sis','Natália respondeu “Não posso” · o sistema perguntou a ela pelo WhatsApp: “Quais datas e horários você tem vaga? (8h, 9h, 10h, 14h, 15h ou 16h)”']);c.msgs.push(['ia','Deixa eu confirmar outro horário com a massoterapeuta e já te passo as opções 🙂','agora','Parceira recusou: aguardando as vagas dela']);renderChat();}}));
       if(m.status==='perguntando')simular(
@@ -2096,7 +2110,7 @@ body.sem-rolagem .principal{padding-block-end:12px}
         const link='crm.hotelcabanas.com.br/m/'+Math.random().toString(36).slice(2,8);
         c.msgs.push(['ia','Que tal uma massagem para relaxar? 🌿 Por este link você escolhe o tipo, o lugar (à beira do rio ou no quarto), o dia e o horário: '+link,'agora','Link de agendamento de massagem (6 horários por dia)']);
         c.msgs.push(['sis','Link de agendamento enviado. Quando o cliente escolher, o pedido vai direto para a Natália e fica no histórico; a resposta dela aparece aqui e o cliente é avisado sozinho.']);
-        renderChat();toast('Link enviado ao cliente.');}});
+        c.massagem={status:'link'};renderChat();toast('Link enviado ao cliente.');}});
     return el('div',{class:'res-hor'},enviarLink,el('small',{text:'Ou faça o pedido aqui, pelo cliente:'}),el('small',{text:'Parceira: '+PARCEIRO.nome+' · 6 horários por dia: 8h, 9h, 10h, 14h, 15h e 16h'}),
       el('div',{style:'display:flex;gap:8px;flex-wrap:wrap'},el('label',{class:'campo'},'Data',data),el('label',{class:'campo'},'Horário',hora)),el('label',{class:'campo'},'Tipo',tipo),
       el('div',{class:'campo'},'Adicionais (opcional)',el('div',{style:'display:flex;flex-direction:column;gap:2px;font-weight:400'},adic.map((cb,i)=>el('label',{style:'display:flex;gap:6px;align-items:center'},cb,MASS_ADIC[i][0]+' · R$ '+MASS_ADIC[i][1])))),

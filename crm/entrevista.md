@@ -570,3 +570,10 @@ Resumo em `crm/silbeck-api-detalhes.md` (seção 6):
   - O CRM cria a tarefa "Lançar na comanda", com alerta às 18h do dia se não for marcada e lista de pendentes na manhã do check-out.
   - Gilberto ganha a ferramenta `enviar_link_massagem`. Protótipo v36.
   - Pendências: percentual da comissão; se o sistema de comandas tem API (para lançar sozinho no futuro: perguntar ao Márcio).
+- **Protótipo v37 (teste do dono, 01/10/2026):** depois de enviar o link e confirmar, "nada acontecia no CRM", porque a página do cliente e o CRM são exemplos separados. Agora o CRM mostra o caminho todo:
+  1. **Link enviado:** botão de simulação "Cliente escolheu".
+  2. **Escolha do cliente registrada no histórico,** com a mensagem que vai para o WhatsApp da Natália.
+  3. **Resposta da Natália** ("Confirmo") na conversa.
+  4. **Aviso no celular da equipe e som:** "Natália confirmou a massagem".
+  5. **Etiqueta** na conversa, na lista e no lead: link enviado → aguardando a Natália → confirmada (lançar na comanda) → confirmada e lançada.
+  6. **Tarefa "Lançar na comanda".**
