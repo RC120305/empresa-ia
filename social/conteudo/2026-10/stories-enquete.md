@@ -21,7 +21,7 @@ A figurinha de enquete **só pode ser colocada pelo app**: a publicação autom�
 | Story | Data | Pergunta (na figurinha) | Opção 1 | Opção 2 | Arte |
 |---|---|---|---|---|---|
 | 1 | seg 05/10, 20h | O que você mais curte? | Piscina | Rio | ENQUETE-1.png |
-| 2 | qua 07/10, 20h | Depois do passeio? | Rede | Hidromassagem | ENQUETE-2.png |
+| 2 | qua 07/10, 20h | Depois do passeio? | Hidromassagem | Rede | ENQUETE-2.png |
 | 3 | sex 09/10, 20h | Aventura no rio? | Boia cross | Caiaque | ENQUETE-3.png |
 | 4 | dom 11/10, 20h | Para a sua estadia? | Cabana Casal | Bangalô | ENQUETE-4.png |
 | 5 | ter 13/10, 20h | Remar sem pressa? | Caiaque | Stand-up | ENQUETE-5.png |
