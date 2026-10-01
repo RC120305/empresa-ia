@@ -102,7 +102,7 @@
   "titulo": "Voou para **Campo Grande**?\n*Siga* de estrada",
   "apoio": "Aeroporto a 280 km · vans, ônibus ou locação",
   "apoio_cc": "Aeroporto a 280 km · vans, ônibus ou locação",
-  "pos": "50% center",
+  "pos": "42% center",
   "cc_duas": true,
   "sf_sombras": [
    [
@@ -124,7 +124,7 @@
     10,
     320,
     190,
-    0.5
+    0.18
    ]
   ],
   "cc_topo": 860,
@@ -148,7 +148,7 @@
     25,
     200,
     120,
-    0.55
+    0.18
    ]
   ],
   "sf_bloco": "max-width: 960px; bottom: 220px"
@@ -157,14 +157,14 @@
   "titulo": "A **estrada** já é *viagem*",
   "apoio": "De Campo Grande ou Dourados: cerca de 260 km",
   "apoio_cc": "De Campo Grande ou Dourados: cerca de 260 km",
-  "pos": "50% center",
+  "pos": "48% center",
   "sf_sombras": [
    [
     -260,
     880,
     1480,
     540,
-    0.95
+    0.72
    ],
    [
     -40,
@@ -185,7 +185,7 @@
     10,
     320,
     190,
-    0.5
+    0.18
    ]
   ],
   "cc_topo": 860,
@@ -209,7 +209,7 @@
     25,
     200,
     120,
-    0.55
+    0.18
    ]
   ],
   "sf_bloco": "max-width: 960px; bottom: 220px"
