@@ -25,11 +25,11 @@ MODELO = """<!doctype html>
 .selo img {{ height: 118px; display: block; filter: drop-shadow(0 2px 8px rgba(0,0,0,.35)); }}
 .corte {{ position: absolute; left: 50%; top: 168px; width: 200px; height: 8px; transform: translateX(-50%); background: transparent; }}
 .texto {{ position: absolute; left: 90px; right: 90px; top: {topo}px; text-align: center; }}
-.texto h1 {{ font-family: "Playfair Display", serif; font-style: italic; font-weight: 700; font-size: 112px; line-height: 1.06; text-shadow: 0 3px 24px rgba(0,0,0,.35); }}
+.texto h1 {{ font-family: "Playfair Display", serif; font-style: italic; font-weight: 700; font-size: 92px; line-height: 1.08; text-shadow: 0 3px 24px rgba(0,0,0,.35); }}
 .texto p {{ margin-top: 34px; font-family: "Josefin Sans", sans-serif; font-weight: 400; font-size: 46px; line-height: 1.25; text-shadow: 0 2px 16px rgba(0,0,0,.6), 0 0 4px rgba(0,0,0,.3); }}
 .pe {{ position: absolute; inset: auto 0 0 0; height: 760px; background: linear-gradient(to top, rgba(20,14,8,.62), rgba(20,14,8,.3) 55%, rgba(20,14,8,0)); }}
 .etiqueta {{ position: absolute; left: 120px; right: 120px; bottom: 310px; text-align: center; }}
-.etiqueta span {{ font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 48px; line-height: 1.25; letter-spacing: .06em; text-transform: uppercase; color: var(--creme);
+.etiqueta span {{ font-family: "Josefin Sans", sans-serif; font-weight: 600; font-size: 38px; line-height: 1.3; letter-spacing: .08em; text-transform: uppercase; color: var(--creme);
   text-shadow: 0 2px 16px rgba(0,0,0,.6), 0 0 4px rgba(0,0,0,.35); }}
 </style></head>
 <body><div class="peca story">
