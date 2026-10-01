@@ -483,7 +483,7 @@ Lido da página (16 de 16; nada acrescentado):
 | D5 | Orçamento: **mensagem + página do orçamento** (fotos e "Quero reservar"); o dono pediu um exemplo |
 | D6 | Grupos/famílias: **perguntar sempre** se é uma reserva só ou separada por família |
 | D7 | Grupo vai direto para a equipe **acima de 10 pessoas** |
-| D8 | Expediente da equipe: **7h30 às 17h** |
+| D8 | Expediente da equipe: **7h30 às 17h, todos os dias** (dono, 01/10/2026: a equipe atende inclusive sábado, domingo e feriado) |
 | D9 | Alerta sem dono escala em **10 minutos** |
 | D10 | **Confirmado pelo dono:** alertas só para **Márcio, Jagles e Ricardo** (o de plantão primeiro; sem dono em 10 min, os três). A Renata não recebe alertas e saiu do plantão |
 | D11 | Plantão **escolhido manualmente no CRM** |
@@ -532,3 +532,4 @@ Resumo em `crm/silbeck-api-detalhes.md` (seção 6):
 - **Meta, pedidos (dono, 30/09):** os 6 pedidos seguem parados. O dono **aguarda a empresa incluí-lo como administrador**. Hipótese: os pedidos aparecem em branco (sem solicitante nem detalhes) por falta de permissão total no portfólio. Quando virar administrador: abrir cada pedido e mandar o print (quem pediu, qual ativo, que acesso) antes de qualquer decisão.
 - **Plano do dono para o WhatsApp (30/09):** (1) um **número de teste** para os testes do CRM; (2) em paralelo, o **99117 por coexistência**; (3) com o CRM consolidado, **cancelar a Asksuite** e então conectar o 99110. Proposta da equipe: começar pelo **número de teste gratuito da Meta** (vem com o app); chip real só se precisar testar com qualquer pessoa; coexistência do 99117 **depois** que o webhook do CRM estiver no ar (o histórico só chega nas 24h após conectar) e em **modo observação** (Gilberto desligado no 99117 até liberar). Detalhe em `crm/whatsapp-coexistencia.md`.
 - **Decisão do dono (01/10/2026): a característica principal do Gilberto é parecer humano.** Quem não perguntar não percebe que é uma máquina: apresentação "Aqui é o Gilberto, do Hotel Cabanas", escrita de WhatsApp de gente, "digitando…" com intervalo proporcional, memória da conversa, passagem invisível para a equipe. Mantida a regra P3: **se perguntarem, diz a verdade** e oferece a equipe; não inventa vivência humana. Detalhe em `rh/vagas/gilberto-vendas.md` §4.1. Para o CRM: tempo de "digitando…", agrupar mensagens seguidas do cliente, nada de menu numérico.
+- **Dono (01/10/2026):** os motivos para escolher o Cabanas incluem o **"melhor custo-benefício de Bonito"** (já aprovado para anúncios em `cultura.md`, sempre com o que está incluído). Roteiro aprovado no caderno do Tevah (seção 4). A equipe atende **todos os dias**, das 7h30 às 17h.

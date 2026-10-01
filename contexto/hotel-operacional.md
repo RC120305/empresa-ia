@@ -73,6 +73,7 @@
 - Check-in a partir das 15h; check-out até as 13h. **Não há early check-in nem late check-out**, mas o hóspede pode continuar usando a estrutura (há vestiários, duchas e guarda-volumes).
 - **Piscina, hidromassagem, sauna, academia e sala de jogos: das 7h às 22h**, todos os dias.
 - Recepção: 24h, com check-in online enviado na véspera.
+- **Equipe de reservas:** atende **todos os dias, das 7h30 às 17h** (dono, 01/10/2026).
 
 ## 8. Crianças, famílias e acessibilidade
 - **Crianças até 5 anos não pagam**, dormindo na cama dos pais. A partir de 5 anos pagam normalmente. A **Cabana Casal e a Tripla não aceitam menores de 5 anos**; a **Cabana Master aceita** (confirmado pelo dono).

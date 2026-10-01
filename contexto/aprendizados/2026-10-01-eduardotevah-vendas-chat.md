@@ -73,15 +73,13 @@
 7. Urgência **só verdadeira**: prazo de pagamento e vagas reais do Silbeck.
 8. Follow-up de **até 4 toques**, cada um trazendo algo novo; o último encerra com respeito.
 
-**Rascunho do roteiro de diferenciais** (escrito pelo Claude principal ao montar este caderno, só com fatos do contexto; **não foi feito nem revisado pelo Marketing**; aguarda o OK do dono):
-> Os hóspedes costumam destacar:
-> 1) somos o único hotel de Bonito cercado por dois rios, o Formoso e o Formosinho;
-> 2) a diária já inclui o café da manhã e uma programação com monitor: trilhas com banho de rio, tirolesa, stand up, caiaque e arco e flecha;
+**Roteiro de diferenciais: aprovado pelo dono em 01/10/2026** (rascunho do Claude principal, só com fatos do contexto; o dono incluiu o custo-benefício). Usar como base, sempre adaptado à conversa e sem virar lista; não dizer "os hóspedes destacam" sem prova:
+> Por que o Cabanas:
+> 1) o **melhor custo-benefício de Bonito**: na diária já estão o café da manhã e uma programação com monitor, com trilhas com banho de rio, tirolesa, stand up, caiaque e arco e flecha;
+> 2) somos o único hotel de Bonito cercado por dois rios, o Formoso e o Formosinho;
 > 3) piscina climatizada, hidromassagem aquecida e sauna;
 > 4) ficamos a 6 km do centro, com acesso todo asfaltado;
 > 5) notas de 4,7 no Google, 9,3 no Booking e 4,5 no TripAdvisor (set/2026).
->
-> Quer que eu te mostre as opções para as suas datas?
 
 ## 5. Fontes
 | Título | Data | Link |
