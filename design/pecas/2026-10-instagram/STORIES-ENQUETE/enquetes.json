@@ -1,12 +1,80 @@
-[
- {"pergunta": "Piscina ou rio?", "apoio": "O que você mais curte?", "titulo": "*Piscina* ou **rio**?", "op_a": "Piscina", "op_b": "Rio",
-  "foto_a": "piscina.jpg", "pos_a": "50% 60%", "foto_b": "rio.jpg", "pos_b": "45% 70%"},
- {"pergunta": "Rede ou hidromassagem?", "apoio": "Depois do passeio", "titulo": "*Rede* ou **hidro**?", "op_a": "Rede", "op_b": "Hidromassagem",
-  "foto_a": "rede.jpg", "pos_a": "40% 55%", "foto_b": "hidromassagem.jpg", "pos_b": "50% 55%"},
- {"pergunta": "Boia cross ou caiaque?", "apoio": "Aventura no rio", "titulo": "*Boia cross* ou **caiaque**?", "op_a": "Boia cross", "op_b": "Caiaque",
-  "foto_a": "boia-cross.jpg", "pos_a": "50% 50%", "foto_b": "caiaque-rio.jpg", "pos_b": "45% 60%"},
- {"pergunta": "Cabana Casal ou Bangalô?", "apoio": "Para a sua estadia", "titulo": "*Cabana* ou **Bangalô**?", "op_a": "Cabana Casal", "op_b": "Bangalô",
-  "foto_a": "cabana-casal.jpg", "pos_a": "50% 45%", "foto_b": "bangalo.jpg", "pos_b": "50% 50%"},
- {"pergunta": "Caiaque ou stand-up?", "apoio": "Remar sem pressa", "titulo": "*Caiaque* ou **stand-up**?", "op_a": "Caiaque", "op_b": "Stand-up",
-  "foto_a": "caiaque-mulher.jpg", "pos_a": "40% 60%", "foto_b": "standup-casal.jpg", "pos_b": "50% 55%"}
-]
+{
+ "estilo_final": "1",
+ "enquetes": [
+  {
+   "pergunta": "Piscina ou rio?",
+   "apoio": "O que você mais curte?",
+   "titulo": "*Piscina* ou **rio**?",
+   "op_a": "Piscina",
+   "op_b": "Rio",
+   "foto_a": "piscina.jpg",
+   "pos_a": "50% 60%",
+   "foto_b": "rio.jpg",
+   "pos_b": "45% 70%",
+   "data": "05/10",
+   "dia": "segunda",
+   "hora": "20h",
+   "figurinha": "O que você mais curte?"
+  },
+  {
+   "pergunta": "Rede ou hidromassagem?",
+   "apoio": "Depois do passeio",
+   "titulo": "*Rede* ou **hidro**?",
+   "op_a": "Rede",
+   "op_b": "Hidromassagem",
+   "foto_a": "rede.jpg",
+   "pos_a": "40% 55%",
+   "foto_b": "hidromassagem.jpg",
+   "pos_b": "50% 55%",
+   "data": "07/10",
+   "dia": "quarta",
+   "hora": "20h",
+   "figurinha": "Depois do passeio?"
+  },
+  {
+   "pergunta": "Boia cross ou caiaque?",
+   "apoio": "Aventura no rio",
+   "titulo": "*Boia cross* ou **caiaque**?",
+   "op_a": "Boia cross",
+   "op_b": "Caiaque",
+   "foto_a": "boia-cross.jpg",
+   "pos_a": "50% 50%",
+   "foto_b": "caiaque-rio.jpg",
+   "pos_b": "45% 60%",
+   "data": "09/10",
+   "dia": "sexta",
+   "hora": "20h",
+   "figurinha": "Aventura no rio?"
+  },
+  {
+   "pergunta": "Cabana Casal ou Bangalô?",
+   "apoio": "Para a sua estadia",
+   "titulo": "*Cabana* ou **Bangalô**?",
+   "op_a": "Cabana Casal",
+   "op_b": "Bangalô",
+   "foto_a": "cabana-casal.jpg",
+   "pos_a": "50% 45%",
+   "foto_b": "bangalo.jpg",
+   "pos_b": "50% 50%",
+   "data": "11/10",
+   "dia": "domingo",
+   "hora": "20h",
+   "figurinha": "Para a sua estadia?"
+  },
+  {
+   "pergunta": "Caiaque ou stand-up?",
+   "apoio": "Remar sem pressa",
+   "titulo": "*Caiaque* ou **stand-up**?",
+   "op_a": "Caiaque",
+   "op_b": "Stand-up",
+   "foto_a": "caiaque-mulher.jpg",
+   "pos_a": "40% 60%",
+   "foto_b": "standup-casal.jpg",
+   "pos_b": "50% 55%",
+   "data": "13/10",
+   "dia": "terça",
+   "hora": "20h",
+   "figurinha": "Remar sem pressa?"
+  }
+ ]
+}

@@ -9,7 +9,7 @@ Grava <saida>/pecas.json: {"NN": {"1": [html...], "2": [...], "3": [...]}}.
 Anúncios (design/pecas/anuncios/AAAA-MM-*/<COD>/): grava <saida>/pecas-ads.json
 {"COD": {"f": [html feed 4:5...], "s": [html story 9:16...]}} (estilo sem faixa).
 """
-import base64, glob, io, json, os, re, shutil, sys
+import base64, glob, hashlib, io, json, os, re, shutil, sys
 from PIL import Image
 
 mes, out = sys.argv[1], sys.argv[2]
@@ -57,6 +57,31 @@ def copy_asset(path):
                 copy_asset(os.path.normpath(os.path.join(os.path.dirname(path), u)))
 
 
+CSS_UNICO = {}  # md5 do CSS -> primeiro caminho copiado (CSS repetido entre posts vira um arquivo só)
+
+
+def dedup_css(html, h):
+    for ref in set(re.findall(r'href="([^"#:]+\.css)"', html)):
+        src = os.path.normpath(os.path.join(os.path.dirname(h), ref))
+        if not os.path.exists(src):
+            continue
+        k = hashlib.md5(open(src, "rb").read()).hexdigest()
+        canon = CSS_UNICO.setdefault(k, src)
+        if canon != src:
+            html = html.replace(f'href="{ref}"', f'href="{os.path.relpath(canon, os.path.dirname(h))}"')
+    return html
+
+
+def embute_fotos(html, h):
+    for ref in set(re.findall(r'src="([^"#:]+\.jpe?g)"', html)):
+        src = os.path.normpath(os.path.join(os.path.dirname(h), ref))
+        if os.path.exists(src):
+            im = Image.open(src).convert("RGB"); im.thumbnail((1400, 1400)); buf = io.BytesIO()
+            im.save(buf, "JPEG", quality=76, optimize=True, progressive=True)
+            html = html.replace(f'"{ref}"', '"data:image/jpeg;base64,' + base64.b64encode(buf.getvalue()).decode() + '"')
+    return html
+
+
 res = {}
 import csv  # noqa: E402
 cal = sorted(glob.glob(f"social/conteudo/{mes}/calendario-v*.csv"))
@@ -73,7 +98,7 @@ for d in sorted(glob.glob(f"{base}/POST-*/estilos")):
             h = pick(post, n, k)
             if not h:
                 lst = []; break
-            html = open(h).read()
+            html = dedup_css(open(h).read(), h)
             for ref in re.findall(r'(?:src|href)="([^"#:]+)"', html):
                 copy_asset(os.path.normpath(os.path.join(os.path.dirname(h), ref)))
             dst = os.path.join(out, h); os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -81,6 +106,19 @@ for d in sorted(glob.glob(f"{base}/POST-*/estilos")):
             lst.append(h)
         if lst:
             res[post][k] = lst
+# stories com enquete: {"E1": {"1": [sem faixa], "3": [com faixa]}}
+for h1 in sorted(glob.glob(f"{base}/STORIES-ENQUETE/ENQUETE-*-sem-faixa.html")):
+    i = re.search(r"ENQUETE-(\d+)-sem-faixa", h1).group(1)
+    res[f"E{i}"] = {}
+    for k, h in (("1", h1), ("3", h1.replace("-sem-faixa", ""))):
+        if not os.path.exists(h):
+            continue
+        html = embute_fotos(dedup_css(open(h).read(), h), h)
+        for ref in re.findall(r'(?:src|href)="([^"#:]+)"', html):
+            copy_asset(os.path.normpath(os.path.join(os.path.dirname(h), ref)))
+        dst = os.path.join(out, h); os.makedirs(os.path.dirname(dst), exist_ok=True)
+        open(dst, "w").write(html.replace("</body>", SCRIPT + "\n</body>"))
+        res[f"E{i}"][k] = [h]
 json.dump(res, open(f"{out}/pecas.json", "w"), ensure_ascii=False)
 print({p: {k: len(v) for k, v in s.items()} for p, s in res.items()})
 

@@ -31,5 +31,12 @@ A voz, o CTA e os tabus vêm de `perfil-cabanas.md`; os fatos, do `contexto/`. A
 - 3 a 5 ideias por semana: bastidores reais (equipe, café, rio de manhã), enquete ("rede ou balanço?"), caixinha de perguntas, lembrete "reserve direto" com link, repost de hóspede **com autorização**.
 - Para cada ideia: objetivo, texto na tela, figurinha (enquete/link/pergunta) e se precisa de arte (9:16) ou é foto/vídeo do dia.
 
+## [stories com enquete] "Este ou aquele" (formato fixo, pedido do dono em 01/10/2026)
+- 5 stories por mês, **um dia sim, outro não**, às 20h (não coincidir com os stories de link das 18h30/9h30).
+- Arte 9:16: duas fotos reais empilhadas, pergunta em cima, nome de cada opção na foto, área livre no meio (y 840 a 1080) para a figurinha. **Versão padrão: sem faixa** (escolha do dono). Gerador: `design/pecas/AAAA-MM-instagram/STORIES-ENQUETE/gera-enquetes.py`.
+- Temas: escolhas reais do hotel (piscina ou rio, rede ou hidromassagem, boia cross ou caiaque, Cabana Casal ou Bangalô, caiaque ou stand-up…). Não repetir a mesma opção em duas enquetes seguidas. Variar a cada mês.
+- Vão para a **Central de Aprovação** (bloco "Stories com enquete"). Publicação **pelo app**, com a figurinha de enquete (a API não coloca figurinhas). Sem figurinha, o story precisa de convite para responder ("Responda com a sua escolha").
+- Usar os resultados das enquetes nas pautas seguintes.
+
 ## Pedidos avulsos
 Uma peça fora do plano (um carrossel extra, uma sequência de stories, uma legenda): siga o formato acima com o perfil, sem o fluxo das 3 fases.

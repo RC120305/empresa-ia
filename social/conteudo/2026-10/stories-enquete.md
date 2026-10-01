@@ -4,7 +4,7 @@ Pedido do dono na Central (30/09 e 01/10). Formato escolhido: **stories com figu
 
 - **Artes:** `design/pecas/2026-10-instagram/STORIES-ENQUETE/ENQUETE-N.png` (com faixa marrom) e `ENQUETE-N-sem-faixa.png` (só texto sobre a foto, pedido do dono em 01/10), 9:16. Gerador: `gera-enquetes.py [sem-faixa]` + `enquetes.json`.
 - **Versão escolhida pelo dono (01/10): sem a faixa** (`ENQUETE-N-sem-faixa.png`).
-- **Status:** aguardando o OK final do dono e a definição de quem publica pelo app.
+- **Status:** na Central de Aprovação (bloco "Stories com enquete", cartões E1 a E5), aguardando o OK do dono e a definição de quem publica pelo app.
 - **Sem figurinha não funciona:** se algum story sair sem a enquete, ele precisa de um convite para responder (nos stories a resposta vai para o direct), por exemplo "Responda com a sua escolha".
 
 ## Como publicar (pelo app do Instagram)

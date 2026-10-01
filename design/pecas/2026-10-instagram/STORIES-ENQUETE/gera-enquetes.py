@@ -16,7 +16,7 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.abspath(os.path.join(AQUI, "../../../.."))
 SEM_FAIXA = len(sys.argv) > 1 and sys.argv[1] == "sem-faixa"
 SUF = "-sem-faixa" if SEM_FAIXA else ""
-E = json.load(open(os.path.join(AQUI, "enquetes.json"), encoding="utf-8"))
+E = json.load(open(os.path.join(AQUI, "enquetes.json"), encoding="utf-8"))["enquetes"]
 
 MODELO = """<!doctype html>
 <!-- Story enquete {n}/{total} | 9:16 (1080 x 1920) | {pergunta} | área livre da figurinha: y 840 a 1080 -->

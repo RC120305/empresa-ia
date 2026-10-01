@@ -61,6 +61,7 @@ h2{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:24px;m
 .track img{flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start}
 .adcard .track{aspect-ratio:4/5}
 .adcard.fmt-s .track{aspect-ratio:9/16}
+.enqcard .track{aspect-ratio:9/16}
 .adinfo{margin:0;display:flex;flex-direction:column;gap:4px;font-size:13px;border-left:2px solid var(--line);padding-left:10px}
 .adinfo div{display:flex;flex-wrap:wrap;gap:0 6px}
 .adinfo dt{color:var(--muted);font-weight:600}
@@ -299,6 +300,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
 const MES = "__MES__";
 const ANUNCIOS = __ANUNCIOS__;
 const POSTS = __DATA__;
+const ENQ = __ENQUETES__;   // stories com enquete (publicados pelo app, com a figurinha)
 const BANCO = __BANCO__;
 const WEEKS = [
   {t:"Semana 1", s:"06 a 10/10 · o meio de semana + apoio de 20/11", ids:["01","02","03"]},
@@ -307,11 +309,13 @@ const WEEKS = [
   {t:"Semana 4", s:"25 a 31/10 · o roteiro de domingo a quinta", ids:["13","10","11","12"]}
 ];
 const ESTILOS = [{k:"1",n:"sem faixa",d:"Texto direto sobre a foto"},{k:"2",n:"caixa central",d:"Título numa caixa marrom no centro"},{k:"3",n:"faixa embaixo",d:"Faixa marrom discreta na base"}];
-const FMT = {carrossel:"Carrossel", reels:"Reels", imagem:"Imagem"};
+const FMT = {carrossel:"Carrossel", reels:"Reels", imagem:"Imagem", enquete:"Story · enquete"};
+const ESTILOS_ENQ = [{k:"1",n:"sem faixa",d:"Pergunta direto sobre a foto"},{k:"3",n:"com faixa",d:"Pergunta numa faixa marrom"}];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const byId = Object.fromEntries(POSTS.map(p => [p.n, p]));
 const ADCARDS = (ANUNCIOS && ANUNCIOS.cards) || [];
 ADCARDS.forEach(p => byId[p.n] = p);
+ENQ.forEach(p => byId[p.n] = p);
 const ESTILOS_AD = [{k:"f",n:"Feed 4:5",d:"Como aparece no feed"},{k:"s",n:"Story 9:16",d:"Como aparece nos stories e no Reels"}];
 const cardId = p => (p.ad ? "ad-" : "post-") + p.n;
 const state = {};           // n -> decision doc
@@ -360,32 +364,39 @@ function buildCards(){
     w.ids.forEach(id => cards.appendChild(buildCard(byId[id])));
     weeks.appendChild(sec);
   });
+  if (ENQ.length) {
+    const sec = document.createElement("section"); sec.className = "week";
+    sec.innerHTML = `<div class="week-head"><h2>Stories com enquete</h2><span class="label">publicados pelo app do Instagram, com a figurinha de enquete no meio da arte</span></div><div class="cards"></div>`;
+    ENQ.forEach(p => sec.querySelector(".cards").appendChild(buildCard(p)));
+    weeks.appendChild(sec);
+  }
 }
 
 function buildCard(p){
   const ready = p.imgs.length > 0;
-  const card = document.createElement("article"); card.className = "card" + (p.ad ? " adcard" : ""); card.id = cardId(p);
-  const L = p.ad ? "texto" : "legenda", QUEM = p.ad ? `anúncio ${p.n}` : `post ${p.n}`;
+  const card = document.createElement("article"); card.className = "card" + (p.ad ? " adcard" : "") + (p.enq ? " enqcard" : ""); card.id = cardId(p);
+  const L = p.ad ? "texto" : p.enq ? "enquete" : "legenda", QUEM = p.ad ? `anúncio ${p.n}` : p.enq ? `story ${p.n}` : `post ${p.n}`;
   const media = ready
     ? `<div class="car"><div class="track" tabindex="0" aria-label="Imagens do ${QUEM}">` +
       p.imgs.map((s,i)=>`<img src="${s}" alt="${p.ad ? "Anúncio" : "Post"} ${p.n}, tela ${i+1}" loading="lazy">`).join("") + `</div>` +
       (p.imgs.length>1?`<span class="count">1/${p.imgs.length}</span><button class="nav prev" aria-label="Tela anterior" disabled>‹</button><button class="nav next" aria-label="Próxima tela">›</button>`:"") +
       `</div>` + (p.imgs.length>1?`<div class="dots">${p.imgs.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:"")
     : `<div class="reelbox"><span class="label">Reels · 9:16</span><h3>${esc(p.tema)}</h3><p>Aguardando o vídeo da produtora. Se não chegar a tempo, sai a versão com fotos do banco de imagens.</p></div>`;
-  const telas = ready ? p.imgs.map((_,i)=>`<option value="Tela ${i+1}">Tela ${i+1}</option>`).join("") : "";
+  const telas = p.enq ? ["Foto de cima","Foto de baixo","Botões da enquete"].map(o=>`<option value="${o}">${o}</option>`).join("")
+    : ready ? p.imgs.map((_,i)=>`<option value="Tela ${i+1}">Tela ${i+1}</option>`).join("") : "";
   card.innerHTML = `
     <div class="card-top"><div class="avatar" aria-hidden="true">C</div>
       <div class="who"><b>hotelcabanasbonito</b><span>${p.ad ? "Patrocinado · " + esc(p.cab) : `${p.dia}, ${p.data} · ${p.hora}`}</span></div>
-      <span class="num">${p.ad ? "ANÚNCIO" : "POST"} ${p.n}</span></div>
+      <span class="num">${p.ad ? "ANÚNCIO" : p.enq ? "STORY" : "POST"} ${p.n}</span></div>
     ${media}
     <div class="body">
-      ${ready ? `<div class="styles" role="group" aria-label="${p.ad ? "Formato" : "Estilo da arte"}"><span>${p.ad ? "Formato:" : "Estilo:"}</span>${(p.ad ? ESTILOS_AD : ESTILOS).map(e=>`<button type="button" class="sbtn" data-estilo="${e.k}" aria-pressed="false" title="${e.d}">${p.ad ? e.n : e.k + " · " + e.n}</button>`).join("")}</div>` : ""}
+      ${ready ? `<div class="styles" role="group" aria-label="${p.ad ? "Formato" : "Estilo da arte"}"><span>${p.ad ? "Formato:" : "Estilo:"}</span>${(p.ad ? ESTILOS_AD : p.enq ? ESTILOS_ENQ : ESTILOS).map(e=>`<button type="button" class="sbtn" data-estilo="${e.k}" aria-pressed="false" title="${e.d}">${p.ad || p.enq ? e.n : e.k + " · " + e.n}</button>`).join("")}</div>` : ""}
       <div class="meta"><span class="chip">${FMT[p.fmt]||p.fmt}</span><span class="st ${ready?"pendente":"video"}" data-st>${ready?"para revisar":"aguardando vídeo"}</span></div>
       <p class="theme">${esc(p.tema)}</p>
       <p class="cap clip">${caption(p.leg)}</p>
       <span class="edited" data-edited hidden>${p.ad ? "Texto editado" : "Legenda editada"} por você</span>
       ${p.ad ? `<dl class="adinfo"><div><dt>Título</dt><dd>${esc(p.titulo)}</dd></div><div><dt>Descrição</dt><dd>${esc(p.descricao)}</dd></div><div><dt>Botão</dt><dd>${esc(p.botao)}</dd></div>${p.variacaoB ? `<div><dt>Variação B da 1ª linha</dt><dd>${esc(p.variacaoB)}</dd></div>` : ""}${p.mensagem ? `<div><dt>Mensagem pronta no WhatsApp</dt><dd>${esc(p.mensagem)}</dd></div>` : ""}</dl>` : ""}
-      <div class="links"><button class="linkbtn" data-more type="button" aria-expanded="false">ver ${L} completo${p.ad ? "" : "a"}</button><button class="linkbtn" data-copy type="button">copiar ${L}</button><button class="linkbtn" data-edit type="button" hidden>editar ${L}</button><button class="linkbtn" data-art type="button" hidden>editar texto da arte</button></div>
+      <div class="links"><button class="linkbtn" data-more type="button" aria-expanded="false">ver ${L} complet${p.ad ? "o" : "a"}</button><button class="linkbtn" data-copy type="button">copiar ${L}</button><button class="linkbtn" data-edit type="button" hidden>editar ${L}</button><button class="linkbtn" data-art type="button" hidden>editar texto da arte</button></div>
       <div class="artbox" data-artbox hidden>
         <span class="label" style="font-size:11px">Texto da arte · prévia ao vivo no ${p.ad ? "formato" : "estilo"} escolhido</span>
         <div class="tabs" role="tablist" data-tabs></div>
@@ -418,8 +429,8 @@ function buildCard(p){
       <form class="fixbox" data-form hidden>
         <label for="onde-${p.n}">O que mudar
           <select id="onde-${p.n}" name="onde">
-            <option value="${p.ad ? "Anúncio inteiro" : "Post inteiro"}">${p.ad ? "Anúncio inteiro" : "Post inteiro"}</option>${telas}
-            <option value="Texto da arte">Texto da arte (diga a tela e o novo texto)</option>${p.ad ? `<option value="Texto principal">Texto principal</option><option value="Título, descrição ou botão">Título, descrição ou botão</option><option value="Mensagem pronta">Mensagem pronta do WhatsApp</option>` : `<option value="Legenda">Legenda</option><option value="Hashtags">Hashtags</option><option value="Data ou horário">Data ou horário</option>`}
+            <option value="${p.ad ? "Anúncio inteiro" : p.enq ? "Story inteiro" : "Post inteiro"}">${p.ad ? "Anúncio inteiro" : p.enq ? "Story inteiro" : "Post inteiro"}</option>${telas}
+            <option value="Texto da arte">Texto da arte (diga a tela e o novo texto)</option>${p.ad ? `<option value="Texto principal">Texto principal</option><option value="Título, descrição ou botão">Título, descrição ou botão</option><option value="Mensagem pronta">Mensagem pronta do WhatsApp</option>` : p.enq ? `<option value="Data ou horário">Data ou horário</option>` : `<option value="Legenda">Legenda</option><option value="Hashtags">Hashtags</option><option value="Data ou horário">Data ou horário</option>`}
           </select></label>
         <label for="pedido-${p.n}">Seu pedido
           <textarea id="pedido-${p.n}" name="pedido" placeholder="Ex.: troca a foto da tela 3 por uma da piscina; deixa a legenda mais curta" required></textarea></label>
@@ -516,6 +527,7 @@ function buildCard(p){
       tabs.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", String(+b.dataset.t === n)));
       frame.dataset.t = n;
       if (p.ad) { const st9 = estiloAtual() === "s"; frame.style.height = st9 ? "1920px" : "1350px"; stage.style.aspectRatio = st9 ? "9/16" : "4/5"; }
+      if (p.enq) { frame.style.height = "1920px"; stage.style.aspectRatio = "9/16"; }
       frame.src = p.pecas[estiloAtual()][n-1];
     };
     window.addEventListener("message", (e) => {
@@ -546,7 +558,7 @@ function buildCard(p){
           if (await comments.canSendToClaude() === "available") {
             const anchor = await comments.anchorFor(card);
             const linhas = mudou.map(n => `Tela ${n}: título "${draft[n].titulo.replace(/\n/g," / ")}" · apoio "${draft[n].apoio}"`).join("\n");
-            await comments.sendToClaude({anchor, text: ((p.ad ? `Texto da arte editado na Central, ANÚNCIO ${p.n} (${ANUNCIOS.id}). Gerar as artes finais (feed 4:5 e story 9:16):\n` : `Texto da arte editado na Central (${MES}), POST ${p.n}. Gerar as artes finais nos 3 estilos:\n`) + linhas).slice(0, 3900)});
+            await comments.sendToClaude({anchor, text: ((p.ad ? `Texto da arte editado na Central, ANÚNCIO ${p.n} (${ANUNCIOS.id}). Gerar as artes finais (feed 4:5 e story 9:16):\n` : p.enq ? `Texto da arte editado na Central (${MES}), STORY COM ENQUETE ${p.n}. Gerar as artes nos 2 estilos:\n` : `Texto da arte editado na Central (${MES}), POST ${p.n}. Gerar as artes finais nos 3 estilos:\n`) + linhas).slice(0, 3900)});
             aviso = true;
           }
         } catch {}
@@ -640,7 +652,7 @@ function buildCard(p){
         if (await comments.canSendToClaude() === "available") {
           const anchor = await comments.anchorFor(card);
           const fotos = (pendingImgs[p.n] || []).length, banco = pendingBanco[p.n] || [];
-          const txt = (p.ad ? `Correção de ANÚNCIO na Central (${ANUNCIOS.id}), ${p.n} (${p.cab})` : `Correção na Central de Aprovação (${MES}), POST ${p.n} (${p.tema})`) + ` · ${form.onde.value}: ${pedido}`
+          const txt = (p.ad ? `Correção de ANÚNCIO na Central (${ANUNCIOS.id}), ${p.n} (${p.cab})` : p.enq ? `Correção na Central de Aprovação (${MES}), STORY COM ENQUETE ${p.n} (${p.tema})` : `Correção na Central de Aprovação (${MES}), POST ${p.n} (${p.tema})`) + ` · ${form.onde.value}: ${pedido}`
             + (banco.length ? ` · Foto(s) do banco: ${banco.map(b => `${b.nome} [${b.id}] (${b.pasta})`).join("; ")}.` : "")
             + (fotos ? ` · ${fotos} foto(s) de fora anexada(s) na central, para guardar no banco na pasta "${form.pasta.value}"${form.desc.value.trim() ? ` (${form.desc.value.trim()})` : ""}.` : "")
             + (p.ad ? ` Formato visto: ${p.atual === "s" ? "story 9:16" : "feed 4:5"}.` : ` Estilo escolhido: ${p.atual || p.padrao}.`);
@@ -682,7 +694,7 @@ function livePreviews(n){
   if (!p.pecas || !card) return;
   const track = card.querySelector(".track"); if (!track) return;
   const tx = state[n]?.textos || {}, est = p.atual || p.padrao || "1";
-  const H = p.ad ? (est === "s" ? 1920 : 1350) : 1440, fixo = p.ad && est === "s";
+  const H = p.ad ? (est === "s" ? 1920 : 1350) : p.enq ? 1920 : 1440, fixo = (p.ad && est === "s") || !!p.enq;
   [...track.children].forEach((el, i) => {
     const t = tx[i+1], pend = !!(t && t.situacao !== "feito");
     const isLive = el.classList.contains("live");
@@ -721,7 +733,7 @@ function applyStyle(n, e){
   if (track) [...track.children].forEach((el,i) => { if (el.tagName === "IMG" && p.imgs[i]) el.src = p.imgs[i]; });
   livePreviews(n);
   card.querySelectorAll("[data-estilo]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.estilo === e)));
-  if (!p.ad) renderGrade();
+  if (!p.ad && !p.enq) renderGrade();
 }
 
 async function save(n, patch){
@@ -1083,7 +1095,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && !document.
 
 document.getElementById("recarregar").addEventListener("click", () => location.reload());
 buildCards();
-POSTS.forEach(p => { if (p.padrao) applyStyle(p.n, p.padrao); });
+[...POSTS, ...ENQ].forEach(p => { if (p.padrao) applyStyle(p.n, p.padrao); });
 function buildAdCards(){
   const box = document.getElementById("ads-cards"); if (!ADCARDS.length) return;
   box.innerHTML = `<section class="panel"><span class="label">Etapa 3 · anúncios prontos para aprovar</span><h2>Os ${ADCARDS.length} anúncios</h2><p class="muted">Cada anúncio mostra as artes no feed (4:5) e no story (9:16), o texto e o botão. Aprove ou peça correção como nos posts: dá para trocar a foto (do banco ou de fora), editar o texto principal e o texto da arte. Aprovar não sobe nada: subir pausada e ativar continuam precisando do seu OK.</p><p class="muted" id="ads-tally"></p><p class="muted"><a href="#ads-main">Ver o plano, a verba e as decisões ↓</a></p></section>`;
@@ -1120,7 +1132,7 @@ tally();
   }
   if (!assets) document.querySelectorAll("[data-up]").forEach(u => u.hidden = true);
   document.querySelectorAll("[data-edit]").forEach(b => b.hidden = false);
-  [...POSTS, ...ADCARDS].forEach(p => { const a = p.pecas && document.querySelector("#" + cardId(p) + " [data-art]"); if (a) a.hidden = false; });
+  [...POSTS, ...ENQ, ...ADCARDS].forEach(p => { const a = p.pecas && document.querySelector("#" + cardId(p) + " [data-art]"); if (a) a.hidden = false; });
   if (ADCARDS.length) db.collection("anuncios_artes").where("plano","==",ANUNCIOS.id).onSnapshot(snap => {
     snap.docs.forEach(d => { const b = d.data(); if (b && b.cod) state[b.cod] = b; });
     ADCARDS.forEach(p => paint(p.n)); tallyAds(); renderAds();
@@ -1137,7 +1149,7 @@ tally();
   renderAds();
   db.collection("decisoes").where("mes","==",MES).onSnapshot(snap => {
     snap.docs.forEach(d => { const b = d.data(); if (b && b.post) state[b.post] = b; });
-    POSTS.forEach(p => paint(p.n));
+    [...POSTS, ...ENQ].forEach(p => paint(p.n));
     renderGrade(); tally();
   }, () => { document.getElementById("offline").hidden = false; });
 })();

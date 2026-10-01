@@ -51,10 +51,30 @@ for r in csv.DictReader(open(cal)):
     posts.append(dict(n=nn, data=r["Data"], dia=r["Dia"], hora=r["Horário"], fmt=r["Formato"],
                       tema=r["Tema"], leg=r["Legenda final (com hashtags)"], imgs=imgs,
                       estilos=estilos, padrao=padrao, status=r["Status"]))
+# stories com enquete (design/pecas/AAAA-MM-instagram/STORIES-ENQUETE/): um card 9:16 por story,
+# estilos "1" (sem faixa) e "3" (com faixa). Sem jpg: o card mostra a peça HTML ao vivo (pecas.py
+# embute as fotos no HTML), para poupar arquivos (a página aceita ~510).
+VAZIO = "data:image/gif;base64,R0lGODlhAQABAAAAACw="
+enq = []
+ej = f"design/pecas/{mes}-instagram/STORIES-ENQUETE/enquetes.json"
+if os.path.exists(ej):
+    EJ = json.load(open(ej, encoding="utf-8")); edir = os.path.dirname(ej)
+    for i, e in enumerate(EJ["enquetes"], 1):
+        estilos = {}
+        for k, suf in (("1", "-sem-faixa"), ("3", "")):
+            if os.path.exists(f"{edir}/ENQUETE-{i}{suf}.html"):
+                estilos[k] = [VAZIO]
+        if not estilos:
+            continue
+        padrao = EJ.get("estilo_final", "1") if EJ.get("estilo_final", "1") in estilos else next(iter(estilos))
+        leg = (f"Pergunta na figurinha: {e.get('figurinha', e['pergunta'])}\nBotões: {e['op_a']} · {e['op_b']}\n\n"
+               f"Publicar pelo app do Instagram: Story → Figurinhas → Enquete, no meio da arte (sobre a linha entre as fotos).")
+        enq.append(dict(n=f"E{i}", enq=True, data=e.get("data", ""), dia=e.get("dia", ""), hora=e.get("hora", ""), fmt="enquete",
+                        tema=e["pergunta"], leg=leg, imgs=estilos[padrao], estilos=estilos, padrao=padrao, status=""))
 pj = f"{out}/pecas.json"
 if os.path.exists(pj):
     pecas = json.load(open(pj))
-    for p in posts:
+    for p in posts + enq:
         if p["n"] in pecas:
             p["pecas"] = pecas[p["n"]]
 tpl = open(os.path.join(os.path.dirname(__file__), "modelo.html")).read()
@@ -118,5 +138,5 @@ for k in range(0, len(com), COLS * ROWS):
         b["f"] = f"{nome}?v={hashlib.md5(open(f'{out}/{nome}', 'rb').read()).hexdigest()[:8]}"
 banco = [dict(b, cols=COLS, rows=ROWS) for b in com]
 bjs = json.dumps(banco, ensure_ascii=False).replace("</", "<\\/")
-open(f"{out}/index.html", "w").write(tpl.replace("__BANCO__", bjs).replace("__DATA__", data).replace("__MES__", mes).replace("__ANUNCIOS__", anuncios))
-print(f"{len(posts)} posts -> {out}/index.html")
+open(f"{out}/index.html", "w").write(tpl.replace("__BANCO__", bjs).replace("__DATA__", data).replace("__MES__", mes).replace("__ANUNCIOS__", anuncios).replace("__ENQUETES__", json.dumps(enq, ensure_ascii=False).replace("</", "<\\/")))
+print(f"{len(posts)} posts, {len(enq)} stories com enquete -> {out}/index.html")
