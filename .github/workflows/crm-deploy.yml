@@ -8,6 +8,10 @@ on:
       - '.github/workflows/crm-deploy.yml'
   workflow_dispatch:
 
+concurrency:
+  group: crm-deploy
+  cancel-in-progress: true
+
 permissions:
   contents: read
   id-token: write   # federação de identidade com o Google (sem chave)
@@ -23,6 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: crm/app   # o repositório é grande (fotos e artes); baixa só o CRM
+          filter: blob:none
 
       - name: Autenticar no Google Cloud (sem chave)
         uses: google-github-actions/auth@v2
