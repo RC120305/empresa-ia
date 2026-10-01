@@ -372,7 +372,7 @@
   },
   {
     "name": "pedir_horario_parceiro",
-    "description": "Pede à massoterapeuta parceira (Natália, Massagem 360), pelo WhatsApp oficial do hotel, a confirmação de uma massagem para um hóspede. Horários possíveis por dia: 08:00, 09:00, 10:00, 14:00, 15:00 e 16:00 (ofereça só esses). Tipos: Massagem360, Massagem desportiva ou Drenagem linfática (R$ 220 cada), com adicionais opcionais. Antes de chamar, o cliente precisa ter escolhido data, horário e tipo. A parceira responde [Confirmo] ou [Não posso]: se confirma, o CRM confirma ao hóspede e gera a cobrança; se recusa, o CRM pergunta a ela quais datas e horários têm vaga e te devolve as opções para oferecer ao cliente (o horário escolhido vira um novo pedido). Sem resposta em 2 h no expediente, alerta a equipe. Ao cliente, diga que está confirmando o horário com a massoterapeuta; nunca dê como confirmado antes da resposta dela.",
+    "description": "Pede à massoterapeuta parceira (Natália, Massagem 360), pelo WhatsApp oficial do hotel, a confirmação de uma massagem para um hóspede. Horários possíveis por dia: 08:00, 09:00, 10:00, 14:00, 15:00 e 16:00 (ofereça só esses). Tipos: Massagem360, Massagem relaxante ou Massagem linfática (R$ 220 cada), com adicionais opcionais. Antes de chamar, o cliente precisa ter escolhido data, horário e tipo. A parceira responde [Confirmo] ou [Não posso]: se confirma, o CRM confirma ao hóspede e gera a cobrança; se recusa, o CRM pergunta a ela quais datas e horários têm vaga e te devolve as opções para oferecer ao cliente (o horário escolhido vira um novo pedido). Sem resposta em 2 h no expediente, alerta a equipe. Ao cliente, diga que está confirmando o horário com a massoterapeuta; nunca dê como confirmado antes da resposta dela.",
     "strict": true,
     "input_schema": {
       "type": "object",
@@ -384,8 +384,8 @@
           "type": "string",
           "enum": [
             "Massagem360",
-            "Massagem desportiva",
-            "Drenagem linfática"
+            "Massagem relaxante",
+            "Massagem linfática"
           ]
         },
         "data": {

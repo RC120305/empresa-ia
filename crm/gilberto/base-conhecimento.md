@@ -103,7 +103,7 @@
 - **P:** Tem lavanderia?
   R: Sim, lavar e passar a partir de R$ 8 por peça.
 - **P:** Tem massagem?
-  R: Sim! Massagem com parceiro especializado, no quarto ou à beira do rio: Massagem360 (um mix de relaxante, shiatsu, drenagem, reflexologia e alongamentos), desportiva ou drenagem linfática, R$ 220 cada, com adicionais como pedras quentes ou reflexologia. Pode ser marcada antes da chegada. Quer que eu veja um horário?
+  R: Sim! Massagem com parceiro especializado, no quarto ou à beira do rio: Massagem360 (um mix de relaxante, shiatsu, drenagem, reflexologia e alongamentos), relaxante (pressão suave a moderada, para relaxar e aliviar o estresse) ou linfática (movimentos leves que estimulam a circulação e trazem sensação de leveza), R$ 220 cada, com adicionais como pedras quentes ou reflexologia. Pode ser marcada antes da chegada. Quer que eu veja um horário?
 - **P:** Tem decoração romântica?
   R: Sim! Temos duas opções, preparadas no quarto: a Completa, por R$ 600, com balão personalizável, pétalas de rosas, tábua de frios completa, espumante e até 8 fotos polaroid do casal; e a Simples, por R$ 350, com balão personalizável e até 8 fotos polaroid. Precisa ser contratada com pelo menos 3 dias de antecedência.
 - **P:** Tem estacionamento?
