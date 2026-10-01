@@ -1,0 +1,256 @@
+{
+  "_aviso": "DADOS FICTÍCIOS. Todos os IDs, códigos, nomes, documentos, telefones, e-mails e valores deste arquivo são inventados para o simulador. Os IDs reais do Silbeck do Hotel Cabanas devem ser coletados no sistema (crm/silbeck/mapa-ids.md). Nenhuma pessoa real aparece aqui.",
+  "config": {
+    "tokenTtlSeg": 1800,
+    "expiresInRetornado": 30,
+    "taxaServicoPercentual": 0,
+    "taxaISSPercentual": 2,
+    "idTipoPensaoPadrao": 4,
+    "idTarifarioPadrao": 1,
+    "idFaturamentoPadrao": 1,
+    "permitirPostTarifario": false,
+    "maxParcelasCartao": 12,
+    "registrosPorPagina": 250,
+    "gerarHospedesFicticios": 280
+  },
+  "catalogo": {
+    "tiposApartamento": [
+      { "id": 1, "codigo": "CBD", "nome": "Cabana Casal", "quantidade": 3, "maximoOcupantes": 2 },
+      { "id": 2, "codigo": "CBT", "nome": "Cabana Tripla", "quantidade": 1, "maximoOcupantes": 3 },
+      { "id": 3, "codigo": "CBM", "nome": "Cabana Master", "quantidade": 1, "maximoOcupantes": 5 },
+      { "id": 4, "codigo": "BG", "nome": "Bangalô", "quantidade": 2, "maximoOcupantes": 4 },
+      { "id": 5, "codigo": "BGE", "nome": "Bangalô Especial", "quantidade": 1, "maximoOcupantes": 4 },
+      { "id": 6, "codigo": "STD", "nome": "Apartamento Standard Duplo/Triplo", "quantidade": 6, "maximoOcupantes": 3 },
+      { "id": 7, "codigo": "CST", "nome": "Duplo Casa Standard", "quantidade": 1, "maximoOcupantes": 2 },
+      { "id": 8, "codigo": "SUP", "nome": "Apartamento Superior Duplo/Triplo", "quantidade": 2, "maximoOcupantes": 3 },
+      { "id": 9, "codigo": "CJ", "nome": "Apartamento Conjugado", "quantidade": 1, "maximoOcupantes": 5 },
+      { "id": 10, "codigo": "QST", "nome": "Quádruplo Standard", "quantidade": 2, "maximoOcupantes": 4 },
+      { "id": 11, "codigo": "QES", "nome": "Quádruplo Superior (Especial)", "quantidade": 1, "maximoOcupantes": 4 }
+    ],
+    "apartamentos": [
+      { "id": 101, "codigo": "C01", "idTipo": 1 },
+      { "id": 102, "codigo": "C02", "idTipo": 1 },
+      { "id": 103, "codigo": "C03", "idTipo": 1 },
+      { "id": 104, "codigo": "C04", "idTipo": 2 },
+      { "id": 105, "codigo": "C05", "idTipo": 3 },
+      { "id": 106, "codigo": "B01", "idTipo": 4 },
+      { "id": 107, "codigo": "B02", "idTipo": 4 },
+      { "id": 108, "codigo": "B03", "idTipo": 5 },
+      { "id": 109, "codigo": "101", "idTipo": 6 },
+      { "id": 110, "codigo": "102", "idTipo": 6 },
+      { "id": 111, "codigo": "103", "idTipo": 6 },
+      { "id": 112, "codigo": "104", "idTipo": 6 },
+      { "id": 113, "codigo": "105", "idTipo": 6 },
+      { "id": 114, "codigo": "106", "idTipo": 6 },
+      { "id": 115, "codigo": "107", "idTipo": 7 },
+      { "id": 116, "codigo": "201", "idTipo": 8 },
+      { "id": 117, "codigo": "202", "idTipo": 8 },
+      { "id": 118, "codigo": "203", "idTipo": 9 },
+      { "id": 119, "codigo": "204", "idTipo": 10 },
+      { "id": 120, "codigo": "205", "idTipo": 10 },
+      { "id": 121, "codigo": "206", "idTipo": 11 }
+    ],
+    "tiposPensao": [
+      { "id": 4, "codigo": "SC", "nome": "Só Café", "adicionalPorPagante": 0 },
+      { "id": 6, "codigo": "MP", "nome": "Meia Pensão (FICTÍCIA)", "adicionalPorPagante": 95 }
+    ],
+    "categoriasHospede": [
+      { "id": 1, "nome": "Adulto", "tipo": 1 },
+      { "id": 2, "nome": "Adulto Cortesia", "tipo": 2 },
+      { "id": 3, "nome": "Criança a partir de 5 anos", "tipo": 3 },
+      { "id": 4, "nome": "Criança até 5 anos (cortesia)", "tipo": 4 }
+    ],
+    "tarifarios": [
+      { "id": 1, "nome": "Balcão / Direto (FICTÍCIO)" },
+      { "id": 2, "nome": "Agências (FICTÍCIO)" }
+    ],
+    "faturamentos": [
+      { "id": 1, "nome": "Particular", "tipo": "particular" },
+      { "id": 2, "nome": "Empresa", "tipo": "empresa" }
+    ],
+    "portais": [
+      { "id": 3, "nome": "Booking.com" },
+      { "id": 5, "nome": "Motor de Reservas" },
+      { "id": 7, "nome": "CRM WhatsApp" }
+    ],
+    "bandeiras": [
+      { "codigo": "00001", "nome": "Visa", "idFormaPagamento": 41 },
+      { "codigo": "00002", "nome": "Mastercard", "idFormaPagamento": 42 },
+      { "codigo": "00003", "nome": "Elo", "idFormaPagamento": 43 },
+      { "codigo": "00004", "nome": "American Express", "idFormaPagamento": 44 },
+      { "codigo": "00005", "nome": "Hipercard", "idFormaPagamento": 45 }
+    ],
+    "formasPagamento": {
+      "1": { "idFormaPagamento": 1, "idContaCorrente": 0 },
+      "4": { "idFormaPagamento": 40, "idContaCorrente": 0 },
+      "5": { "idFormaPagamento": 5, "idContaCorrente": 0 },
+      "6": { "idFormaPagamento": 6, "idContaCorrente": 0 },
+      "8": { "idFormaPagamento": 8, "idContaCorrente": 3 }
+    },
+    "setores": [
+      { "id": 1, "codigo": "REC", "nome": "Recepção" },
+      { "id": 2, "codigo": "RES", "nome": "Restaurante" },
+      { "id": 3, "codigo": "BAR", "nome": "Bar da Piscina" },
+      { "id": 4, "codigo": "LAZ", "nome": "Lazer e Atividades" },
+      { "id": 5, "codigo": "GOV", "nome": "Governança" }
+    ],
+    "produtos": [
+      { "id": 1001, "codigo": "BOIA", "nome": "Boia cross" },
+      { "id": 1002, "codigo": "ARVO", "nome": "Arvorismo" },
+      { "id": 1003, "codigo": "DECO", "nome": "Decoração especial no quarto" },
+      { "id": 1004, "codigo": "AGUA", "nome": "Água mineral 500 ml" },
+      { "id": 1005, "codigo": "REFR", "nome": "Refrigerante lata" },
+      { "id": 1006, "codigo": "CERV", "nome": "Cerveja long neck" },
+      { "id": 1007, "codigo": "PAST", "nome": "Porção de pastel" },
+      { "id": 1008, "codigo": "LAVA", "nome": "Lavanderia (peça)" }
+    ],
+    "insumos": [
+      { "id": 2001, "codigo": "CAFE", "nome": "Café em grãos (kg)" },
+      { "id": 2002, "codigo": "LEIT", "nome": "Leite integral (l)" },
+      { "id": 2003, "codigo": "TOAL", "nome": "Toalha de banho" }
+    ],
+    "cidades": [
+      { "id": 1, "nome": "BONITO", "estado": "MS" },
+      { "id": 2, "nome": "CAMPO GRANDE", "estado": "MS" },
+      { "id": 3, "nome": "DOURADOS", "estado": "MS" },
+      { "id": 4, "nome": "SÃO PAULO", "estado": "SP" },
+      { "id": 5, "nome": "CAMPINAS", "estado": "SP" },
+      { "id": 6, "nome": "CURITIBA", "estado": "PR" },
+      { "id": 7, "nome": "RIO DE JANEIRO", "estado": "RJ" },
+      { "id": 8, "nome": "BELO HORIZONTE", "estado": "MG" },
+      { "id": 9, "nome": "PORTO ALEGRE", "estado": "RS" },
+      { "id": 10, "nome": "GOIÂNIA", "estado": "GO" },
+      { "id": 11, "nome": "BRASÍLIA", "estado": "DF" },
+      { "id": 12, "nome": "CUIABÁ", "estado": "MT" }
+    ],
+    "profissoes": [
+      { "id": 1, "nome": "Analista" },
+      { "id": 2, "nome": "Professor(a)" },
+      { "id": 3, "nome": "Médico(a)" },
+      { "id": 4, "nome": "Engenheiro(a)" },
+      { "id": 5, "nome": "Empresário(a)" },
+      { "id": 6, "nome": "Estudante" },
+      { "id": 7, "nome": "Aposentado(a)" }
+    ]
+  },
+  "tarifas": {
+    "_aviso": "Valores FICTÍCIOS por noite, para até 2 pagantes, pensão Só Café. Não são os preços do hotel.",
+    "basePorTipo": { "CBD": 690, "CBT": 690, "CBM": 1290, "BG": 720, "BGE": 820, "STD": 450, "CST": 430, "SUP": 540, "CJ": 890, "QST": 560, "QES": 640 },
+    "valorPessoaExtra": 150,
+    "fimDeSemanaPercentual": 15,
+    "temporadas": [
+      { "nome": "Feriado Consciência Negra (fictício)", "dataInicial": "2026-11-19", "dataFinal": "2026-11-22", "multiplicador": 1.25 },
+      { "nome": "Alta Natal e Réveillon (fictício)", "dataInicial": "2026-12-20", "dataFinal": "2027-01-04", "multiplicador": 1.45 }
+    ],
+    "overrides": []
+  },
+  "empresas": [
+    { "id": 501, "codigo": "901", "nome": "AGÊNCIA FICTÍCIA RIO AZUL TURISMO", "documento": "00.000.000/0001-01", "telefone": "(67) 90000-9001", "celular": "", "email": "reservas@rioazul.exemplo.test", "cidade": "CAMPO GRANDE", "cep": "79000-000", "bairro": "CENTRO", "estado": "MS", "pais": "BRASIL", "percentualComissao": 10 },
+    { "id": 502, "codigo": "902", "nome": "OPERADORA SIMULADA SERRA DA BODOQUENA", "documento": "00.000.000/0001-02", "telefone": "(11) 90000-9002", "celular": "", "email": "contato@serrasim.exemplo.test", "cidade": "SÃO PAULO", "cep": "01000-000", "bairro": "CENTRO", "estado": "SP", "pais": "BRASIL", "percentualComissao": 12 },
+    { "id": 503, "codigo": "903", "nome": "AGÊNCIA TESTE ÁGUAS CLARAS VIAGENS", "documento": "00.000.000/0001-03", "telefone": "(67) 90000-9003", "celular": "", "email": "vendas@aguasclaras.exemplo.test", "cidade": "BONITO", "cep": "79290-000", "bairro": "CENTRO", "estado": "MS", "pais": "BRASIL", "percentualComissao": 10 },
+    { "id": 504, "codigo": "904", "nome": "EMPRESA FICTÍCIA EVENTOS CORPORATIVOS LTDA", "documento": "00.000.000/0001-04", "telefone": "(41) 90000-9004", "celular": "", "email": "eventos@corp.exemplo.test", "cidade": "CURITIBA", "cep": "80000-000", "bairro": "CENTRO", "estado": "PR", "pais": "BRASIL", "percentualComissao": 0 }
+  ],
+  "fornecedores": [
+    { "id": 601, "codigo": "F01", "nome": "FORNECEDOR FICTÍCIO DE ALIMENTOS", "documento": "00.000.000/0001-51", "telefone": "(67) 90000-8001", "celular": "", "email": "pedidos@alimentos.exemplo.test", "cidade": "BONITO", "cep": "79290-000", "bairro": "CENTRO", "estado": "MS", "pais": "BRASIL" },
+    { "id": 602, "codigo": "F02", "nome": "LAVANDERIA SIMULADA LTDA", "documento": "00.000.000/0001-52", "telefone": "(67) 90000-8002", "celular": "", "email": "contato@lavanderia.exemplo.test", "cidade": "BONITO", "cep": "79290-000", "bairro": "CENTRO", "estado": "MS", "pais": "BRASIL" }
+  ],
+  "hospedes": [
+    { "nome": "FULANO DE TESTE SILVA", "documento": "000.000.000-01", "celular": "(11) 90000-0001", "email": "fulano.teste@exemplo.test", "cidade": "SÃO PAULO", "estado": "SP", "sexo": "M", "dataNascimento": "1985-03-10" }
+  ],
+  "manutencoes": [
+    { "codigoApartamento": "106", "dataInicial": "2026-11-16", "dataFinal": "2026-11-18", "motivo": "Troca do ar-condicionado (fictício)" }
+  ],
+  "reservas": [
+    {
+      "titular": "FULANO DE TESTE SILVA", "numeroDocumento": "000.000.000-01", "email": "fulano.teste@exemplo.test", "telefone": "(11) 90000-0001",
+      "idReservaPortal": 7, "observacao": "Lua de mel (fictício)",
+      "listaReservaItem": [
+        { "idTipoApartamento": 1, "quantidadeAdulto": 2, "dataEntrada": "2026-11-06", "dataSaida": "2026-11-09", "qtdeApartamento": 1,
+          "listaHospede": [ { "nome": "FULANO DE TESTE SILVA", "adulto": true, "numeroDocumento": "000.000.000-01" }, { "nome": "CICLANA DE TESTE SILVA", "adulto": true } ] }
+      ],
+      "_sim": { "dataHora": "2026-09-12 10:14:00", "nomeUsuario": "API", "adiantamentos": [ { "percentual": 50, "tipoFormaPagamento": 8, "observacao": "Pix BB (fictício)" } ] }
+    },
+    {
+      "titular": "CICLANA FICTÍCIA SOUZA", "email": "ciclana.ficticia@exemplo.test", "telefone": "(41) 90000-0002",
+      "idReservaPortal": 7, "observacao": "Aguardando sinal (fictício)",
+      "listaReservaItem": [
+        { "idTipoApartamento": 5, "quantidadeAdulto": 2, "quantidadeCrianca": 2, "dataEntrada": "2026-11-19", "dataSaida": "2026-11-22", "qtdeApartamento": 1,
+          "listaHospede": [ { "nome": "CICLANA FICTÍCIA SOUZA", "adulto": true }, { "nome": "MARIDO FICTÍCIO SOUZA", "adulto": true }, { "nome": "CRIANÇA FICTÍCIA UM", "adulto": false }, { "nome": "CRIANÇA FICTÍCIA DOIS", "adulto": false } ] }
+      ],
+      "_sim": { "dataHora": "2026-09-28 16:40:00", "nomeUsuario": "API" }
+    },
+    {
+      "titular": "HOSPEDE TESTE BOOKING", "email": "hospede.booking@exemplo.test", "telefone": "+55 21 90000-0003",
+      "idReservaPortal": 3,
+      "listaReservaItem": [
+        { "idTipoApartamento": 6, "quantidadeAdulto": 2, "dataEntrada": "2026-11-20", "dataSaida": "2026-11-23", "qtdeApartamento": 2,
+          "listaHospede": [ { "nome": "HOSPEDE TESTE BOOKING", "adulto": true } ] }
+      ],
+      "_sim": { "dataHora": "2026-09-20 09:02:00", "nomeUsuario": "INTEGRACAO.BOOKING", "idNoPortal": "BK-0000000001", "status": 2 }
+    },
+    {
+      "titular": "BELTRANO EXEMPLO LIMA", "telefone": "(67) 90000-0004", "codigoEmpresa": "901", "idFaturamento": 2, "voucher": "RIOAZUL-0001",
+      "listaReservaItem": [
+        { "idTipoApartamento": 8, "quantidadeAdulto": 3, "dataEntrada": "2026-11-27", "dataSaida": "2026-11-30", "qtdeApartamento": 1, "idTarifario": 2,
+          "listaHospede": [ { "nome": "BELTRANO EXEMPLO LIMA", "adulto": true } ] }
+      ],
+      "_sim": { "dataHora": "2026-09-25 11:30:00", "nomeUsuario": "RECEPCAO.SIMULADA", "adiantamentos": [ { "percentual": 100, "tipoFormaPagamento": 4, "bandeiraCartao": "00002", "nsuCartao": "000111", "codigoAutorizacaoCartao": "AUT001", "numeroCartao": "0000", "quantidadeParcelas": 3 } ] }
+    },
+    {
+      "titular": "PESSOA CANCELADA TESTE", "telefone": "(67) 90000-0005", "email": "cancelada@exemplo.test",
+      "idReservaPortal": 7,
+      "listaReservaItem": [
+        { "idTipoApartamento": 3, "quantidadeAdulto": 2, "quantidadeCrianca": 1, "dataEntrada": "2026-12-04", "dataSaida": "2026-12-06", "qtdeApartamento": 1 }
+      ],
+      "_sim": { "dataHora": "2026-09-15 14:00:00", "nomeUsuario": "API", "status": 3 }
+    },
+    {
+      "titular": "GRUPO AMIGOS FICTÍCIOS REVEILLON", "telefone": "(31) 90000-0006", "email": "amigos.reveillon@exemplo.test",
+      "idReservaPortal": 5,
+      "listaReservaItem": [
+        { "idTipoApartamento": 1, "quantidadeAdulto": 2, "dataEntrada": "2026-12-29", "dataSaida": "2027-01-02", "qtdeApartamento": 3,
+          "listaHospede": [ { "nome": "GRUPO AMIGOS FICTÍCIOS REVEILLON", "adulto": true } ] }
+      ],
+      "_sim": { "dataHora": "2026-08-30 20:15:00", "nomeUsuario": "MOTOR.RESERVAS", "idNoPortal": "MR-000123", "adiantamentos": [ { "percentual": 100, "tipoFormaPagamento": 4, "bandeiraCartao": "00001", "nsuCartao": "000222", "codigoAutorizacaoCartao": "AUT002", "numeroCartao": "1111", "quantidadeParcelas": 6 } ] }
+    },
+    {
+      "titular": "FAMÍLIA SIMULADA OLIVEIRA", "telefone": "(51) 90000-0007", "email": "familia.simulada@exemplo.test",
+      "idReservaPortal": 7,
+      "listaReservaItem": [
+        { "idTipoApartamento": 3, "quantidadeAdulto": 2, "quantidadeCrianca": 3, "dataEntrada": "2026-12-28", "dataSaida": "2027-01-03", "qtdeApartamento": 1,
+          "listaHospede": [ { "nome": "PAI SIMULADO OLIVEIRA", "adulto": true }, { "nome": "MÃE SIMULADA OLIVEIRA", "adulto": true } ] }
+      ],
+      "_sim": { "dataHora": "2026-09-05 08:00:00", "nomeUsuario": "API", "adiantamentos": [ { "percentual": 30, "tipoFormaPagamento": 8 } ] }
+    },
+    {
+      "titular": "CASAL EXEMPLO PEREIRA", "telefone": "(62) 90000-0008", "email": "casal.exemplo@exemplo.test",
+      "idReservaPortal": 7,
+      "listaReservaItem": [
+        { "idTipoApartamento": 9, "quantidadeAdulto": 4, "quantidadeCrianca": 1, "dataEntrada": "2026-12-30", "dataSaida": "2027-01-02", "qtdeApartamento": 1 }
+      ],
+      "_sim": { "dataHora": "2026-09-29 19:45:00", "nomeUsuario": "API" }
+    },
+    {
+      "titular": "TURISTA FICTÍCIO NATAL", "telefone": "(61) 90000-0009", "email": "turista.natal@exemplo.test",
+      "listaReservaItem": [
+        { "idTipoApartamento": 4, "quantidadeAdulto": 2, "quantidadeCrianca": 1, "dataEntrada": "2026-12-23", "dataSaida": "2026-12-26", "qtdeApartamento": 2 }
+      ],
+      "_sim": { "dataHora": "2026-09-18 13:20:00", "nomeUsuario": "RECEPCAO.SIMULADA", "adiantamentos": [ { "percentual": 50, "tipoFormaPagamento": 8 } ] }
+    },
+    {
+      "titular": "HÓSPEDE HOSPEDADO FICTÍCIO", "telefone": "(65) 90000-0010", "email": "hospedado@exemplo.test",
+      "idReservaPortal": 7,
+      "listaReservaItem": [
+        { "idTipoApartamento": 6, "quantidadeAdulto": 2, "dataEntrada": "2026-09-30", "dataSaida": "2026-10-03", "qtdeApartamento": 1,
+          "listaHospede": [ { "nome": "HÓSPEDE HOSPEDADO FICTÍCIO", "adulto": true }, { "nome": "ACOMPANHANTE FICTÍCIA", "adulto": true } ] }
+      ],
+      "_sim": { "dataHora": "2026-08-20 10:00:00", "nomeUsuario": "API", "adiantamentos": [ { "percentual": 100, "tipoFormaPagamento": 8 } ], "checkin": { "codigoApartamento": "101", "dataEntrada": "2026-09-30", "horaEntrada": "15:40" } }
+    }
+  ],
+  "lancamentos": [
+    { "id": "L1", "dataHora": "2026-09-30 19:12:00", "codigoApartamento": "101", "idProduto": 1006, "idSetor": 3, "quantidade": 2, "valorUnitario": 14, "ativo": true, "dataHoraEstorno": "", "nomeUsuario": "BAR.SIMULADO", "idUsuario": 31 },
+    { "id": "L2", "dataHora": "2026-09-30 20:05:00", "codigoApartamento": "101", "idProduto": 1007, "idSetor": 2, "quantidade": 1, "valorUnitario": 48, "ativo": true, "dataHoraEstorno": "", "nomeUsuario": "RESTAURANTE.SIMULADO", "idUsuario": 32 },
+    { "id": "L3", "dataHora": "2026-10-01 09:30:00", "codigoApartamento": "101", "idProduto": 1001, "idSetor": 4, "quantidade": 2, "valorUnitario": 100, "ativo": true, "dataHoraEstorno": "", "nomeUsuario": "RECEPCAO.SIMULADA", "idUsuario": 30 },
+    { "id": "L4", "dataHora": "2026-10-01 09:35:00", "codigoApartamento": "101", "idProduto": 1004, "idSetor": 3, "quantidade": 1, "valorUnitario": 6, "ativo": false, "dataHoraEstorno": "2026-10-01 09:40:00", "nomeUsuario": "BAR.SIMULADO", "idUsuario": 31 }
+  ]
+}
