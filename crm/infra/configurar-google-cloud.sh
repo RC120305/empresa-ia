@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# CRM Cabanas: configuração inicial do Google Cloud (rodar UMA vez no Cloud Shell).
+# Cria: serviços ligados, repositório de imagens, 2 contas de serviço e a federação
+# de identidade com o GitHub (o GitHub publica o CRM SEM nenhuma chave guardada).
+# Não cria nem mostra nenhuma senha ou chave.
+set -euo pipefail
+
+PROJECT_ID="cabanas-crm"
+REGION="southamerica-east1"          # São Paulo
+GITHUB_REPO="rc120305/empresa-ia"    # só este repositório, só a branch main, pode publicar
+
+gcloud config set project "$PROJECT_ID"
+PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+
+echo "1/6 Ligando os serviços (leva 1 a 2 minutos)..."
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com \
+  secretmanager.googleapis.com iamcredentials.googleapis.com sts.googleapis.com \
+  cloudscheduler.googleapis.com logging.googleapis.com
+
+echo "2/6 Repositório das imagens do CRM..."
+gcloud artifacts repositories describe crm --location="$REGION" >/dev/null 2>&1 || \
+  gcloud artifacts repositories create crm --repository-format=docker --location="$REGION" \
+    --description="Imagens do CRM Cabanas"
+
+echo "3/6 Conta de serviço que RODA o CRM (só lê os segredos)..."
+RUNTIME_SA="crm-runtime@${PROJECT_ID}.iam.gserviceaccount.com"
+gcloud iam service-accounts describe "$RUNTIME_SA" >/dev/null 2>&1 || \
+  gcloud iam service-accounts create crm-runtime --display-name="CRM Cabanas (execução)"
+gcloud projects add-iam-policy-binding "$PROJECT_ID" --member="serviceAccount:$RUNTIME_SA" \
+  --role="roles/secretmanager.secretAccessor" --condition=None >/dev/null
+
+echo "4/6 Conta de serviço que o GitHub usa para PUBLICAR..."
+DEPLOY_SA="github-deploy@${PROJECT_ID}.iam.gserviceaccount.com"
+gcloud iam service-accounts describe "$DEPLOY_SA" >/dev/null 2>&1 || \
+  gcloud iam service-accounts create github-deploy --display-name="GitHub publica o CRM"
+for ROLE in roles/run.admin roles/artifactregistry.writer; do
+  gcloud projects add-iam-policy-binding "$PROJECT_ID" --member="serviceAccount:$DEPLOY_SA" \
+    --role="$ROLE" --condition=None >/dev/null
+done
+gcloud iam service-accounts add-iam-policy-binding "$RUNTIME_SA" \
+  --member="serviceAccount:$DEPLOY_SA" --role="roles/iam.serviceAccountUser" >/dev/null
+
+echo "5/6 Federação de identidade com o GitHub (sem chave)..."
+gcloud iam workload-identity-pools describe github --location=global >/dev/null 2>&1 || \
+  gcloud iam workload-identity-pools create github --location=global --display-name="GitHub"
+gcloud iam workload-identity-pools providers describe github-provider --location=global \
+  --workload-identity-pool=github >/dev/null 2>&1 || \
+  gcloud iam workload-identity-pools providers create-oidc github-provider --location=global \
+    --workload-identity-pool=github --display-name="GitHub Actions" \
+    --issuer-uri="https://token.actions.githubusercontent.com" \
+    --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.ref=assertion.ref" \
+    --attribute-condition="assertion.repository=='${GITHUB_REPO}' && assertion.ref=='refs/heads/main'"
+gcloud iam service-accounts add-iam-policy-binding "$DEPLOY_SA" \
+  --role="roles/iam.workloadIdentityUser" \
+  --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github/attribute.repository/${GITHUB_REPO}" >/dev/null
+
+echo "6/6 Pronto! Copie as 2 linhas abaixo e mande no chat (não são segredos):"
+echo "----------------------------------------------------------------"
+echo "PROVEDOR: projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github/providers/github-provider"
+echo "CONTA:    ${DEPLOY_SA}"
+echo "----------------------------------------------------------------"

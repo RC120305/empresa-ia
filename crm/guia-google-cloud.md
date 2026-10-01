@@ -24,6 +24,11 @@ Menu ☰ → **IAM e administrador** → **IAM** → **Conceder acesso**:
 ## 4. Me mandar só o ID do projeto
 O ID (ex.: `cabanas-crm-123456`) não é segredo. Com ele, eu preparo o próximo passo.
 
-## 5. Próximo passo (eu preparo, você ou o Márcio executa uma vez)
+## 5. Publicação automática pelo GitHub (rodar uma vez, ~5 min)
+1. No console do Google Cloud, clique no ícone **>_ (Ativar o Cloud Shell)**, no topo à direita. Um terminal abre embaixo; se pedir, clique em **Autorizar**.
+2. Copie **todo** o conteúdo de `crm/infra/colar-no-cloud-shell.txt` (começa em `bash <<'FIM'` e termina em `FIM`), cole no terminal e aperte Enter.
+3. Espere aparecer **"6/6 Pronto!"** e mande no chat as 2 linhas **PROVEDOR** e **CONTA** (não são segredos).
+
+### Como funciona (referência)
 **Publicação automática sem chave nenhuma:** o GitHub publica o CRM no Cloud Run usando a **federação de identidade** do Google (Workload Identity Federation). Não existe chave para guardar nem para vazar. Eu escrevo o roteiro com os comandos; leva uns 15 minutos.
 Depois disso, ativamos os serviços: Cloud Run, Secret Manager, Artifact Registry, Cloud Build e Cloud Scheduler.
