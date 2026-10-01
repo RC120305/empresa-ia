@@ -77,7 +77,7 @@ class Simulador {
     for (const a of s.adiantamentos || []) {
       const it = reserva.itens[0];
       const { percentual, ...resto } = a;
-      this.lancarAdiantamento({ valor: U.r2((it.valorTotalDiaria * percentual) / 100), idConta: it.id, ...resto }, { data: s.dataHora.slice(0, 10) });
+      this.lancarAdiantamento({ valor: U.r2((this.totaisItem(it)[0].totalGeral.valor * percentual) / 100), idConta: it.id, ...resto }, { data: s.dataHora.slice(0, 10) });
     }
     if (s.status === 2) for (const it of reserva.itens) { it.status = 2; it.dataHoraEfetivacao = s.dataHora; }
     if (s.status === 3) this.cancelar({ idReserva: reserva.id, motivo: 'Cancelada (seed)' });

@@ -95,6 +95,7 @@
       { "id": 5, "codigo": "GOV", "nome": "Governança" }
     ],
     "produtos": [
+      { "id": 1000, "codigo": "DIAR", "nome": "Diária" },
       { "id": 1001, "codigo": "BOIA", "nome": "Boia cross" },
       { "id": 1002, "codigo": "ARVO", "nome": "Arvorismo" },
       { "id": 1003, "codigo": "DECO", "nome": "Decoração especial no quarto" },

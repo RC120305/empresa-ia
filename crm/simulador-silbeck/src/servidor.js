@@ -212,7 +212,15 @@ const API = [
     if (!codigo && !outros.length) throw U.erro400('PARAMETRO_OBRIGATORIO', 'Informe codigoApartamento, codigoFuncionario, codigoAvulsa ou codigoEmpresa.', 'codigoApartamento');
     if (!codigo) { ctx.avisos.push('simulador só tem extrato por codigoApartamento; devolvendo vazio'); return { listaSetor: [], listaTotal: [] }; }
     if (!sim.aptoPorCodigo(codigo)) throw U.erro400('APARTAMENTO_INVALIDO', `Apartamento ${codigo} não encontrado.`, 'codigoApartamento');
-    const lancs = sim.estado.lancamentos.filter((l) => l.codigoApartamento === codigo);
+    const apto = sim.aptoPorCodigo(codigo);
+    const est = sim.estado.estadias.find((e) => e.idApartamento === apto.id && e.fechado === 0);
+    const [, itEst] = est ? sim.acharItem(est.idReservaItem) : [null, null];
+    // Diárias já geradas (noites anteriores a hoje) entram como lançamentos do setor Recepção.
+    const diarias = itEst ? itEst.listaData.filter((d) => d.data < sim.hoje()).map((d) => ({
+      id: `D${d.data}`, dataHora: `${d.data} 23:59:00`, codigoApartamento: codigo, idProduto: 1000, idSetor: 1, quantidade: 1,
+      valorUnitario: d.valorDiaria, ativo: true, nomeUsuario: 'AUDITORIA.NOTURNA', idUsuario: 1,
+    })) : [];
+    const lancs = diarias.concat(sim.estado.lancamentos.filter((l) => l.codigoApartamento === codigo));
     const setores = [...new Set(lancs.map((l) => l.idSetor))].map((idSetor) => {
       const set = sim.cat.setores.find((s) => s.id === idSetor) || {};
       const ls = lancs.filter((l) => l.idSetor === idSetor).map((l, i) => {
@@ -226,13 +234,7 @@ const API = [
       return { id: idSetor, nome: set.nome, idMoeda: 1, simboloMoeda: 'R$', valorTotal: U.r2(ls.filter((x) => x.ativo).reduce((s, x) => s + x.valorTotal, 0)), listaLancamento: ls };
     });
     const total = U.r2(setores.reduce((s, x) => s + x.valorTotal, 0));
-    const apto = sim.aptoPorCodigo(codigo);
-    const est = sim.estado.estadias.find((e) => e.idApartamento === apto.id && e.fechado === 0);
-    let adiant = 0;
-    if (est) {
-      const [, it] = sim.acharItem(est.idReservaItem);
-      if (it) adiant = U.r2(it.listaAdiantamento.filter((a) => a.situacao === 'Ativo').reduce((s, a) => s + a.valor, 0));
-    }
+    const adiant = itEst ? U.r2(itEst.listaAdiantamento.filter((a) => a.situacao === 'Ativo').reduce((s, a) => s + a.valor, 0)) : 0;
     const iss = U.r2((total * sim.estado.config.taxaISSPercentual) / 100);
     return {
       listaSetor: setores,

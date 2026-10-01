@@ -1,0 +1,4 @@
+# Estado salvo do simulador (gerado em uso) e arquivos temporários dos testes
+estado*.json
+*.estado.json
+testes/.tmp-*

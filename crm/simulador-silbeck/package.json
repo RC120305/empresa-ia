@@ -1,0 +1,14 @@
+{
+  "name": "simulador-silbeck",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simulador (FICTÍCIO) da API Hotel v1 da Silbeck para construir e testar o CRM do Hotel Cabanas. Sem dependências.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test testes/fluxo.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
