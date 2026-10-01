@@ -1,0 +1,267 @@
+[
+  {
+    "name": "consultar_disponibilidade",
+    "description": "Consulta no Silbeck (Disponibilidade + Tarifario/Valor) as vagas e os valores de hoje para um período e um grupo. Use antes de falar de qualquer preço ou vaga, e também para conferir as novas datas de um pedido de alteração (só para informar a equipe). Devolve apenas os tipos de acomodação que comportam o grupo pela capacidade do Silbeck e pelas regras de criança (Cabana Casal e Tripla não recebem menores de 5 anos), com: código, nome, vagas no período, valor total, média por noite, valor da parcela em 6x e regras de venda do período (estadia mínima, pacote fechado). Se o grupo não couber em uma acomodação, devolve combinações (ex.: 2 x Apartamento Standard). O CRM recusa datas no passado, saída antes da entrada e criança sem idade: nesses casos devolve um erro explicando o que falta. Nunca invente valor: se a ferramenta falhar, diga ao cliente que vai conferir e use abrir_alerta.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "data_entrada": { "type": "string", "format": "date", "description": "Check-in (AAAA-MM-DD). Se o cliente não disse o ano, use a próxima ocorrência da data a partir de hoje." },
+        "data_saida": { "type": "string", "format": "date", "description": "Check-out (AAAA-MM-DD)." },
+        "adultos": { "type": "integer", "description": "Número de adultos (a partir de 18 anos)." },
+        "idades_criancas": { "type": "array", "items": { "type": "integer" }, "description": "Idade de cada criança, em anos completos (0 para menos de 1 ano). Lista vazia se não houver crianças." },
+        "finalidade": { "type": "string", "enum": ["cotacao", "alteracao_informar_equipe", "upsell_ou_estadia"], "description": "cotacao: novo orçamento. alteracao_informar_equipe: conferir datas novas de uma reserva existente (o resultado NÃO é confirmado ao cliente). upsell_ou_estadia: conferir algo para quem já tem reserva." }
+      },
+      "required": ["data_entrada", "data_saida", "adultos", "idades_criancas", "finalidade"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "gerar_orcamento",
+    "description": "Monta o orçamento com até 3 opções e cria a página do orçamento (link único com fotos reais, incluso, condições e botão 'Quero reservar'). O CRM recota no Silbeck na hora, salva a versão no card e devolve: orcamento_id, link da página e, para cada opção, valor total, média por noite e parcela em 6x. Use só depois de consultar_disponibilidade e só com acomodações que comportam o grupo. Ordene da opção de mais valor para o perfil até a mais econômica. Coloque o link devolvido na sua mensagem exatamente como veio. O orçamento não tem validade: os valores são os de hoje, sujeitos à disponibilidade.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "data_entrada": { "type": "string", "format": "date" },
+        "data_saida": { "type": "string", "format": "date" },
+        "adultos": { "type": "integer" },
+        "idades_criancas": { "type": "array", "items": { "type": "integer" } },
+        "opcoes": {
+          "type": "array",
+          "description": "De 1 a 3 opções, na ordem em que devem aparecer. Cada opção é uma lista de códigos de acomodação (uma acomodação, ou uma combinação quando o grupo precisa de mais de uma).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "acomodacoes": { "type": "array", "items": { "type": "string" }, "description": "Códigos devolvidos por consultar_disponibilidade (ex.: [\"BGE\"] ou [\"CBM\", \"STD\"])." }
+            },
+            "required": ["acomodacoes"],
+            "additionalProperties": false
+          }
+        },
+        "persona": { "type": "string", "enum": ["familia", "casal", "jovens_aventura", "55_mais", "eco_aves", "grupo", "indefinida"] },
+        "pessoas_aptas_combo": { "type": "integer", "description": "Quantas pessoas do grupo têm 5 anos ou mais e pelo menos 1,15 m (0 se ninguém ou se não se sabe). A página mostra o combo só para elas." },
+        "frase_de_abertura": { "type": "string", "description": "Uma frase curta e pessoal para o topo da página (ex.: 'Mariana, separei as opções para os quatro aproveitarem os rios'). Sem preço e sem promessa." }
+      },
+      "required": ["data_entrada", "data_saida", "adultos", "idades_criancas", "opcoes", "persona", "pessoas_aptas_combo", "frase_de_abertura"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "criar_reserva",
+    "description": "Cria a reserva no Silbeck (status 'não confirmada') a partir de uma opção de um orçamento. Use SOMENTE depois de um aceite explícito do cliente na conversa ('pode reservar', 'quero a Cabana Master', 'fechado'). Antes, confirme o nome completo do titular, o e-mail, os nomes dos acompanhantes (se não souber, o CRM usa 'Acompanhante 1, 2…') e, com mais de uma acomodação, se fica tudo em um nome só ou em reservas separadas. O CRM confere a vaga e o preço de novo antes de criar: se o preço mudou, NÃO cria e devolve preco_mudou=true com o valor novo, e você precisa de um novo OK do cliente. O CRM também recusa se a frase de aceite não estiver nas mensagens do cliente.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "orcamento_id": { "type": "string" },
+        "opcao_escolhida": { "type": "integer", "description": "Número da opção no orçamento (1, 2 ou 3)." },
+        "aceite_cliente_literal": { "type": "string", "description": "Trecho exato da mensagem do cliente em que ele aceita. O CRM confere se o trecho existe numa mensagem do cliente." },
+        "titular_nome_completo": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "acompanhantes": { "type": "array", "items": { "type": "string" }, "description": "Nomes dos acompanhantes; lista vazia se o cliente ainda não informou." },
+        "estrutura": { "type": "string", "enum": ["uma_acomodacao", "varias_em_um_nome", "reservas_separadas"] }
+      },
+      "required": ["orcamento_id", "opcao_escolhida", "aceite_cliente_literal", "titular_nome_completo", "email", "acompanhantes", "estrutura"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "gerar_cobranca",
+    "description": "Gera o link de pagamento do sinal (50% da reserva; o restante é pago no check-out) por Pix (Banco do Brasil) ou cartão de crédito em até 6x (link Cielo). Use logo depois de criar_reserva, na forma que o cliente escolheu, ou para mandar um novo link quando o prazo venceu e a reserva ainda está ativa. Devolve o link, o valor do sinal e o prazo-limite calculado pelo CRM (24 h; 2 h se o check-in for em até 3 dias; nunca depois do check-in). O CRM envia junto, sozinho, a política de cancelamento (resposta fixa) e registra o envio. O pagamento é sempre pelo link: nunca peça nem aceite número de cartão no chat.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "reserva_id": { "type": "string" },
+        "forma": { "type": "string", "enum": ["pix", "cartao"] }
+      },
+      "required": ["reserva_id", "forma"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "consultar_reservas_do_contato",
+    "description": "Lista as reservas ligadas a este contato (CRM e Silbeck, de qualquer origem: CRM, motor, Booking, agência), com datas, acomodação, status (não confirmada, confirmada, hospedado, cancelada), valor pago e prazo de pagamento. Use quando o cliente falar de uma reserva que já existe (alteração, cancelamento, pagamento, dúvida de quem está hospedado) antes de responder. Só leitura.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "incluir_canceladas": { "type": "boolean" }
+      },
+      "required": ["incluir_canceladas"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "enviar_fotos",
+    "description": "Envia ao cliente fotos ou vídeos reais do banco de imagens do hotel (nunca imagens de fora). Escolha pelo código da acomodação e/ou por etiquetas do que o cliente quer ver. O CRM envia no máximo 5 arquivos por vez e devolve o que foi enviado (com a descrição de cada foto). Não descreva uma foto como se você a tivesse tirado ou visto ao vivo.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "codigo_acomodacao": { "type": "string", "description": "Código da acomodação (ex.: CBM, BGE) ou string vazia se o pedido não for de acomodação." },
+        "etiquetas": { "type": "array", "items": { "type": "string" }, "description": "Ex.: [\"rio formoso\", \"piscina\", \"cafe da manha\", \"boia cross\"]." },
+        "quantidade": { "type": "integer", "description": "De 1 a 5." }
+      },
+      "required": ["codigo_acomodacao", "etiquetas", "quantidade"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "usar_resposta_fixa",
+    "description": "Envia, exatamente como está cadastrada na Biblioteca de respostas, uma resposta marcada como fixa (o CRM troca {nome} pelo primeiro nome do cliente). Use quando a pergunta do cliente corresponder, pelo sentido, a uma resposta fixa listada em <biblioteca_respostas_fixas>. O CRM envia o texto como um balão ANTES dos seus; não o repita na sua mensagem e conte-o no limite de 3 balões.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resposta_id": { "type": "string" }
+      },
+      "required": ["resposta_id"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "consultar_horarios_atividade",
+    "description": "Consulta no sistema interno do hotel os horários e as vagas de boia cross, arvorismo ou combo (boia cross + arvorismo em sequência compatível) para uma data. Use antes de propor horário a quem aceitou a atividade ou para oferecer a quem já está hospedado ('hoje às 15h30 ainda tem vaga'). Só leitura.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "produto": { "type": "string", "enum": ["COMBO", "BOIA", "ARVO"] },
+        "data": { "type": "string", "format": "date" },
+        "pessoas": { "type": "integer" }
+      },
+      "required": ["produto", "data", "pessoas"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "agendar_atividade",
+    "description": "Reserva boia cross, arvorismo ou combo (com horário vindo de consultar_horarios_atividade) ou decoração especial (sem horário; só com 3 dias ou mais de antecedência da data). Use SOMENTE depois de o cliente aceitar explicitamente. O CRM recusa participante com menos de 5 anos ou menos de 1,15 m, horário sem vaga e decoração com menos de 3 dias; registra no card e cria a cobrança ou o lançamento na conta. Antes, confirme com o cliente que nenhum participante é gestante e lembre que não se participa depois de ingerir álcool.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "produto": { "type": "string", "enum": ["COMBO", "BOIA", "ARVO", "DECO"] },
+        "reserva_id": { "type": "string" },
+        "data": { "type": "string", "format": "date" },
+        "horario": { "type": "string", "description": "HH:MM vindo de consultar_horarios_atividade; string vazia para DECO. No COMBO, o horário da primeira atividade (o CRM reserva a segunda na sequência devolvida pela consulta)." },
+        "participantes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nome": { "type": "string" },
+              "idade": { "type": "integer" },
+              "altura_cm": { "type": ["integer", "null"], "description": "Altura em cm, se informada; null se não informada (o CRM pede a conferência no check-in)." }
+            },
+            "required": ["nome", "idade", "altura_cm"],
+            "additionalProperties": false
+          },
+          "description": "Para DECO, lista vazia."
+        },
+        "aceite_cliente_literal": { "type": "string", "description": "Trecho exato da mensagem do cliente em que ele aceita." }
+      },
+      "required": ["produto", "reserva_id", "data", "horario", "participantes", "aceite_cliente_literal"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "pedir_horario_parceiro",
+    "description": "Pede à massoterapeuta parceira (serviço terceirizado), pelo WhatsApp oficial do hotel, a confirmação de uma massagem (avulsa ou pacote) para um hóspede. A resposta da parceira chega depois: o CRM confirma ao hóspede sozinho quando ela aceita, avisa você quando ela recusa ou propõe outro horário, e alerta a equipe se ela não responder em 2 h. Ao cliente, diga que está confirmando o horário com a profissional; nunca dê como confirmado. Valor: o que estiver em <produtos_ativos>; se não houver, diga que a equipe confirma o valor.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "reserva_id": { "type": "string" },
+        "tipo": { "type": "string", "description": "Tipo de massagem ou pacote, como o cliente pediu (ex.: 'massagem relaxante, 1 sessão para 2 pessoas')." },
+        "data": { "type": "string", "format": "date" },
+        "horario": { "type": "string", "description": "HH:MM desejado pelo cliente." },
+        "local": { "type": "string", "enum": ["quarto", "margem_do_rio", "a_combinar"] },
+        "pessoas": { "type": "integer" }
+      },
+      "required": ["reserva_id", "tipo", "data", "horario", "local", "pessoas"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "registrar_dados_contato",
+    "description": "Grava no card do contato o que o cliente informou na conversa, sem formulário: nome, e-mail, WhatsApp, datas, pessoas, idades e alturas das crianças, ocasião, persona e consentimento para novidades. Chame sempre que surgir um dado novo (pode ser junto com outras ferramentas). Mande só os campos que você realmente sabe; use null no resto. Nunca grave número de cartão, documento ou dado de saúde.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "nome": { "type": ["string", "null"] },
+        "sobrenome": { "type": ["string", "null"] },
+        "email": { "type": ["string", "null"] },
+        "whatsapp": { "type": ["string", "null"], "description": "Com DDD; o CRM valida e junta contatos duplicados." },
+        "data_entrada": { "type": ["string", "null"], "format": "date" },
+        "data_saida": { "type": ["string", "null"], "format": "date" },
+        "adultos": { "type": ["integer", "null"] },
+        "criancas": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "object",
+            "properties": {
+              "nome": { "type": ["string", "null"] },
+              "idade": { "type": ["integer", "null"] },
+              "altura_cm": { "type": ["integer", "null"] }
+            },
+            "required": ["nome", "idade", "altura_cm"],
+            "additionalProperties": false
+          }
+        },
+        "ocasiao": { "type": ["string", "null"], "description": "Ex.: aniversário de casamento, férias das crianças, lua de mel." },
+        "persona": { "type": ["string", "null"], "enum": ["familia", "casal", "jovens_aventura", "55_mais", "eco_aves", "grupo", "agencia", "indefinida", null] },
+        "consentimento_novidades": { "type": ["boolean", "null"], "description": "true só se o cliente disse sim à pergunta sobre receber novidades por aqui." }
+      },
+      "required": ["nome", "sobrenome", "email", "whatsapp", "data_entrada", "data_saida", "adultos", "criancas", "ocasiao", "persona", "consentimento_novidades"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "abrir_alerta",
+    "description": "Avisa a equipe (Jagles, Márcio e Ricardo; quem está de plantão primeiro) com card em destaque, sino e notificação no celular, e você CONTINUA na conversa. Use para: pedido de alteração de reserva (depois de conferir a vaga com consultar_disponibilidade), pergunta fora da base, exceção de política, acessibilidade, pedido de desconto insistente, problema de pagamento, dado sensível recebido. O CRM define a prioridade final pelo motivo (o valor que você envia é só uma sugestão). Fora do expediente, o alerta fica no topo da fila das 7h30.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "motivo": { "type": "string", "enum": ["alteracao", "fora_da_base", "excecao_politica", "acessibilidade", "desconto_insistente", "problema_pagamento", "dado_sensivel_recebido", "pedido_especial_outro"] },
+        "prioridade": { "type": "integer", "description": "1 (mais alta) a 5. Referência: 4 para fora da base, exceção, acessibilidade, desconto insistente e pedido especial; 5 para alteração." },
+        "resumo": { "type": "string", "description": "1 a 3 frases para a equipe: o que o cliente quer, o que você já respondeu e o que falta decidir. Inclua reserva, datas e o resultado da consulta de vaga, quando houver." }
+      },
+      "required": ["motivo", "prioridade", "resumo"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "passar_para_equipe",
+    "description": "Passa a conversa para uma pessoa: abre o alerta e PAUSA você nesta conversa até a equipe devolvê-la. Use para: reclamação, pedido de cancelamento, cliente que pede uma pessoa, grupo acima de 10 pessoas, agência ou operadora, evento. Na mesma resposta, mande ao cliente a mensagem de passagem (no expediente, a equipe continua em instantes; fora dele, a equipe responde a partir das 7h30). Se o cliente escrever de novo antes de alguém assumir, o CRM pode chamar você só para acolher e informar o prazo, sem resolver o motivo da passagem.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "motivo": { "type": "string", "enum": ["reclamacao", "cancelamento", "pede_pessoa", "grupo_acima_10", "agencia_operadora", "evento"] },
+        "prioridade": { "type": "integer", "description": "1 reclamação, 2 cancelamento, 3 pede pessoa, 4 grupo/agência/evento. O CRM confere." },
+        "resumo": { "type": "string", "description": "1 a 3 frases para quem assumir: quem é, o que quer, o que já foi dito, reserva envolvida (se houver), se está hospedado." }
+      },
+      "required": ["motivo", "prioridade", "resumo"],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "registrar_nota_interna",
+    "description": "Escreve uma nota no card que só a equipe vê (nunca vai ao cliente): persona e etapa do funil, objeção percebida, fato que precisa ser confirmado com o dono, contexto útil para quem assumir. Use quando houver algo que a equipe precisa saber e que não cabe nas outras ferramentas.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "categoria": { "type": "string", "enum": ["persona_funil", "objecao", "fato_a_confirmar", "contexto_para_equipe", "seguranca"] },
+        "texto": { "type": "string" }
+      },
+      "required": ["categoria", "texto"],
+      "additionalProperties": false
+    }
+  }
+]
