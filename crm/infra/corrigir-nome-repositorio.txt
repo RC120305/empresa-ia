@@ -1,0 +1,9 @@
+bash <<'FIM'
+set -euo pipefail
+PROJECT_ID="cabanas-crm"
+gcloud config set project "$PROJECT_ID"
+PN="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+gcloud iam workload-identity-pools providers update-oidc github-provider --location=global --workload-identity-pool=github --attribute-condition="assertion.repository=='RC120305/empresa-ia' && assertion.ref=='refs/heads/main'"
+gcloud iam service-accounts add-iam-policy-binding "github-deploy@${PROJECT_ID}.iam.gserviceaccount.com" --role="roles/iam.workloadIdentityUser" --member="principalSet://iam.googleapis.com/projects/${PN}/locations/global/workloadIdentityPools/github/attribute.repository/RC120305/empresa-ia" >/dev/null
+echo "Corrigido! Pode avisar no chat."
+FIM

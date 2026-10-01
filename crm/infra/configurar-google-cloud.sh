@@ -7,7 +7,7 @@ set -euo pipefail
 
 PROJECT_ID="cabanas-crm"
 REGION="southamerica-east1"          # São Paulo
-GITHUB_REPO="rc120305/empresa-ia"    # só este repositório, só a branch main, pode publicar
+GITHUB_REPO="RC120305/empresa-ia"    # só este repositório, só a branch main, pode publicar
 
 gcloud config set project "$PROJECT_ID"
 PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
