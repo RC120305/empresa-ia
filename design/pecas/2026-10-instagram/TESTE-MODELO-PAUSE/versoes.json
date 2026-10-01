@@ -1,5 +1,26 @@
 [
- {"foto": "piscina.jpg", "pos": "38% center", "veu": ".25", "titulo": "Pause a tela\ne descubra", "apoio": "Qual será a sua próxima\npausa em Bonito?", "etiqueta": "Feriado de 20/11\nno Hotel Cabanas"},
- {"foto": "cabana-casal.jpg", "pos": "52% center", "veu": ".5", "titulo": "Pause a tela\ne descubra", "apoio": "Qual será a sua próxima\npausa em Bonito?", "etiqueta": "De domingo a quinta\nna Cabana Casal"},
- {"foto": "dois-rios.jpg", "pos": "33% center", "veu": ".45", "titulo": "Pause a tela\ne descubra", "apoio": "Qual será a sua próxima\npausa em Bonito?", "etiqueta": "Bonito sem pressa,\nentre dois rios"}
+ {
+  "foto": "piscina.jpg",
+  "pos": "38% center",
+  "veu": ".25",
+  "titulo": "Pause a tela\ne descubra",
+  "apoio": "Qual será seu\npróximo destino?",
+  "etiqueta": "Bonito - MS"
+ },
+ {
+  "foto": "cabana-casal.jpg",
+  "pos": "52% center",
+  "veu": ".5",
+  "titulo": "Pause a tela\ne descubra",
+  "apoio": "Qual será seu\npróximo destino?",
+  "etiqueta": "Bonito - MS"
+ },
+ {
+  "foto": "dois-rios.jpg",
+  "pos": "33% center",
+  "veu": ".45",
+  "titulo": "Pause a tela\ne descubra",
+  "apoio": "Qual será seu\npróximo destino?",
+  "etiqueta": "Bonito - MS"
+ }
 ]
