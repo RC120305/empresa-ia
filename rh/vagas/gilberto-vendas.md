@@ -1,7 +1,7 @@
 # Descrição de Vaga: Consultor de Vendas e Reservas no Chat ("Gilberto")
 
 - **Slug:** `gilberto-vendas`
-- **Status:** proposta
+- **Status:** contratada (aprovada pelo dono em 2026-10-01)
 - **Data:** 2026-10-01
 - **Tipo:** nova vaga (formaliza o agente "Gilberto", desenhado no projeto do CRM: `crm/entrevista.md` P3, P44, P46, G4)
 
@@ -106,7 +106,7 @@ Transformar cada conversa de chat em **reserva direta paga**, com a experiência
 Dono. Supervisão do dia a dia: Jagles (assume conversas).
 
 ## 11. Informações a confirmar com o dono
-- Aprovar a vaga e a exceção de envio de mensagens no CRM (P3).
+- ✅ Vaga aprovada pelo dono (01/10/2026). Orçamento **sem validade** (decisão do dono).
 - ✅ Referências de vendas do dono: **Eduardo Tevah** e **Thaize Tavares** (`contexto/aprendizados/2026-10-01-thaizetavares-conexao-e-fechamento.md`). Caderno em `contexto/aprendizados/2026-10-01-eduardotevah-vendas-chat.md` (10 vídeos; urgência falsa e desconto ficam de fora). Entra na formação do Gilberto quando a vaga for aprovada.
 - Aprovar o roteiro de diferenciais (rascunho no caderno, seção 4) e decidir se o orçamento terá validade fixa.
 - (Opcional) Aprovar o banco de objeções do Marketing (`marketing/2026-09-banco-de-objecoes.md`) como material de formação.

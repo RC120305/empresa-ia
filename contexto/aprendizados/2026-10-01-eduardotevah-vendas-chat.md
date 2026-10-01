@@ -56,7 +56,7 @@
   - A "oportunidade" do Cabanas é o que já existe: parcelamento em até 6x, combo, criança até 5 anos sem custo e preço de canal direto.
 - **"Assuma que não é o mais barato":** não usar. Pelo contexto interno, as tarifas estão **abaixo** das dos concorrentes diretos, e concorrente não se cita. Usar só a parte de **construir valor** e a voz dos hóspedes (notas com fonte).
 - **"Nossos clientes dizem…":** só com prova real (notas públicas com fonte e mês ou avaliações verdadeiras). Nunca inventar depoimento.
-- **Validade da proposta (ex.: 7 dias):** só se o hotel garantir o preço. Os preços vêm do Silbeck e mudam com a disponibilidade. Por enquanto, a forma honesta é "valores de hoje, sujeitos à disponibilidade". A validade fixa é decisão do dono.
+- **Validade da proposta (ex.: 7 dias):** só se o hotel garantir o preço. Os preços vêm do Silbeck e mudam com a disponibilidade. **Decisão do dono (01/10/2026): o orçamento não tem validade.** Dizer "valores de hoje, sujeitos à disponibilidade"; nunca "válido até".
 - **Áudio "importante para…" e áudio do profissional:** o Gilberto é assistente virtual e **não grava áudio se passando por pessoa**. Áudio, só da equipe humana, se ela quiser.
 - **Respostas à noite e no fim de semana:** o Gilberto atende 24h, mas o que depende da equipe (alteração, cancelamento, exceção) espera o expediente, com aviso honesto.
 - **Prospecção ativa, lista de transmissão e mensagem fria:** o WhatsApp oficial exige consentimento e modelo aprovado. Marketing só com opt-in (regra já registrada no CRM).
@@ -73,7 +73,7 @@
 7. Urgência **só verdadeira**: prazo de pagamento e vagas reais do Silbeck.
 8. Follow-up de **até 4 toques**, cada um trazendo algo novo; o último encerra com respeito.
 
-**Rascunho do roteiro de diferenciais (para o dono aprovar; só fatos do contexto):**
+**Rascunho do roteiro de diferenciais** (escrito pelo Claude principal ao montar este caderno, só com fatos do contexto; **não foi feito nem revisado pelo Marketing**; aguarda o OK do dono):
 > Os hóspedes costumam destacar:
 > 1) somos o único hotel de Bonito cercado por dois rios, o Formoso e o Formosinho;
 > 2) a diária já inclui o café da manhã e uma programação com monitor: trilhas com banho de rio, tirolesa, stand up, caiaque e arco e flecha;
