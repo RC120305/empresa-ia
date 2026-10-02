@@ -425,3 +425,7 @@ section[data-painel="produtos"],section[data-painel="agencias"],section[data-pai
 .t-prod{background:var(--cor-sucesso-suave);color:var(--cor-sucesso)}
 .t-prod.pendente{background:var(--cor-alerta-suave);color:var(--cor-alerta)}
 .card-lead.urgente{border-color:var(--cor-erro);box-shadow:inset 4px 0 0 var(--cor-erro)}
+
+.cx-busca-linha{display:flex;gap:6px;align-items:center}
+.cx-busca-linha .cx-busca{flex:1;min-width:0}
+.cx-busca-linha .btn-mini{white-space:nowrap}

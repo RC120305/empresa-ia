@@ -1210,14 +1210,14 @@
 
   async function carregarFunil() {
     const [n, t] = await Promise.all([
-      sb.from('negocios').select('*,contato:contatos(nome,contato_identificadores(tipo,valor))').order('atualizado_em', { ascending: false }).limit(500),
+      sb.from('negocios').select('*,contato:contatos(*,contato_identificadores(tipo,valor))').order('atualizado_em', { ascending: false }).limit(500),
       sb.from('tarefas').select('*').order('quando', { ascending: true }).limit(1000),
     ]);
     funilOk = !n.error;
     negocios = (n.data || []).map(x => {
       const idn = (x.contato && x.contato.contato_identificadores) || [];
       const wa = idn.find(i => i.tipo === 'whatsapp');
-      return { ...x, nome: (x.contato && x.contato.nome) || (wa ? fmtTel(wa.valor) : 'Sem nome'), tel: wa ? fmtTel(wa.valor) : '' };
+      return { ...x, nome: (x.contato && x.contato.nome) || (wa ? fmtTel(wa.valor) : 'Sem nome'), nomeContato: (x.contato && x.contato.nome) || '', tel: wa ? fmtTel(wa.valor) : '', email: (x.contato && x.contato.email) || '' };
     });
     tarefas = t.data || [];
     const hojeFim = new Date(); hojeFim.setHours(23, 59, 59, 999);
@@ -1312,6 +1312,7 @@
       el('div', { class: 'rodape' }, el('span', { class: 'resp', title: resp || 'Sem responsável', text: resp ? iniciais(resp) : '–' }), sel));
   }
   $('bt-novo-lead').addEventListener('click', () => abrirFicha(null));
+  $('cx-novo-lead').addEventListener('click', () => abrirFicha(null));
 
   // Ficha do negócio (gaveta): Dados, Tarefas e Histórico
   let fichaId = null, abaFicha = 'dados', fichaNova = false;
@@ -1334,8 +1335,13 @@
       const f = {};
       const inp = (k, tipo, at) => (f[k] = el('input', { type: tipo || 'text', value: n[k] == null ? '' : n[k], ...(at || {}) }));
       const sel = (k, opts) => (f[k] = el('select', {}, opts.map(([v, t]) => el('option', { value: v, text: t, selected: String(n[k] || '') === String(v) }))));
-      if (fichaNova) corpo.append(el('div', { class: 'rotulo', text: 'Contato' }), el('div', { class: 'grade-campos' }, campoF('Nome', inp('nome'), true), campoF('WhatsApp (com DDD)', inp('tel', 'tel', { placeholder: '67 99999-0000' }), true)));
-      else corpo.append(el('div', { class: 'rotulo', text: 'Contato' }), el('p', { class: 'lat-txt', text: (n.tel || 'Sem WhatsApp') + (n.conversa_id ? '' : ' · sem conversa no CRM') }));
+      // Contato: nome, WhatsApp e e-mail (editáveis: completa quem chegou pelo Instagram/Facebook, telefone ou balcão)
+      const cont = { nome: el('input', { type: 'text', value: fichaNova ? '' : n.nomeContato, placeholder: 'Nome do cliente' }),
+        tel: el('input', { type: 'tel', value: fichaNova ? '' : n.tel, placeholder: '67 99999-0000', disabled: !fichaNova && !!n.tel && !!n.conversa_id, title: !fichaNova && n.tel && n.conversa_id ? 'É o número da conversa no WhatsApp' : '' }),
+        email: el('input', { type: 'email', value: fichaNova ? '' : n.email, placeholder: 'nome@exemplo.com' }) };
+      f.nome = cont.nome; f.tel = cont.tel; f.email = cont.email;
+      corpo.append(el('div', { class: 'rotulo', text: 'Contato' }), el('div', { class: 'grade-campos' }, campoF('Nome', cont.nome, true), campoF('WhatsApp (com DDD)', cont.tel), campoF('E-mail', cont.email)),
+        !fichaNova && !n.conversa_id ? el('p', { class: 'lat-txt', text: 'Sem conversa no CRM ainda: a conversa começa quando o cliente mandar mensagem (para a equipe iniciar no WhatsApp é preciso modelo aprovado pela Meta, na etapa da Régua).' }) : null);
       corpo.append(el('div', { class: 'rotulo', text: 'Atendimento' }), el('div', { class: 'grade-campos' },
         campoF('Responsável', sel('responsavel_id', [['', 'Sem responsável'], ...Object.entries(equipe)])),
         campoF('Etapa', sel('etapa', ETAPAS.map(e => [e[0], e[1]]))),
@@ -1351,9 +1357,17 @@
         const dados = { responsavel_id: f.responsavel_id.value || null, origem: f.origem.value, perfil: f.perfil.value, data_entrada: f.data_entrada.value, data_saida: f.data_saida.value,
           hospedes: f.hospedes.value, acomodacao: f.acomodacao.value, valor_previsto: f.valor_previsto.value, etiquetas: f.etiquetas.value.split(','), notas: f.notas.value };
         if (fichaNova) {
-          const j = await salvarNegocio({ ...dados, etapa: f.etapa.value, nome: f.nome.value, telefone: f.tel.value }, 'Lead criado.');
+          const j = await salvarNegocio({ ...dados, etapa: f.etapa.value, nome: f.nome.value, telefone: f.tel.value, email: f.email.value }, 'Lead criado.');
           if (j) { fichaNova = false; fichaId = j.id; pintarFicha(); }
           return;
+        }
+        const mudou = {};
+        if (f.nome.value.trim() !== n.nomeContato) mudou.nome = f.nome.value;
+        if (!f.tel.disabled && f.tel.value.trim() !== n.tel) mudou.telefone = f.tel.value;
+        if (f.email.value.trim() !== n.email) mudou.email = f.email.value;
+        if (Object.keys(mudou).length) {
+          try { await chamarApi('/api/contato', { negocio_id: n.id, ...mudou }); } catch (e) { toast(e.message); return; }
+          await carregarFunil(); carregarConversas();
         }
         if (f.etapa.value !== n.etapa) { await salvarNegocio({ id: n.id, ...dados }); mover(n, f.etapa.value); }
         else await salvarNegocio({ id: n.id, ...dados }, 'Dados salvos.');

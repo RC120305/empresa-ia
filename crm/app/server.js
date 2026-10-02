@@ -608,6 +608,27 @@ async function resolverAlertasDaVenda(venda, tipos, por, buscar = fetch) {
       body: JSON.stringify({ feita: true, feita_em: new Date().toISOString() }) }).catch(() => null);
   }
 }
+// WhatsApp no formato do banco (+55DDDnúmero). Aceita "67 99999-0000", "(67) 9999-0000", "+55 67…"
+function whatsE164(t) {
+  let d = String(t || '').replace(/\D/g, '');
+  if (/^0\d{10,11}$/.test(d)) d = d.slice(1);
+  if (/^[1-9]{2}9?\d{8}$/.test(d)) d = '55' + d;
+  if (!/^55[1-9]{2}9?\d{8}$/.test(d)) throw new ErroEnvio(400, 'WhatsApp inválido: use DDD + número (ex.: 67 99999-0000).');
+  return '+' + d;
+}
+function emailOk(e) {
+  const v = String(e || '').trim().slice(0, 160);
+  if (v && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) throw new ErroEnvio(400, 'E-mail inválido.');
+  return v || null;
+}
+// De quem é este WhatsApp (o mesmo número com e sem o 9 conta como igual)
+async function donoDoWhatsapp(tel, buscar = fetch) {
+  const d = tel.replace(/\D/g, ''), sem9 = d.length === 13 ? d.slice(0, 4) + d.slice(5) : d, com9 = d.length === 12 ? d.slice(0, 4) + '9' + d.slice(4) : d;
+  const vals = [...new Set([d, sem9, com9])].map(x => '%2B' + x).join(',');
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/contato_identificadores?tipo=eq.whatsapp&valor=in.(${vals})&select=contato_id,contato:contatos(nome)`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const x = r && r.ok ? (await r.json().catch(() => []))[0] : null;
+  return x ? { contato_id: x.contato_id, nome: x.contato && x.contato.nome } : null;
+}
 const uuidOk = v => /^[0-9a-f-]{36}$/i.test(String(v || ''));
 async function produtoPorCodigo(codigo, buscar = fetch) {
   const cod = String(codigo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -678,6 +699,41 @@ const API_EQUIPE = {
   'GET /api/equipe': async () => {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&select=id,nome,papel&order=nome`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
     return { ok: true, equipe: r.ok ? await r.json() : [] };
+  },
+  // Contato do lead (nome, WhatsApp e e-mail): completar quem chegou pelo Instagram/Facebook, telefone ou balcão
+  'POST /api/contato': async (corpo, eu) => {
+    let contatoId = null, negocio = null;
+    if (uuidOk(corpo.negocio_id)) {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/negocios?id=eq.${corpo.negocio_id}&select=id,contato_id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+      const n = r.ok ? (await r.json())[0] : null;
+      if (n) { contatoId = n.contato_id; negocio = n.id; }
+    } else if (uuidOk(corpo.conversa_id)) {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${corpo.conversa_id}&select=contato_id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+      contatoId = r.ok ? ((await r.json())[0] || {}).contato_id : null;
+      negocio = await negocioDaConversa(corpo.conversa_id);
+    }
+    if (!contatoId) throw new ErroEnvio(404, 'Lead não encontrado.');
+    const ficha = {}, feito = [];
+    if (corpo.nome !== undefined) { const n = String(corpo.nome || '').trim().slice(0, 120); if (!n) throw new ErroEnvio(400, 'O nome não pode ficar vazio.'); ficha.nome = n; feito.push('nome'); }
+    if (corpo.email !== undefined) { ficha.email = emailOk(corpo.email); feito.push('e-mail'); }
+    if (Object.keys(ficha).length) await patchBanco('contatos', `id=eq.${contatoId}`, ficha);
+    if (corpo.telefone !== undefined) {
+      const tel = corpo.telefone ? whatsE164(corpo.telefone) : null;
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/contato_identificadores?contato_id=eq.${contatoId}&tipo=eq.whatsapp&select=id,valor`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+      const atual = r.ok ? (await r.json())[0] : null;
+      if (tel && (!atual || atual.valor !== tel)) {
+        const dono = await donoDoWhatsapp(tel);
+        if (dono && dono.contato_id !== contatoId) throw new ErroEnvio(409, 'Esse WhatsApp já é de outro cliente: ' + (dono.nome || 'sem nome') + '.');
+        if (atual) await patchBanco('contato_identificadores', `id=eq.${atual.id}`, { valor: tel });
+        else {
+          const ri = await fetch(`${SUPABASE_URL}/rest/v1/contato_identificadores`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ contato_id: contatoId, tipo: 'whatsapp', valor: tel }), signal: AbortSignal.timeout(5000) });
+          if (!ri.ok) throw new ErroEnvio(502, 'Não deu para salvar o WhatsApp.');
+        }
+        feito.push('WhatsApp');
+      }
+    }
+    if (negocio && feito.length) await eventoNegocio(negocio, 'Contato atualizado: ' + feito.join(', '), eu.id);
+    return { ok: true };
   },
   // Status, responsável e ficha do contato
   'POST /api/conversa': async (corpo, eu) => {
@@ -753,10 +809,12 @@ const API_EQUIPE = {
       // Novo lead manual: contato (nome e, se houver, WhatsApp) + negócio
       const nome = String(corpo.nome || '').trim().slice(0, 120);
       if (!nome) throw new ErroEnvio(400, 'Diga o nome do lead.');
-      const c = await fetch(`${SUPABASE_URL}/rest/v1/contatos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify({ nome }), signal: AbortSignal.timeout(5000) });
+      const tel = corpo.telefone ? whatsE164(corpo.telefone) : null;
+      const email = emailOk(corpo.email);
+      if (tel) { const dono = await donoDoWhatsapp(tel); if (dono) throw new ErroEnvio(409, 'Esse WhatsApp já é de outro cliente: ' + (dono.nome || 'sem nome') + '. Abra a ficha dele no Funil.'); }
+      const c = await fetch(`${SUPABASE_URL}/rest/v1/contatos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify({ nome, ...(email ? { email } : {}) }), signal: AbortSignal.timeout(5000) });
       if (!c.ok) throw new ErroEnvio(502, 'Não deu para criar o contato.');
       const contato = (await c.json())[0];
-      const tel = String(corpo.telefone || '').replace(/\D/g, '');
       if (tel) await fetch(`${SUPABASE_URL}/rest/v1/contato_identificadores`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ contato_id: contato.id, tipo: 'whatsapp', valor: tel }), signal: AbortSignal.timeout(5000) }).catch(() => {});
       const n = await fetch(`${SUPABASE_URL}/rest/v1/negocios`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' },
         body: JSON.stringify({ contato_id: contato.id, origem: 'ativo', responsavel_id: eu.id, ...dados }), signal: AbortSignal.timeout(5000) });

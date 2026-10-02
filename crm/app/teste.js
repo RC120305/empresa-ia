@@ -136,10 +136,13 @@ const falso = http.createServer((req, res) => {
     if (req.url === '/auth/v1/user') { const u = FAKE['/auth/v1/user'](req); return u ? responder(200, u) : responder(401, { msg: 'invalid' }); }
     if (req.url === '/rest/v1/rpc/equipe_por_email') { const b = JSON.parse(corpo); return responder(200, b.p_email === 'equipe@teste.com' ? [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }] : []); }
     if (req.method === 'PATCH' && (req.url.startsWith('/rest/v1/conversas?') || req.url.startsWith('/rest/v1/contatos?'))) { res.writeHead(204); return res.end(); }
-    if (req.url.startsWith('/rest/v1/negocios?id=eq.') && req.method === 'GET') return responder(200, req.url.includes('NEG-NAO') ? [] : [{ id: req.url.split('id=eq.')[1].split('&')[0], etapa: 'novo', responsavel_id: null }]);
+    if (req.url.startsWith('/rest/v1/negocios?id=eq.') && req.method === 'GET') return responder(200, req.url.includes('NEG-NAO') ? [] : [{ id: req.url.split('id=eq.')[1].split('&')[0], etapa: 'novo', responsavel_id: null, contato_id: 'k-2' }]);
     if (req.url.startsWith('/rest/v1/negocios?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
     if (req.url === '/rest/v1/negocios' && req.method === 'POST') return responder(201, [{ id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', ...json }]);
     if (req.url === '/rest/v1/contatos' && req.method === 'POST') return responder(201, [{ id: 'k-novo', ...json }]);
+    if (req.url.startsWith('/rest/v1/contato_identificadores?tipo=eq.whatsapp&valor=in.')) return responder(200, decodeURIComponent(req.url).includes('+5567999990000') ? [{ contato_id: 'k-1', contato: { nome: 'Cliente Teste' } }] : []);
+    if (req.url.startsWith('/rest/v1/contato_identificadores?contato_id=eq.')) return responder(200, req.url.includes('k-sem') ? [] : [{ id: 'i-1', valor: '+5567988887777' }]);
+    if (req.url.startsWith('/rest/v1/contato_identificadores?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
     if (req.url === '/rest/v1/contato_identificadores' || req.url === '/rest/v1/negocio_eventos' || (req.url === '/rest/v1/tarefas' && req.method === 'POST')) { res.writeHead(201); return res.end(); }
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'GET') return responder(200, [{ negocio_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', tipo: 'Ligar' }]);
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
@@ -451,10 +454,24 @@ falso.listen(0, () => {
     assert.ok(chamadas.findLast(c => c.metodo === 'PATCH' && c.url === '/rest/v1/negocios?id=eq.' + NEG).corpo.fechado_em);
     assert.equal((await api('/api/negocio', { id: NEG, etapa: 'voando' })).status, 400);
     assert.equal((await api('/api/negocio', { id: NEG, data_entrada: '20/11' })).status, 400);
-    r = await api('/api/negocio', { nome: 'Lead do balcão', telefone: '(67) 99999-1111', etapa: 'novo' });
+    r = await api('/api/negocio', { nome: 'Lead do balcão', telefone: '(67) 99999-1111', email: 'lead@exemplo.com', etapa: 'novo' });
     const nl = await r.json();
     assert.equal(r.status, 200, JSON.stringify(nl));
-    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/contato_identificadores').corpo.valor, '67999991111');
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/contato_identificadores').corpo.valor, '+5567999991111', 'WhatsApp no formato do banco');
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/contatos' && c.metodo === 'POST').corpo.email, 'lead@exemplo.com');
+    assert.equal((await api('/api/negocio', { nome: 'Repetido', telefone: '67 9999-0000' })).status, 409, 'WhatsApp de outro cliente (sem o 9)');
+    assert.equal((await api('/api/negocio', { nome: 'X', telefone: '123' })).status, 400);
+    assert.equal((await api('/api/negocio', { nome: 'X', email: 'semarroba' })).status, 400);
+    // Completar o contato de um lead que chegou sem WhatsApp/e-mail (Instagram, Facebook, balcão)
+    r = await api('/api/contato', { negocio_id: 'eeeeeeee-0000-0000-0000-000000000001', telefone: '+55 (67) 98888-7777', email: 'cli@exemplo.com', nome: 'Ana Souza' });
+    assert.equal(r.status, 200, await r.clone().text());
+    assert.deepEqual([chamadas.findLast(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/contatos?')).corpo], [{ nome: 'Ana Souza', email: 'cli@exemplo.com' }]);
+    assert.ok(!chamadas.slice(-6).some(c => c.url.startsWith('/rest/v1/contato_identificadores?id=eq.')), 'mesmo número: não regrava');
+    r = await api('/api/contato', { negocio_id: 'eeeeeeee-0000-0000-0000-000000000002', telefone: '67 98888-0000' });
+    assert.equal(r.status, 200); assert.equal(chamadas.findLast(c => c.url.startsWith('/rest/v1/contato_identificadores?id=eq.i-1')).corpo.valor, '+5567988880000');
+    assert.equal((await api('/api/contato', { negocio_id: 'eeeeeeee-0000-0000-0000-000000000002', telefone: '67 99999-0000' })).status, 409);
+    assert.equal((await api('/api/contato', { negocio_id: 'eeeeeeee-0000-0000-0000-000000000002', nome: '' })).status, 400);
+    assert.equal((await api('/api/contato', {})).status, 404);
     assert.equal(chamadas.findLast(c => c.url === '/rest/v1/negocios' && c.metodo === 'POST').corpo.origem, 'ativo');
     assert.equal((await api('/api/negocio', { nome: '' })).status, 400);
     assert.equal((await api('/api/negocio', { id: NEG, etapa: 'res' }, 'token-estranho')).status, 403);
