@@ -1000,6 +1000,7 @@ const API_EQUIPE = {
     if (corpo.fixa !== undefined) dados.fixa = !!corpo.fixa;
     if (corpo.valida_ate !== undefined) { if (corpo.valida_ate && !/^\d{4}-\d{2}-\d{2}$/.test(corpo.valida_ate)) throw new ErroEnvio(400, 'Data inválida.'); dados.valida_ate = corpo.valida_ate || null; }
     if (corpo.ativo !== undefined) dados.ativo = !!corpo.ativo;
+    if (corpo.origem !== undefined) { if (!['equipe', 'questionario', 'revisao', 'correcao'].includes(corpo.origem)) throw new ErroEnvio(400, 'Origem inválida.'); dados.origem = corpo.origem; }
     if (corpo.id) {
       if (!/^[0-9a-f-]{36}$/i.test(corpo.id)) throw new ErroEnvio(400, 'Resposta inválida.');
       if (dados.pergunta === '' || dados.resposta === '') throw new ErroEnvio(400, 'Pergunta e resposta são obrigatórias.');
@@ -1010,7 +1011,7 @@ const API_EQUIPE = {
       if (!dados.pergunta || !dados.resposta) throw new ErroEnvio(400, 'Pergunta e resposta são obrigatórias.');
       const r = await fetch(`${SUPABASE_URL}/rest/v1/respostas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ ...dados, criado_por: eu.id }), signal: AbortSignal.timeout(5000) });
       if (r.status === 409) throw new ErroEnvio(409, 'Esse atalho já está em uso.');
-      if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar (o banco precisa da migração 009?).');
+      if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar' + (dados.origem === 'correcao' ? ' (o banco precisa da migração 015?).' : ' (o banco precisa da migração 009?).'));
     }
     limparCatalogo();
     return { ok: true };

@@ -144,7 +144,7 @@ const falso = http.createServer((req, res) => {
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'GET') return responder(200, [{ negocio_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', tipo: 'Ligar' }]);
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/rest/v1/produtos?ativo=eq.true')) return responder(200, PRODS);
-    if (req.url.startsWith('/rest/v1/respostas?ativo=eq.true')) return responder(200, [{ id: 'r-1', pergunta: 'Aceita pet?', resposta: 'Não aceitamos pets, {nome}.', fixa: true }, { id: 'r-2', pergunta: 'Fica longe do centro?', resposta: 'São 6 km de asfalto.', fixa: false }]);
+    if (req.url.startsWith('/rest/v1/respostas?ativo=eq.true')) return responder(200, [{ id: 'r-1', pergunta: 'Aceita pet?', resposta: 'Não aceitamos pets, {nome}.', fixa: true }, { id: 'r-2', pergunta: 'Fica longe do centro?', resposta: 'São 6 km de asfalto.', fixa: false }, { id: 'r-3', pergunta: 'Qual o horário do café?', resposta: 'O café é das 7h às 10h.', fixa: false, origem: 'correcao' }]);
     if ((req.url === '/rest/v1/produtos' || req.url === '/rest/v1/agencias' || req.url === '/rest/v1/respostas') && req.method === 'POST') { if (json && json.codigo === 'DUP') return responder(409, {}); res.writeHead(201); return res.end(); }
     if (/^\/rest\/v1\/(produtos|agencias|respostas|sugestoes)\?id=eq\./.test(req.url) && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/rest/v1/respostas?id=eq.') && req.method === 'GET') return responder(200, [{ usos: 4 }]);
@@ -503,6 +503,12 @@ falso.listen(0, () => {
     const sis = pedidosIA[0].system[0].text;
     assert.ok(sis.includes('Piquenique no rio') && sis.includes('R$ 90 por pessoa') && !sis.includes('{{produtos_ativos}}'), 'produtos do banco no Gilberto');
     assert.ok(sis.includes('texto exato: Não aceitamos pets, {nome}.') && sis.includes('São 6 km de asfalto.'), 'respostas fixas e de referência');
+    // Correção da equipe ao questionário: bloco próprio, que vale no lugar da base
+    const iCorr = sis.indexOf('Correções da equipe ao questionário'), iRef = sis.indexOf('Respostas de referência');
+    assert.ok(iCorr > 0 && sis.indexOf('O café é das 7h às 10h.') > iCorr && (iRef < 0 || sis.indexOf('O café é das 7h às 10h.') < iRef), 'correção no bloco certo');
+    r = await api('/api/resposta', { pergunta: 'Qual o horário do café?', resposta: 'Das 7h às 10h.', origem: 'correcao' });
+    assert.equal(r.status, 200); assert.equal(chamadas.findLast(c => c.url === '/rest/v1/respostas' && c.metodo === 'POST').corpo.origem, 'correcao');
+    assert.equal((await api('/api/resposta', { pergunta: 'x', resposta: 'y', origem: 'hacker' })).status, 400);
     // Questionário: o que o Gilberto sabe, e a importação para a biblioteca (sem repetir o que já existe)
     r = await api('/api/conhecimento', null, 'token-equipe', 'GET');
     const qj = await r.json();

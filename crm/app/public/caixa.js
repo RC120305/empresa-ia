@@ -1093,16 +1093,43 @@
     }
     pintarQuestionario();
   }
+  // Chave de cada item: a pergunta; nos itens sem pergunta (listas), o título da seção + o trecho original
+  const chaveItem = (i, sec) => (i.p || (sec.titulo + ' · ' + i.r)).slice(0, 300);
+  function formCorrecao(i, sec, corr) {
+    abrirForm('Editar resposta do questionário', [
+      { tipo: 'nota', rotulo: i.p ? 'Pergunta: ' + i.p : 'Trecho de "' + sec.titulo + '"' },
+      { tipo: 'nota', rotulo: 'Texto original: ' + i.r },
+      { k: 'resposta', rotulo: 'Resposta correta (o Gilberto passa a usar esta)', tipo: 'textarea', largo: true, valor: corr ? corr.resposta : i.r },
+    ], async v => {
+      if (!v.resposta.trim()) throw new Error('Escreva a resposta.');
+      await chamarApi('/api/resposta', corr ? { id: corr.id, resposta: v.resposta } : { pergunta: chaveItem(i, sec), resposta: v.resposta, origem: 'correcao' });
+      toast('Resposta corrigida. O Gilberto passa a usar em até 1 minuto.');
+      await carregarRespostas(); pintarQuestionario();
+    });
+  }
   function pintarQuestionario() {
     const q = semAcento($('con-busca').value.trim());
     const naBib = new Set(respostas.map(r => semAcento(r.pergunta)));
+    const correcoes = new Map(respostas.filter(r => r.origem === 'correcao').map(r => [semAcento(r.pergunta), r]));
     const box = $('con-lista'); box.textContent = '';
     questionario.forEach(sec => {
       const itens = sec.itens.filter(i => !q || semAcento(i.p + ' ' + i.r).includes(q));
       if (!itens.length) return;
       box.append(el('div', { class: 'cartao con-sec' }, el('h3', {}, sec.titulo, ' ', el('small', { class: 'dica', text: itens.length + (itens.length > 1 ? ' itens' : ' item') })),
-        itens.map(i => el('div', { class: 'con-item' }, i.p ? el('b', { class: 'con-p', text: i.p }) : null, el('p', { class: 'con-r', text: i.r }),
-          i.p ? (naBib.has(semAcento(i.p)) ? el('span', { class: 'origem', text: 'Na biblioteca' }) : el('button', { class: 'btn-mini', type: 'button', text: '+ Biblioteca', onclick: () => formResposta({ pergunta: i.p, resposta: i.r, origem: 'questionario' }) })) : null))));
+        itens.map(i => {
+          const corr = correcoes.get(semAcento(chaveItem(i, sec)));
+          return el('div', { class: 'con-item' + (corr ? ' editado' : '') }, i.p ? el('b', { class: 'con-p', text: i.p }) : null,
+            el('p', { class: 'con-r', text: corr ? corr.resposta : i.r }),
+            corr ? el('small', { class: 'con-orig', text: 'Editado pela equipe. Original: ' + i.r }) : null,
+            el('div', { class: 'con-acoes' },
+              corr ? el('span', { class: 'origem', text: 'Editado' }) : i.p && naBib.has(semAcento(i.p)) ? el('span', { class: 'origem', text: 'Na biblioteca' }) : null,
+              el('button', { class: 'btn-mini', type: 'button', text: '✎ Editar', onclick: () => formCorrecao(i, sec, corr) }),
+              corr ? el('button', { class: 'btn-mini', type: 'button', text: 'Desfazer', onclick: async () => {
+                if (!confirm('Voltar ao texto original do questionário?')) return;
+                try { await chamarApi('/api/resposta', { id: corr.id, ativo: false }); toast('Voltou ao texto original.'); await carregarRespostas(); pintarQuestionario(); } catch (e) { toast(e.message); }
+              } }) : null,
+              !corr && i.p && !naBib.has(semAcento(i.p)) ? el('button', { class: 'btn-mini', type: 'button', text: '+ Biblioteca', onclick: () => formResposta({ pergunta: i.p, resposta: i.r, origem: 'questionario' }) }) : null));
+        })));
     });
     if (!box.children.length) box.append(el('div', { class: 'vazio', text: 'Nada encontrado no questionário.' }));
   }

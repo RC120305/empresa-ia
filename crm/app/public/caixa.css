@@ -379,7 +379,10 @@ section[data-painel="produtos"],section[data-painel="agencias"],section[data-pai
 .con-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;padding:10px 0;border-top:1px solid var(--cor-borda);font-size:14px;align-items:start}
 .con-item .con-p{grid-column:1;display:block;font-size:15px}
 .con-item .con-r{grid-column:1;margin:0;color:var(--cor-texto-sec);line-height:1.5}
-.con-item .btn-mini,.con-item .origem{grid-column:2;grid-row:1/span 2;align-self:center;white-space:nowrap}
+.con-item .con-acoes{grid-column:2;grid-row:1/span 3;align-self:center;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.con-item .con-acoes .btn-mini,.con-item .con-acoes .origem{white-space:nowrap}
+.con-item .con-orig{grid-column:1;font-size:12px;color:var(--cor-texto-sec);opacity:.8}
+.con-item.editado .con-r{color:var(--cor-texto)}
 .origem{font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--cor-info-suave);color:var(--cor-info)}
 
 /* Produtos na conversa (painel 🛍) */

@@ -59,7 +59,10 @@ function sistemaCom(catalogo) {
   let fixas = catalogo && catalogo.respostas && catalogo.respostas.filter(r => r.fixa).length
     ? catalogo.respostas.filter(r => r.fixa).map(r => `- id ${r.id} · quando perguntarem: ${r.pergunta}\n  texto exato: ${r.resposta}`).join('\n')
     : '(vazia nesta fase)';
-  const refs = catalogo && catalogo.respostas ? catalogo.respostas.filter(r => !r.fixa) : [];
+  // Correções da equipe ao questionário: valem no lugar do que a base diz sobre o mesmo assunto
+  const correcoes = catalogo && catalogo.respostas ? catalogo.respostas.filter(r => r.origem === 'correcao') : [];
+  if (correcoes.length) fixas += '\n\nCorreções da equipe ao questionário (valem NO LUGAR do que <base_conhecimento> diz sobre o mesmo assunto; use estas):\n' + correcoes.map(r => `- ${r.pergunta}\n  ${r.resposta}`).join('\n');
+  const refs = catalogo && catalogo.respostas ? catalogo.respostas.filter(r => !r.fixa && r.origem !== 'correcao') : [];
   if (refs.length) fixas += '\n\nRespostas de referência aprovadas pela equipe (adapte ao contexto, sem copiar se não couber):\n' + refs.map(r => `- ${r.pergunta}\n  ${r.resposta}`).join('\n');
   return MODELO_SISTEMA.replace('{{biblioteca_respostas_fixas}}', fixas).replace('{{produtos_ativos}}', prods);
 }
