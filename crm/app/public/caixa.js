@@ -723,6 +723,7 @@
 
   // ---------- Painéis da conversa (trilho à direita) ----------
   const TITULOS = { his: 'Ficha e histórico', orc: 'Montar orçamento', pro: 'Produtos', vag: 'Vagas por acomodação', res: 'Reservas e pagamentos', tar: 'Tarefas do cliente' };
+  $('bt-produtos').addEventListener('click', () => { painel = 'pro'; guardar('crm-painel', painel); pintarPainel(); });
   $('cx-trilho').addEventListener('click', e => {
     const b = e.target.closest('[data-p]'); if (!b) return;
     painel = painel === b.dataset.p ? '' : b.dataset.p;
