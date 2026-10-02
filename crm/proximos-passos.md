@@ -25,7 +25,7 @@
 ## 2. Pendências com terceiros
 | Quem | O quê |
 |---|---|
-| Márcio | Túnel ou VPN com o servidor do Silbeck; mapa de IDs (`silbeck/mapa-ids.md`); portal "CRM WhatsApp" no Silbeck; API do sistema de atividades |
+| Márcio | **SMTP do e-mail do hotel para os links de acesso do CRM** (`crm/infra/email-acesso-supabase.md`); Túnel ou VPN com o servidor do Silbeck; mapa de IDs (`silbeck/mapa-ids.md`); portal "CRM WhatsApp" no Silbeck; API do sistema de atividades |
 | Banco do Brasil | API Pix (só cobrança e leitura) e certificado |
 | Cielo | Credenciais do link de pagamento (mais adiante) |
 | Supabase | Projeto novo (região São Paulo) |
