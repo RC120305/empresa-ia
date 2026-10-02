@@ -80,6 +80,12 @@ const falso = http.createServer((req, res) => {
     if (req.url === '/rest/v1/contato_identificadores' || req.url === '/rest/v1/negocio_eventos' || (req.url === '/rest/v1/tarefas' && req.method === 'POST')) { res.writeHead(201); return res.end(); }
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'GET') return responder(200, [{ negocio_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', tipo: 'Ligar' }]);
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
+    if (req.url.startsWith('/rest/v1/produtos?ativo=eq.true')) return responder(200, [{ codigo: 'COMBO', nome: 'Combo boia cross + arvorismo', descricao: 'Duas aventuras', preco: 'R$ 170 por pessoa', regras: '5 anos ou mais', quando_oferecer: 'Na cotação', antecedencia_dias: 0, prioridade: 1 }, { codigo: 'PIQ', nome: 'Piquenique no rio', descricao: null, preco: 'R$ 90 por pessoa', regras: null, quando_oferecer: null, antecedencia_dias: 1, prioridade: 6 }]);
+    if (req.url.startsWith('/rest/v1/respostas?ativo=eq.true')) return responder(200, [{ id: 'r-1', pergunta: 'Aceita pet?', resposta: 'Não aceitamos pets, {nome}.', fixa: true }, { id: 'r-2', pergunta: 'Fica longe do centro?', resposta: 'São 6 km de asfalto.', fixa: false }]);
+    if ((req.url === '/rest/v1/produtos' || req.url === '/rest/v1/agencias' || req.url === '/rest/v1/respostas') && req.method === 'POST') { if (json && json.codigo === 'DUP') return responder(409, {}); res.writeHead(201); return res.end(); }
+    if (/^\/rest\/v1\/(produtos|agencias|respostas|sugestoes)\?id=eq\./.test(req.url) && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
+    if (req.url.startsWith('/rest/v1/respostas?id=eq.') && req.method === 'GET') return responder(200, [{ usos: 4 }]);
+    if (req.url === '/rest/v1/sugestoes' && req.method === 'POST') return responder(201, [{ id: 'dddddddd-dddd-dddd-dddd-dddddddddddd' }]);
     if (req.url.startsWith('/rest/v1/usuarios?')) return responder(200, [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }]);
     if (req.url.startsWith('/rest/v1/conversas?') && req.url.includes('select=contato_id')) return responder(200, [{ contato_id: 'k-1' }]);
     if (req.url.startsWith('/rest/v1/conversas?')) return responder(200, [{ id: '11111111-1111-1111-1111-111111111111', canal: 'wa', numero_id: '111',
@@ -387,6 +393,49 @@ falso.listen(0, () => {
     r = await api('/api/tarefa', { id: 'cccccccc-cccc-cccc-cccc-cccccccccccc', feita: true });
     assert.equal(r.status, 200);
     assert.equal(chamadas.findLast(c => c.url === '/rest/v1/negocio_eventos').corpo.texto, 'Concluída: Ligar');
+
+    // Etapa C: produtos, agências, biblioteca, revisão e teste do agente
+    r = await api('/api/produto', { codigo: 'piq-1', nome: 'Piquenique', preco: 'R$ 90 por pessoa', tipo_reserva: 'simples', prioridade: '6' });
+    assert.equal(r.status, 200, await r.clone().text());
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/produtos' && c.metodo === 'POST').corpo.codigo, 'PIQ1');
+    assert.equal((await api('/api/produto', { codigo: 'DUP', nome: 'x', preco: 'R$ 1' })).status, 409);
+    assert.equal((await api('/api/produto', { nome: 'Sem preço', codigo: 'X' })).status, 400);
+    assert.equal((await api('/api/produto', { codigo: 'X', nome: 'x', preco: 'y', tipo_reserva: 'voo' })).status, 400);
+    r = await api('/api/produto', { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', ativo: false });
+    assert.equal(r.status, 200);
+    r = await api('/api/agencia', { nome: 'Bonito Trips', cnpj: '00.000.000/0001-00', comissao: '12.5', email: 'reservas@bonitotrips.com' });
+    assert.equal(r.status, 200, await r.clone().text());
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/agencias').corpo.comissao, 12.5);
+    assert.equal((await api('/api/agencia', { nome: 'X', comissao: 150 })).status, 400);
+    assert.equal((await api('/api/agencia', { nome: '' })).status, 400);
+    r = await api('/api/resposta', { pergunta: 'Aceita pet?', resposta: 'Não aceitamos pets.', atalho: '/Pet!', fixa: true });
+    assert.equal(r.status, 200, await r.clone().text());
+    const rr = chamadas.findLast(c => c.url === '/rest/v1/respostas' && c.metodo === 'POST').corpo;
+    assert.deepEqual([rr.atalho, rr.fixa, rr.criado_por], ['pet', true, 'u-1']);
+    assert.equal((await api('/api/resposta', { pergunta: '', resposta: 'x' })).status, 400);
+    r = await api('/api/resposta-uso', { id: 'ffffffff-ffff-ffff-ffff-ffffffffffff' });
+    assert.equal(r.status, 200);
+    assert.equal(chamadas.findLast(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/respostas?id=eq.')).corpo.usos, 5);
+    r = await api('/api/sugestao', { id: 'dddddddd-dddd-dddd-dddd-dddddddddddd', situacao: 'descartada', motivo: 'Tom' });
+    assert.equal(r.status, 200);
+    assert.equal((await api('/api/sugestao', { id: 'dddddddd-dddd-dddd-dddd-dddddddddddd', situacao: 'sumiu' })).status, 400);
+    // A sugestão fica registrada e o Gilberto recebe os produtos e as respostas do banco
+    pedidosIA.length = 0;
+    r = await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-equipe' }, body: JSON.stringify({ conversa_id: conv }) });
+    const sug4 = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(sug4));
+    assert.equal(sug4.sugestao_id, 'dddddddd-dddd-dddd-dddd-dddddddddddd');
+    const regS = chamadas.findLast(c => c.url === '/rest/v1/sugestoes' && c.metodo === 'POST').corpo;
+    assert.equal(regS.pergunta, 'Tem vaga de 14 a 16/11 para 2 adultos?'); assert.equal(regS.pedida_por, 'u-1');
+    const sis = pedidosIA[0].system[0].text;
+    assert.ok(sis.includes('Piquenique no rio') && sis.includes('R$ 90 por pessoa') && !sis.includes('{{produtos_ativos}}'), 'produtos do banco no Gilberto');
+    assert.ok(sis.includes('texto exato: Não aceitamos pets, {nome}.') && sis.includes('São 6 km de asfalto.'), 'respostas fixas e de referência');
+    // Testar o agente: sem conversa nem gravação
+    r = await api('/api/testar', { mensagens: [{ de: 'cliente', texto: 'Oi, tem vaga?' }] });
+    const tj2 = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(tj2)); assert.ok(tj2.mensagem);
+    assert.equal(pedidosIA.at(-1).messages[0].content, 'Oi, tem vaga?');
+    assert.equal((await api('/api/testar', { mensagens: [] })).status, 400);
 
     const { numeroParaEnvio } = require('./server');
     assert.equal(numeroParaEnvio('+556798070981'), '5567998070981');

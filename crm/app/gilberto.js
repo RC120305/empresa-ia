@@ -27,19 +27,29 @@ const PRODUTOS = [
   'MASS · Massagem (Massagem360, relaxante ou linfática, parceira Natália) · R$ 220 · lançada na conta do hóspede',
 ].join('\n');
 
+// Produtos e respostas fixas vêm do banco (telas Produtos e Ajustes do agente); sem banco, vale a lista acima.
 function montarSistema() {
   const prompt = ler('prompt-sistema.md', '..', 'gilberto', 'prompt-sistema.md');
   const base = ler('base-conhecimento.md', '..', 'gilberto', 'base-conhecimento.md');
   const operacional = ler('hotel-operacional.md', '..', '..', 'contexto', 'hotel-operacional.md');
   if (!prompt || !base) return null;
   const corte = prompt.indexOf('=== BLOCO C');
-  const ab = (corte > 0 ? prompt.slice(0, corte) : prompt)
-    .replace('{{base_conhecimento}}', base + (operacional ? '\n\n<fatos_operacionais>\n' + operacional + '\n</fatos_operacionais>' : ''))
-    .replace('{{biblioteca_respostas_fixas}}', '(vazia nesta fase)')
-    .replace('{{produtos_ativos}}', PRODUTOS);
-  return ab;
+  return (corte > 0 ? prompt.slice(0, corte) : prompt)
+    .replace('{{base_conhecimento}}', base + (operacional ? '\n\n<fatos_operacionais>\n' + operacional + '\n</fatos_operacionais>' : ''));
 }
-const SISTEMA = montarSistema();
+const MODELO_SISTEMA = montarSistema();
+const SISTEMA = MODELO_SISTEMA;
+function sistemaCom(catalogo) {
+  const prods = catalogo && catalogo.produtos && catalogo.produtos.length
+    ? catalogo.produtos.map(p => [p.codigo, p.nome + (p.descricao ? ' (' + p.descricao + ')' : ''), p.preco, p.regras, p.antecedencia_dias ? 'pedir com ' + p.antecedencia_dias + ' dias de antecedência' : '', p.quando_oferecer ? 'oferecer: ' + p.quando_oferecer : '', 'prioridade ' + p.prioridade].filter(Boolean).join(' · ')).join('\n')
+    : PRODUTOS;
+  let fixas = catalogo && catalogo.respostas && catalogo.respostas.filter(r => r.fixa).length
+    ? catalogo.respostas.filter(r => r.fixa).map(r => `- id ${r.id} · quando perguntarem: ${r.pergunta}\n  texto exato: ${r.resposta}`).join('\n')
+    : '(vazia nesta fase)';
+  const refs = catalogo && catalogo.respostas ? catalogo.respostas.filter(r => !r.fixa) : [];
+  if (refs.length) fixas += '\n\nRespostas de referência aprovadas pela equipe (adapte ao contexto, sem copiar se não couber):\n' + refs.map(r => `- ${r.pergunta}\n  ${r.resposta}`).join('\n');
+  return MODELO_SISTEMA.replace('{{biblioteca_respostas_fixas}}', fixas).replace('{{produtos_ativos}}', prods);
+}
 
 const FORMATO = {
   type: 'json_schema',
@@ -119,7 +129,7 @@ Contato (dados já conhecidos): nome do perfil do WhatsApp: ${c.nome || 'não in
 Pendências (reservas, cobranças, alertas abertos): não disponíveis nesta fase
 Resumo das conversas anteriores: não disponível
 </contexto_crm>
-Ferramentas ligadas nesta fase: consultar_disponibilidade (vagas e valores do Silbeck), gerar_orcamento (cria a página do orçamento e devolve o link; nesta fase, uma acomodação por opção) e enviar_fotos (escolhe fotos reais da biblioteca; a equipe envia junto com a sua mensagem). Use consultar_disponibilidade sempre que for falar de preço ou vaga e já tiver datas e pessoas (com a idade de cada criança); se faltar algum dado, pergunte ao cliente em vez de chamar. Ao mandar o orçamento, chame gerar_orcamento com as opções escolhidas e coloque o link devolvido na mensagem, exatamente como veio. As outras ferramentas ainda não estão ligadas: não tente chamá-las. Onde precisaria delas (reserva, link de pagamento, alerta), escreva a mensagem com marcadores [[...]] no lugar do dado (ex.: [[link de pagamento]]) e diga em notas_internas o que a equipe precisa fazer. Nunca invente preço nem disponibilidade: só use os valores que a ferramenta devolveu.${silbeck.MODO() === 'simulador' ? ' Nesta fase de testes a ferramenta usa o SIMULADOR do Silbeck: os valores são fictícios; use-os normalmente na mensagem e lembre isso em notas_internas.' : ''}`;
+Ferramentas ligadas nesta fase: consultar_disponibilidade (vagas e valores do Silbeck), gerar_orcamento (cria a página do orçamento e devolve o link; nesta fase, uma acomodação por opção) e enviar_fotos (escolhe fotos reais da biblioteca; a equipe envia junto com a sua mensagem). Use consultar_disponibilidade sempre que for falar de preço ou vaga e já tiver datas e pessoas (com a idade de cada criança); se faltar algum dado, pergunte ao cliente em vez de chamar. Ao mandar o orçamento, chame gerar_orcamento com as opções escolhidas e coloque o link devolvido na mensagem, exatamente como veio. As outras ferramentas ainda não estão ligadas: não tente chamá-las (quando uma resposta fixa da biblioteca couber, escreva o texto exato dela na mensagem, no lugar de usar_resposta_fixa). Onde precisaria delas (reserva, link de pagamento, alerta), escreva a mensagem com marcadores [[...]] no lugar do dado (ex.: [[link de pagamento]]) e diga em notas_internas o que a equipe precisa fazer. Nunca invente preço nem disponibilidade: só use os valores que a ferramenta devolveu.${silbeck.MODO() === 'simulador' ? ' Nesta fase de testes a ferramenta usa o SIMULADOR do Silbeck: os valores são fictícios; use-os normalmente na mensagem e lembre isso em notas_internas.' : ''}`;
 }
 
 let cliente = null;
@@ -130,7 +140,7 @@ function anthropic() {
 
 class ErroSugestao extends Error { constructor(http, msg) { super(msg); this.http = http; } }
 
-async function sugerir(historico, conversa, executores = {}) {
+async function sugerir(historico, conversa, executores = {}, catalogo = null) {
   if (!process.env.ANTHROPIC_API_KEY) throw new ErroSugestao(503, 'A IA do Gilberto ainda não está ligada (falta a chave da Anthropic no cofre).');
   if (!SISTEMA) throw new ErroSugestao(503, 'As instruções do Gilberto não foram encontradas no servidor.');
   const mensagens = montarMensagens(historico);
@@ -140,7 +150,7 @@ async function sugerir(historico, conversa, executores = {}) {
   const pedido = {
     model: MODELO,
     max_tokens: 16000,
-    system: [{ type: 'text', text: SISTEMA, cache_control: { type: 'ephemeral' } }],
+    system: [{ type: 'text', text: sistemaCom(catalogo), cache_control: { type: 'ephemeral' } }],
     messages: [...mensagens, { role: 'system', content: contextoTurno(conversa) }],
     output_config: { effort: ESFORCO, format: FORMATO },
     ...(FERRAMENTAS.length ? { tools: FERRAMENTAS } : {}),

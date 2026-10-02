@@ -323,3 +323,47 @@ section[data-painel="funil"],section[data-painel="tarefas"]{gap:10px;overflow:hi
 .cx-ctrl .etapa-sel{font-weight:600}
 @media (max-width:600px){.grade-campos{grid-template-columns:1fr}}
 @media (max-width:900px){.funil{grid-template-columns:repeat(6,minmax(240px,82vw))}}
+
+/* Etapa C: produtos, agências, ajustes do agente */
+section[data-painel="produtos"],section[data-painel="agencias"],section[data-painel="ajustes"]{gap:10px;overflow-y:auto}
+.lista-cartoes{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;align-content:start}
+.item-cartao{padding:14px 16px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+.item-cartao h3{margin:0;font-size:16px;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.item-cartao h3 small{font-size:12px;font-weight:600;color:var(--cor-texto-sec);font-family:ui-monospace,Menlo,monospace}
+.item-cartao p{margin:0;color:var(--cor-texto-sec)}
+.item-cartao .preco{font-weight:700;font-size:15px;color:var(--cor-texto)}
+.item-cartao.inativo{opacity:.55}
+.item-cartao .acoes{margin-top:4px}
+.segmento{display:flex;gap:4px;background:var(--cor-primaria-suave);padding:4px;border-radius:var(--r-lg);width:max-content;max-width:100%;overflow-x:auto;flex:none}
+.segmento button{all:unset;cursor:pointer;padding:8px 14px;border-radius:var(--r-md);font-size:14px;font-weight:500;color:var(--cor-texto-sec);white-space:nowrap}
+.segmento button[aria-selected="true"]{background:var(--cor-superficie);color:var(--cor-texto);box-shadow:var(--sombra-1)}
+.sub{display:flex;flex-direction:column;gap:10px;min-height:0}
+.resumo-rev{display:flex;gap:18px;flex-wrap:wrap;padding:12px 16px;align-items:center;font-size:14px;color:var(--cor-texto-sec)}
+.resumo-rev b{color:var(--cor-texto);font-size:20px;font-weight:600;margin-right:4px}
+.rev-lista{display:flex;flex-direction:column;gap:10px;max-width:900px}
+.rev-item{border:1px solid var(--cor-borda);border-radius:var(--r-lg);padding:12px 14px;display:flex;flex-direction:column;gap:8px;background:var(--cor-superficie)}
+.rev-item .topo-rev{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--cor-texto-sec)}
+.rev-item .topo-rev b{color:var(--cor-texto);font-size:15px}
+.rev-item .pergunta{font-size:14px;color:var(--cor-texto-sec);border-left:3px solid var(--cor-borda-forte);padding-left:10px;white-space:pre-wrap}
+.rev-item .resposta{background:var(--ia-s);border-radius:var(--r-md);padding:10px 12px;font-size:15px;white-space:pre-wrap}
+.rev-item .base{font-size:12px;color:var(--cor-texto-sec)}
+.motivos{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--cor-texto-sec)}
+.sit{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
+.sit-pendente{background:var(--cor-alerta-suave);color:var(--cor-alerta)}.sit-usada,.sit-aprovada{background:var(--cor-sucesso-suave);color:var(--cor-sucesso)}.sit-descartada,.sit-reprovada{background:var(--cor-erro-suave);color:var(--cor-erro)}
+.teste{padding:12px 16px;display:flex;flex-direction:column;gap:10px;max-width:820px}
+.teste-msgs{min-height:260px;max-height:55vh;border-radius:var(--r-md)}
+.regras{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.bloco{padding:16px;display:flex;flex-direction:column;gap:8px}
+.bloco h3{margin:0;font-size:16px}
+.bloco p,.bloco ul{margin:0;font-size:14px;color:var(--cor-texto-sec)}
+.bloco ul{padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.modal-largo{width:min(640px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto}
+.campo-check{display:flex;gap:8px;align-items:center;font-size:14px;grid-column:1/-1}
+.campo-check input{width:18px;height:18px;accent-color:var(--cor-primaria)}
+.cx-barra{background:var(--cor-elevada);border:1px solid var(--cor-borda);border-radius:var(--r-md);box-shadow:var(--sombra-2);display:flex;flex-direction:column;max-height:260px;overflow-y:auto}
+.cx-barra button{all:unset;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;padding:8px 12px;border-bottom:1px solid var(--cor-borda);font-size:14px}
+.cx-barra button b{color:var(--cor-destaque-texto);font-family:ui-monospace,Menlo,monospace}
+.cx-barra .p{font-weight:600;min-width:0}
+.cx-barra .r{grid-column:2;font-size:13px;color:var(--cor-texto-sec);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cx-barra button[aria-selected=true],.cx-barra button:hover{background:var(--cor-primaria-suave)}
+.cx-barra .vazio-b{padding:10px 12px;font-size:13px;color:var(--cor-texto-sec)}

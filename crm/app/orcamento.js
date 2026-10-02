@@ -87,7 +87,7 @@ function montar(entrada, cotacao) {
   return { opcoes };
 }
 
-function pagina(o, { previa = false } = {}) {
+function pagina(o, { previa = false, produtos = null } = {}) {
   const n = noites(o.data_entrada, o.data_saida);
   const nome = o.primeiro_nome ? esc(o.primeiro_nome) : '';
   const fotosDe = cod => (FOTOS[cod] || FOTOS[{ QES: 'SUP', QST: 'STD', CST: 'STD' }[cod]] || []).slice(0, 5);
@@ -101,7 +101,11 @@ ${i === 0 ? '<span class="selo">Nossa sugestão para vocês</span>' : ''}<h2>${e
 <div class="preco"><div><small>Total ${n > 1 ? `das ${n} noites` : 'da noite'}</small><b>${brl(op.valor_total)}</b><small>${n > 1 ? `média de ${brl(op.media_por_noite)} por noite · ` : ''}ou 6x de ${brl(op.parcela_6x)} sem juros</small></div></div>
 <button class="btn quero" type="button" data-codigo="${esc(op.codigo)}" data-nome="${esc(cat.nome)}">Quero reservar esta</button></div></article>`;
   }).join('\n');
-  const extras = EXTRAS.filter(x => !x.combo || o.pessoas_aptas_combo > 0)
+  // Extras: os produtos cadastrados (tela Produtos); sem banco, a lista fixa acima
+  const lista = produtos && produtos.length
+    ? produtos.map(p => ({ nome: p.nome, txt: [p.descricao, p.regras].filter(Boolean).join(' '), preco: p.preco, combo: ['COMBO', 'BOIA', 'ARVO'].includes(p.codigo) }))
+    : EXTRAS;
+  const extras = lista.filter(x => !x.combo || o.pessoas_aptas_combo > 0)
     .map(x => `<div class="ex"><h4>${esc(x.nome)}</h4><p>${esc(x.txt)}</p><div class="pr">${esc(x.preco)}</div></div>`).join('');
   const titulo = `${n > 1 ? `${['', '', 'Duas', 'Três', 'Quatro', 'Cinco', 'Seis', 'Sete'][n] || n} noites` : 'Uma noite'} entre <em>dois rios</em>`;
   const abertura = o.frase_de_abertura ? esc(o.frase_de_abertura.trim()) + (/[.!?]$/.test(o.frase_de_abertura.trim()) ? ' ' : '. ') : (nome ? `Oi, ${nome}! ` : 'Oi! ');

@@ -44,7 +44,7 @@
       <button role="tab" aria-selected="false" data-vista="pagamentos"><span class="ic" aria-hidden="true">💳</span><span class="tx">Pagamentos</span></button>
       <button role="tab" aria-selected="false" data-vista="painel"><span class="ic" aria-hidden="true">📈</span><span class="tx">Painel</span></button>
       <button role="tab" aria-selected="false" data-vista="regua"><span class="ic" aria-hidden="true">✉</span><span class="tx">Régua de mensagens</span></button>
-      <button role="tab" aria-selected="false" data-vista="ajustes"><span class="ic" aria-hidden="true">⚙</span><span class="tx">Ajustes do agente</span></button>
+      <button role="tab" aria-selected="false" data-vista="ajustes"><span class="ic" aria-hidden="true">⚙</span><span class="tx">Ajustes do agente</span><span class="qtd num" id="qtd-rev" hidden>0</span></button>
     </nav>
     <div class="agente-status">
       <strong>Gilberto</strong>
@@ -96,7 +96,9 @@
                 <button type="button" class="btn btn-enviar" id="sug-usar">Usar (revisar e enviar)</button>
                 <button type="button" class="btn btn-descartar" id="sug-descartar">Descartar</button>
               </div>
+              <div class="motivos" id="sug-motivos" hidden><span>Por quê?</span><button class="chip" type="button" data-motivo="Informação errada">Informação errada</button><button class="chip" type="button" data-motivo="Tom">Tom</button><button class="chip" type="button" data-motivo="Faltou vender">Faltou vender</button><button class="chip" type="button" data-motivo="Devia passar para a equipe">Devia passar para a equipe</button><button class="chip" type="button" data-motivo="Outro">Outro</button></div>
             </div>
+            <div class="cx-barra" id="atalhos" role="listbox" aria-label="Respostas rápidas" hidden></div>
             <div class="cx-galeria" id="galeria" hidden>
               <div class="gal-cab"><b>Banco de imagens</b><small id="gal-cont">Fotos reais do hotel. Toque para escolher (até 5).</small><button type="button" class="fechar" id="gal-fechar" aria-label="Fechar banco de imagens">✕</button></div>
               <div class="gal-cats" id="gal-cats"></div>
@@ -106,6 +108,7 @@
             <div class="cx-ferr">
               <button type="button" class="btn-mini ia" id="sugerir" title="O Gilberto escreve uma resposta para você revisar">✨ Sugerir resposta</button>
               <button type="button" class="btn-mini" id="abrir-fotos" aria-expanded="false">🖼 Banco de fotos</button>
+              <button type="button" class="btn-mini" id="bt-atalhos" title="Respostas da biblioteca (ou digite / no campo)">/ Respostas rápidas</button>
               <button type="button" class="btn-mini" id="anexar" title="Foto, vídeo, áudio ou PDF do aparelho (o texto do campo vira a legenda)">📎 Arquivo</button>
               <input type="file" id="arquivo" accept="image/jpeg,image/png,image/*,video/mp4,video/3gpp,audio/*,application/pdf" hidden>
             </div>
@@ -150,6 +153,58 @@
       <div id="lista-tarefas" class="lista-tarefas"></div>
     </section>
 
+    <!-- PRODUTOS -->
+    <section data-painel="produtos" hidden>
+      <div class="barra-ferr"><button class="btn btn-enviar" type="button" id="prod-novo">+ Novo produto</button>
+        <span class="dica">Atividades e extras vendidos à parte. O Gilberto e a página do orçamento usam esta lista (a mudança vale em até 1 minuto).</span></div>
+      <div class="lista-cartoes" id="prod-grade"></div>
+    </section>
+
+    <!-- AGÊNCIAS -->
+    <section data-painel="agencias" hidden>
+      <div class="barra-ferr"><input type="search" id="ag-busca" placeholder="Buscar por nome, CNPJ ou telefone" aria-label="Buscar agência"><button class="btn btn-enviar" type="button" id="ag-nova">+ Nova agência</button></div>
+      <p class="dica">O cadastro oficial das agências fica no Silbeck. Aqui ficam os contatos e os dados comerciais; a ligação automática com o Silbeck chega com a ponte do hotel.</p>
+      <div class="lista-cartoes" id="ag-grade"></div>
+    </section>
+
+    <!-- AJUSTES DO AGENTE -->
+    <section data-painel="ajustes" hidden>
+      <div class="segmento" role="tablist" aria-label="Ajustes do agente">
+        <button role="tab" type="button" aria-selected="true" data-sub="rev">Revisão das sugestões</button>
+        <button role="tab" type="button" aria-selected="false" data-sub="bib">Biblioteca de respostas</button>
+        <button role="tab" type="button" aria-selected="false" data-sub="tes">✦ Testar o agente</button>
+        <button role="tab" type="button" aria-selected="false" data-sub="reg">Regras</button>
+      </div>
+      <div class="sub" data-sub="rev">
+        <div class="cartao resumo-rev" id="rev-resumo"></div>
+        <div class="filtros" id="rev-filtros"><button class="chip" type="button" aria-pressed="true" data-rf="pendente">Para revisar</button><button class="chip" type="button" aria-pressed="false" data-rf="revisadas">Revisadas</button><button class="chip" type="button" aria-pressed="false" data-rf="todas">Todas</button></div>
+        <div class="rev-lista" id="rev-lista"></div>
+      </div>
+      <div class="sub" data-sub="bib" hidden>
+        <div class="barra-ferr"><button class="btn btn-enviar" type="button" id="bib-novo">+ Nova resposta</button><span class="dica">Com atalho, a equipe usa digitando / na conversa. Fixa: o Gilberto manda o texto exato. As outras servem de referência para ele.</span></div>
+        <div class="lista-cartoes" id="bib-lista"></div>
+      </div>
+      <div class="sub" data-sub="tes" hidden>
+        <div class="cartao teste">
+          <p class="dica">Escreva como se fosse o cliente. O Gilberto responde aqui, sem WhatsApp e sem gravar orçamento. Use para conferir as regras, os produtos e as respostas da biblioteca.</p>
+          <div class="mensagens teste-msgs" id="tes-msgs"></div>
+          <div class="cx-envio"><textarea id="tes-txt" rows="1" placeholder="Mensagem do cliente…" aria-label="Mensagem do cliente"></textarea><button class="btn btn-enviar" type="button" id="tes-enviar">Enviar</button><button class="btn btn-editar" type="button" id="tes-limpar">Recomeçar</button></div>
+        </div>
+      </div>
+      <div class="sub" data-sub="reg" hidden>
+        <div class="regras">
+          <div class="cartao bloco"><h3>Como o Gilberto trabalha hoje</h3>
+            <p>Modo <b>sugestão</b>: ele escreve, a equipe revisa e envia. O atendimento sozinho fora do expediente (17h às 7h30) chega depois, quando o acerto da revisão passar de 90%, com o seu OK.</p></div>
+          <div class="cartao bloco"><h3>Sempre passa para uma pessoa</h3>
+            <ul><li>Reclamação ou hóspede insatisfeito</li><li>Cancelamento, reembolso ou exceção de política</li><li>Pedido de desconto (sem dizer que existem exceções)</li><li>Agência, operadora ou grupo grande</li><li>Pergunta sem resposta na base</li></ul></div>
+          <div class="cartao bloco"><h3>O Gilberto nunca</h3>
+            <ul><li>Dá desconto</li><li>Inventa preço ou vaga (só o que vem do Silbeck)</li><li>Promete o que não está na base</li><li>Diz que é uma pessoa, se perguntarem</li><li>Cita concorrentes</li></ul></div>
+          <div class="cartao bloco"><h3>Onde mudar</h3>
+            <p>Produtos e preços: na tela <b>Produtos</b>. Respostas prontas: na <b>Biblioteca</b>. Regras e base de conhecimento: com a equipe de IA (pedido ao Claude), sempre com o seu OK.</p></div>
+        </div>
+      </div>
+    </section>
+
     <section data-painel="em-breve" hidden>
       <div class="cartao em-breve">
         <h2 id="eb-titulo"></h2>
@@ -174,6 +229,14 @@
   <h3 id="m-tit">Por que este negócio foi perdido?</h3>
   <div class="opcoes" id="m-opcoes"></div>
   <div class="acoes"><button class="btn btn-enviar" type="button" id="m-ok">Mover para Perdido</button><button class="btn btn-editar" type="button" id="m-cancelar">Cancelar</button></div>
+</div>
+
+<!-- Formulário (produto, agência, resposta) -->
+<div class="modal-fundo" id="f-fundo" hidden></div>
+<div class="modal modal-largo" id="form-modal" role="dialog" aria-modal="true" aria-labelledby="f-tit" hidden>
+  <h3 id="f-tit"></h3>
+  <div class="grade-campos" id="f-campos"></div>
+  <div class="acoes" id="f-acoes"></div>
 </div>
 
 <div class="aviso-toast" id="toast" role="status" hidden></div>

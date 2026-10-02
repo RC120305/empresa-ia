@@ -117,6 +117,8 @@
     chamarApi('/api/equipe', null, 'GET').then(j => { equipe = Object.fromEntries(j.equipe.map(u => [u.id, u.nome])); preencherFiltrosEquipe(); if (aberta) pintarCabecalho(); }).catch(() => { equipe = { [meu.id]: meu.nome }; preencherFiltrosEquipe(); });
     await carregarConversas();
     await carregarFunil();
+    carregarRespostas();
+    contarRevisao();
     assinar();
     vigiar();
   }
@@ -126,15 +128,15 @@
     conversas: ['Conversas'],
     funil: ['Funil'],
     tarefas: ['Tarefas'],
-    produtos: ['Produtos', 'Cadastro das atividades e extras (combo, boia cross, arvorismo, decoração, massagem) com preço e regras. Chega na etapa C.'],
-    agencias: ['Agências', 'Cadastro das agências e operadoras parceiras. Chega na etapa C.'],
+    produtos: ['Produtos'],
+    agencias: ['Agências'],
     vagas: ['Vagas', 'O mapa de vagas completo depende do Silbeck real (ponte com o hotel). Por enquanto, as vagas aparecem no painel 🛏 de cada conversa.'],
     pagamentos: ['Pagamentos', 'Pix (Banco do Brasil), link de cartão (Cielo), reservas a receber e baixa automática. Chega na etapa E, depois do Silbeck real e dos bancos.'],
     painel: ['Painel', 'Indicadores de atendimento e de vendas. Chega na etapa F.'],
     regua: ['Régua de mensagens', 'Mensagens automáticas antes e depois da estadia, com modelos aprovados pela Meta. Chega na etapa F, com o 99117.'],
-    ajustes: ['Ajustes do agente', 'Biblioteca de respostas, regras e revisão das respostas do Gilberto. Chega na etapa C.'],
+    ajustes: ['Ajustes do agente'],
   };
-  const PRONTAS = ['conversas', 'funil', 'tarefas'];
+  const PRONTAS = ['conversas', 'funil', 'tarefas', 'produtos', 'agencias', 'ajustes'];
   function irPara(v) {
     document.querySelectorAll('.nav [data-vista]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.vista === v)));
     const [titulo, texto] = SECOES[v];
@@ -143,6 +145,9 @@
     $('eb-titulo').textContent = titulo; $('eb-texto').textContent = texto || '';
     if (v === 'funil') pintarFunil();
     if (v === 'tarefas') pintarTarefas();
+    if (v === 'produtos') carregarProdutos();
+    if (v === 'agencias') carregarAgencias();
+    if (v === 'ajustes') abrirSub(subAtual);
   }
   document.querySelector('.nav').addEventListener('click', e => { const b = e.target.closest('[data-vista]'); if (b) irPara(b.dataset.vista); });
   const recolher = r => { $('tela-caixa').classList.toggle('recolhido', r); $('bt-recolher').setAttribute('aria-expanded', String(!r)); guardar('crm-recolhido', r ? '1' : ''); };
@@ -455,6 +460,11 @@
     try {
       const j = await chamarApi('/api/enviar', { conversa_id: id, baloes: partes });
       mostrar(j.enviadas);
+      if (sugestaoEmUso && sugestaoEmUso.conversa === id) {
+        const igual = sugestaoEmUso.texto.trim() === txt;
+        chamarApi('/api/sugestao', { id: sugestaoEmUso.id, situacao: 'usada', motivo: igual ? 'Enviada sem mudanças' : 'Enviada com edição da equipe' }).then(contarRevisao).catch(() => {});
+        sugestaoEmUso = null;
+      }
       $('resposta').value = '';
       $('sugestao').hidden = true;
     } catch (e) {
@@ -466,8 +476,13 @@
   }
   $('enviar').addEventListener('click', enviar);
   function ajustarAltura() { const ta = $('resposta'); ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight + 2, Math.round(innerHeight * 0.45)) + 'px'; }
-  $('resposta').addEventListener('input', ajustarAltura);
+  $('resposta').addEventListener('input', () => { ajustarAltura(); verAtalho(); });
   $('resposta').addEventListener('keydown', e => {
+    if (!$('atalhos').hidden && atalhoItens.length) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); atalhoIdx = (atalhoIdx + (e.key === 'ArrowDown' ? 1 : -1) + atalhoItens.length) % atalhoItens.length; pintarAtalhos(); return; }
+      if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); escolherAtalho(atalhoItens[atalhoIdx]); return; }
+      if (e.key === 'Escape') { $('atalhos').hidden = true; return; }
+    }
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && matchMedia('(pointer:fine)').matches) { e.preventDefault(); enviar(); }
   });
   $('resposta').title = 'No computador, Enter envia e Shift+Enter quebra a linha. Uma linha só com --- separa os balões.';
@@ -587,6 +602,8 @@
       $('sug-notas').className = 'sug-notas' + (j.precisa_equipe || j.simulador ? ' alerta' : '');
       $('sug-modelo').textContent = /\[\[/.test(j.mensagem) ? 'complete os [[ ]] antes de enviar' : '';
       $('sugestao').dataset.texto = j.mensagem;
+      $('sugestao').dataset.sugestao = j.sugestao_id || '';
+      $('sug-motivos').hidden = true;
       const fl = $('sug-fotos-lista'); fl.textContent = '';
       (j.fotos || []).forEach(f => fl.append(el('img', { src: '/fotos/' + f.arquivo, alt: f.descricao || 'Foto do hotel', title: f.descricao || '' })));
       $('sug-fotos').hidden = !(j.fotos && j.fotos.length);
@@ -599,16 +616,28 @@
     finally { $('sugerir').removeAttribute('disabled'); $('sugerir').textContent = '✨ Sugerir resposta'; }
   }
   $('sugerir').addEventListener('click', sugerir);
+  let sugestaoEmUso = null; // {id, texto}: marcada como "usada" quando o texto for enviado
   $('sug-usar').addEventListener('click', () => {
     const ta = $('resposta');
     ta.value = $('sugestao').dataset.texto || '';
+    if ($('sugestao').dataset.sugestao) sugestaoEmUso = { id: $('sugestao').dataset.sugestao, texto: ta.value, conversa: aberta };
     $('sugestao').hidden = $('sug-fotos').hidden; // se houver fotos sugeridas, o painel fica para enviá-las
     $('sug-texto').textContent = ''; $('sug-notas').textContent = '';
     ajustarAltura(); ta.focus();
     const i = ta.value.indexOf('[['); // já seleciona o primeiro trecho para completar
     if (i >= 0) ta.setSelectionRange(i, ta.value.indexOf(']]', i) + 2);
   });
-  $('sug-descartar').addEventListener('click', () => { $('sugestao').hidden = true; });
+  $('sug-descartar').addEventListener('click', () => {
+    if (!$('sugestao').dataset.sugestao) { $('sugestao').hidden = true; return; }
+    $('sug-motivos').hidden = false; // pede o motivo (ajuda a treinar o Gilberto)
+  });
+  $('sug-motivos').addEventListener('click', e => {
+    const b = e.target.closest('[data-motivo]'); if (!b) return;
+    const id = $('sugestao').dataset.sugestao;
+    $('sugestao').hidden = true; $('sug-motivos').hidden = true;
+    if (id) chamarApi('/api/sugestao', { id, situacao: 'descartada', motivo: b.dataset.motivo }).then(contarRevisao).catch(() => {});
+    toast('Sugestão descartada. O motivo vai para a revisão.');
+  });
 
   // ---------- Painéis da conversa (trilho à direita) ----------
   const TITULOS = { his: 'Ficha e histórico', orc: 'Montar orçamento', vag: 'Vagas por acomodação', res: 'Reservas e pagamentos', tar: 'Tarefas do cliente' };
@@ -727,6 +756,248 @@
     lat.append(el('label', { class: 'campo' }, 'A partir de', ini), el('p', { class: 'lat-txt', text: 'Quantas acomodações de cada tipo estão livres por noite.' }), box);
     carregar();
   }
+
+  // ================= Respostas rápidas ("/" na conversa) =================
+  let respostas = [], atalhoItens = [], atalhoIdx = 0, atalhoTodos = false;
+  const semAcento = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  async function carregarRespostas() {
+    const { data, error } = await sb.from('respostas').select('*').eq('ativo', true).order('usos', { ascending: false }).limit(300);
+    respostas = error ? [] : data || [];
+    if (subAtual === 'bib' && !document.querySelector('[data-painel="ajustes"]').hidden) pintarBiblioteca();
+  }
+  function verAtalho() {
+    const ta = $('resposta');
+    const m = ta.value.slice(0, ta.selectionStart).match(/(?:^|\s)\/([^\s\/]*)$/);
+    if (!m) { if (!atalhoTodos) $('atalhos').hidden = true; return; }
+    atalhoTodos = false; abrirAtalhos(semAcento(m[1]));
+  }
+  function abrirAtalhos(q) {
+    const hoje = new Date().toISOString().slice(0, 10);
+    atalhoItens = respostas.filter(r => (!r.valida_ate || r.valida_ate >= hoje) && (!q || semAcento(r.atalho).startsWith(q) || semAcento(r.pergunta).includes(q)))
+      .sort((a, b) => (!!b.atalho - !!a.atalho) || (b.usos - a.usos)).slice(0, 30);
+    atalhoIdx = 0; $('atalhos').hidden = false; pintarAtalhos(q);
+  }
+  function pintarAtalhos(q) {
+    const box = $('atalhos'); box.textContent = '';
+    if (!atalhoItens.length) { box.append(el('div', { class: 'vazio-b', text: respostas.length ? 'Nenhuma resposta com “' + (q || '') + '”.' : 'A biblioteca está vazia. Cadastre em Ajustes do agente → Biblioteca de respostas.' })); return; }
+    atalhoItens.forEach((r, k) => box.append(el('button', { type: 'button', role: 'option', 'aria-selected': String(k === atalhoIdx), onmousedown: e => e.preventDefault(), onclick: () => escolherAtalho(r) },
+      el('b', { text: r.atalho ? '/' + r.atalho : '·' }), el('span', { class: 'p', text: r.pergunta }), el('span', { class: 'r', text: r.resposta }))));
+    const sel = box.querySelector('[aria-selected=true]'); if (sel) sel.scrollIntoView({ block: 'nearest' });
+  }
+  function escolherAtalho(r) {
+    const ta = $('resposta'), pos = ta.selectionStart;
+    const c = conversas.find(x => x.id === aberta);
+    const primeiro = c && c.nomeSalvo ? c.nomeSalvo.split(/\s+/)[0] : '';
+    const txt = r.resposta.replace(/\{nome\}/g, primeiro);
+    const antes = ta.value.slice(0, pos).replace(/\/[^\s\/]*$/, ''), depois = ta.value.slice(pos);
+    ta.value = antes + txt + depois; ta.focus(); const np = (antes + txt).length; ta.setSelectionRange(np, np);
+    $('atalhos').hidden = true; atalhoTodos = false; ajustarAltura();
+    chamarApi('/api/resposta-uso', { id: r.id }).catch(() => {});
+  }
+  $('bt-atalhos').addEventListener('click', () => { if (!$('atalhos').hidden) { $('atalhos').hidden = true; return; } atalhoTodos = true; abrirAtalhos(''); $('resposta').focus(); });
+  $('resposta').addEventListener('blur', () => setTimeout(() => { if (!atalhoTodos) $('atalhos').hidden = true; }, 150));
+
+  // ================= Formulário genérico (produto, agência, resposta) =================
+  function abrirForm(titulo, campos, salvar, extra) {
+    $('f-tit').textContent = titulo;
+    const box = $('f-campos'); box.textContent = '';
+    const ref = {};
+    campos.forEach(c => {
+      let inp;
+      if (c.tipo === 'select') inp = el('select', {}, c.opcoes.map(([v, t]) => el('option', { value: v, text: t, selected: String(c.valor ?? '') === String(v) })));
+      else if (c.tipo === 'textarea') { inp = el('textarea', { placeholder: c.dica || '' }); inp.value = c.valor || ''; }
+      else if (c.tipo === 'check') { inp = el('input', { type: 'checkbox', checked: !!c.valor }); box.append(el('label', { class: 'campo-check' }, inp, c.rotulo)); ref[c.k] = inp; return; }
+      else inp = el('input', { type: c.tipo || 'text', value: c.valor ?? '', placeholder: c.dica || '', ...(c.at || {}) });
+      ref[c.k] = inp;
+      box.append(el('label', { class: 'campo' + (c.largo ? ' largo' : '') }, c.rotulo, inp));
+    });
+    const fechar = () => { $('f-fundo').hidden = true; $('form-modal').hidden = true; };
+    const ok = el('button', { class: 'btn btn-enviar', type: 'button', text: 'Salvar', onclick: async () => {
+      const v = Object.fromEntries(Object.entries(ref).map(([k, i]) => [k, i.type === 'checkbox' ? i.checked : i.value]));
+      ok.setAttribute('disabled', '');
+      try { await salvar(v); fechar(); } catch (e) { toast(e.message); } finally { ok.removeAttribute('disabled'); }
+    } });
+    $('f-acoes').replaceChildren(ok, ...(extra ? [extra(fechar)] : []), el('button', { class: 'btn btn-editar', type: 'button', text: 'Cancelar', onclick: fechar }));
+    $('f-fundo').hidden = false; $('form-modal').hidden = false;
+    const primeiro = box.querySelector('input,textarea,select'); if (primeiro) primeiro.focus();
+    $('f-fundo').onclick = fechar;
+  }
+
+  // ================= Produtos =================
+  const TIPO_RESERVA = { ativ: 'Atividade com horário', terc: 'Serviço de terceiro', simples: 'Simples, sem horário' };
+  let produtos = [];
+  async function carregarProdutos() {
+    const { data, error } = await sb.from('produtos').select('*').order('ativo', { ascending: false }).order('prioridade');
+    const box = $('prod-grade'); box.textContent = '';
+    if (error) { box.append(el('div', { class: 'vazio', text: 'Os produtos ainda não estão no banco: falta rodar a migração 009 no Supabase.' })); return; }
+    produtos = data || [];
+    produtos.forEach(p => box.append(el('div', { class: 'cartao item-cartao' + (p.ativo ? '' : ' inativo') },
+      el('h3', {}, p.nome, el('small', { text: p.codigo })),
+      el('span', { class: 'preco', text: p.preco }),
+      p.descricao ? el('p', { text: p.descricao }) : null,
+      p.regras ? el('p', { text: 'Regras: ' + p.regras }) : null,
+      el('p', { text: TIPO_RESERVA[p.tipo_reserva] + (p.quando_oferecer ? ' · oferecer: ' + p.quando_oferecer : '') + (p.antecedencia_dias ? ' · ' + p.antecedencia_dias + ' dias de antecedência' : '') + ' · prioridade ' + p.prioridade }),
+      el('div', { class: 'acoes' }, el('button', { class: 'btn-mini', type: 'button', text: 'Editar', onclick: () => formProduto(p) }),
+        el('button', { class: 'btn-mini', type: 'button', text: p.ativo ? 'Pausar (o Gilberto deixa de oferecer)' : 'Reativar', onclick: async () => { try { await chamarApi('/api/produto', { id: p.id, ativo: !p.ativo }); toast(p.ativo ? 'Produto pausado.' : 'Produto reativado.'); carregarProdutos(); } catch (e) { toast(e.message); } } })))));
+  }
+  function formProduto(p) {
+    p = p || {};
+    abrirForm(p.id ? 'Editar produto' : 'Novo produto', [
+      { k: 'nome', rotulo: 'Nome', valor: p.nome, largo: true },
+      { k: 'codigo', rotulo: 'Código', valor: p.codigo, at: { maxlength: '8' } },
+      { k: 'preco', rotulo: 'Preço (como o cliente lê)', valor: p.preco, dica: 'R$ 170 por pessoa' },
+      { k: 'descricao', rotulo: 'Descrição', tipo: 'textarea', valor: p.descricao, largo: true },
+      { k: 'regras', rotulo: 'Regras (idade, altura, restrições)', valor: p.regras, largo: true },
+      { k: 'tipo_reserva', rotulo: 'Como se reserva', tipo: 'select', valor: p.tipo_reserva || 'simples', opcoes: Object.entries(TIPO_RESERVA) },
+      { k: 'quando_oferecer', rotulo: 'Quando oferecer', tipo: 'select', valor: p.quando_oferecer || 'Na cotação', opcoes: ['Na cotação', '3 dias antes da chegada', 'Durante a estadia', 'Cotação e estadia'].map(x => [x, x]) },
+      { k: 'antecedencia_dias', rotulo: 'Antecedência mínima (dias)', tipo: 'number', valor: p.antecedencia_dias ?? 0, at: { min: '0' } },
+      { k: 'prioridade', rotulo: 'Prioridade (1 = oferecer primeiro)', tipo: 'number', valor: p.prioridade ?? 9, at: { min: '0' } },
+    ], async v => { await chamarApi('/api/produto', { ...(p.id ? { id: p.id } : {}), ...v }); toast('Produto salvo. O Gilberto passa a usar em até 1 minuto.'); carregarProdutos(); });
+  }
+  $('prod-novo').addEventListener('click', () => formProduto(null));
+
+  // ================= Agências =================
+  let agencias = [];
+  async function carregarAgencias() {
+    const { data, error } = await sb.from('agencias').select('*').order('ativo', { ascending: false }).order('nome');
+    if (error) { $('ag-grade').replaceChildren(el('div', { class: 'vazio', text: 'As agências ainda não estão no banco: falta rodar a migração 009 no Supabase.' })); return; }
+    agencias = data || []; pintarAgencias();
+  }
+  function pintarAgencias() {
+    const q = semAcento($('ag-busca').value.trim());
+    const ls = agencias.filter(a => !q || semAcento([a.nome, a.cnpj, a.telefone, a.email].join(' ')).includes(q));
+    const box = $('ag-grade'); box.textContent = '';
+    if (!ls.length) box.append(el('div', { class: 'vazio', text: agencias.length ? 'Nenhuma agência com essa busca.' : 'Nenhuma agência cadastrada ainda.' }));
+    ls.forEach(a => box.append(el('div', { class: 'cartao item-cartao' + (a.ativo ? '' : ' inativo') },
+      el('h3', {}, a.nome, a.codigo_silbeck ? el('small', { text: 'Silbeck ' + a.codigo_silbeck }) : null),
+      el('p', { text: [a.cnpj ? 'CNPJ ' + a.cnpj : '', a.comissao != null ? 'Comissão ' + Number(a.comissao).toLocaleString('pt-BR') + '%' : ''].filter(Boolean).join(' · ') || 'Sem CNPJ' }),
+      el('p', { text: [a.telefone, a.email].filter(Boolean).join(' · ') || 'Sem contato' }),
+      a.observacoes ? el('p', { text: a.observacoes }) : null,
+      el('div', { class: 'acoes' }, el('button', { class: 'btn-mini', type: 'button', text: 'Editar', onclick: () => formAgencia(a) }),
+        el('button', { class: 'btn-mini', type: 'button', text: a.ativo ? 'Desativar' : 'Reativar', onclick: async () => { try { await chamarApi('/api/agencia', { id: a.id, ativo: !a.ativo }); carregarAgencias(); } catch (e) { toast(e.message); } } })))));
+  }
+  function formAgencia(a) {
+    a = a || {};
+    abrirForm(a.id ? 'Editar agência' : 'Nova agência', [
+      { k: 'nome', rotulo: 'Nome fantasia', valor: a.nome, largo: true },
+      { k: 'cnpj', rotulo: 'CNPJ', valor: a.cnpj, dica: '00.000.000/0000-00' },
+      { k: 'comissao', rotulo: 'Comissão (%)', tipo: 'number', valor: a.comissao ?? '', at: { min: '0', max: '100', step: '0.5' } },
+      { k: 'telefone', rotulo: 'WhatsApp do contato', tipo: 'tel', valor: a.telefone },
+      { k: 'email', rotulo: 'E-mail de reservas', tipo: 'email', valor: a.email },
+      { k: 'codigo_silbeck', rotulo: 'Código no Silbeck (se já tiver)', valor: a.codigo_silbeck },
+      { k: 'observacoes', rotulo: 'Observações', tipo: 'textarea', valor: a.observacoes, largo: true },
+    ], async v => { await chamarApi('/api/agencia', { ...(a.id ? { id: a.id } : {}), ...v }); toast('Agência salva.'); carregarAgencias(); });
+  }
+  $('ag-nova').addEventListener('click', () => formAgencia(null));
+  $('ag-busca').addEventListener('input', pintarAgencias);
+
+  // ================= Ajustes do agente =================
+  let subAtual = 'rev', revFiltro = 'pendente';
+  function abrirSub(sub) {
+    subAtual = sub;
+    document.querySelectorAll('[data-painel="ajustes"] .segmento [data-sub]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.sub === sub)));
+    document.querySelectorAll('[data-painel="ajustes"] .sub').forEach(x => { x.hidden = x.dataset.sub !== sub; });
+    if (sub === 'rev') carregarRevisao();
+    if (sub === 'bib') carregarRespostas().then(pintarBiblioteca);
+  }
+  document.querySelector('[data-painel="ajustes"] .segmento').addEventListener('click', e => { const b = e.target.closest('[data-sub]'); if (b) abrirSub(b.dataset.sub); });
+
+  // Revisão das sugestões
+  const SIT = { pendente: 'Para revisar', usada: 'Usada', descartada: 'Descartada', aprovada: 'Aprovada', reprovada: 'Reprovada' };
+  async function contarRevisao() {
+    const { count } = await sb.from('sugestoes').select('id', { count: 'exact', head: true }).eq('situacao', 'pendente');
+    $('qtd-rev').hidden = !count; $('qtd-rev').textContent = count || 0;
+  }
+  async function carregarRevisao() {
+    const box = $('rev-lista'); box.textContent = 'Carregando…';
+    let q = sb.from('sugestoes').select('*,conversa:conversas(id,contato:contatos(nome))').order('criado_em', { ascending: false }).limit(60);
+    if (revFiltro === 'pendente') q = q.eq('situacao', 'pendente');
+    if (revFiltro === 'revisadas') q = q.neq('situacao', 'pendente');
+    const [{ data, error }, semana] = await Promise.all([q, sb.from('sugestoes').select('situacao').gte('criado_em', new Date(Date.now() - 7 * 864e5).toISOString()).limit(1000)]);
+    box.textContent = '';
+    if (error) { box.append(el('div', { class: 'vazio', text: 'A revisão ainda não está no banco: falta rodar a migração 009 no Supabase.' })); return; }
+    const sem = semana.data || [];
+    const boas = sem.filter(x => x.situacao === 'usada' || x.situacao === 'aprovada').length, ruins = sem.filter(x => x.situacao === 'descartada' || x.situacao === 'reprovada').length;
+    $('rev-resumo').replaceChildren(
+      el('span', {}, el('b', { class: 'num', text: String(sem.filter(x => x.situacao === 'pendente').length) }), 'para revisar na semana'),
+      el('span', {}, el('b', { class: 'num', text: boas + ruins ? Math.round(100 * boas / (boas + ruins)) + '%' : '–' }), 'de acerto na semana (meta 90%)'),
+      el('span', {}, el('b', { class: 'num', text: String(sem.length) }), 'sugestões em 7 dias'));
+    if (!(data || []).length) box.append(el('div', { class: 'vazio', text: revFiltro === 'pendente' ? 'Nada para revisar agora. 🌿' : 'Nenhuma sugestão aqui.' }));
+    (data || []).forEach(sg => {
+      const nome = sg.conversa && sg.conversa.contato && sg.conversa.contato.nome || 'Cliente';
+      const f = sg.ferramentas || {};
+      const usou = [(f.cotacoes || []).length ? 'Silbeck (' + (f.cotacoes[0].fonte === 'simulador' ? 'simulador' : 'real') + ')' : '', (f.orcamentos || []).length ? 'orçamento' : '', (f.fotos || []).length ? f.fotos.length + ' foto(s)' : ''].filter(Boolean).join(' · ');
+      const motivos = el('div', { class: 'motivos', hidden: true }, 'Por quê?', ['Informação errada', 'Tom', 'Faltou vender', 'Devia passar para a equipe', 'Outro'].map(m => el('button', { class: 'chip', type: 'button', text: m, onclick: () => revisar(sg, 'reprovada', m) })));
+      box.append(el('div', { class: 'rev-item' },
+        el('div', { class: 'topo-rev' }, el('b', { text: nome }), el('span', { text: dia(sg.criado_em) + ' ' + hora(sg.criado_em) }), el('span', { class: 'sit sit-' + sg.situacao, text: SIT[sg.situacao] + (sg.motivo ? ': ' + sg.motivo : '') }),
+          sg.conversa ? el('button', { class: 'btn-mini', type: 'button', text: 'Abrir conversa', onclick: () => { irPara('conversas'); abrir(sg.conversa.id); } }) : null),
+        sg.pergunta ? el('div', { class: 'pergunta', text: 'Cliente: “' + sg.pergunta + '”' }) : null,
+        el('div', { class: 'resposta', text: baloes(sg.mensagem).join('\n\n') }),
+        sg.notas_internas || usou ? el('div', { class: 'base', text: [usou ? 'Usou: ' + usou : '', sg.notas_internas ? 'Notas: ' + sg.notas_internas : ''].filter(Boolean).join(' · ') }) : null,
+        el('div', { class: 'acoes' },
+          el('button', { class: 'btn btn-enviar', type: 'button', text: '✓ Aprovar', onclick: () => revisar(sg, 'aprovada') }),
+          el('button', { class: 'btn btn-descartar', type: 'button', text: '✕ Reprovar', onclick: () => { motivos.hidden = !motivos.hidden; } }),
+          el('button', { class: 'btn btn-editar', type: 'button', text: 'Virar resposta de referência', onclick: () => formResposta({ pergunta: sg.pergunta || '', resposta: sg.mensagem }) })),
+        motivos));
+    });
+  }
+  async function revisar(sg, situacao, motivo) {
+    try { await chamarApi('/api/sugestao', { id: sg.id, situacao, motivo }); toast(situacao === 'aprovada' ? 'Aprovada.' : 'Reprovada: ' + motivo + '.'); carregarRevisao(); contarRevisao(); } catch (e) { toast(e.message); }
+  }
+  $('rev-filtros').addEventListener('click', e => {
+    const b = e.target.closest('[data-rf]'); if (!b) return;
+    revFiltro = b.dataset.rf;
+    document.querySelectorAll('#rev-filtros [data-rf]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    carregarRevisao();
+  });
+
+  // Biblioteca de respostas
+  function pintarBiblioteca() {
+    const box = $('bib-lista'); box.textContent = '';
+    if (!respostas.length) box.append(el('div', { class: 'vazio', text: 'Nenhuma resposta ainda. Cadastre as perguntas mais comuns (como chegar, horários, pet…) ou transforme uma sugestão boa do Gilberto em referência, na Revisão.' }));
+    respostas.forEach(r => box.append(el('div', { class: 'cartao item-cartao' },
+      el('h3', {}, r.pergunta, r.atalho ? el('small', { text: '/' + r.atalho }) : null),
+      el('p', { style: 'white-space:pre-wrap;color:var(--cor-texto)', text: r.resposta }),
+      el('p', { text: [r.fixa ? 'Fixa: o Gilberto envia exatamente este texto' : 'Referência para o Gilberto', r.valida_ate ? 'válida até ' + fmtData(r.valida_ate) + '/' + r.valida_ate.slice(0, 4) : '', r.usos + (r.usos === 1 ? ' uso' : ' usos')].filter(Boolean).join(' · ') }),
+      el('div', { class: 'acoes' }, el('button', { class: 'btn-mini', type: 'button', text: 'Editar', onclick: () => formResposta(r) }),
+        el('button', { class: 'btn-mini', type: 'button', text: 'Remover', onclick: async () => { if (!confirm('Remover esta resposta da biblioteca?')) return; try { await chamarApi('/api/resposta', { id: r.id, ativo: false }); toast('Resposta removida.'); carregarRespostas(); } catch (e) { toast(e.message); } } })))));
+  }
+  function formResposta(r) {
+    r = r || {};
+    abrirForm(r.id ? 'Editar resposta' : 'Nova resposta', [
+      { k: 'pergunta', rotulo: 'Quando o cliente perguntar', valor: r.pergunta, largo: true, dica: 'Fica longe do centro?' },
+      { k: 'resposta', rotulo: 'Responder (use {nome} para o primeiro nome do cliente)', tipo: 'textarea', valor: r.resposta, largo: true },
+      { k: 'atalho', rotulo: 'Atalho para a equipe (opcional)', valor: r.atalho, dica: 'local' },
+      { k: 'valida_ate', rotulo: 'Válida até (opcional)', tipo: 'date', valor: r.valida_ate },
+      { k: 'fixa', rotulo: 'Resposta fixa: o Gilberto envia exatamente este texto, sem reescrever', tipo: 'check', valor: r.fixa },
+    ], async v => { await chamarApi('/api/resposta', { ...(r.id ? { id: r.id } : {}), ...v }); toast('Resposta salva.'); carregarRespostas(); });
+  }
+  $('bib-novo').addEventListener('click', () => formResposta(null));
+
+  // Testar o agente
+  let teste = [];
+  function pintarTeste() {
+    const box = $('tes-msgs'); box.textContent = '';
+    if (!teste.length) box.append(el('div', { class: 'vazio', text: 'Ex.: “Oi! Tem vaga de 20 a 22/11 para 2 adultos e uma criança de 6 anos?”' }));
+    teste.forEach(m => box.append(m.de === 'nota' ? el('div', { class: 'aviso-sim', text: m.texto }) : el('div', { class: 'balao ' + (m.de === 'hotel' ? 'saida ia' : 'entrada') }, m.de === 'hotel' ? el('div', { class: 'autor', text: 'Gilberto' }) : null, linkar(m.texto))));
+    box.scrollTop = box.scrollHeight;
+  }
+  async function enviarTeste() {
+    const t = $('tes-txt').value.trim(); if (!t) return;
+    teste.push({ de: 'cliente', texto: t }); $('tes-txt').value = ''; pintarTeste();
+    $('tes-enviar').setAttribute('disabled', ''); $('tes-enviar').textContent = 'Pensando…';
+    try {
+      const j = await chamarApi('/api/testar', { mensagens: teste.filter(m => m.de !== 'nota') });
+      baloes(j.mensagem).forEach(b => teste.push({ de: 'hotel', texto: b }));
+      const nota = [j.simulador ? 'Valores do simulador (fictícios).' : '', j.precisa_equipe ? 'Ele passaria para a equipe.' : '', (j.fotos || []).length ? 'Mandaria ' + j.fotos.length + ' foto(s).' : '', j.notas_internas ? 'Notas: ' + j.notas_internas : ''].filter(Boolean).join(' ');
+      if (nota) teste.push({ de: 'nota', texto: nota });
+    } catch (e) { teste.push({ de: 'nota', texto: e.message }); }
+    finally { $('tes-enviar').removeAttribute('disabled'); $('tes-enviar').textContent = 'Enviar'; pintarTeste(); }
+  }
+  $('tes-enviar').addEventListener('click', enviarTeste);
+  $('tes-txt').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); enviarTeste(); } });
+  $('tes-limpar').addEventListener('click', () => { teste = []; pintarTeste(); });
+  pintarTeste();
 
   // ================= Funil, ficha do negócio e tarefas (etapa B) =================
   const ETAPAS = [['novo', 'Novo', 'p-novo', '--cat-novo'], ['atend', 'Em atendimento', 'p-atend', '--cat-atend'], ['orc', 'Orçamento enviado', 'p-orc', '--cat-orc'],

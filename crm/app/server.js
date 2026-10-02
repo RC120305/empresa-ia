@@ -437,6 +437,22 @@ async function enviarFotosPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   return { ok: true, enviadas };
 }
 
+// ---------- Catálogo (produtos e biblioteca de respostas), lido do banco a cada minuto ----------
+let catalogoCache = null;
+async function catalogo(buscar = fetch) {
+  if (catalogoCache && catalogoCache.ate > Date.now()) return catalogoCache.v;
+  if (!bancoLigado()) return null;
+  const hoje = new Date().toISOString().slice(0, 10);
+  const [p, r] = await Promise.all([
+    buscar(`${SUPABASE_URL}/rest/v1/produtos?ativo=eq.true&select=codigo,nome,descricao,preco,tipo_reserva,regras,quando_oferecer,antecedencia_dias,prioridade&order=prioridade`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
+    buscar(`${SUPABASE_URL}/rest/v1/respostas?ativo=eq.true&or=(valida_ate.is.null,valida_ate.gte.${hoje})&select=id,pergunta,resposta,fixa&order=usos.desc&limit=80`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
+  ]);
+  const v = { produtos: p && p.ok ? await p.json().catch(() => []) : [], respostas: r && r.ok ? await r.json().catch(() => []) : [] };
+  catalogoCache = { v, ate: Date.now() + 60000 };
+  return v;
+}
+const limparCatalogo = () => { catalogoCache = null; };
+
 // ---------- Ficha, equipe, cotação e orçamento pela caixa (equipe logada) ----------
 async function lerCorpo(req, limite = 64e3) {
   const partes = []; let t = 0;
@@ -575,6 +591,95 @@ const API_EQUIPE = {
       body: JSON.stringify({ negocio_id: negocio, texto: evento, por: eu.nome }), signal: AbortSignal.timeout(5000) }).catch(() => {});
     return { ok: true };
   },
+  // Produtos (atividades e extras): o Gilberto e a página do orçamento usam esta lista
+  'POST /api/produto': async corpo => {
+    const dados = {};
+    for (const k of ['nome', 'descricao', 'preco', 'regras', 'quando_oferecer']) if (corpo[k] !== undefined) dados[k] = String(corpo[k] || '').trim().slice(0, k === 'descricao' ? 600 : 200) || null;
+    if (corpo.codigo !== undefined) dados.codigo = String(corpo.codigo || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+    if (corpo.tipo_reserva !== undefined) { if (!['ativ', 'terc', 'simples'].includes(corpo.tipo_reserva)) throw new ErroEnvio(400, 'Tipo inválido.'); dados.tipo_reserva = corpo.tipo_reserva; }
+    for (const k of ['antecedencia_dias', 'prioridade']) if (corpo[k] !== undefined) { const v = parseInt(corpo[k], 10); if (!(v >= 0 && v < 400)) throw new ErroEnvio(400, 'Número inválido.'); dados[k] = v; }
+    if (corpo.ativo !== undefined) dados.ativo = !!corpo.ativo;
+    if (corpo.id) {
+      if (!/^[0-9a-f-]{36}$/i.test(corpo.id)) throw new ErroEnvio(400, 'Produto inválido.');
+      if (dados.nome === null || dados.preco === null || dados.codigo === '') throw new ErroEnvio(400, 'Nome, código e preço são obrigatórios.');
+      await patchBanco('produtos', `id=eq.${corpo.id}`, { ...dados, atualizado_em: new Date().toISOString() });
+    } else {
+      if (!dados.nome || !dados.preco || !dados.codigo) throw new ErroEnvio(400, 'Nome, código e preço são obrigatórios.');
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/produtos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(dados), signal: AbortSignal.timeout(5000) });
+      if (r.status === 409) throw new ErroEnvio(409, 'Já existe um produto com esse código.');
+      if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar (o banco precisa da migração 009?).');
+    }
+    limparCatalogo();
+    return { ok: true };
+  },
+  // Agências e operadoras parceiras
+  'POST /api/agencia': async corpo => {
+    const dados = {};
+    for (const k of ['nome', 'cnpj', 'telefone', 'email', 'codigo_silbeck', 'observacoes']) if (corpo[k] !== undefined) dados[k] = String(corpo[k] || '').trim().slice(0, k === 'observacoes' ? 2000 : 160) || null;
+    if (dados.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dados.email)) throw new ErroEnvio(400, 'E-mail inválido.');
+    if (corpo.comissao !== undefined) { const c = corpo.comissao === '' || corpo.comissao === null ? null : Number(corpo.comissao); if (c !== null && !(c >= 0 && c <= 100)) throw new ErroEnvio(400, 'Comissão de 0 a 100%.'); dados.comissao = c; }
+    if (corpo.ativo !== undefined) dados.ativo = !!corpo.ativo;
+    if (corpo.id) {
+      if (!/^[0-9a-f-]{36}$/i.test(corpo.id)) throw new ErroEnvio(400, 'Agência inválida.');
+      if (dados.nome === null) throw new ErroEnvio(400, 'Diga o nome da agência.');
+      await patchBanco('agencias', `id=eq.${corpo.id}`, { ...dados, atualizado_em: new Date().toISOString() });
+    } else {
+      if (!dados.nome) throw new ErroEnvio(400, 'Diga o nome da agência.');
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/agencias`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(dados), signal: AbortSignal.timeout(5000) });
+      if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar (o banco precisa da migração 009?).');
+    }
+    return { ok: true };
+  },
+  // Biblioteca de respostas (atalhos "/" da equipe, respostas fixas e de referência do Gilberto)
+  'POST /api/resposta': async (corpo, eu) => {
+    const dados = {};
+    if (corpo.pergunta !== undefined) dados.pergunta = String(corpo.pergunta || '').trim().slice(0, 300);
+    if (corpo.resposta !== undefined) dados.resposta = String(corpo.resposta || '').trim().slice(0, 4000);
+    if (corpo.atalho !== undefined) dados.atalho = String(corpo.atalho || '').trim().toLowerCase().replace(/^\//, '').replace(/[^a-z0-9à-ú_-]/g, '').slice(0, 30) || null;
+    if (corpo.fixa !== undefined) dados.fixa = !!corpo.fixa;
+    if (corpo.valida_ate !== undefined) { if (corpo.valida_ate && !/^\d{4}-\d{2}-\d{2}$/.test(corpo.valida_ate)) throw new ErroEnvio(400, 'Data inválida.'); dados.valida_ate = corpo.valida_ate || null; }
+    if (corpo.ativo !== undefined) dados.ativo = !!corpo.ativo;
+    if (corpo.id) {
+      if (!/^[0-9a-f-]{36}$/i.test(corpo.id)) throw new ErroEnvio(400, 'Resposta inválida.');
+      if (dados.pergunta === '' || dados.resposta === '') throw new ErroEnvio(400, 'Pergunta e resposta são obrigatórias.');
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/respostas?id=eq.${corpo.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ ...dados, atualizado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) });
+      if (r.status === 409) throw new ErroEnvio(409, 'Esse atalho já está em uso.');
+      if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar.');
+    } else {
+      if (!dados.pergunta || !dados.resposta) throw new ErroEnvio(400, 'Pergunta e resposta são obrigatórias.');
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/respostas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ ...dados, criado_por: eu.id }), signal: AbortSignal.timeout(5000) });
+      if (r.status === 409) throw new ErroEnvio(409, 'Esse atalho já está em uso.');
+      if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar (o banco precisa da migração 009?).');
+    }
+    limparCatalogo();
+    return { ok: true };
+  },
+  'POST /api/resposta-uso': async corpo => {
+    if (!/^[0-9a-f-]{36}$/i.test(String(corpo.id || ''))) throw new ErroEnvio(400, 'Resposta inválida.');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/respostas?id=eq.${corpo.id}&select=usos`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const atual = r.ok ? (await r.json())[0] : null;
+    if (atual) await patchBanco('respostas', `id=eq.${corpo.id}`, { usos: (atual.usos || 0) + 1 });
+    return { ok: true };
+  },
+  // Revisão das sugestões do Gilberto: usada, descartada (com motivo), aprovada ou reprovada
+  'POST /api/sugestao': async (corpo, eu) => {
+    if (!/^[0-9a-f-]{36}$/i.test(String(corpo.id || ''))) throw new ErroEnvio(400, 'Sugestão inválida.');
+    if (!['usada', 'descartada', 'aprovada', 'reprovada'].includes(corpo.situacao)) throw new ErroEnvio(400, 'Situação inválida.');
+    await patchBanco('sugestoes', `id=eq.${corpo.id}`, { situacao: corpo.situacao, motivo: String(corpo.motivo || '').slice(0, 300) || null, revisada_por: eu.id, revisada_em: new Date().toISOString() });
+    return { ok: true };
+  },
+  // Testar o agente: conversa de mentira, sem WhatsApp e sem gravar orçamento
+  'POST /api/testar': async corpo => {
+    const msgs = Array.isArray(corpo.mensagens) ? corpo.mensagens.slice(-30) : [];
+    if (!msgs.length) throw new ErroEnvio(400, 'Escreva a mensagem do cliente.');
+    const historico = msgs.map((m, i) => ({ direcao: m.de === 'hotel' ? 'saida' : 'entrada', tipo: 'text', corpo: String(m.texto || '').slice(0, 4000), enviada_em: new Date(Date.now() - (msgs.length - i) * 60000).toISOString() }));
+    const executores = {
+      gerar_orcamento: async e => { const c = await silbeck.cotar(e); if (!c.ok) return c; const m = orcamento.montar(e, c); return m.erro ? { ok: false, erro: m.erro } : { ok: true, link: URL_PUBLICA + '/o/TESTE-sem-link-real', fonte: c.fonte, opcoes: m.opcoes, aviso: 'Teste: nenhum orçamento foi gravado.' }; },
+      enviar_fotos: async e => { const f = orcamento.escolherFotos(e); return f.length ? { ok: true, modo: 'sugestao', fotos: f.map(x => ({ arquivo: x.arquivo, descricao: x.descricao })) } : { ok: false, erro: 'Sem foto na biblioteca para esse pedido.' }; },
+    };
+    try { return { ok: true, ...(await gilberto.sugerir(historico, { canal: 'wa', nome: String(corpo.nome || 'Cliente de teste') }, executores, await catalogo())) }; }
+    catch (e) { if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message); throw e; }
+  },
   // Vagas por tipo e dia (painel "Vagas")
   'GET /api/vagas': async (corpo, eu, url) => silbeck.vagas(url.searchParams.get('inicio'), url.searchParams.get('dias')),
 };
@@ -625,7 +730,7 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
   if (!bancoLigado()) throw new ErroEnvio(503, 'O banco ainda não está configurado.');
   const id = String(corpo.conversa_id || '');
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw new ErroEnvio(400, 'Conversa inválida.');
-  await autenticarEquipe(tokenUsuario, buscar);
+  const eu = await autenticarEquipe(tokenUsuario, buscar);
   if (sugerindo.has(id)) throw new ErroEnvio(429, 'Já estou preparando uma sugestão para esta conversa.');
   sugerindo.add(id);
   try {
@@ -650,7 +755,15 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
           : { ok: false, erro: 'Não há foto na biblioteca para esse pedido. Não prometa foto: ofereça descrever ou avise a equipe nas notas_internas.' };
       },
     };
-    return { ok: true, ...(await gilberto.sugerir(historico, { canal: conv.canal, nome }, executores)) };
+    const r = await gilberto.sugerir(historico, { canal: conv.canal, nome }, executores, await catalogo(buscar));
+    // Registro para a revisão (Ajustes do agente): o que o cliente perguntou e o que o Gilberto sugeriu
+    const ultimaDoCliente = [...historico].reverse().find(m => m.direcao === 'entrada');
+    const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ conversa_id: conv.id, pergunta: ultimaDoCliente ? String(ultimaDoCliente.transcricao || ultimaDoCliente.corpo || '[' + ultimaDoCliente.tipo + ']').slice(0, 2000) : null,
+        mensagem: r.mensagem, notas_internas: r.notas_internas, precisa_equipe: r.precisa_equipe, modelo: r.modelo,
+        ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo) }, pedida_por: eu.id }) }).catch(() => null);
+    const sugestaoId = reg && reg.ok ? ((await reg.json().catch(() => []))[0] || {}).id : null;
+    return { ok: true, ...r, sugestao_id: sugestaoId || null };
   } catch (e) {
     if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message);
     throw e;
@@ -702,7 +815,7 @@ const servidor = http.createServer((req, res) => {
         if (!o) { res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', ...cabecalhosSeguranca() }); return res.end('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hotel Cabanas</title><p style="font-family:sans-serif;padding:24px">Orçamento não encontrado. Fale com a gente pelo WhatsApp que enviamos um novo.</p>'); }
         if (!previa) await rpc('registrar_abertura_orcamento', { p_token: token }).catch(() => {}); // antes de responder: no Cloud Run a CPU para depois da resposta
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow', ...cabecalhosSeguranca() });
-        res.end(orcamento.pagina(o, { previa }));
+        res.end(orcamento.pagina(o, { previa, produtos: ((await catalogo().catch(() => null)) || {}).produtos }));
       }).catch(() => { res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Página indisponível agora. Tente de novo em instantes.'); });
       return;
     }
