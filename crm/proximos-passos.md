@@ -39,6 +39,7 @@
 4. **Prompt de sistema do Gilberto para o CRM**, gerado a partir de `.claude/agents/gilberto-vendas.md` + base de conhecimento.
 
 ## 2c. Para estudar no futuro
+- **"Digitando…" no WhatsApp (02/10/2026):** o CRM pede o indicador à Meta antes de cada balão e a Meta responde `success: true`, mas no **número de teste** o balão de digitando não aparece no celular do dono. Conferir no **99117** (número real) logo na troca; se não aparecer, abrir chamado com a Meta. Os balões já saem um por vez, com pausa proporcional ao texto.
 - **Lançamento automático na comanda** (dono, 01/10/2026): ver se o sistema de contas e comandas do hotel aceita lançamentos automáticos (API ou importação), para o CRM lançar a massagem sozinho e acabar com a tarefa manual "Lançar na comanda". Conversar com o Márcio depois da fase 3.
 
 ## 3. Especificação técnica
