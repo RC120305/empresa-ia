@@ -184,6 +184,7 @@
     const abertaJ = !!fim && fim > new Date();
     $('resposta').disabled = !abertaJ;
     $('enviar').toggleAttribute('disabled', !abertaJ);
+    $('anexar').toggleAttribute('disabled', !abertaJ);
     $('resposta').placeholder = abertaJ ? 'Escreva a resposta…' : 'Janela de 24 h fechada';
     $('resposta').title = abertaJ ? 'No computador, Enter envia e Shift+Enter quebra a linha. Uma linha só com --- separa os balões.' : 'Fora da janela de 24 h, só modelos aprovados pela Meta (próxima etapa).';
     if (!fim) { j.textContent = ''; j.className = 'janela'; return; }
@@ -203,6 +204,13 @@
     b.className = 'balao ' + (m.direcao === 'saida' ? 'saida' : 'entrada');
     b.dataset.id = m.id;
     if (m.tipo === 'text' || m.tipo === 'button' || m.tipo === 'interactive') b.textContent = m.corpo || '';
+    else if (COM_ARQUIVO.has(m.tipo)) {
+      const caixa = document.createElement('span'); caixa.className = 'midia'; caixa.dataset.midia = m.id; caixa.dataset.tipo = m.tipo;
+      const st = document.createElement('span'); st.className = 'm-status'; st.textContent = ROTULO[m.tipo] + '…';
+      caixa.append(st); b.append(caixa);
+      if (m.corpo) { const l = document.createElement('span'); l.className = 'legenda'; l.textContent = m.corpo; b.append(l); }
+      vigiarMidia(caixa);
+    }
     else { const em = document.createElement('em'); em.textContent = textoMsg(m); b.append(em); }
     const s = document.createElement('small');
     s.textContent = hora(m.enviada_em) + (m.direcao === 'saida' && m.status_entrega ? ' · ' + (STATUS[m.status_entrega] || m.status_entrega) : '');
@@ -210,6 +218,65 @@
     box.append(b);
     return d;
   }
+  // ---------- Fotos, vídeos, áudios e documentos ----------
+  // O arquivo vem do servidor do CRM com o login da pessoa e vira um endereço blob: só nesta aba.
+  // Carrega só quando o balão aparece na tela e guarda na memória (a lista é redesenhada de tempos em tempos).
+  const COM_ARQUIVO = new Set(['image', 'video', 'audio', 'document', 'sticker']);
+  const arquivos = new Map(); // id da mensagem -> Promise<{url, nome, mime}>
+  const observador = 'IntersectionObserver' in window
+    ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { observador.unobserve(e.target); carregarMidia(e.target); } }), { rootMargin: '300px' })
+    : null;
+  const vigiarMidia = el => (observador ? observador.observe(el) : carregarMidia(el));
+
+  function buscarArquivo(id) {
+    if (!arquivos.has(id)) {
+      const p = (async () => {
+        const { data: { session } } = await sb.auth.getSession();
+        const r = await fetch('/api/midia/' + id, { headers: { Authorization: 'Bearer ' + (session ? session.access_token : '') } });
+        if (!r.ok) { const j = await r.json().catch(() => ({})); const e = new Error(j.erro || 'Não deu para abrir.'); e.http = r.status; throw e; }
+        const nome = (/filename="([^"]+)"/.exec(r.headers.get('content-disposition') || '') || [])[1] || 'arquivo';
+        const blob = await r.blob();
+        return { url: URL.createObjectURL(blob), nome, mime: blob.type };
+      })();
+      p.catch(() => arquivos.delete(id)); // erro: tenta de novo na próxima vez
+      arquivos.set(id, p);
+    }
+    return arquivos.get(id);
+  }
+
+  async function carregarMidia(caixa) {
+    const tipo = caixa.dataset.tipo;
+    let a;
+    try { a = await buscarArquivo(caixa.dataset.midia); } catch (e) {
+      const st = caixa.querySelector('.m-status');
+      if (st) {
+        st.textContent = ROTULO[tipo] + (e.http === 404 ? ' (arquivo não guardado)' : ' · toque para tentar de novo');
+        if (e.http !== 404) st.onclick = () => { st.onclick = null; st.textContent = ROTULO[tipo] + '…'; carregarMidia(caixa); };
+      }
+      return;
+    }
+    caixa.textContent = '';
+    const baixar = texto => { const l = document.createElement('a'); l.href = a.url; l.download = a.nome; l.className = 'm-baixar'; l.textContent = texto; return l; };
+    if ((tipo === 'image' || tipo === 'sticker') && /^image\//.test(a.mime)) {
+      const img = document.createElement('img'); img.src = a.url; img.alt = tipo === 'sticker' ? 'Figurinha' : 'Foto';
+      img.addEventListener('click', () => window.open(a.url, '_blank', 'noopener'));
+      img.addEventListener('load', manterNoFim);
+      caixa.append(img);
+    } else if (tipo === 'video' && /^video\//.test(a.mime)) {
+      const v = document.createElement('video'); v.src = a.url; v.controls = true; v.preload = 'metadata'; v.playsInline = true;
+      v.addEventListener('loadedmetadata', manterNoFim);
+      caixa.append(v, baixar('Baixar vídeo'));
+    } else if (tipo === 'audio' && /^audio\//.test(a.mime)) {
+      const au = document.createElement('audio'); au.src = a.url; au.controls = true; au.preload = 'metadata';
+      // O áudio do WhatsApp é .ogg; alguns iPhones antigos não tocam: o link de baixar fica como reserva.
+      caixa.append(au, baixar('Baixar áudio'));
+    } else {
+      caixa.append(baixar('📄 ' + a.nome));
+    }
+  }
+  // Se a pessoa está no fim da conversa, continua no fim quando a foto termina de carregar.
+  function manterNoFim() { const box = $('mensagens'); if (box.scrollHeight - box.scrollTop - box.clientHeight < 400) rolarFim(); }
+
   const rolarFim = () => { const box = $('mensagens'); box.scrollTop = box.scrollHeight; };
 
   // ---------- Enviar ----------
@@ -274,6 +341,71 @@
     }
   }
   $('enviar').addEventListener('click', enviar);
+
+  // ---------- Enviar arquivo (📎) ----------
+  // O texto do campo vai como legenda (exceto áudio). Foto acima de 5 MB ou em outro formato é convertida para JPG.
+  $('anexar').addEventListener('click', () => { if (!enviando && aberta) $('arquivo').click(); });
+  $('arquivo').addEventListener('change', async () => {
+    const f = $('arquivo').files[0];
+    $('arquivo').value = '';
+    if (f) await enviarArquivo(f);
+  });
+
+  async function prepararFoto(f) {
+    if (/^image\/(jpeg|png)$/.test(f.type) && f.size <= 5 * 1024 * 1024) return f;
+    const bmp = await createImageBitmap(f);
+    const k = Math.min(1, 2560 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas');
+    c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    const blob = await new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.85));
+    if (!blob) throw new Error('Não consegui preparar a foto.');
+    return new File([blob], f.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' });
+  }
+
+  async function enviarArquivo(f0) {
+    if (enviando || !aberta) return;
+    const aviso = t => { $('aviso-envio').textContent = t; $('aviso-envio').hidden = !t; };
+    const legenda = $('resposta').value.trim();
+    if (/\[\[[^\]]*\]\]/.test(legenda)) { aviso('Complete os trechos entre [[ ]] da legenda antes de enviar.'); return; }
+    if (baloes(legenda).length > 1) { aviso('A legenda vai junto com o arquivo, num balão só: tire as linhas com ---.'); return; }
+    let f = f0;
+    if (/^image\//.test(f.type)) {
+      try { f = await prepararFoto(f); } catch (e) { aviso('Este formato de foto não deu para enviar. Use JPG ou PNG.'); return; }
+    }
+    if (f.size > 16 * 1024 * 1024) { aviso('Arquivo grande demais (máximo 16 MB).'); return; }
+    enviando = true;
+    const id = aberta;
+    aviso('');
+    $('anexar').setAttribute('disabled', ''); $('enviar').setAttribute('disabled', '');
+    $('enviar').textContent = 'Enviando arquivo…';
+    $('resposta').disabled = true;
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const q = new URLSearchParams({ conversa_id: id, nome: f.name || 'arquivo', legenda });
+      const r = await fetch('/api/enviar-midia?' + q, {
+        method: 'POST', body: f,
+        headers: { 'Content-Type': f.type || 'application/octet-stream', Authorization: 'Bearer ' + (session ? session.access_token : '') },
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.ok) throw new Error(j.erro || 'Não deu para enviar o arquivo. Tente de novo.');
+      if (j.id) arquivos.set(j.id, Promise.resolve({ url: URL.createObjectURL(f), nome: f.name, mime: f.type })); // já mostra sem baixar de novo
+      if (aberta === id && j.id && !$('mensagens').querySelector('[data-id="' + j.id + '"]')) {
+        const dias = $('mensagens').querySelectorAll('.dia');
+        adicionarMensagem({ id: j.id, direcao: 'saida', tipo: j.tipo, corpo: j.corpo, status_entrega: 'sent', enviada_em: j.enviada_em }, dias.length ? dias[dias.length - 1].textContent : '');
+        rolarFim();
+      }
+      $('resposta').value = '';
+    } catch (e) {
+      aviso(e.message);
+    } finally {
+      $('enviar').textContent = 'Enviar';
+      $('resposta').disabled = false;
+      enviando = false;
+      ajustarAltura();
+      pintarJanela(conversas.find(x => x.id === aberta));
+    }
+  }
 
   // ---------- Sugestão do Gilberto ----------
   async function sugerir() {

@@ -12,14 +12,40 @@ const FAKE = {
   '/auth/v1/user': req => req.headers.authorization === 'Bearer token-equipe' ? { email: 'equipe@teste.com' }
     : req.headers.authorization === 'Bearer token-estranho' ? { email: 'estranho@teste.com' } : null,
 };
+const guardados = new Map(); // "Storage" falso: caminho -> {dados, mime}
+const MSG_MIDIA = '33333333-3333-3333-3333-333333333333';
 const falso = http.createServer((req, res) => {
-  let corpo = '';
-  req.on('data', p => (corpo += p));
+  const pedacos = [];
+  req.on('data', p => pedacos.push(p));
   req.on('end', () => {
-    chamadas.push({ url: req.url, apikey: req.headers.apikey, corpo: corpo ? JSON.parse(corpo) : null });
+    const bruto = Buffer.concat(pedacos);
+    const corpo = bruto.toString();
+    let json = null;
+    try { json = corpo ? JSON.parse(corpo) : null; } catch { json = { bruto: corpo, tipo: req.headers['content-type'] }; }
+    chamadas.push({ url: req.url, metodo: req.method, apikey: req.headers.apikey, corpo: json });
     if (bancoQuebrado) { res.writeHead(503); return res.end(); }
     if (req.url.startsWith('/rest/v1/rpc/registrar_status')) { res.writeHead(204); return res.end(); }
     const responder = (cod, obj) => { res.writeHead(cod, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); };
+    if (req.url === '/graph/midia9') return responder(200, { url: process.env.SUPABASE_URL + 'cdn/midia9', mime_type: 'image/jpeg' });
+    if (req.url === '/cdn/midia9') { res.writeHead(200, { 'Content-Type': 'image/jpeg' }); return res.end('FOTO-JPEG'); }
+    if (req.url.startsWith('/storage/v1/object/midias/') && req.method === 'POST') {
+      guardados.set(req.url.slice('/storage/v1/object/midias/'.length), { dados: bruto, mime: req.headers['content-type'] });
+      return responder(200, { Key: 'ok' });
+    }
+    if (req.url.startsWith('/storage/v1/object/authenticated/midias/')) {
+      const g = guardados.get(req.url.slice('/storage/v1/object/authenticated/midias/'.length));
+      if (!g) return responder(404, { error: 'not_found' });
+      res.writeHead(200, { 'Content-Type': g.mime }); return res.end(g.dados);
+    }
+    if (req.url.startsWith('/rest/v1/mensagens?id=eq.')) {
+      if (req.method === 'PATCH') { res.writeHead(204); return res.end(); }
+      const patch = chamadas.findLast(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/mensagens?id=eq.' + MSG_MIDIA));
+      return responder(200, req.url.includes(MSG_MIDIA) ? [{ id: MSG_MIDIA, conversa_id: '11111111-1111-1111-1111-111111111111', tipo: 'image', midia_id: 'midia9',
+        midia_caminho: patch ? patch.corpo.midia_caminho : null, midia_mime: patch ? patch.corpo.midia_mime : null, midia_nome: null }] : []);
+    }
+    if (req.url === '/rest/v1/rpc/registrar_entrada_whatsapp') return responder(200, { nova: true, mensagem_id: MSG_MIDIA, conversa_id: '11111111-1111-1111-1111-111111111111' });
+    if (req.url === '/graph/111/media') return responder(200, { id: 'midia-subida' });
+    if (req.url === '/rest/v1/rpc/registrar_saida_midia') return responder(200, '44444444-4444-4444-4444-444444444444');
     if (req.url === '/auth/v1/user') { const u = FAKE['/auth/v1/user'](req); return u ? responder(200, u) : responder(401, { msg: 'invalid' }); }
     if (req.url === '/rest/v1/rpc/equipe_por_email') { const b = JSON.parse(corpo); return responder(200, b.p_email === 'equipe@teste.com' ? [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }] : []); }
     if (req.url.startsWith('/rest/v1/conversas?')) return responder(200, [{ id: '11111111-1111-1111-1111-111111111111', canal: 'wa', numero_id: '111',
@@ -93,6 +119,11 @@ falso.listen(0, () => {
     assert.equal(r.status, 200);
     const img = chamadas.find(c => c.corpo && c.corpo.p_wamid === 'wamid.C');
     assert.equal(img.corpo.p_corpo, 'olha a foto'); assert.equal(img.corpo.p_midia_id, 'midia9');
+    // A foto é baixada da Meta, guardada no Storage e anotada na mensagem
+    const caminhoFoto = '11111111-1111-1111-1111-111111111111/' + MSG_MIDIA + '.jpg';
+    assert.equal(String(guardados.get(caminhoFoto) && guardados.get(caminhoFoto).dados), 'FOTO-JPEG');
+    const anot = chamadas.find(c => c.metodo === 'PATCH' && c.url === '/rest/v1/mensagens?id=eq.' + MSG_MIDIA);
+    assert.deepEqual(anot.corpo, { midia_caminho: caminhoFoto, midia_mime: 'image/jpeg' });
     const st = chamadas.find(c => c.url === '/rest/v1/rpc/registrar_status_whatsapp');
     assert.deepEqual(st.corpo, { p_wamid: 'wamid.B', p_status: 'read', p_erro: null });
 
@@ -156,6 +187,51 @@ falso.listen(0, () => {
     janelaAberta = false;
     r = await enviar('token-equipe', { conversa_id: conv, texto: 'oi' });
     assert.equal(r.status, 409); assert.ok((await r.json()).erro.includes('24 h'));
+    janelaAberta = true;
+
+    // Mídias na caixa: abrir só com login da equipe; tipos perigosos viram download
+    const midia = (tok, id) => fetch(base + '/api/midia/' + id, { headers: tok ? { Authorization: 'Bearer ' + tok } : {} });
+    r = await midia('token-equipe', MSG_MIDIA);
+    assert.equal(r.status, 200);
+    assert.equal(r.headers.get('content-type'), 'image/jpeg');
+    assert.ok(r.headers.get('content-disposition').startsWith('inline'));
+    assert.equal(await r.text(), 'FOTO-JPEG');
+    assert.equal((await midia(null, MSG_MIDIA)).status, 401);
+    assert.equal((await midia('token-estranho', MSG_MIDIA)).status, 403);
+    assert.equal((await midia('token-equipe', '55555555-5555-5555-5555-555555555555')).status, 404);
+    assert.equal((await midia('token-equipe', '..%2F..%2Fsegredo')).status, 400);
+    guardados.set('11111111-1111-1111-1111-111111111111/' + MSG_MIDIA + '.jpg', { dados: Buffer.from('<script>'), mime: 'text/html' });
+    chamadas.push({ url: '/rest/v1/mensagens?id=eq.' + MSG_MIDIA, metodo: 'PATCH', corpo: { midia_caminho: caminhoFoto, midia_mime: 'text/html' } });
+    r = await midia('token-equipe', MSG_MIDIA);
+    assert.equal(r.headers.get('content-type'), 'application/octet-stream');
+    assert.ok(r.headers.get('content-disposition').startsWith('attachment'));
+
+    // Enviar arquivo pelo 📎: sobe na Meta, manda, guarda no Storage e registra
+    const enviarArq = (tok, q, corpo, tipo) => fetch(base + '/api/enviar-midia?' + new URLSearchParams(q),
+      { method: 'POST', headers: { ...(tok ? { Authorization: 'Bearer ' + tok } : {}), 'Content-Type': tipo }, body: corpo });
+    r = await enviarArq('token-equipe', { conversa_id: conv, nome: 'chale.jpg', legenda: 'Nosso chalé 🌿' }, 'BYTES-FOTO', 'image/jpeg');
+    const ea = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(ea));
+    assert.equal(ea.id, '44444444-4444-4444-4444-444444444444'); assert.equal(ea.tipo, 'image');
+    const up = chamadas.findLast(c => c.url === '/graph/111/media');
+    assert.ok(up.corpo.bruto.includes('BYTES-FOTO') && up.corpo.tipo.startsWith('multipart/form-data'));
+    const envImg = chamadas.findLast(c => c.url === '/graph/111/messages' && c.corpo.type === 'image');
+    assert.deepEqual(envImg.corpo, { messaging_product: 'whatsapp', recipient_type: 'individual', to: '5567999990000', type: 'image', image: { id: 'midia-subida', caption: 'Nosso chalé 🌿' } });
+    const regM = chamadas.findLast(c => c.url === '/rest/v1/rpc/registrar_saida_midia').corpo;
+    assert.ok(regM.p_caminho.startsWith(conv + '/saida-') && regM.p_caminho.endsWith('.jpg'));
+    assert.equal(String(guardados.get(regM.p_caminho).dados), 'BYTES-FOTO');
+    assert.equal(regM.p_autor, 'u-1'); assert.equal(regM.p_nome, null);
+    // PDF vai como documento com nome
+    r = await enviarArq('token-equipe', { conversa_id: conv, nome: 'tarifario.pdf' }, '%PDF-1.4', 'application/pdf');
+    assert.equal(r.status, 200);
+    assert.deepEqual(chamadas.findLast(c => c.url === '/graph/111/messages').corpo.document, { id: 'midia-subida', filename: 'tarifario.pdf' });
+    assert.equal((await enviarArq(null, { conversa_id: conv }, 'x', 'image/jpeg')).status, 401);
+    assert.equal((await enviarArq('token-estranho', { conversa_id: conv }, 'x', 'image/jpeg')).status, 403);
+    assert.equal((await enviarArq('token-equipe', { conversa_id: conv }, '', 'image/jpeg')).status, 400);
+    assert.equal((await enviarArq('token-equipe', { conversa_id: conv }, Buffer.alloc(6 * 1024 * 1024), 'image/jpeg')).status, 413);
+    assert.equal((await enviarArq('token-equipe', { conversa_id: conv }, Buffer.alloc(17 * 1024 * 1024), 'video/mp4')).status, 413);
+    janelaAberta = false;
+    assert.equal((await enviarArq('token-equipe', { conversa_id: conv }, 'x', 'image/jpeg')).status, 409);
     janelaAberta = true;
 
     const { numeroParaEnvio } = require('./server');

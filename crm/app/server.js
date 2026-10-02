@@ -34,7 +34,7 @@ for (const [rota, arquivo] of [['/caixa', 'caixa.html'], ['/caixa.css', 'caixa.c
 function cabecalhosSeguranca() {
   const sup = SUPABASE_URL ? `${SUPABASE_URL} ${SUPABASE_URL.replace(/^https:/, 'wss:')}` : '';
   return {
-    'Content-Security-Policy': `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ${sup}; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'`,
+    'Content-Security-Policy': `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; frame-src 'self' blob:; connect-src 'self' ${sup}; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'`,
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'no-referrer',
     'X-Frame-Options': 'DENY',
@@ -110,12 +110,17 @@ async function registrar(evento, buscar = fetch) {
         recentes.unshift(item);
         if (bancoLigado()) {
           const midia = m[m.type];
-          await rpc('registrar_entrada_whatsapp', {
+          const res = await rpc('registrar_entrada_whatsapp', {
             p_numero_id: numeroId, p_de: m.from, p_nome: nomes[m.from] || null, p_wamid: m.id, p_tipo: m.type,
             p_corpo: corpoDe(m) || null, p_midia_id: (midia && midia.id) || null,
             p_quando: m.timestamp ? new Date(Number(m.timestamp) * 1000).toISOString() : null,
           }, buscar);
           item.gravado = true; gravadas++;
+          // Foto, áudio, vídeo, documento: guarda já uma cópia (a Meta apaga em 30 dias). Se falhar, a tela busca depois.
+          if (midia && midia.id && res && res.nova && WA_TOKEN) {
+            await guardarMidia({ id: res.mensagem_id, conversa_id: res.conversa_id, midia_id: midia.id, midia_nome: midia.filename || null }, buscar)
+              .catch(e => console.warn(JSON.stringify({ evento: 'midia_nao_guardada', erro: String(e.message || e).slice(0, 200) })));
+          }
         }
       }
       for (const s of v.statuses || []) {
@@ -197,16 +202,65 @@ async function enviarTexto(conv, para, texto, autor, buscar) {
   return { id, wamid, corpo: texto, enviada_em: new Date().toISOString() };
 }
 
-// Envia 1 ou mais balões (texto separado por uma linha só com ---), um por vez, com "digitando…" antes de cada um.
-async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
-  if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
-  const bruto = Array.isArray(corpo.baloes) ? corpo.baloes : [typeof corpo.texto === 'string' ? corpo.texto : ''];
-  const baloes = bruto.map(b => String(b || '').trim()).filter(b => b && !/^[-–—\s]+$/.test(b)); // ignora balão só de traços
-  if (!baloes.length || baloes.length > 6 || baloes.some(b => b.length > 4096)) throw new ErroEnvio(400, 'Envie de 1 a 6 balões, cada um com até 4.096 caracteres.');
-  if (!/^[0-9a-f-]{36}$/i.test(String(corpo.conversa_id || ''))) throw new ErroEnvio(400, 'Conversa inválida.');
-  const equipe = await autenticarEquipe(tokenUsuario, buscar);
+// ---------- Mídias (fotos, vídeos, áudios, documentos) ----------
+const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'video/mp4': 'mp4', 'video/3gpp': '3gp',
+  'audio/ogg': 'ogg', 'audio/mpeg': 'mp3', 'audio/mp4': 'm4a', 'audio/aac': 'aac', 'audio/amr': 'amr', 'application/pdf': 'pdf' };
+const mimeBase = m => String(m || '').split(';')[0].trim().toLowerCase();
+const extDe = mime => EXT[mimeBase(mime)] || 'bin';
+// O que a tela pode abrir dentro da página. O resto vai como download (nunca HTML/SVG com o endereço do CRM).
+const MIME_SEGURO = /^(image\/(jpeg|png|webp|gif)|video\/(mp4|3gpp)|audio\/(ogg|mpeg|mp4|aac|amr)|application\/pdf)$/;
+const LIMITE_MIDIA = 16 * 1024 * 1024;
 
-  const c = await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${corpo.conversa_id}&select=id,canal,numero_id,ultima_msg_cliente_em,contato:contatos(contato_identificadores(tipo,valor))`,
+async function baixarDaMeta(midiaId, buscar) {
+  const info = await buscar(`${GRAPH}/${encodeURIComponent(midiaId)}`, { headers: { Authorization: 'Bearer ' + WA_TOKEN }, signal: AbortSignal.timeout(8000) });
+  if (!info.ok) throw new Error('meta mídia ' + info.status);
+  const j = await info.json();
+  const arq = await buscar(j.url, { headers: { Authorization: 'Bearer ' + WA_TOKEN }, signal: AbortSignal.timeout(20000) });
+  if (!arq.ok) throw new Error('meta download ' + arq.status);
+  return { dados: Buffer.from(await arq.arrayBuffer()), mime: mimeBase(j.mime_type || arq.headers.get('content-type')) || 'application/octet-stream' };
+}
+async function gravarNoStorage(caminho, dados, mime, buscar) {
+  const h = cabecalhosBanco(); delete h['Content-Type'];
+  const r = await buscar(`${SUPABASE_URL}/storage/v1/object/midias/${caminho}`, {
+    method: 'POST', headers: { ...h, 'Content-Type': mime, 'x-upsert': 'true' }, body: dados, signal: AbortSignal.timeout(20000) });
+  if (!r.ok) throw new Error('storage ' + r.status + ' ' + (await r.text().catch(() => '')).slice(0, 150));
+}
+async function lerDoStorage(caminho, buscar) {
+  const h = cabecalhosBanco(); delete h['Content-Type'];
+  const r = await buscar(`${SUPABASE_URL}/storage/v1/object/authenticated/midias/${caminho}`, { headers: h, signal: AbortSignal.timeout(20000) });
+  if (!r.ok) throw new Error('storage ' + r.status);
+  return Buffer.from(await r.arrayBuffer());
+}
+// Baixa da Meta, guarda no Storage e anota na mensagem. Devolve os bytes.
+async function guardarMidia(msg, buscar = fetch) {
+  const { dados, mime } = await baixarDaMeta(msg.midia_id, buscar);
+  const caminho = `${msg.conversa_id}/${msg.id}.${extDe(mime)}`;
+  await gravarNoStorage(caminho, dados, mime, buscar);
+  await buscar(`${SUPABASE_URL}/rest/v1/mensagens?id=eq.${msg.id}`, {
+    method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
+    body: JSON.stringify({ midia_caminho: caminho, midia_mime: mime, ...(msg.midia_nome ? { midia_nome: msg.midia_nome } : {}) }),
+    signal: AbortSignal.timeout(5000),
+  });
+  return { dados, mime };
+}
+// Entrega o arquivo de uma mensagem para a tela (só equipe). Usa a cópia guardada; se ainda não houver, busca na Meta.
+async function midiaParaEquipe(tokenUsuario, mensagemId, buscar = fetch) {
+  if (!/^[0-9a-f-]{36}$/i.test(mensagemId)) throw new ErroEnvio(400, 'Mensagem inválida.');
+  await autenticarEquipe(tokenUsuario, buscar);
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/mensagens?id=eq.${mensagemId}&select=id,conversa_id,tipo,midia_id,midia_caminho,midia_mime,midia_nome`,
+    { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+  const msg = r.ok ? (await r.json())[0] : null;
+  if (!msg || (!msg.midia_caminho && !msg.midia_id)) throw new ErroEnvio(404, 'Arquivo não encontrado.');
+  if (msg.midia_caminho) return { dados: await lerDoStorage(msg.midia_caminho, buscar), mime: msg.midia_mime, nome: msg.midia_nome };
+  if (!WA_TOKEN) throw new ErroEnvio(503, 'O WhatsApp ainda não está configurado.');
+  const g = await guardarMidia(msg, buscar).catch(() => null) || await baixarDaMeta(msg.midia_id, buscar);
+  return { dados: g.dados, mime: g.mime, nome: msg.midia_nome };
+}
+
+// Conversa pronta para receber mensagem: confere canal, janela de 24 h e WhatsApp do contato.
+async function carregarConversaParaEnvio(conversaId, buscar) {
+  if (!/^[0-9a-f-]{36}$/i.test(String(conversaId || ''))) throw new ErroEnvio(400, 'Conversa inválida.');
+  const c = await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${conversaId}&select=id,canal,numero_id,ultima_msg_cliente_em,contato:contatos(contato_identificadores(tipo,valor))`,
     { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
   const conv = c.ok ? (await c.json())[0] : null;
   if (!conv) throw new ErroEnvio(404, 'Conversa não encontrada.');
@@ -215,17 +269,69 @@ async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   if (Date.now() - ultima > JANELA_MS) throw new ErroEnvio(409, 'A janela de 24 h fechou: fora dela a Meta só aceita modelos aprovados.');
   const wa = ((conv.contato && conv.contato.contato_identificadores) || []).find(i => i.tipo === 'whatsapp');
   if (!wa) throw new ErroEnvio(400, 'Este contato não tem WhatsApp.');
-
   const u = await buscar(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${conv.id}&direcao=eq.entrada&select=id_externo&order=enviada_em.desc&limit=1`,
     { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
   const wamidCliente = u && u.ok ? ((await u.json())[0] || {}).id_externo : null;
+  return { conv, para: numeroParaEnvio(wa.valor), wamidCliente };
+}
+
+// Envia um arquivo do aparelho da equipe: sobe na Meta, manda a mensagem e guarda a cópia no Storage.
+async function enviarMidiaPelaEquipe(tokenUsuario, params, dados, mimeEnviado, buscar = fetch) {
+  if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
+  if (!dados.length) throw new ErroEnvio(400, 'Arquivo vazio.');
+  if (dados.length > LIMITE_MIDIA) throw new ErroEnvio(413, 'Arquivo grande demais (máximo 16 MB).');
+  const equipe = await autenticarEquipe(tokenUsuario, buscar);
+  const { conv, para } = await carregarConversaParaEnvio(params.get('conversa_id'), buscar);
+  const mime = mimeBase(mimeEnviado) || 'application/octet-stream';
+  const tipo = /^image\/(jpeg|png)$/.test(mime) ? 'image' : /^video\/(mp4|3gpp)$/.test(mime) ? 'video' : /^audio\//.test(mime) ? 'audio' : 'document';
+  if (tipo === 'image' && dados.length > 5 * 1024 * 1024) throw new ErroEnvio(413, 'Foto grande demais (máximo 5 MB).');
+  const nome = String(params.get('nome') || 'arquivo').replace(/[^\w.\- ()À-ú]/g, '_').slice(0, 120);
+  const legenda = String(params.get('legenda') || '').trim().slice(0, 1024);
+
+  const form = new FormData();
+  form.append('messaging_product', 'whatsapp');
+  form.append('type', mime);
+  form.append('file', new Blob([dados], { type: mime }), nome);
+  const up = await buscar(`${GRAPH}/${encodeURIComponent(conv.numero_id)}/media`, { method: 'POST', headers: { Authorization: 'Bearer ' + WA_TOKEN }, body: form, signal: AbortSignal.timeout(30000) });
+  const upj = await up.json().catch(() => ({}));
+  if (!up.ok || !upj.id) {
+    const e = upj.error || {};
+    ultimoErroMeta = { quando: new Date().toISOString(), http: up.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
+    throw new ErroEnvio(502, 'A Meta não aceitou o arquivo' + (e.code ? ` (código ${e.code})` : '') + '. Confira o formato (foto JPG/PNG, vídeo MP4, PDF).');
+  }
+  const conteudo = { id: upj.id };
+  if (legenda && tipo !== 'audio') conteudo.caption = legenda;
+  if (tipo === 'document') conteudo.filename = nome;
+  const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: para, type: tipo, [tipo]: conteudo }, buscar);
+  if (!r.ok || !r.json.messages || !r.json.messages[0]) {
+    const e = r.json.error || {};
+    ultimoErroMeta = { quando: new Date().toISOString(), http: r.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
+    throw new ErroEnvio(502, 'A Meta não aceitou o envio' + (e.code ? ` (código ${e.code})` : '') + '.');
+  }
+  const wamid = r.json.messages[0].id;
+  const caminho = `${conv.id}/saida-${crypto.randomUUID()}.${extDe(mime)}`;
+  let guardado = caminho;
+  try { await gravarNoStorage(caminho, dados, mime, buscar); } catch (e) { guardado = null; console.warn(JSON.stringify({ evento: 'midia_saida_nao_guardada', erro: String(e.message).slice(0, 150) })); }
+  const id = await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: wamid, p_tipo: tipo, p_legenda: legenda, p_caminho: guardado, p_mime: mime, p_nome: tipo === 'document' ? nome : null, p_autor: equipe.id }, buscar);
+  return { ok: true, id, wamid, tipo, corpo: legenda, enviada_em: new Date().toISOString() };
+}
+
+// Envia 1 ou mais balões (texto separado por uma linha só com ---), um por vez, com "digitando…" antes de cada um.
+async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
+  if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
+  const bruto = Array.isArray(corpo.baloes) ? corpo.baloes : [typeof corpo.texto === 'string' ? corpo.texto : ''];
+  const baloes = bruto.map(b => String(b || '').trim()).filter(b => b && !/^[-–—\s]+$/.test(b)); // ignora balão só de traços
+  if (!baloes.length || baloes.length > 6 || baloes.some(b => b.length > 4096)) throw new ErroEnvio(400, 'Envie de 1 a 6 balões, cada um com até 4.096 caracteres.');
+  if (!/^[0-9a-f-]{36}$/i.test(String(corpo.conversa_id || ''))) throw new ErroEnvio(400, 'Conversa inválida.');
+  const equipe = await autenticarEquipe(tokenUsuario, buscar);
+  const { conv, para, wamidCliente } = await carregarConversaParaEnvio(corpo.conversa_id, buscar);
 
   const enviadas = [];
   for (const texto of baloes) {
     await mostrarDigitando(conv, wamidCliente, buscar);
     await esperar(tempoDigitacao(texto));
     try {
-      enviadas.push(await enviarTexto(conv, numeroParaEnvio(wa.valor), texto, equipe.id, buscar));
+      enviadas.push(await enviarTexto(conv, para, texto, equipe.id, buscar));
     } catch (e) {
       if (enviadas.length && e instanceof ErroEnvio) { e.enviadas = enviadas; } // a tela sabe o que já saiu
       throw e;
@@ -304,6 +410,41 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
+  if (url.pathname.startsWith('/api/midia/') && req.method === 'GET') {
+    const auth = req.headers.authorization || '';
+    if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
+    midiaParaEquipe(auth.slice(7), url.pathname.slice('/api/midia/'.length))
+      .then(({ dados, mime, nome }) => {
+        const seguro = MIME_SEGURO.test(mimeBase(mime));
+        res.writeHead(200, {
+          'Content-Type': seguro ? mimeBase(mime) : 'application/octet-stream',
+          'Content-Disposition': (seguro ? 'inline' : 'attachment') + '; filename="' + String(nome || 'arquivo.' + extDe(mime)).replace(/[^\w.\- ]/g, '_') + '"',
+          'Cache-Control': 'private, max-age=3600', 'X-Content-Type-Options': 'nosniff', ...cabecalhosSeguranca(),
+        });
+        res.end(dados);
+      })
+      .catch(e => json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Não deu para abrir o arquivo.' }));
+    return;
+  }
+
+  if (url.pathname === '/api/enviar-midia' && req.method === 'POST') {
+    const auth = req.headers.authorization || '';
+    if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
+    const partes = [];
+    let tamanho = 0, grande = false;
+    req.on('data', p => { tamanho += p.length; if (tamanho > LIMITE_MIDIA) { grande = true; } else partes.push(p); });
+    req.on('end', () => {
+      if (grande) return json(res, 413, { ok: false, erro: 'Arquivo grande demais (máximo 16 MB).' });
+      enviarMidiaPelaEquipe(auth.slice(7), url.searchParams, Buffer.concat(partes), req.headers['content-type'])
+        .then(r => json(res, 200, r))
+        .catch(e => {
+          if (!(e instanceof ErroEnvio)) console.error(JSON.stringify({ evento: 'falha_envio_midia', erro: String(e.message || e).slice(0, 200) }));
+          json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Não deu para enviar o arquivo.' });
+        });
+    });
+    return;
+  }
+
   if ((url.pathname === '/api/enviar' || url.pathname === '/api/sugerir') && req.method === 'POST') {
     const auth = req.headers.authorization || '';
     if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
@@ -342,4 +483,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => console.log('CRM Cabanas ouvindo na porta ' + porta));
-module.exports = { servidor, assinaturaValida, registrar, corpoDe, numeroParaEnvio };
+module.exports = { servidor, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe };
