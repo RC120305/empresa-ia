@@ -31,6 +31,13 @@ main{max-width:560px;margin:0 auto;padding-block:20px 40px;padding-inline:16px;d
 .pontos{display:flex;justify-content:center;gap:6px;margin-top:-22px;position:relative;padding-bottom:10px}
 .pontos i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.6)}
 .pontos i.on{background:#fff}
+.galeria{position:relative}
+.seta{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:50%;background:rgba(255,255,255,.88);color:#2b2b2b;font-size:28px;line-height:36px;text-align:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);padding:0}
+.seta:hover{background:#fff}
+.seta:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.seta.ant{left:10px}
+.seta.prox{right:10px}
+.pontos i{cursor:pointer}
 .corpo{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px}
 .selo{align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--verde-suave);color:var(--verde)}
 .op h2{font-family:var(--f-tit);font-size:23px;margin:0;font-weight:600}

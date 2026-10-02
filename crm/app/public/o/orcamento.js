@@ -2,9 +2,38 @@
 (function () {
   'use strict';
   const token = document.body.dataset.token;
+  // Galeria: arrastar com o dedo, setas (‹ ›) e pontos clicáveis
   document.querySelectorAll('.fotos').forEach(f => {
     const p = f.nextElementSibling && f.nextElementSibling.classList.contains('pontos') ? f.nextElementSibling : null;
-    if (p) f.addEventListener('scroll', () => { const k = Math.round(f.scrollLeft / f.clientWidth); [...p.children].forEach((d, i) => { d.className = i === k ? 'on' : ''; }); }, { passive: true });
+    const n = f.children.length;
+    if (n < 2) return;
+    const caixa = document.createElement('div');
+    caixa.className = 'galeria';
+    f.parentNode.insertBefore(caixa, f);
+    caixa.appendChild(f);
+    if (p) caixa.appendChild(p);
+    const atual = () => Math.round(f.scrollLeft / f.clientWidth);
+    const ir = k => f.scrollTo({ left: Math.max(0, Math.min(n - 1, k)) * f.clientWidth, behavior: 'smooth' });
+    const seta = (cls, txt, rotulo, passo) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'seta ' + cls; b.textContent = txt; b.setAttribute('aria-label', rotulo);
+      b.addEventListener('click', () => ir(atual() + passo));
+      caixa.appendChild(b);
+      return b;
+    };
+    const ant = seta('ant', '‹', 'Foto anterior', -1), prox = seta('prox', '›', 'Próxima foto', 1);
+    const pintar = () => {
+      const k = atual();
+      if (p) [...p.children].forEach((d, i) => { d.className = i === k ? 'on' : ''; });
+      ant.hidden = k <= 0; prox.hidden = k >= n - 1;
+    };
+    if (p) {
+      p.removeAttribute('aria-hidden');
+      [...p.children].forEach((d, i) => { d.setAttribute('role', 'button'); d.setAttribute('aria-label', 'Foto ' + (i + 1)); d.addEventListener('click', () => ir(i)); });
+    }
+    f.addEventListener('keydown', e => { if (e.key === 'ArrowRight') { e.preventDefault(); ir(atual() + 1); } if (e.key === 'ArrowLeft') { e.preventDefault(); ir(atual() - 1); } });
+    f.addEventListener('scroll', pintar, { passive: true });
+    pintar();
   });
   const passo = document.getElementById('passo');
   const fechar = () => { passo.hidden = true; };
