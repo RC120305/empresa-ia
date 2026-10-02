@@ -544,25 +544,42 @@
     finally { travar(false); }
   }
   let biblioteca = null;
-  const gal = { cat: '', sel: [] };
+  // modo: 'enviar' (escolher e mandar), 'gerenciar' (tirar/devolver fotos), 'drive' (trazer do banco de imagens)
+  const gal = { cat: '', sel: [], modo: 'enviar', pasta: null, drive: null };
+  async function carregarBiblioteca() { biblioteca = (await chamarApi('/api/fotos', null, 'GET')).grupos; }
   async function abrirGaleria() {
     if (!$('galeria').hidden) { fecharGaleria(); return; }
     $('galeria').hidden = false; $('abrir-fotos').setAttribute('aria-expanded', 'true');
-    gal.sel = [];
-    if (!biblioteca) {
-      $('gal-grade').textContent = 'Carregando…';
-      try { biblioteca = (await chamarApi('/api/fotos', null, 'GET')).grupos; } catch (e) { $('gal-grade').textContent = e.message; return; }
-    }
-    gal.cat = gal.cat || (biblioteca[0] && biblioteca[0].grupo) || '';
+    gal.sel = []; gal.modo = 'enviar';
+    $('gal-grade').textContent = 'Carregando…';
+    try { await carregarBiblioteca(); } catch (e) { $('gal-grade').textContent = e.message; return; }
     pintarGaleria();
   }
   function fecharGaleria() { $('galeria').hidden = true; $('abrir-fotos').setAttribute('aria-expanded', 'false'); }
+  const gruposVisiveis = () => biblioteca.filter(g => gal.modo !== 'enviar' || g.fotos.length);
   function pintarGaleria() {
-    const cats = $('gal-cats'), grade = $('gal-grade');
+    if (gal.modo === 'drive') return pintarDrive();
+    const cats = $('gal-cats'), grade = $('gal-grade'), gerenciar = gal.modo === 'gerenciar';
     cats.textContent = ''; grade.textContent = '';
-    if (!biblioteca.length) { grade.append(el('p', { class: 'lat-txt', text: 'A biblioteca de fotos ainda está vazia.' })); return; }
-    biblioteca.forEach(g => cats.append(el('button', { class: 'chip', type: 'button', 'aria-pressed': String(g.grupo === gal.cat), text: g.nome, onclick: () => { gal.cat = g.grupo; pintarGaleria(); } })));
-    const g = biblioteca.find(x => x.grupo === gal.cat) || biblioteca[0];
+    $('gal-gerenciar').textContent = gerenciar ? '✓ Concluir' : '⚙ Gerenciar';
+    $('gal-cont').textContent = gerenciar ? 'Tire fotos da categoria ou traga outras do Drive.' : 'Fotos reais do hotel. Toque para escolher (até 5).';
+    $('gal-enviar').hidden = gerenciar;
+    const grupos = gruposVisiveis();
+    if (!grupos.length) { grade.append(el('p', { class: 'lat-txt', text: 'A biblioteca de fotos ainda está vazia.' })); $('gal-sel').textContent = ''; return; }
+    if (!grupos.some(g => g.grupo === gal.cat)) gal.cat = grupos[0].grupo;
+    grupos.forEach(g => cats.append(el('button', { class: 'chip', type: 'button', 'aria-pressed': String(g.grupo === gal.cat), text: g.nome + (gerenciar ? ' (' + g.fotos.length + ')' : ''), onclick: () => { gal.cat = g.grupo; pintarGaleria(); } })));
+    const g = grupos.find(x => x.grupo === gal.cat);
+    if (gerenciar) {
+      grade.append(el('button', { class: 'gal-item gal-novo', type: 'button', onclick: () => abrirDrive(null) }, el('span', { class: 'gal-mais', text: '+' }), el('span', { class: 'gal-nome', text: 'Trazer do Drive' })));
+      g.fotos.forEach(f => grade.append(el('div', { class: 'gal-item' }, el('img', { src: '/fotos/' + f.arquivo, alt: f.descricao || g.nome, loading: 'lazy' }),
+        el('span', { class: 'gal-nome', text: f.descricao || g.nome }),
+        el('button', { class: 'btn-mini gal-tirar', type: 'button', text: '✕ Tirar', onclick: () => mudarFoto(f, false) }))));
+      (g.removidas || []).forEach(f => grade.append(el('div', { class: 'gal-item fora' }, el('img', { src: '/fotos/' + f.arquivo, alt: f.descricao || g.nome, loading: 'lazy' }),
+        el('span', { class: 'gal-nome', text: 'Fora da biblioteca · ' + (f.descricao || g.nome) }),
+        el('button', { class: 'btn-mini gal-tirar', type: 'button', text: '↩ Devolver', onclick: () => mudarFoto(f, true) }))));
+      $('gal-sel').textContent = g.fotos.length + ' foto(s) em ' + g.nome + '. A página do orçamento mostra as 5 primeiras.';
+      return;
+    }
     g.fotos.forEach(f => {
       const on = gal.sel.includes(f.arquivo);
       grade.append(el('button', { class: 'gal-item', type: 'button', 'aria-pressed': String(on), title: f.descricao || g.nome, onclick: () => {
@@ -575,6 +592,67 @@
     $('gal-enviar').toggleAttribute('disabled', !gal.sel.length);
     $('gal-enviar').textContent = gal.sel.length > 1 ? 'Enviar ' + gal.sel.length + ' fotos' : 'Enviar';
   }
+  async function mudarFoto(f, ativo) {
+    if (!ativo && !confirm('Tirar esta foto da biblioteca? Ela deixa de aparecer no envio, na página do orçamento e para o Gilberto. Dá para devolver depois.')) return;
+    try { await chamarApi('/api/foto-status', { arquivo: f.arquivo, ativo }); await carregarBiblioteca(); gal.sel = gal.sel.filter(x => x !== f.arquivo); pintarGaleria(); toast(ativo ? 'Foto devolvida à biblioteca.' : 'Foto tirada da biblioteca.'); }
+    catch (e) { toast(e.message); }
+  }
+  // ----- Trazer do Drive (banco de imagens do hotel) -----
+  const miniaturas = new Map();
+  function miniatura(id) {
+    if (!miniaturas.has(id)) {
+      const p = (async () => {
+        const r = await fetch('/api/drive/miniatura/' + id, { headers: { Authorization: 'Bearer ' + (await token()) } });
+        if (!r.ok) throw new Error('sem miniatura');
+        return URL.createObjectURL(await r.blob());
+      })();
+      p.catch(() => miniaturas.delete(id));
+      miniaturas.set(id, p);
+    }
+    return miniaturas.get(id);
+  }
+  async function abrirDrive(pasta) {
+    gal.modo = 'drive'; gal.pasta = pasta; gal.drive = null;
+    pintarDrive();
+    try { gal.drive = await chamarApi('/api/drive' + (pasta ? '?pasta=' + encodeURIComponent(pasta) : ''), null, 'GET'); }
+    catch (e) { gal.drive = { erro: e.message }; }
+    if (gal.modo === 'drive' && gal.pasta === pasta) pintarDrive();
+  }
+  function pintarDrive() {
+    const cats = $('gal-cats'), grade = $('gal-grade'), d = gal.drive;
+    const cat = biblioteca.find(g => g.grupo === gal.cat);
+    cats.textContent = ''; grade.textContent = '';
+    $('gal-gerenciar').textContent = '← Voltar';
+    $('gal-cont').textContent = 'Banco de imagens (Drive) → ' + (cat ? cat.nome : '') + '. Toque na foto para trazer.';
+    $('gal-enviar').hidden = true; $('gal-sel').textContent = '';
+    if (!d) { grade.textContent = 'Abrindo o Drive…'; return; }
+    if (d.erro) { grade.append(el('p', { class: 'lat-txt', text: d.erro })); return; }
+    if (!d.pasta.raiz) cats.append(el('button', { class: 'chip', type: 'button', text: '↑ ' + (d.pasta.pai ? 'Pasta de cima' : 'Início'), onclick: () => abrirDrive(d.pasta.pai) }));
+    cats.append(el('span', { class: 'gal-pasta', text: '📁 ' + d.pasta.nome }));
+    d.pastas.forEach(p => grade.append(el('button', { class: 'gal-item gal-novo', type: 'button', onclick: () => abrirDrive(p.id) }, el('span', { class: 'gal-mais', text: '📁' }), el('span', { class: 'gal-nome', text: p.nome }))));
+    d.fotos.forEach(f => {
+      const img = el('img', { alt: f.nome, loading: 'lazy' });
+      miniatura(f.id).then(u => { img.src = u; }).catch(() => { img.alt = 'Sem miniatura: ' + f.nome; });
+      grade.append(el('button', { class: 'gal-item', type: 'button', title: f.nome, onclick: () => formTrazer(f) }, img,
+        el('span', { class: 'gal-nome', text: f.na_biblioteca.length ? 'Já na biblioteca: ' + f.na_biblioteca.join(', ') : f.nome })));
+    });
+    if (!d.pastas.length && !d.fotos.length) grade.append(el('p', { class: 'lat-txt', text: 'Pasta vazia.' }));
+  }
+  function formTrazer(f) {
+    abrirForm('Trazer foto do Drive', [
+      { k: 'grupo', rotulo: 'Categoria', tipo: 'select', valor: gal.cat, opcoes: biblioteca.map(g => [g.grupo, g.nome]) },
+      { k: 'descricao', rotulo: 'O que aparece na foto', tipo: 'textarea', largo: true, dica: 'Ex.: Varanda da Cabana Casal com rede, vista para a mata. O Gilberto usa esta descrição para escolher o que mandar.' },
+      { k: 'etiquetas', rotulo: 'Palavras-chave (separadas por vírgula)', dica: 'varanda, rede, mata', largo: true },
+      { k: 'decoracao', rotulo: 'Mostra a decoração especial (pétalas, balões): opcional e cobrada à parte', tipo: 'check' },
+    ], async v => {
+      toast('Trazendo a foto do Drive…');
+      const j = await chamarApi('/api/foto', { drive_id: f.id, grupo: v.grupo, descricao: v.descricao, etiquetas: v.etiquetas.split(','), decoracao: v.decoracao });
+      await carregarBiblioteca();
+      gal.cat = j.foto.grupo; gal.modo = 'gerenciar'; pintarGaleria();
+      toast('Foto adicionada em ' + ((biblioteca.find(g => g.grupo === j.foto.grupo) || {}).nome || 'categoria') + '.');
+    });
+  }
+  $('gal-gerenciar').addEventListener('click', () => { gal.modo = gal.modo === 'enviar' ? 'gerenciar' : (gal.modo === 'drive' ? 'gerenciar' : 'enviar'); gal.sel = []; pintarGaleria(); });
   $('abrir-fotos').addEventListener('click', abrirGaleria);
   $('gal-fechar').addEventListener('click', fecharGaleria);
   $('gal-enviar').addEventListener('click', async () => { if (await enviarFotos(gal.sel.slice())) { fecharGaleria(); toast('Fotos enviadas pelo WhatsApp.'); } });

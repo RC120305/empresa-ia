@@ -9,6 +9,7 @@ const gilberto = require('./gilberto');
 const silbeck = require('./silbeck');
 const transcricao = require('./transcricao');
 const orcamento = require('./orcamento');
+const drive = require('./drive');
 const path = require('path');
 
 const porta = process.env.PORT || 8080;
@@ -262,9 +263,9 @@ async function midiaParaEquipe(tokenUsuario, mensagemId, buscar = fetch) {
   const msg = r.ok ? (await r.json())[0] : null;
   if (!msg || (!msg.midia_caminho && !msg.midia_id)) throw new ErroEnvio(404, 'Arquivo não encontrado.');
   if (msg.midia_caminho && msg.midia_caminho.startsWith('biblioteca/')) { // foto da biblioteca do hotel, enviada pelo CRM
-    const f = ESTATICOS['/fotos/' + msg.midia_caminho.slice('biblioteca/'.length)];
+    const f = await bytesDaFoto(msg.midia_caminho.slice('biblioteca/'.length), buscar);
     if (!f) throw new ErroEnvio(404, 'Foto não encontrada.');
-    return { dados: f.corpo, mime: f.tipo, nome: msg.midia_caminho.slice(11) };
+    return { dados: f, mime: 'image/jpeg', nome: msg.midia_caminho.slice(11) };
   }
   if (msg.midia_caminho) return { dados: await lerDoStorage(msg.midia_caminho, buscar), mime: msg.midia_mime, nome: msg.midia_nome };
   if (!WA_TOKEN) throw new ErroEnvio(503, 'O WhatsApp ainda não está configurado.');
@@ -415,7 +416,8 @@ async function enviarFotosPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
   const fotos = Array.isArray(corpo.fotos) ? [...new Set(corpo.fotos.map(String))] : [];
   if (!fotos.length || fotos.length > 5) throw new ErroEnvio(400, 'Escolha de 1 a 5 fotos.');
-  if (fotos.some(f => !/^[\w.-]+\.jpg$/.test(f) || !ESTATICOS['/fotos/' + f])) throw new ErroEnvio(400, 'Foto fora da biblioteca do hotel.');
+  await atualizarFotos(buscar);
+  if (fotos.some(f => !/^[\w.-]+\.jpg$/.test(f) || !fotoAtiva(f))) throw new ErroEnvio(400, 'Foto fora da biblioteca do hotel.');
   const legenda = String(corpo.legenda || '').trim().slice(0, 1024);
   const equipe = await autenticarEquipe(tokenUsuario, buscar);
   const { conv, para } = await carregarConversaParaEnvio(corpo.conversa_id, buscar);
@@ -436,6 +438,39 @@ async function enviarFotosPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   }
   return { ok: true, enviadas };
 }
+
+// ---------- Biblioteca de fotos: as fixas (public/fotos) + os ajustes da equipe (tabela fotos_biblioteca) ----------
+// Fotos trazidas do Drive ficam no Storage (midias/biblioteca/<arquivo>) e saem pelo mesmo /fotos/<arquivo>.
+let fotosCache = { ate: 0, linhas: [] };
+async function atualizarFotos(buscar = fetch, forcar = false) {
+  if (!bancoLigado() || (!forcar && fotosCache.ate > Date.now())) return;
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/fotos_biblioteca?select=arquivo,grupo,descricao,etiquetas,decoracao,drive_id,origem,ativo,ordem,criado_em&limit=1000`,
+    { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  if (r && r.ok) fotosCache = { ate: Date.now() + 60000, linhas: await r.json().catch(() => []) };
+  else fotosCache.ate = Date.now() + 60000; // sem a migração 011 (ou banco fora): fica só com as fixas
+  orcamento.definirVivas(fotosCache.linhas);
+}
+const fotoDoDrive = f => fotosCache.linhas.find(v => v.arquivo === f && v.origem === 'drive');
+const fotoAtiva = f => orcamento.biblioteca().some(g => g.fotos.some(x => x.arquivo === f));
+const bytesFotos = new Map();
+async function bytesDaFoto(f, buscar = fetch) {
+  if (ESTATICOS['/fotos/' + f]) return ESTATICOS['/fotos/' + f].corpo;
+  if (!/^[\w.-]+\.jpg$/.test(f)) return null;
+  if (bytesFotos.has(f)) return bytesFotos.get(f);
+  await atualizarFotos(buscar);
+  if (!fotoDoDrive(f)) return null;
+  const dados = await lerDoStorage('biblioteca/' + f, buscar).catch(() => null);
+  if (dados) { if (bytesFotos.size > 80) bytesFotos.delete(bytesFotos.keys().next().value); bytesFotos.set(f, dados); }
+  return dados;
+}
+async function gravarFotoAjuste(linha, buscar = fetch) {
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/fotos_biblioteca?on_conflict=arquivo`, {
+    method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({ ...linha, atualizado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) });
+  if (r.status === 404 || r.status === 400) throw new ErroEnvio(503, 'O banco ainda não tem a tabela das fotos (falta rodar a migração 011 no Supabase).');
+  if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar a foto agora.');
+}
+const errosDrive = fn => async (...a) => { try { return await fn(...a); } catch (e) { if (e instanceof drive.ErroDrive) throw new ErroEnvio(e.http, e.message); throw e; } };
 
 // ---------- Catálogo (produtos e biblioteca de respostas), lido do banco a cada minuto ----------
 let catalogoCache = null;
@@ -692,6 +727,7 @@ const API_EQUIPE = {
   // Testar o agente: conversa de mentira, sem WhatsApp e sem gravar orçamento
   'POST /api/testar': async corpo => {
     const msgs = Array.isArray(corpo.mensagens) ? corpo.mensagens.slice(-30) : [];
+    await atualizarFotos().catch(() => {});
     if (!msgs.length) throw new ErroEnvio(400, 'Escreva a mensagem do cliente.');
     const historico = msgs.map((m, i) => ({ direcao: m.de === 'hotel' ? 'saida' : 'entrada', tipo: 'text', corpo: String(m.texto || '').slice(0, 4000), enviada_em: new Date(Date.now() - (msgs.length - i) * 60000).toISOString() }));
     const executores = {
@@ -700,6 +736,47 @@ const API_EQUIPE = {
     };
     try { return { ok: true, ...(await gilberto.sugerir(historico, { canal: 'wa', nome: String(corpo.nome || 'Cliente de teste') }, executores, await catalogo())) }; }
     catch (e) { if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message); throw e; }
+  },
+  // Banco de imagens no Drive: pastas e fotos (para escolher o que entra na biblioteca)
+  'GET /api/drive': errosDrive(async (corpo, eu, url) => {
+    await atualizarFotos();
+    const l = await drive.listar(url.searchParams.get('pasta') || '');
+    const ja = {};
+    for (const g of orcamento.biblioteca()) for (const f of g.fotos) if (f.drive_id) (ja[f.drive_id] = ja[f.drive_id] || []).push(g.nome);
+    return { ok: true, ...l, fotos: l.fotos.map(f => ({ ...f, na_biblioteca: ja[f.id] || [] })) };
+  }),
+  // Traz uma foto do Drive para uma categoria da biblioteca (recorte 4:3, 1200x900)
+  'POST /api/foto': errosDrive(async (corpo, eu) => {
+    const grupo = String(corpo.grupo || '');
+    if (!orcamento.GRUPOS.includes(grupo)) throw new ErroEnvio(400, 'Escolha a categoria.');
+    if (!drive.idValido(corpo.drive_id)) throw new ErroEnvio(400, 'Escolha a foto do Drive.');
+    const descricao = String(corpo.descricao || '').trim().slice(0, 300);
+    if (descricao.length < 8) throw new ErroEnvio(400, 'Descreva a foto (o Gilberto usa a descrição para escolher o que mandar).');
+    const etiquetas = [...new Set([orcamento.nomeGrupo(grupo).toLowerCase(), ...(Array.isArray(corpo.etiquetas) ? corpo.etiquetas : [])
+      .map(t => String(t).trim().toLowerCase().slice(0, 40)).filter(Boolean)])].slice(0, 10);
+    await atualizarFotos(fetch, true);
+    const g = orcamento.biblioteca().find(x => x.grupo === grupo);
+    if (g && g.fotos.some(f => f.drive_id === corpo.drive_id)) throw new ErroEnvio(409, 'Essa foto já está em ' + g.nome + '.');
+    const { jpg } = await drive.prepararFoto(corpo.drive_id);
+    const arquivo = `${grupo}-d${crypto.randomBytes(4).toString('hex')}.jpg`;
+    await gravarNoStorage('biblioteca/' + arquivo, jpg, 'image/jpeg', fetch);
+    await gravarFotoAjuste({ arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao, drive_id: corpo.drive_id, origem: 'drive', ativo: true, criado_por: eu.id });
+    bytesFotos.set(arquivo, jpg);
+    await atualizarFotos(fetch, true);
+    return { ok: true, foto: { arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao } };
+  }),
+  // Tira uma foto da biblioteca (ou devolve). Nada é apagado: some do envio, da página do orçamento e do Gilberto.
+  'POST /api/foto-status': async corpo => {
+    const arquivo = String(corpo.arquivo || '');
+    await atualizarFotos(fetch, true);
+    const todas = orcamento.biblioteca({ todas: true });
+    const g = todas.find(x => [...x.fotos, ...x.removidas].some(f => f.arquivo === arquivo));
+    if (!g) throw new ErroEnvio(404, 'Foto não encontrada na biblioteca.');
+    const ativo = corpo.ativo !== false;
+    if (fotoDoDrive(arquivo)) await patchBanco('fotos_biblioteca', 'arquivo=eq.' + encodeURIComponent(arquivo), { ativo, atualizado_em: new Date().toISOString() });
+    else await gravarFotoAjuste({ arquivo, grupo: g.grupo, origem: 'base', ativo });
+    await atualizarFotos(fetch, true);
+    return { ok: true, arquivo, ativo };
   },
   // Vagas por tipo e dia (painel "Vagas")
   'GET /api/vagas': async (corpo, eu, url) => silbeck.vagas(url.searchParams.get('inicio'), url.searchParams.get('dias')),
@@ -752,6 +829,7 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
   const id = String(corpo.conversa_id || '');
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw new ErroEnvio(400, 'Conversa inválida.');
   const eu = await autenticarEquipe(tokenUsuario, buscar);
+  await atualizarFotos(buscar).catch(() => {});
   if (sugerindo.has(id)) throw new ErroEnvio(429, 'Já estou preparando uma sugestão para esta conversa.');
   sugerindo.add(id);
   try {
@@ -834,6 +912,7 @@ const servidor = http.createServer((req, res) => {
       const previa = url.searchParams.get('previa') === '1';
       lerOrcamento(token).then(async o => {
         if (!o) { res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', ...cabecalhosSeguranca() }); return res.end('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hotel Cabanas</title><p style="font-family:sans-serif;padding:24px">Orçamento não encontrado. Fale com a gente pelo WhatsApp que enviamos um novo.</p>'); }
+        await atualizarFotos().catch(() => {});
         if (!previa) await rpc('registrar_abertura_orcamento', { p_token: token }).catch(() => {}); // antes de responder: no Cloud Run a CPU para depois da resposta
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow', ...cabecalhosSeguranca() });
         res.end(orcamento.pagina(o, { previa, produtos: ((await catalogo().catch(() => null)) || {}).produtos }));
@@ -911,7 +990,7 @@ const servidor = http.createServer((req, res) => {
   if (url.pathname === '/api/fotos' && req.method === 'GET') {
     const auth = req.headers.authorization || '';
     if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
-    autenticarEquipe(auth.slice(7)).then(() => json(res, 200, { ok: true, grupos: orcamento.biblioteca() }))
+    autenticarEquipe(auth.slice(7)).then(async () => { await atualizarFotos(); json(res, 200, { ok: true, grupos: orcamento.biblioteca({ todas: true }) }); })
       .catch(e => json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Não deu agora.' }));
     return;
   }
@@ -970,6 +1049,25 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
+  const mm = req.method === 'GET' && url.pathname.match(/^\/api\/drive\/miniatura\/([\w-]{10,100})$/);
+  if (mm) {
+    const auth = req.headers.authorization || '';
+    if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
+    autenticarEquipe(auth.slice(7)).then(() => drive.miniatura(mm[1])).then(dados => {
+      res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Cache-Control': 'private, max-age=3600', ...cabecalhosSeguranca() });
+      res.end(dados);
+    }).catch(e => json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio || e instanceof drive.ErroDrive ? e.message : 'Não deu agora.' }));
+    return;
+  }
+  const mf = req.method === 'GET' && !ESTATICOS[url.pathname] && url.pathname.match(/^\/fotos\/([\w.-]+\.jpg)$/);
+  if (mf) { // foto trazida do Drive pela equipe (fica no Storage)
+    bytesDaFoto(mf[1]).then(dados => {
+      if (!dados) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('Foto não encontrada.'); }
+      res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Cache-Control': 'public, max-age=300', ...cabecalhosSeguranca() });
+      res.end(dados);
+    }).catch(() => { res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Indisponível agora.'); });
+    return;
+  }
   const est = req.method === 'GET' && ESTATICOS[url.pathname];
   if (est) {
     res.writeHead(200, { 'Content-Type': est.tipo, 'Cache-Control': url.pathname === '/caixa' ? 'no-store' : 'public, max-age=300', ...cabecalhosSeguranca() });

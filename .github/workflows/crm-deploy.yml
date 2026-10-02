@@ -49,6 +49,9 @@ jobs:
       - name: Dependências
         run: npm ci --prefix crm/app
 
+      - name: ffmpeg (recorte das fotos e áudios longos, usado nos testes)
+        run: command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg)
+
       - name: Testes do CRM
         run: node crm/app/teste.js
 
@@ -78,7 +81,7 @@ jobs:
             --set-secrets "META_APP_SECRET=meta-app-secret:latest,META_VERIFY_TOKEN=meta-verify-token:latest,SUPABASE_SECRET_KEY=supabase-secret-key:latest,SUPABASE_PUBLISHABLE_KEY=supabase-publishable-key:latest,META_WHATSAPP_TOKEN=meta-whatsapp-token:latest,ANTHROPIC_API_KEY=anthropic-api-key:latest" \
             --network crm-vpc --subnet crm-sp --vpc-egress all-traffic \
             --allow-unauthenticated \
-            --min-instances 0 --max-instances 1 --memory 256Mi \
+            --min-instances 0 --max-instances 1 --memory 512Mi \
             --quiet
 
       - name: Conferir /saude

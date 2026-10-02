@@ -1,0 +1,16 @@
+bash <<'FIM'
+# CRM Cabanas: liga a leitura do banco de imagens no Google Drive. Rodar UMA vez no Cloud Shell.
+# Só liga a API do Drive no projeto. Não cria nem mostra nenhuma chave.
+# Depois, no Drive, compartilhe a pasta "Imagens do hotel cabanas" com a conta do CRM como LEITOR (ver abaixo).
+set -euo pipefail
+gcloud config set project cabanas-crm >/dev/null
+echo "Ligando a API do Google Drive (leva 1 a 2 minutos)..."
+gcloud services enable drive.googleapis.com
+echo "----------------------------------------------------------------"
+echo "Pronto! Agora, no Google Drive:"
+echo "  1. Clique com o botão direito na pasta 'Imagens do hotel cabanas' > Compartilhar"
+echo "  2. Cole: crm-runtime@cabanas-crm.iam.gserviceaccount.com"
+echo "  3. Escolha 'Leitor', desmarque 'Notificar' e clique em Compartilhar"
+echo "Depois mande 'drive ligado' no chat."
+echo "----------------------------------------------------------------"
+FIM

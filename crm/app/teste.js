@@ -20,6 +20,10 @@ const guardados = new Map(); // "Storage" falso: caminho -> {dados, mime}
 const MSG_MIDIA = '33333333-3333-3333-3333-333333333333';
 const MSG_AUDIO = '66666666-6666-6666-6666-666666666666';
 const MSG_BIB = '88888888-8888-8888-8888-888888888888';
+// "Drive" falso (banco de imagens) e a tabela fotos_biblioteca falsa
+const fotosBib = [];
+const RAIZ_DRIVE = '1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5';
+const JPG_DRIVE = require('child_process').execFileSync('ffmpeg', ['-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc=size=1600x900', '-frames:v', '1', '-f', 'mjpeg', '-']);
 const falso = http.createServer((req, res) => {
   const pedacos = [];
   req.on('data', p => pedacos.push(p));
@@ -32,6 +36,22 @@ const falso = http.createServer((req, res) => {
     if (bancoQuebrado) { res.writeHead(503); return res.end(); }
     if (req.url.startsWith('/rest/v1/rpc/registrar_status')) { res.writeHead(204); return res.end(); }
     const responder = (cod, obj) => { res.writeHead(cod, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); };
+    if (req.url.startsWith('/drive/') || req.url.startsWith('/thumb/')) {
+      if (req.headers.authorization !== 'Bearer tok-drive') return responder(401, {});
+      const u = new URL(req.url, 'http://x');
+      if (u.pathname === '/drive/v3/files/' + RAIZ_DRIVE) return responder(200, { id: RAIZ_DRIVE, name: 'Imagens do hotel cabanas', mimeType: 'application/vnd.google-apps.folder', parents: ['pai'] });
+      if (u.pathname === '/drive/v3/files/PASTA-BANGALO-1') return responder(200, { id: 'PASTA-BANGALO-1', name: 'Bangalô', mimeType: 'application/vnd.google-apps.folder', parents: [RAIZ_DRIVE] });
+      if (u.pathname === '/drive/v3/files') return responder(200, u.searchParams.get('q').includes(RAIZ_DRIVE)
+        ? { files: [{ id: 'PASTA-BANGALO-1', name: 'Bangalô', mimeType: 'application/vnd.google-apps.folder' }, { id: 'FOTO-DRIVE-01', name: 'IMG_1.jpg', mimeType: 'image/jpeg' }] } : { files: [] });
+      if (u.pathname === '/drive/v3/files/FOTO-DRIVE-01') return responder(200, { id: 'FOTO-DRIVE-01', name: 'IMG_1.jpg', mimeType: 'image/jpeg', size: '900000', thumbnailLink: process.env.DRIVE_URL + '/thumb/FOTO-DRIVE-01=s220' });
+      if (u.pathname.startsWith('/thumb/FOTO-DRIVE-01=s')) { res.writeHead(200, { 'Content-Type': 'image/jpeg' }); return res.end(JPG_DRIVE); }
+      return responder(404, { error: { message: 'File not found' } });
+    }
+    if (req.url.startsWith('/rest/v1/fotos_biblioteca')) {
+      if (req.method === 'GET') return responder(200, fotosBib);
+      if (req.method === 'POST') { const i = fotosBib.findIndex(f => f.arquivo === json.arquivo); if (i >= 0) Object.assign(fotosBib[i], json); else fotosBib.push({ ordem: 100, criado_em: new Date().toISOString(), ...json }); res.writeHead(201); return res.end(); }
+      if (req.method === 'PATCH') { const a = decodeURIComponent(req.url.split('arquivo=eq.')[1]); Object.assign(fotosBib.find(f => f.arquivo === a), json); res.writeHead(204); return res.end(); }
+    }
     if (req.url === '/graph/midia9') return responder(200, { url: process.env.SUPABASE_URL + 'cdn/midia9', mime_type: 'image/jpeg' });
     if (req.url === '/cdn/midia9') { res.writeHead(200, { 'Content-Type': 'image/jpeg' }); return res.end('FOTO-JPEG'); }
     if (req.url.startsWith('/storage/v1/object/midias/') && req.method === 'POST') {
@@ -138,6 +158,8 @@ falso.listen(0, () => {
   process.env.ANTHROPIC_API_KEY = 'chave-ia-teste';
   process.env.ANTHROPIC_BASE_URL = 'http://127.0.0.1:' + falso.address().port;
   process.env.META_GRAPH_URL = 'http://127.0.0.1:' + falso.address().port + '/graph';
+  process.env.DRIVE_URL = 'http://127.0.0.1:' + falso.address().port;
+  process.env.DRIVE_TOKEN = 'tok-drive';
   const { servidor } = require('./server');
 
   servidor.listen(0, async () => {
@@ -516,7 +538,8 @@ falso.listen(0, () => {
     // Biblioteca de fotos: lista para a equipe, envio pela Meta por link público, e a foto aparece na caixa
     r = await fetch(base + '/api/fotos', { headers: { Authorization: 'Bearer token-equipe' } });
     const bib = await r.json();
-    assert.deepEqual(bib.grupos.map(g => [g.grupo, g.nome, g.fotos.length]), [['BGE', 'Bangalô Especial', 2], ['BOIA', 'Boia cross', 1]]);
+    assert.deepEqual(bib.grupos.filter(g => g.fotos.length).map(g => [g.grupo, g.nome, g.fotos.length]), [['BGE', 'Bangalô Especial', 2], ['BOIA', 'Boia cross', 1]]);
+    assert.ok(bib.grupos.some(g => g.grupo === 'CBM' && !g.fotos.length), 'categorias vazias aparecem para receber fotos');
     assert.equal((await fetch(base + '/api/fotos', { headers: { Authorization: 'Bearer token-estranho' } })).status, 403);
     assert.equal((await fetch(base + '/fotos/BGE-1.jpg')).status, 200);
     assert.equal((await fetch(base + '/fotos/fotos.json')).status, 404);
@@ -533,6 +556,59 @@ falso.listen(0, () => {
     assert.equal((await envF({ conversa_id: conv, fotos: ['BGE-1.jpg'] }, 'token-estranho')).status, 403);
     r = await fetch(base + '/api/midia/' + MSG_BIB, { headers: { Authorization: 'Bearer token-equipe' } });
     assert.equal(r.status, 200); assert.equal(await r.text(), 'JPG-BGE-1');
+    // Gerenciar o Banco de fotos: navegar no Drive, trazer foto, tirar e devolver
+    const eq = { Authorization: 'Bearer token-equipe' };
+    r = await fetch(base + '/api/drive', { headers: eq });
+    const dv = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(dv));
+    assert.deepEqual([dv.pasta.raiz, dv.pastas.map(p => p.nome), dv.fotos.map(f => [f.id, f.na_biblioteca.length])], [true, ['Bangalô'], [['FOTO-DRIVE-01', 0]]]);
+    r = await fetch(base + '/api/drive?pasta=PASTA-BANGALO-1', { headers: eq });
+    assert.deepEqual((await r.json()).pasta, { id: 'PASTA-BANGALO-1', nome: 'Bangalô', raiz: false, pai: RAIZ_DRIVE });
+    r = await fetch(base + '/api/drive?pasta=PASTA-SEM-ACESSO', { headers: eq });
+    assert.equal(r.status, 403); assert.ok((await r.json()).erro.includes('crm-runtime@'));
+    assert.equal((await fetch(base + '/api/drive?pasta=../x', { headers: eq })).status, 400);
+    assert.equal((await fetch(base + '/api/drive', { headers: { Authorization: 'Bearer token-estranho' } })).status, 403);
+    r = await fetch(base + '/api/drive/miniatura/FOTO-DRIVE-01', { headers: eq });
+    assert.equal(r.status, 200); assert.equal(r.headers.get('content-type'), 'image/jpeg');
+    assert.equal((await fetch(base + '/api/drive/miniatura/FOTO-DRIVE-01')).status, 401);
+    const trazer = c => fetch(base + '/api/foto', { method: 'POST', headers: eq, body: JSON.stringify(c) });
+    assert.equal((await trazer({ drive_id: 'FOTO-DRIVE-01', grupo: 'XYZ', descricao: 'Varanda do Bangalô Especial' })).status, 400);
+    assert.equal((await trazer({ drive_id: 'FOTO-DRIVE-01', grupo: 'BGE', descricao: 'curta' })).status, 400);
+    r = await trazer({ drive_id: 'FOTO-DRIVE-01', grupo: 'BGE', descricao: 'Varanda do Bangalô Especial com rede', etiquetas: ['varanda', ' Rede ', ''] });
+    const tz = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(tz));
+    assert.match(tz.foto.arquivo, /^BGE-d[0-9a-f]{8}\.jpg$/);
+    assert.deepEqual(tz.foto.etiquetas, ['bangalô especial', 'varanda', 'rede']);
+    const salva = guardados.get('biblioteca/' + tz.foto.arquivo);
+    assert.ok(salva && salva.mime === 'image/jpeg' && salva.dados[0] === 0xff && salva.dados[1] === 0xd8, 'foto recortada guardada no Storage');
+    assert.deepEqual([fotosBib[0].origem, fotosBib[0].drive_id, fotosBib[0].criado_por, fotosBib[0].ativo], ['drive', 'FOTO-DRIVE-01', 'u-1', true]);
+    assert.equal((await trazer({ drive_id: 'FOTO-DRIVE-01', grupo: 'BGE', descricao: 'Varanda do Bangalô Especial com rede' })).status, 409);
+    r = await fetch(base + '/fotos/' + tz.foto.arquivo);
+    assert.equal(r.status, 200); assert.equal(Buffer.from(await r.arrayBuffer()).length, salva.dados.length);
+    assert.equal((await fetch(base + '/fotos/BGE-d00000000.jpg')).status, 404);
+    r = await fetch(base + '/api/fotos', { headers: eq });
+    assert.deepEqual((await r.json()).grupos.find(g => g.grupo === 'BGE').fotos.map(f => f.arquivo), ['BGE-1.jpg', 'BGE-2.jpg', tz.foto.arquivo]);
+    assert.ok(require('./orcamento').escolherFotos({ codigo_acomodacao: '', etiquetas: ['varanda'], quantidade: 1 })[0].arquivo === tz.foto.arquivo, 'o Gilberto acha a foto nova');
+    r = await fetch(base + '/api/drive', { headers: eq });
+    assert.deepEqual((await r.json()).fotos[0].na_biblioteca, ['Bangalô Especial']);
+    assert.equal((await envF({ conversa_id: conv, fotos: [tz.foto.arquivo] })).status, 200);
+    // Tirar uma foto da curadoria: some do envio e da lista; devolver traz de volta
+    const statusF = c => fetch(base + '/api/foto-status', { method: 'POST', headers: eq, body: JSON.stringify(c) });
+    assert.equal((await statusF({ arquivo: 'BGE-1.jpg', ativo: false })).status, 200);
+    assert.deepEqual(fotosBib.find(f => f.arquivo === 'BGE-1.jpg'), { ...fotosBib.find(f => f.arquivo === 'BGE-1.jpg'), grupo: 'BGE', origem: 'base', ativo: false });
+    r = await fetch(base + '/api/fotos', { headers: eq });
+    const bge = (await r.json()).grupos.find(g => g.grupo === 'BGE');
+    assert.deepEqual([bge.fotos.map(f => f.arquivo), bge.removidas.map(f => f.arquivo)], [['BGE-2.jpg', tz.foto.arquivo], ['BGE-1.jpg']]);
+    assert.equal((await envF({ conversa_id: conv, fotos: ['BGE-1.jpg'] })).status, 400);
+    assert.equal((await statusF({ arquivo: tz.foto.arquivo, ativo: false })).status, 200);
+    assert.equal(fotosBib.find(f => f.arquivo === tz.foto.arquivo).ativo, false);
+    assert.equal((await statusF({ arquivo: 'naoexiste.jpg', ativo: false })).status, 404);
+    assert.equal((await statusF({ arquivo: 'BGE-1.jpg', ativo: true })).status, 200);
+    assert.equal((await statusF({ arquivo: tz.foto.arquivo, ativo: true })).status, 200);
+    r = await fetch(base + '/api/fotos', { headers: eq });
+    assert.equal((await r.json()).grupos.find(g => g.grupo === 'BGE').fotos.length, 3);
+    // volta ao estado inicial para os testes seguintes
+    await statusF({ arquivo: tz.foto.arquivo, ativo: false });
     const { escolherFotos } = require('./orcamento');
     assert.deepEqual(escolherFotos({ codigo_acomodacao: 'BGE', etiquetas: [], quantidade: 5 }).map(f => f.arquivo), ['BGE-1.jpg', 'BGE-2.jpg']);
     assert.deepEqual(escolherFotos({ codigo_acomodacao: '', etiquetas: ['boia cross'], quantidade: 2 }).map(f => f.arquivo), ['BOIA-1.jpg']);

@@ -34,12 +34,27 @@ let FOTOS = {}, DESCRICOES = {};
 try { FOTOS = JSON.parse(fs.readFileSync(path.join(PASTA_FOTOS, 'fotos.json'), 'utf8')); } catch (e) { /* sem fotos ainda */ }
 try { DESCRICOES = JSON.parse(fs.readFileSync(path.join(PASTA_FOTOS, 'descricoes.json'), 'utf8')); } catch (e) { /* sem descrições */ }
 const ROTULOS = { BOIA: 'Boia cross', ARVO: 'Arvorismo', RIO: 'Rios e decks', PISCINA: 'Piscina e hidromassagem', CAFE: 'Café da manhã', DECO: 'Decoração especial (opcional)' };
-// Biblioteca para a caixa e para o Gilberto: [{grupo, nome, fotos: [{arquivo, descricao, etiquetas}]}]
-function biblioteca() {
-  return Object.entries(FOTOS).map(([grupo, arqs]) => ({
-    grupo, nome: (CATALOGO[grupo] && CATALOGO[grupo].nome) || ROTULOS[grupo] || grupo,
-    fotos: arqs.map(a => ({ arquivo: a, descricao: (DESCRICOES[a] && DESCRICOES[a].descricao) || '', etiquetas: (DESCRICOES[a] && DESCRICOES[a].etiquetas) || [] })),
-  }));
+// Categorias em que a equipe pode pôr fotos (as dos quádruplos usam as do duplo/triplo).
+const GRUPOS = [...new Set([...Object.keys(FOTOS), 'CBD', 'CBT', 'CBM', 'BG', 'BGE', 'CJ', 'SUP', 'STD', ...Object.keys(ROTULOS)])];
+const nomeGrupo = g => (CATALOGO[g] && CATALOGO[g].nome) || ROTULOS[g] || g;
+// Ajustes da equipe (tabela fotos_biblioteca): fotos trazidas do Drive e fotos fixas tiradas da biblioteca.
+const FOTOS_FIXAS = new Set(Object.values(FOTOS).flat());
+let VIVAS = [];
+const definirVivas = linhas => { VIVAS = Array.isArray(linhas) ? linhas : []; };
+// Biblioteca para a caixa e para o Gilberto: [{grupo, nome, fotos: [{arquivo, descricao, etiquetas, decoracao, origem}]}]
+// Com {todas: true}, cada grupo traz também as removidas (para poder devolver).
+function biblioteca({ todas = false } = {}) {
+  const ajuste = new Map(VIVAS.map(v => [v.arquivo, v]));
+  const fixa = a => ({ arquivo: a, descricao: (DESCRICOES[a] && DESCRICOES[a].descricao) || '', etiquetas: (DESCRICOES[a] && DESCRICOES[a].etiquetas) || [],
+    decoracao: !!(DESCRICOES[a] && DESCRICOES[a].decoracao), origem: 'base', drive_id: (DESCRICOES[a] && DESCRICOES[a].drive_id) || null, ativo: !(ajuste.get(a) && ajuste.get(a).ativo === false) });
+  const nova = v => ({ arquivo: v.arquivo, descricao: v.descricao || '', etiquetas: v.etiquetas || [], decoracao: !!v.decoracao, origem: 'drive', drive_id: v.drive_id || null, ativo: v.ativo !== false });
+  const novas = VIVAS.filter(v => v.origem === 'drive' && !FOTOS_FIXAS.has(v.arquivo)).sort((a, b) => (a.ordem || 0) - (b.ordem || 0) || String(a.criado_em || '').localeCompare(String(b.criado_em || '')));
+  return GRUPOS.map(grupo => {
+    const lista = [...(FOTOS[grupo] || []).map(fixa), ...novas.filter(v => v.grupo === grupo).map(nova)];
+    const g = { grupo, nome: nomeGrupo(grupo), fotos: lista.filter(f => f.ativo) };
+    if (todas) g.removidas = lista.filter(f => !f.ativo);
+    return g;
+  }).filter(g => todas || g.fotos.length);
 }
 // Escolhe fotos para o Gilberto: pelo código da acomodação e/ou etiquetas (até 5).
 function escolherFotos({ codigo_acomodacao, etiquetas, quantidade }) {
@@ -90,12 +105,13 @@ function montar(entrada, cotacao) {
 function pagina(o, { previa = false, produtos = null } = {}) {
   const n = noites(o.data_entrada, o.data_saida);
   const nome = o.primeiro_nome ? esc(o.primeiro_nome) : '';
-  const fotosDe = cod => (FOTOS[cod] || FOTOS[{ QES: 'SUP', QST: 'STD', CST: 'STD' }[cod]] || []).slice(0, 5);
+  const bib = biblioteca();
+  const fotosDe = cod => ((bib.find(g => g.grupo === cod) || bib.find(g => g.grupo === { QES: 'SUP', QST: 'STD', CST: 'STD' }[cod]) || { fotos: [] }).fotos).slice(0, 5);
   const cards = (o.opcoes || []).map((op, i) => {
     const cat = CATALOGO[op.codigo] || { nome: op.nome, cap: '', dest: [] };
     const fotos = fotosDe(op.codigo);
-    const galeria = fotos.length ? `<div class="fotos" tabindex="0" aria-label="Fotos: ${esc(cat.nome)}">${fotos.map((f, k) => `<img src="/fotos/${esc(f)}" alt="${esc(cat.nome)} · foto ${k + 1}" loading="${k ? 'lazy' : 'eager'}" width="800" height="600">`).join('')}</div>${fotos.length > 1 ? `<div class="pontos" aria-hidden="true">${fotos.map((_, k) => `<i${k ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}` : '';
-    const comDeco = fotos.some(f => DESCRICOES[f] && DESCRICOES[f].decoracao);
+    const galeria = fotos.length ? `<div class="fotos" tabindex="0" aria-label="Fotos: ${esc(cat.nome)}">${fotos.map((f, k) => `<img src="/fotos/${esc(f.arquivo)}" alt="${esc(cat.nome)} · foto ${k + 1}" loading="${k ? 'lazy' : 'eager'}" width="800" height="600">`).join('')}</div>${fotos.length > 1 ? `<div class="pontos" aria-hidden="true">${fotos.map((_, k) => `<i${k ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}` : '';
+    const comDeco = fotos.some(f => f.decoracao);
     const nota = comDeco ? '<p class="nota-foto">Algumas fotos mostram a decoração especial (pétalas), opcional e cobrada à parte.</p>' : '';
     return `<article class="op${i === 0 ? ' rec' : ''}">${galeria}${nota}<div class="corpo">
 ${i === 0 ? '<span class="selo">Nossa sugestão para vocês</span>' : ''}<h2>${esc(cat.nome)}</h2><p class="cap">${esc(cat.cap)}</p>
@@ -140,4 +156,4 @@ ${cards}
 <script src="/o/orcamento.js"></script></body></html>`;
 }
 
-module.exports = { montar, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS };
+module.exports = { montar, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };
