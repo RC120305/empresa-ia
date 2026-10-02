@@ -1,5 +1,7 @@
 # Upsell: catálogo de produtos e reserva de atividades
 
+> **Implementado em 02/10/2026 (Etapa C2):** catálogo completo, painel 🛍 na conversa (indicados, oferecer, aceitou/recusou, registrar venda), ofertas do Gilberto registradas, extras selecionáveis na página do orçamento. Decisões do dono (02/10): **todo produto vai para a conta do hóspede e é acertado no check-out** (tarefa "Lançar na conta do hóspede"); **decoração = um produto com duas variações** (Simples e Completa).
+
 > 29/09/2026. Desenho aprovado pelo dono (P38 em `entrevista.md`). Protótipo: aba **Produtos** e painel da conversa (v11).
 
 ## 1. Catálogo de produtos (tela "Produtos")

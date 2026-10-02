@@ -125,11 +125,19 @@ ${i === 0 ? '<span class="selo">Nossa sugestão para vocês</span>' : ''}<h2>${e
 <button class="btn quero" type="button" data-codigo="${esc(op.codigo)}" data-nome="${esc(cat.nome)}">Quero reservar esta</button></div></article>`;
   }).join('\n');
   // Extras: os produtos cadastrados (tela Produtos); sem banco, a lista fixa acima
+  // O cliente marca o que quer incluir (e a opção, quando há variações); vai junto no "Quero reservar esta".
+  const fotoDe = g => { const x = g && bib.find(b => b.grupo === g); return x && x.fotos[0] ? x.fotos[0].arquivo : null; };
   const lista = produtos && produtos.length
-    ? produtos.map(p => ({ nome: p.nome, txt: [p.descricao, p.regras].filter(Boolean).join(' '), preco: p.preco, combo: ['COMBO', 'BOIA', 'ARVO'].includes(p.codigo) }))
+    ? produtos.map(p => ({ codigo: p.codigo, nome: p.nome, txt: [p.descricao, p.regras].filter(Boolean).join(' '), preco: p.preco, foto: fotoDe(p.grupo_fotos),
+      variacoes: Array.isArray(p.variacoes) ? p.variacoes : [], por: p.unidade === 'pessoa' ? ' por pessoa' : '',
+      combo: ['COMBO', 'BOIA', 'ARVO'].includes(p.codigo) }))
     : EXTRAS;
+  const reais = v => 'R$ ' + Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
   const extras = lista.filter(x => !x.combo || o.pessoas_aptas_combo > 0)
-    .map(x => `<div class="ex"><h4>${esc(x.nome)}</h4><p>${esc(x.txt)}</p><div class="pr">${esc(x.preco)}</div></div>`).join('');
+    .map(x => `<div class="ex"${x.codigo ? ` data-codigo="${esc(x.codigo)}" data-nome="${esc(x.nome)}"` : ''}>${x.foto ? `<img class="ex-foto" src="/fotos/${esc(x.foto)}" alt="${esc(x.nome)}" loading="lazy" width="120" height="90">` : ''}<div class="ex-corpo"><h4>${esc(x.nome)}</h4><p>${esc(x.txt)}</p><div class="pr">${esc(x.preco)}</div>${
+      x.codigo && x.variacoes.length > 1 ? `<div class="ex-var" role="radiogroup" aria-label="Opção de ${esc(x.nome)}">${x.variacoes.map((v, k) => `<label><input type="radio" name="v-${esc(x.codigo)}" value="${esc(v.nome)}"${k ? '' : ' checked'}> ${esc(v.nome)} · ${reais(v.preco)}${x.por}</label>`).join('')}</div>` : ''}${
+      x.codigo ? `<label class="ex-quero"><input type="checkbox" class="ex-sel"> Quero incluir</label>` : ''}</div></div>`).join('');
+  const selecionavel = lista.some(x => x.codigo);
   const titulo = `${n > 1 ? `${['', '', 'Duas', 'Três', 'Quatro', 'Cinco', 'Seis', 'Sete'][n] || n} noites` : 'Uma noite'} entre <em>dois rios</em>`;
   const abertura = o.frase_de_abertura ? esc(o.frase_de_abertura.trim()) + (/[.!?]$/.test(o.frase_de_abertura.trim()) ? ' ' : '. ') : (nome ? `Oi, ${nome}! ` : 'Oi! ');
   return `<!doctype html>
@@ -147,7 +155,7 @@ ${previa ? '<div class="aviso-teste">Prévia da equipe: esta visita não conta c
 <p class="intro">${abertura}${o.frase_de_abertura ? (o.opcoes.length > 1 ? `São ${o.opcoes.length} opções` : 'É uma opção') : (o.opcoes.length > 1 ? `Separei ${o.opcoes.length} opções` : 'Separei uma opção')} com vaga nas suas datas. Os valores são os de hoje, conferidos no nosso sistema de reservas, e ficam sujeitos à disponibilidade até a reserva. 🌿<br><small>Equipe do Hotel Cabanas</small></p>
 ${cards}
 <section class="bloco"><h3 class="sec-t">Já está incluso na diária</h3><ul class="inclui">${INCLUSO.map(x => `<li>${esc(x)}</li>`).join('')}</ul></section>
-<section class="bloco"><h3 class="sec-t">Para deixar a viagem completa</h3><p class="extra-intro">Pagos à parte. É só pedir na conversa que a gente organiza.</p><div class="extras">${extras}</div></section>
+<section class="bloco"><h3 class="sec-t">Para deixar a viagem completa</h3><p class="extra-intro">Pagos à parte: vão para a conta da hospedagem e são acertados no check-out. ${selecionavel ? 'Marque o que quiser incluir: vai junto quando você tocar em “Quero reservar esta”.' : 'É só pedir na conversa que a gente organiza.'}</p><div class="extras">${extras}</div></section>
 <section class="bloco"><h3 class="sec-t">Condições</h3><ul class="cond">
 <li><b>Formas de pagamento:</b> sinal de 50% no Pix ou no cartão em até 3x, ou 100% no Pix ou no cartão em até 6x sem juros. Com sinal, o restante é pago no check-out.</li>
 <li>Check-in a partir das 15h e check-out até as 13h (a estrutura fica à disposição antes e depois).</li>
@@ -156,6 +164,7 @@ ${cards}
 <li>Estamos a 6 km do centro de Bonito, com acesso asfaltado.</li></ul></section>
 <div class="rodape"><p>Hotel Cabanas · Bonito, MS</p></div>
 </main>
+<div class="barra-extras" id="barra-extras" hidden><span id="barra-txt"></span><button class="btn" type="button" id="barra-ir">Escolher a acomodação</button></div>
 <div class="passo" id="passo" hidden><div class="folha" role="dialog" aria-modal="true" aria-labelledby="p-tit"><h3 id="p-tit">Ótima escolha!</h3><p id="p-txt"></p>
 <a class="btn" id="p-wa" href="#" rel="noopener">Continuar no WhatsApp</a><button class="btn sec" type="button" id="p-voltar">Voltar</button></div></div>
 <script src="/o/orcamento.js?v=${VERSAO}"></script></body></html>`;

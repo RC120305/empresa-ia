@@ -10,6 +10,7 @@ const silbeck = require('./silbeck');
 const transcricao = require('./transcricao');
 const orcamento = require('./orcamento');
 const drive = require('./drive');
+const produtos = require('./produtos');
 const path = require('path');
 
 const porta = process.env.PORT || 8080;
@@ -482,7 +483,7 @@ async function catalogo(buscar = fetch) {
   if (!bancoLigado()) return null;
   const hoje = new Date().toISOString().slice(0, 10);
   const [p, r] = await Promise.all([
-    buscar(`${SUPABASE_URL}/rest/v1/produtos?ativo=eq.true&select=codigo,nome,descricao,preco,tipo_reserva,regras,quando_oferecer,antecedencia_dias,prioridade&order=prioridade`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
+    buscar(`${SUPABASE_URL}/rest/v1/produtos?ativo=eq.true&select=*&order=prioridade`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
     buscar(`${SUPABASE_URL}/rest/v1/respostas?ativo=eq.true&or=(valida_ate.is.null,valida_ate.gte.${hoje})&select=id,pergunta,resposta,fixa,origem&order=usos.desc&limit=200`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
   ]);
   let resp = r && r.ok ? await r.json().catch(() => []) : [];
@@ -508,6 +509,28 @@ async function patchBanco(tabela, filtro, dados, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/${tabela}?${filtro}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(dados), signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw new ErroEnvio(r.status === 400 ? 400 : 502, 'Não deu para salvar' + (r.status === 400 ? ' (o banco precisa da migração 007?)' : '') + '.');
 }
+const uuidOk = v => /^[0-9a-f-]{36}$/i.test(String(v || ''));
+async function produtoPorCodigo(codigo, buscar = fetch) {
+  const cod = String(codigo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!cod) throw new ErroEnvio(400, 'Escolha o produto.');
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/produtos?codigo=eq.${cod}&select=*`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+  const p = r.ok ? (await r.json())[0] : null;
+  if (!p) throw new ErroEnvio(404, 'Produto não encontrado.');
+  return p;
+}
+async function ofertasDaConversa(conversa, buscar = fetch) {
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/ofertas?conversa_id=eq.${conversa}&select=id,produto_codigo,produto_nome,por,situacao,criado_em&order=criado_em.desc&limit=10`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  return r && r.ok ? await r.json().catch(() => []) : [];
+}
+// Negócio em andamento da conversa (o mais recente). campos = 'id' devolve só o id.
+async function negocioDaConversa(conversa, campos = 'id', buscar = fetch) {
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/negocios?conversa_id=eq.${conversa}&select=${campos},etapa&order=criado_em.desc&limit=5`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const lista = r && r.ok ? await r.json().catch(() => []) : [];
+  const n = lista.find(x => !['res', 'perd'].includes(x.etapa)) || lista[0] || null;
+  return campos === 'id' ? (n ? n.id : null) : n;
+}
+const eventoNegocio = (negocio, texto, por, buscar = fetch) => buscar(`${SUPABASE_URL}/rest/v1/negocio_eventos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
+  body: JSON.stringify({ negocio_id: negocio, texto: texto.slice(0, 300), por }), signal: AbortSignal.timeout(5000) }).catch(() => null);
 const API_EQUIPE = {
   // Lista da equipe (para o "responsável" da conversa)
   'GET /api/equipe': async () => {
@@ -644,6 +667,9 @@ const API_EQUIPE = {
     if (corpo.tipo_reserva !== undefined) { if (!['ativ', 'terc', 'simples'].includes(corpo.tipo_reserva)) throw new ErroEnvio(400, 'Tipo inválido.'); dados.tipo_reserva = corpo.tipo_reserva; }
     for (const k of ['antecedencia_dias', 'prioridade']) if (corpo[k] !== undefined) { const v = parseInt(corpo[k], 10); if (!(v >= 0 && v < 400)) throw new ErroEnvio(400, 'Número inválido.'); dados[k] = v; }
     if (corpo.ativo !== undefined) dados.ativo = !!corpo.ativo;
+    try { Object.assign(dados, produtos.camposExtras(corpo, orcamento.GRUPOS)); } catch (e) { throw new ErroEnvio(400, e.message); }
+    // Preço como o cliente lê: se ficar vazio, o CRM monta pelo preço em número ou pelas variações
+    if (!dados.preco && (dados.preco_valor != null || (dados.variacoes && dados.variacoes.length))) dados.preco = produtos.precoTexto({ ...dados, unidade: dados.unidade || 'unidade' });
     if (corpo.id) {
       if (!/^[0-9a-f-]{36}$/i.test(corpo.id)) throw new ErroEnvio(400, 'Produto inválido.');
       if (dados.nome === null || dados.preco === null || dados.codigo === '') throw new ErroEnvio(400, 'Nome, código e preço são obrigatórios.');
@@ -655,6 +681,68 @@ const API_EQUIPE = {
       if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar (o banco precisa da migração 009?).');
     }
     limparCatalogo();
+    return { ok: true };
+  },
+  // Oferta de produto numa conversa (no máximo 1 por conversa; para oferecer de novo, a tela pede confirmação)
+  'POST /api/oferta': async (corpo, eu) => {
+    const conversa = String(corpo.conversa_id || '');
+    if (!uuidOk(conversa)) throw new ErroEnvio(400, 'Conversa inválida.');
+    const p = await produtoPorCodigo(corpo.produto_codigo);
+    const ja = await ofertasDaConversa(conversa);
+    if (ja.length && !corpo.forcar) throw new ErroEnvio(409, 'Já houve oferta nesta conversa (' + ja[0].produto_nome + ').');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/ofertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ conversa_id: conversa, negocio_id: await negocioDaConversa(conversa), produto_codigo: p.codigo, produto_nome: p.nome, por: 'equipe', autor_id: eu.id }) });
+    if (!r.ok) throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para registrar a oferta (o banco precisa da migração 012?).');
+    const o = (await r.json())[0];
+    if (o.negocio_id) await eventoNegocio(o.negocio_id, 'Oferecido: ' + p.nome, eu.id);
+    return { ok: true, oferta: o };
+  },
+  // Resposta do cliente à oferta
+  'POST /api/oferta-resposta': async (corpo, eu) => {
+    if (!uuidOk(corpo.id)) throw new ErroEnvio(400, 'Oferta inválida.');
+    if (!['aceito', 'recusado', 'oferecido'].includes(corpo.situacao)) throw new ErroEnvio(400, 'Situação inválida.');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/ofertas?id=eq.${corpo.id}&select=id,negocio_id,produto_nome`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const o = r.ok ? (await r.json())[0] : null;
+    if (!o) throw new ErroEnvio(404, 'Oferta não encontrada.');
+    await patchBanco('ofertas', `id=eq.${o.id}`, { situacao: corpo.situacao, respondido_em: corpo.situacao === 'oferecido' ? null : new Date().toISOString() });
+    if (o.negocio_id && corpo.situacao === 'recusado') await eventoNegocio(o.negocio_id, 'Recusou a oferta: ' + o.produto_nome, eu.id);
+    return { ok: true };
+  },
+  // Venda de produto: valor calculado aqui, vai para a conta do hóspede e cria as tarefas (agendar/preparar e lançar)
+  'POST /api/venda': async (corpo, eu) => {
+    const conversa = String(corpo.conversa_id || '');
+    if (!uuidOk(conversa)) throw new ErroEnvio(400, 'Conversa inválida.');
+    const p = await produtoPorCodigo(corpo.produto_codigo);
+    let v;
+    try { v = produtos.calcularVenda(p, corpo); } catch (e) { throw new ErroEnvio(400, e.message); }
+    const data_uso = corpo.data_uso ? String(corpo.data_uso) : null;
+    if (data_uso && !/^\d{4}-\d{2}-\d{2}$/.test(data_uso)) throw new ErroEnvio(400, 'Data inválida.');
+    const negocio = await negocioDaConversa(conversa, 'id,data_entrada');
+    const oferta = uuidOk(corpo.oferta_id) ? corpo.oferta_id : null;
+    const venda = { conversa_id: conversa, negocio_id: negocio ? negocio.id : null, oferta_id: oferta, produto_codigo: p.codigo, produto_nome: p.nome, ...v,
+      data_uso, horario: String(corpo.horario || '').trim().slice(0, 40) || null, observacoes: String(corpo.observacoes || '').trim().slice(0, 500) || null, criado_por: eu.id };
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/vendas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify(venda), signal: AbortSignal.timeout(5000) });
+    if (!r.ok) throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para registrar a venda (o banco precisa da migração 012?).');
+    const salva = (await r.json())[0];
+    if (oferta) await patchBanco('ofertas', `id=eq.${oferta}`, { situacao: 'aceito', respondido_em: new Date().toISOString() }).catch(() => {});
+    const tarefas = produtos.tarefasDaVenda(p, venda, negocio || {});
+    if (negocio) {
+      for (const t of tarefas) await fetch(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
+        body: JSON.stringify({ negocio_id: negocio.id, responsavel_id: eu.id, criado_por: 'CRM', ...t }), signal: AbortSignal.timeout(5000) }).catch(() => {});
+      await eventoNegocio(negocio.id, 'Venda: ' + p.nome + (v.variacao ? ' (' + v.variacao + ')' : '') + ' · ' + produtos.brl(v.valor_total) + ' · na conta do hóspede', eu.id);
+    }
+    return { ok: true, venda: salva, tarefas: negocio ? tarefas.map(t => t.tipo) : [] };
+  },
+  // Venda lançada na conta do hóspede, ou cancelada
+  'POST /api/venda-situacao': async (corpo, eu) => {
+    if (!uuidOk(corpo.id)) throw new ErroEnvio(400, 'Venda inválida.');
+    if (!['vendido', 'lancado', 'cancelado'].includes(corpo.situacao)) throw new ErroEnvio(400, 'Situação inválida.');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/vendas?id=eq.${corpo.id}&select=id,negocio_id,produto_nome,valor_total`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const v = r.ok ? (await r.json())[0] : null;
+    if (!v) throw new ErroEnvio(404, 'Venda não encontrada.');
+    const lanc = corpo.situacao === 'lancado';
+    await patchBanco('vendas', `id=eq.${v.id}`, { situacao: corpo.situacao, lancado_em: lanc ? new Date().toISOString() : null, lancado_por: lanc ? eu.id : null });
+    if (v.negocio_id) await eventoNegocio(v.negocio_id, ({ lancado: 'Lançado na conta: ', cancelado: 'Venda cancelada: ', vendido: 'Venda reaberta: ' })[corpo.situacao] + v.produto_nome + ' · ' + produtos.brl(v.valor_total), eu.id);
     return { ok: true };
   },
   // Agências e operadoras parceiras
@@ -725,6 +813,22 @@ const API_EQUIPE = {
     if (!/^[0-9a-f-]{36}$/i.test(String(corpo.id || ''))) throw new ErroEnvio(400, 'Sugestão inválida.');
     if (!['usada', 'descartada', 'aprovada', 'reprovada'].includes(corpo.situacao)) throw new ErroEnvio(400, 'Situação inválida.');
     await patchBanco('sugestoes', `id=eq.${corpo.id}`, { situacao: corpo.situacao, motivo: String(corpo.motivo || '').slice(0, 300) || null, revisada_por: eu.id, revisada_em: new Date().toISOString() });
+    // A sugestão enviada oferecia um produto: registra a oferta do Gilberto (se a conversa ainda não teve oferta)
+    if (corpo.situacao === 'usada') {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/sugestoes?id=eq.${corpo.id}&select=conversa_id,ferramentas`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+      const sg = r && r.ok ? (await r.json().catch(() => []))[0] : null;
+      const cod = sg && sg.ferramentas && sg.ferramentas.produto_oferecido;
+      if (cod && sg.conversa_id && !(await ofertasDaConversa(sg.conversa_id)).length) {
+        const p = await produtoPorCodigo(cod).catch(() => null);
+        if (p) {
+          const negocio = await negocioDaConversa(sg.conversa_id);
+          await fetch(`${SUPABASE_URL}/rest/v1/ofertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+            body: JSON.stringify({ conversa_id: sg.conversa_id, negocio_id: negocio, produto_codigo: p.codigo, produto_nome: p.nome, por: 'gilberto', autor_id: eu.id }) }).catch(() => null);
+          if (negocio) await eventoNegocio(negocio, 'Oferecido pelo Gilberto: ' + p.nome, eu.id);
+          return { ok: true, oferta: p.nome };
+        }
+      }
+    }
     return { ok: true };
   },
   // Testar o agente: conversa de mentira, sem WhatsApp e sem gravar orçamento
@@ -857,13 +961,13 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
           : { ok: false, erro: 'Não há foto na biblioteca para esse pedido. Não prometa foto: ofereça descrever ou avise a equipe nas notas_internas.' };
       },
     };
-    const r = await gilberto.sugerir(historico, { canal: conv.canal, nome }, executores, await catalogo(buscar));
+    const r = await gilberto.sugerir(historico, { canal: conv.canal, nome, ofertas: await ofertasDaConversa(conv.id, buscar) }, executores, await catalogo(buscar));
     // Registro para a revisão (Ajustes do agente): o que o cliente perguntou e o que o Gilberto sugeriu
     const ultimaDoCliente = [...historico].reverse().find(m => m.direcao === 'entrada');
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
       body: JSON.stringify({ conversa_id: conv.id, pergunta: ultimaDoCliente ? String(ultimaDoCliente.transcricao || ultimaDoCliente.corpo || '[' + ultimaDoCliente.tipo + ']').slice(0, 2000) : null,
         mensagem: r.mensagem, notas_internas: r.notas_internas, precisa_equipe: r.precisa_equipe, modelo: r.modelo,
-        ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo) }, pedida_por: eu.id }) }).catch(() => null);
+        ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo), produto_oferecido: r.produto_oferecido || null }, pedida_por: eu.id }) }).catch(() => null);
     const sugestaoId = reg && reg.ok ? ((await reg.json().catch(() => []))[0] || {}).id : null;
     return { ok: true, ...r, sugestao_id: sugestaoId || null };
   } catch (e) {
@@ -932,13 +1036,34 @@ const servidor = http.createServer((req, res) => {
           const o = await lerOrcamento(token);
           const op = o && (o.opcoes || []).find(x => x.codigo === corpo.codigo);
           if (!op) return json(res, 404, { ok: false });
+          // Extras marcados pelo cliente na página: só produtos ativos e opções que existem
+          const prods = ((await catalogo().catch(() => null)) || {}).produtos || [];
+          const extras = (Array.isArray(corpo.extras) ? corpo.extras.slice(0, 10) : []).map(e => {
+            const p = prods.find(x => x.codigo === String(e && e.codigo || ''));
+            if (!p) return null;
+            const vs = Array.isArray(p.variacoes) ? p.variacoes : [];
+            const v = vs.find(x => x.nome === e.variacao) || (vs.length === 1 ? vs[0] : null);
+            return { codigo: p.codigo, nome: p.nome, variacao: v ? v.nome : null };
+          }).filter((e, i, l) => e && l.findIndex(x => x && x.codigo === e.codigo) === i);
           if (!corpo.previa) {
             await fetch(`${SUPABASE_URL}/rest/v1/orcamentos?id=eq.${o.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ escolhida: op.codigo, escolhida_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) }).catch(() => {});
-            await fetch(`${SUPABASE_URL}/rest/v1/orcamento_eventos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ orcamento_id: o.id, tipo: 'quero_reservar', dados: { codigo: op.codigo } }), signal: AbortSignal.timeout(5000) }).catch(() => {});
+            await fetch(`${SUPABASE_URL}/rest/v1/orcamento_eventos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ orcamento_id: o.id, tipo: 'quero_reservar', dados: { codigo: op.codigo, extras } }), signal: AbortSignal.timeout(5000) }).catch(() => {});
+            // Cada extra marcado vira oferta aceita pelo cliente: a equipe registra a venda no painel 🛍 da conversa
+            if (extras.length && o.conversa_id) {
+              const negocio = await negocioDaConversa(o.conversa_id);
+              const ja = await ofertasDaConversa(o.conversa_id);
+              for (const e of extras) {
+                if (ja.some(x => x.produto_codigo === e.codigo && x.situacao === 'aceito')) continue;
+                await fetch(`${SUPABASE_URL}/rest/v1/ofertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+                  body: JSON.stringify({ conversa_id: o.conversa_id, negocio_id: negocio, produto_codigo: e.codigo, produto_nome: e.nome + (e.variacao ? ' (' + e.variacao + ')' : ''), por: 'pagina', situacao: 'aceito', respondido_em: new Date().toISOString() }) }).catch(() => {});
+              }
+              if (negocio) await eventoNegocio(negocio, 'Marcou na página do orçamento: ' + extras.map(e => e.nome + (e.variacao ? ' (' + e.variacao + ')' : '')).join(', '), 'cliente');
+            }
           }
           const cat = orcamento.CATALOGO[op.codigo];
           const nomeOp = cat ? cat.nome : op.nome;
-          const texto = `Oi! Quero reservar ${/^Cabana/.test(nomeOp) ? 'a' : 'o'} ${nomeOp} de ${orcamento.periodo(o.data_entrada, o.data_saida)} (orçamento ${token.slice(0, 6)}).`;
+          const texto = `Oi! Quero reservar ${/^Cabana/.test(nomeOp) ? 'a' : 'o'} ${nomeOp} de ${orcamento.periodo(o.data_entrada, o.data_saida)} (orçamento ${token.slice(0, 6)}).`
+            + (extras.length ? ` Também quero incluir: ${extras.map(e => e.nome + (e.variacao ? ' (' + e.variacao + ')' : '')).join(', ')}.` : '');
           json(res, 200, { ok: true, whatsapp: o.numero_whatsapp ? `https://wa.me/${o.numero_whatsapp}?text=${encodeURIComponent(texto)}` : null });
         } catch (e) { json(res, 400, { ok: false }); }
       });

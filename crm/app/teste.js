@@ -22,6 +22,15 @@ const MSG_AUDIO = '66666666-6666-6666-6666-666666666666';
 const MSG_BIB = '88888888-8888-8888-8888-888888888888';
 // "Drive" falso (banco de imagens) e a tabela fotos_biblioteca falsa
 const fotosBib = [];
+// Produtos, ofertas e vendas falsos (Etapa C2)
+const PRODS = [
+  { codigo: 'COMBO', nome: 'Combo boia cross + arvorismo', descricao: 'Duas aventuras', preco: 'R$ 170 por pessoa', preco_valor: 170, unidade: 'pessoa', perfis: ['Casal', 'Família com filhos'], idade_minima: 5, altura_minima_cm: 115, variacoes: [], adicionais: [], grupo_fotos: 'BOIA', tipo_reserva: 'ativ', regras: '5 anos ou mais', quando_oferecer: 'Na cotação', antecedencia_dias: 0, prioridade: 1, ativo: true },
+  { codigo: 'PIQ', nome: 'Piquenique no rio', descricao: null, preco: 'R$ 90 por pessoa', regras: null, quando_oferecer: null, antecedencia_dias: 1, prioridade: 6, ativo: true },
+  { codigo: 'DECO', nome: 'Decoração especial', descricao: 'Preparada no quarto', preco: 'Simples R$ 350 ou Completa R$ 600', preco_valor: null, unidade: 'unidade', perfis: ['Casal'], variacoes: [{ nome: 'Simples', preco: 350 }, { nome: 'Completa', preco: 600, descricao: 'Com pétalas e espumante' }], adicionais: [], tipo_reserva: 'simples', antecedencia_dias: 3, prioridade: 4, ativo: true },
+  { codigo: 'MASS', nome: 'Massagem', preco: 'R$ 220 por pessoa', unidade: 'pessoa', variacoes: [{ nome: 'Massagem360', preco: 220 }], adicionais: [{ nome: 'Pedras quentes', preco: 50 }, { nome: 'Cone hindu', preco: 80 }], tipo_reserva: 'terc', antecedencia_dias: 0, prioridade: 5, ativo: true },
+];
+const ofertasF = [], vendasF = [];
+let iaOferta = '';
 const RAIZ_DRIVE = '1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5';
 const JPG_DRIVE = require('child_process').execFileSync('ffmpeg', ['-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc=size=1600x900', '-frames:v', '1', '-f', 'mjpeg', '-']);
 const falso = http.createServer((req, res) => {
@@ -47,6 +56,22 @@ const falso = http.createServer((req, res) => {
       if (u.pathname.startsWith('/thumb/FOTO-DRIVE-01=s')) { res.writeHead(200, { 'Content-Type': 'image/jpeg' }); return res.end(JPG_DRIVE); }
       return responder(404, { error: { message: 'File not found' } });
     }
+    if (req.url.startsWith('/rest/v1/produtos?codigo=eq.')) return responder(200, PRODS.filter(p => p.codigo === req.url.split('codigo=eq.')[1].split('&')[0]));
+    if (req.url.startsWith('/rest/v1/negocios?conversa_id=eq.')) return responder(200, [{ id: 'aaaaaaaa-0000-0000-0000-000000000001', data_entrada: '2026-11-20', etapa: 'atend' }]);
+    if (req.url.startsWith('/rest/v1/ofertas')) {
+      if (req.method === 'POST') { const o = { id: crypto.randomUUID(), situacao: 'oferecido', criado_em: new Date().toISOString(), ...json }; ofertasF.unshift(o); return responder(201, [o]); }
+      const id = (req.url.match(/id=eq\.([0-9a-f-]+)/) || [])[1];
+      if (req.method === 'PATCH') { Object.assign(ofertasF.find(o => o.id === id), json); res.writeHead(204); return res.end(); }
+      if (req.url.includes('conversa_id=eq.')) return responder(200, ofertasF.filter(o => o.conversa_id === req.url.split('conversa_id=eq.')[1].split('&')[0]));
+      return responder(200, ofertasF.filter(o => o.id === id));
+    }
+    if (req.url.startsWith('/rest/v1/vendas')) {
+      if (req.method === 'POST') { const v = { id: crypto.randomUUID(), situacao: 'vendido', ...json }; vendasF.push(v); return responder(201, [v]); }
+      const id = (req.url.match(/id=eq\.([0-9a-f-]+)/) || [])[1];
+      if (req.method === 'PATCH') { Object.assign(vendasF.find(v => v.id === id), json); res.writeHead(204); return res.end(); }
+      return responder(200, vendasF.filter(v => v.id === id));
+    }
+    if (req.url.startsWith('/rest/v1/sugestoes?id=eq.') && req.method === 'GET') return responder(200, [{ conversa_id: '11111111-1111-1111-1111-111111111111', ferramentas: { produto_oferecido: iaOferta || null } }]);
     if (req.url.startsWith('/rest/v1/fotos_biblioteca')) {
       if (req.method === 'GET') return responder(200, fotosBib);
       if (req.method === 'POST') { const i = fotosBib.findIndex(f => f.arquivo === json.arquivo); if (i >= 0) Object.assign(fotosBib[i], json); else fotosBib.push({ ordem: 100, criado_em: new Date().toISOString(), ...json }); res.writeHead(201); return res.end(); }
@@ -100,7 +125,7 @@ const falso = http.createServer((req, res) => {
     if (req.url === '/rest/v1/contato_identificadores' || req.url === '/rest/v1/negocio_eventos' || (req.url === '/rest/v1/tarefas' && req.method === 'POST')) { res.writeHead(201); return res.end(); }
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'GET') return responder(200, [{ negocio_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', tipo: 'Ligar' }]);
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
-    if (req.url.startsWith('/rest/v1/produtos?ativo=eq.true')) return responder(200, [{ codigo: 'COMBO', nome: 'Combo boia cross + arvorismo', descricao: 'Duas aventuras', preco: 'R$ 170 por pessoa', regras: '5 anos ou mais', quando_oferecer: 'Na cotação', antecedencia_dias: 0, prioridade: 1 }, { codigo: 'PIQ', nome: 'Piquenique no rio', descricao: null, preco: 'R$ 90 por pessoa', regras: null, quando_oferecer: null, antecedencia_dias: 1, prioridade: 6 }]);
+    if (req.url.startsWith('/rest/v1/produtos?ativo=eq.true')) return responder(200, PRODS);
     if (req.url.startsWith('/rest/v1/respostas?ativo=eq.true')) return responder(200, [{ id: 'r-1', pergunta: 'Aceita pet?', resposta: 'Não aceitamos pets, {nome}.', fixa: true }, { id: 'r-2', pergunta: 'Fica longe do centro?', resposta: 'São 6 km de asfalto.', fixa: false }]);
     if ((req.url === '/rest/v1/produtos' || req.url === '/rest/v1/agencias' || req.url === '/rest/v1/respostas') && req.method === 'POST') { if (json && json.codigo === 'DUP') return responder(409, {}); res.writeHead(201); return res.end(); }
     if (/^\/rest\/v1\/(produtos|agencias|respostas|sugestoes)\?id=eq\./.test(req.url) && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
@@ -127,7 +152,7 @@ const falso = http.createServer((req, res) => {
         content: [{ type: 'tool_use', id: 'toolu_1', name: 'consultar_disponibilidade', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], finalidade: 'cotacao' } }],
         usage: { input_tokens: 10, output_tokens: 20 } });
       return responder(200, { id: 'msg_1', type: 'message', role: 'assistant', model: b.model, stop_reason: 'end_turn', stop_sequence: null,
-        content: [{ type: 'text', text: JSON.stringify({ mensagem: 'Oi! Tenho sim [[valor do Silbeck]]', notas_internas: 'Consultar Silbeck', precisa_equipe: false }) }],
+        content: [{ type: 'text', text: JSON.stringify({ mensagem: 'Oi! Tenho sim [[valor do Silbeck]]', notas_internas: 'Consultar Silbeck', precisa_equipe: false, produto_oferecido: iaOferta }) }],
         usage: { input_tokens: 10, output_tokens: 20, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 } });
     }
     if (req.url === '/graph/111/messages') return responder(200, { messages: [{ id: 'wamid.SAIDA' }] });
@@ -468,6 +493,64 @@ falso.listen(0, () => {
     r = await api('/api/importar-questionario', {});
     const ij = await r.json();
     assert.equal(r.status, 200, JSON.stringify(ij)); assert.ok(ij.importadas > 40);
+
+    // Etapa C2: produtos completos, oferta (1 por conversa), resposta, venda com tarefas e oferta do Gilberto
+    const P = require('./produtos');
+    assert.equal(P.precoTexto({ unidade: 'unidade', variacoes: [{ nome: 'Simples', preco: 350 }, { nome: 'Completa', preco: 600 }] }), 'Simples R$ 350 ou Completa R$ 600');
+    assert.equal(P.precoTexto({ unidade: 'pessoa', preco_valor: 170, variacoes: [] }), 'R$ 170 por pessoa');
+    assert.deepEqual(P.calcularVenda(PRODS[3], { variacao: 'Massagem360', adicionais: ['Pedras quentes', 'Cone hindu'], quantidade: 2 }), { variacao: 'Massagem360', adicionais: [{ nome: 'Pedras quentes', preco: 50 }, { nome: 'Cone hindu', preco: 80 }], quantidade: 2, valor_unitario: 350, valor_total: 700 });
+    assert.throws(() => P.calcularVenda(PRODS[2], { quantidade: 1 }), /Escolha a opção/);
+    assert.throws(() => P.calcularVenda(PRODS[3], { variacao: 'Massagem360', adicionais: ['Brinde'] }), /Adicional inválido/);
+    const tDeco = P.tarefasDaVenda(PRODS[2], { variacao: 'Completa', quantidade: 1, adicionais: [], valor_total: 600, data_uso: '2026-11-20' }, {}, new Date('2026-10-02T12:00:00Z'));
+    assert.deepEqual(tDeco.map(t => [t.tipo, t.quando]), [['Preparar Decoração especial', '2026-11-17T13:00:00.000Z'], ['Lançar na conta do hóspede', '2026-11-20T13:00:00.000Z']]);
+    assert.ok(tDeco[1].descricao.includes('R$ 600') && tDeco[1].descricao.includes('check-out'));
+    assert.equal(P.tarefasDaVenda(PRODS[0], { quantidade: 2, adicionais: [], valor_total: 340 }, {}, new Date('2026-10-02T12:00:00Z'))[0].tipo, 'Agendar Combo boia cross + arvorismo');
+    r = await api('/api/produto', { codigo: 'DECO2', nome: 'Decoração', preco: '', variacoes: [{ nome: 'Simples', preco: '350' }, { nome: 'Completa', preco: 600, descricao: 'Com pétalas' }], perfis: ['Casal'], grupo_fotos: 'BOIA', idade_minima: '', unidade: 'unidade' });
+    assert.equal(r.status, 200, await r.clone().text());
+    const pd = chamadas.findLast(c => c.url === '/rest/v1/produtos' && c.metodo === 'POST').corpo;
+    assert.deepEqual([pd.preco, pd.variacoes[1].descricao, pd.perfis, pd.idade_minima, pd.grupo_fotos], ['Simples R$ 350 ou Completa R$ 600', 'Com pétalas', ['Casal'], null, 'BOIA']);
+    assert.equal((await api('/api/produto', { codigo: 'X', nome: 'x', preco: 'y', perfis: ['Marciano'] })).status, 400);
+    assert.equal((await api('/api/produto', { codigo: 'X', nome: 'x', preco: 'y', variacoes: [{ nome: 'A' }] })).status, 400);
+    assert.equal((await api('/api/produto', { codigo: 'X', nome: 'x', preco: 'y', grupo_fotos: '../x' })).status, 400);
+    r = await api('/api/oferta', { conversa_id: conv, produto_codigo: 'COMBO' });
+    const of1 = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(of1));
+    assert.deepEqual([of1.oferta.por, of1.oferta.autor_id, of1.oferta.negocio_id], ['equipe', 'u-1', 'aaaaaaaa-0000-0000-0000-000000000001']);
+    assert.equal((await api('/api/oferta', { conversa_id: conv, produto_codigo: 'DECO' })).status, 409, '1 oferta por conversa');
+    assert.equal((await api('/api/oferta', { conversa_id: conv, produto_codigo: 'NADA', forcar: true })).status, 404);
+    // O Gilberto vê a oferta já feita
+    pedidosIA.length = 0;
+    await (await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-equipe' }, body: JSON.stringify({ conversa_id: conv }) })).json();
+    const ctxIA = JSON.stringify(pedidosIA[0].messages.at(-1));
+    assert.ok(ctxIA.includes('Ofertas de produtos nesta conversa: Combo boia cross + arvorismo (oferecido, sem resposta, por a equipe)'), ctxIA.slice(0, 300));
+    assert.ok(pedidosIA[0].system[0].text.includes('opções: Simples R$ 350; Completa R$ 600 (Com pétalas e espumante)'), 'variações no catálogo do Gilberto');
+    assert.ok(pedidosIA[0].system[0].text.includes('fotos: enviar_fotos com codigo_acomodacao "BOIA"'));
+    r = await api('/api/oferta-resposta', { id: of1.oferta.id, situacao: 'aceito' });
+    assert.equal(r.status, 200);
+    r = await api('/api/venda', { conversa_id: conv, oferta_id: of1.oferta.id, produto_codigo: 'DECO', variacao: 'Completa', quantidade: 1, data_uso: '2026-11-20', horario: '', observacoes: 'Bodas' });
+    const vj1 = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(vj1));
+    assert.deepEqual([vj1.venda.valor_total, vj1.venda.variacao, vj1.venda.pagamento, vj1.venda.criado_por], [600, 'Completa', undefined, 'u-1']);
+    assert.deepEqual(vj1.tarefas, ['Preparar Decoração especial', 'Lançar na conta do hóspede']);
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.tipo, 'Lançar na conta do hóspede');
+    assert.ok(chamadas.findLast(c => c.url === '/rest/v1/negocio_eventos').corpo.texto.startsWith('Venda: Decoração especial (Completa) · R$ 600'));
+    assert.equal(ofertasF.find(o => o.id === of1.oferta.id).situacao, 'aceito');
+    assert.equal((await api('/api/venda', { conversa_id: conv, produto_codigo: 'DECO', variacao: 'Luxo' })).status, 400);
+    assert.equal((await api('/api/venda', { conversa_id: conv, produto_codigo: 'DECO', variacao: 'Simples', data_uso: 'amanhã' })).status, 400);
+    assert.equal((await api('/api/venda', { conversa_id: conv, produto_codigo: 'PIQ', quantidade: 1 })).status, 400, 'sem preço em número');
+    r = await api('/api/venda-situacao', { id: vj1.venda.id, situacao: 'lancado' });
+    assert.equal(r.status, 200); assert.equal(vendasF[0].situacao, 'lancado'); assert.equal(vendasF[0].lancado_por, 'u-1');
+    // Sugestão do Gilberto com oferta, enviada pela equipe: vira oferta "pelo Gilberto" (se a conversa ainda não teve)
+    ofertasF.length = 0; iaOferta = 'COMBO';
+    const sgo = await (await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-equipe' }, body: JSON.stringify({ conversa_id: conv }) })).json();
+    assert.equal(sgo.produto_oferecido, 'COMBO');
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/sugestoes' && c.metodo === 'POST').corpo.ferramentas.produto_oferecido, 'COMBO');
+    r = await api('/api/sugestao', { id: 'dddddddd-dddd-dddd-dddd-dddddddddddd', situacao: 'usada', motivo: 'Enviada sem mudanças' });
+    assert.equal((await r.json()).oferta, 'Combo boia cross + arvorismo');
+    assert.deepEqual([ofertasF.length, ofertasF[0].por], [1, 'gilberto']);
+    await api('/api/sugestao', { id: 'dddddddd-dddd-dddd-dddd-dddddddddddd', situacao: 'usada' });
+    assert.equal(ofertasF.length, 1, 'não duplica');
+    iaOferta = ''; ofertasF.length = 0;
     const imp = chamadas.findLast(c => c.url === '/rest/v1/respostas' && c.metodo === 'POST').corpo;
     assert.ok(Array.isArray(imp) && imp.every(x => x.origem === 'questionario') && !imp.some(x => x.pergunta === 'Aceita pet?'));
     // Testar o agente: sem conversa nem gravação
@@ -539,6 +622,14 @@ falso.listen(0, () => {
     const q = await r.json();
     assert.ok(q.whatsapp.startsWith('https://wa.me/15551829766?text=') && decodeURIComponent(q.whatsapp).includes('o Bangalô Especial'));
     assert.equal((await fetch(base + '/o/' + tok + '/quero', { method: 'POST', body: JSON.stringify({ codigo: 'CBM' }) })).status, 404);
+    // Extras na página: o cliente marca, vai na mensagem e vira oferta aceita para a equipe
+    assert.ok(html.includes('data-codigo="DECO"') && html.includes('value="Completa"') && html.includes('class="ex-sel"') && html.includes('class="ex-foto" src="/fotos/BOIA-1.jpg"'), 'extras selecionáveis com foto');
+    ofertasF.length = 0;
+    r = await fetch(base + '/o/' + tok + '/quero', { method: 'POST', body: JSON.stringify({ codigo: 'BGE', extras: [{ codigo: 'DECO', variacao: 'Completa' }, { codigo: 'COMBO' }, { codigo: 'FALSO' }, { codigo: 'DECO', variacao: 'Simples' }] }) });
+    const qx = decodeURIComponent((await r.json()).whatsapp);
+    assert.ok(qx.includes('Também quero incluir: Decoração especial (Completa), Combo boia cross + arvorismo.'), qx);
+    assert.deepEqual(ofertasF.map(o => [o.produto_nome, o.por, o.situacao]).reverse(), [['Decoração especial (Completa)', 'pagina', 'aceito'], ['Combo boia cross + arvorismo', 'pagina', 'aceito']]);
+    ofertasF.length = 0;
     assert.equal((await fetch(base + '/o/' + 'x'.repeat(22))).status, 404);
     assert.equal((await fetch(base + '/o/curto')).status, 404);
     for (const f of ['/o/orcamento.css', '/o/orcamento.js', '/o/logo-branco.png']) assert.equal((await fetch(base + f)).status, 200, f);

@@ -18,6 +18,7 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 | `009_produtos_agencias_ajustes.sql` | `produtos` (já com combo, boia cross, arvorismo, decoração e massagem), `agencias`, `respostas` (biblioteca) e `sugestoes` (revisão das sugestões do Gilberto) | 02/10/2026 (dono) |
 | `010_biblioteca_origem.sql` | coluna `origem` em `respostas` (equipe, questionário ou revisão) | 02/10/2026 (dono) |
 | `011_fotos_biblioteca.sql` | `fotos_biblioteca`: fotos que a equipe trouxe do Drive e fotos da curadoria tiradas/devolvidas no Banco de fotos | 02/10/2026 (dono) |
+| `012_produtos_vendas.sql` | produtos completos (para quem, idade e altura, preço em número, variações, adicionais, fotos), `ofertas` (1 por conversa) e `vendas` (na conta do hóspede, com tarefas) | (pendente: rodar no SQL Editor) |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.

@@ -347,7 +347,7 @@
   let orcsCache = [];
   async function pintarOrcamentos(id) {
     const box = $('orcs');
-    const { data, error } = await sb.from('orcamentos').select('id,token,fonte,opcoes,aberturas,ultima_abertura_em,escolhida,criado_em,data_entrada,data_saida')
+    const { data, error } = await sb.from('orcamentos').select('id,token,fonte,opcoes,aberturas,ultima_abertura_em,escolhida,criado_em,data_entrada,data_saida,adultos,criancas_idades')
       .eq('conversa_id', id).order('criado_em', { ascending: false }).limit(10);
     if (aberta !== id) return;
     orcsCache = error ? [] : data || [];
@@ -460,9 +460,13 @@
     try {
       const j = await chamarApi('/api/enviar', { conversa_id: id, baloes: partes });
       mostrar(j.enviadas);
+      if (ofertaPendente && ofertaPendente.conversa === id) {
+        const op = ofertaPendente; ofertaPendente = null;
+        chamarApi('/api/oferta', { conversa_id: id, produto_codigo: op.codigo, forcar: true }).then(() => toast('Oferta registrada: ' + op.nome + '. Quando o cliente responder, marque em 🛍 Produtos.')).catch(e => toast(e.message));
+      }
       if (sugestaoEmUso && sugestaoEmUso.conversa === id) {
         const igual = sugestaoEmUso.texto.trim() === txt;
-        chamarApi('/api/sugestao', { id: sugestaoEmUso.id, situacao: 'usada', motivo: igual ? 'Enviada sem mudanças' : 'Enviada com edição da equipe' }).then(contarRevisao).catch(() => {});
+        chamarApi('/api/sugestao', { id: sugestaoEmUso.id, situacao: 'usada', motivo: igual ? 'Enviada sem mudanças' : 'Enviada com edição da equipe' }).then(r => { contarRevisao(); if (r.oferta) toast('Oferta do Gilberto registrada: ' + r.oferta + '.'); }).catch(() => {});
         sugestaoEmUso = null;
       }
       $('resposta').value = '';
@@ -718,7 +722,7 @@
   });
 
   // ---------- Painéis da conversa (trilho à direita) ----------
-  const TITULOS = { his: 'Ficha e histórico', orc: 'Montar orçamento', vag: 'Vagas por acomodação', res: 'Reservas e pagamentos', tar: 'Tarefas do cliente' };
+  const TITULOS = { his: 'Ficha e histórico', orc: 'Montar orçamento', pro: 'Produtos', vag: 'Vagas por acomodação', res: 'Reservas e pagamentos', tar: 'Tarefas do cliente' };
   $('cx-trilho').addEventListener('click', e => {
     const b = e.target.closest('[data-p]'); if (!b) return;
     painel = painel === b.dataset.p ? '' : b.dataset.p;
@@ -740,6 +744,7 @@
     if (painel === 'vag') painelVagas(lat);
     if (painel === 'res') lat.append(el('p', { class: 'lat-txt', text: 'As reservas criadas no Silbeck, a cobrança do sinal (Pix ou cartão) e a baixa automática aparecem aqui. Chega na etapa E, depois que o Silbeck real e os bancos estiverem ligados.' }));
     if (painel === 'tar') painelTarefas(lat, c);
+    if (painel === 'pro') painelProdutos(lat, c);
   }
 
   function painelFicha(lat, c) {
@@ -909,28 +914,66 @@
     const box = $('prod-grade'); box.textContent = '';
     if (error) { box.append(el('div', { class: 'vazio', text: 'Os produtos ainda não estão no banco: falta rodar a migração 009 no Supabase.' })); return; }
     produtos = data || [];
-    produtos.forEach(p => box.append(el('div', { class: 'cartao item-cartao' + (p.ativo ? '' : ' inativo') },
-      el('h3', {}, p.nome, el('small', { text: p.codigo })),
-      el('span', { class: 'preco', text: p.preco }),
-      p.descricao ? el('p', { text: p.descricao }) : null,
-      p.regras ? el('p', { text: 'Regras: ' + p.regras }) : null,
-      el('p', { text: TIPO_RESERVA[p.tipo_reserva] + (p.quando_oferecer ? ' · oferecer: ' + p.quando_oferecer : '') + (p.antecedencia_dias ? ' · ' + p.antecedencia_dias + ' dias de antecedência' : '') + ' · prioridade ' + p.prioridade }),
-      el('div', { class: 'acoes' }, el('button', { class: 'btn-mini', type: 'button', text: 'Editar', onclick: () => formProduto(p) }),
-        el('button', { class: 'btn-mini', type: 'button', text: p.ativo ? 'Pausar (o Gilberto deixa de oferecer)' : 'Reativar', onclick: async () => { try { await chamarApi('/api/produto', { id: p.id, ativo: !p.ativo }); toast(p.ativo ? 'Produto pausado.' : 'Produto reativado.'); carregarProdutos(); } catch (e) { toast(e.message); } } })))));
+    const nomeGrupo = g => ((biblioteca || []).find(x => x.grupo === g) || {}).nome || g;
+    const fotoDe = g => { const x = g && (biblioteca || []).find(b => b.grupo === g); return x && x.fotos[0] ? x.fotos[0].arquivo : null; };
+    if (!biblioteca) carregarBiblioteca().then(() => { if (!document.querySelector('section[data-painel="produtos"]').hidden) carregarProdutos(); }).catch(() => {});
+    produtos.forEach(p => {
+      const vs = p.variacoes || [], ads = p.adicionais || [], foto = fotoDe(p.grupo_fotos);
+      const para = [p.perfis && p.perfis.length ? p.perfis.join(', ') : 'Todos os perfis', p.idade_minima ? 'a partir de ' + p.idade_minima + ' anos' : '', p.altura_minima_cm ? 'mínimo ' + (p.altura_minima_cm / 100).toLocaleString('pt-BR') + ' m' : ''].filter(Boolean).join(' · ');
+      box.append(el('div', { class: 'cartao item-cartao' + (p.ativo ? '' : ' inativo') },
+        foto ? el('img', { class: 'prod-foto', src: '/fotos/' + foto, alt: p.nome, loading: 'lazy' }) : null,
+        el('h3', {}, p.nome, el('small', { text: p.codigo })),
+        el('span', { class: 'preco', text: p.preco }),
+        p.descricao ? el('p', { text: p.descricao }) : null,
+        vs.length ? el('p', { text: 'Opções: ' + vs.map(v => v.nome + ' ' + reais(v.preco)).join(' · ') }) : null,
+        ads.length ? el('p', { text: 'Adicionais: ' + ads.map(a => a.nome + ' +' + reais(a.preco)).join(' · ') }) : null,
+        el('p', { text: 'Para: ' + para }),
+        p.regras ? el('p', { text: 'Regras: ' + p.regras }) : null,
+        el('p', { text: TIPO_RESERVA[p.tipo_reserva] + (p.quando_oferecer ? ' · oferecer: ' + p.quando_oferecer : '') + (p.antecedencia_dias ? ' · ' + p.antecedencia_dias + ' dias de antecedência' : '') + ' · prioridade ' + p.prioridade + (p.grupo_fotos ? ' · fotos: ' + nomeGrupo(p.grupo_fotos) : ' · sem fotos ligadas') }),
+        p.preco_valor == null && !vs.length && 'perfis' in p ? el('p', { class: 'aviso-sim', text: '⚠ Falta o preço em número (para registrar vendas). Clique em Editar.' }) : null,
+        el('div', { class: 'acoes' }, el('button', { class: 'btn-mini', type: 'button', text: 'Editar', onclick: () => formProduto(p) }),
+          el('button', { class: 'btn-mini', type: 'button', text: p.ativo ? 'Pausar (o Gilberto deixa de oferecer)' : 'Reativar', onclick: async () => { try { await chamarApi('/api/produto', { id: p.id, ativo: !p.ativo }); toast(p.ativo ? 'Produto pausado.' : 'Produto reativado.'); carregarProdutos(); } catch (e) { toast(e.message); } } }))));
+    });
   }
-  function formProduto(p) {
+  // "Simples = 350 = descrição" por linha  ⇄  [{nome, preco, descricao}]
+  const linhasParaLista = t => String(t || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const [nome, preco, ...resto] = l.split('=').map(x => x.trim());
+    const n = Number(String(preco || '').replace(/[^\d,.]/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.'));
+    if (!nome || !(n >= 0) || preco === undefined || preco === '') throw new Error('Linha sem preço: "' + l + '". Use: Nome = preço');
+    return { nome, preco: n, ...(resto.length && resto.join('=') ? { descricao: resto.join('=') } : {}) };
+  });
+  const listaParaLinhas = l => (l || []).map(x => x.nome + ' = ' + x.preco + (x.descricao ? ' = ' + x.descricao : '')).join('\n');
+  async function formProduto(p) {
     p = p || {};
+    if (!biblioteca) await carregarBiblioteca().catch(() => {});
+    const novos = 'perfis' in p || !p.id; // banco com a migração 012
     abrirForm(p.id ? 'Editar produto' : 'Novo produto', [
       { k: 'nome', rotulo: 'Nome', valor: p.nome, largo: true },
       { k: 'codigo', rotulo: 'Código', valor: p.codigo, at: { maxlength: '8' } },
-      { k: 'preco', rotulo: 'Preço (como o cliente lê)', valor: p.preco, dica: 'R$ 170 por pessoa' },
-      { k: 'descricao', rotulo: 'Descrição', tipo: 'textarea', valor: p.descricao, largo: true },
-      { k: 'regras', rotulo: 'Regras (idade, altura, restrições)', valor: p.regras, largo: true },
+      { k: 'preco_valor', rotulo: 'Preço em número (se não tiver opções)', tipo: 'number', valor: p.preco_valor ?? '', at: { min: '0', step: '0.01' } },
+      { k: 'unidade', rotulo: 'O preço é', tipo: 'select', valor: p.unidade || 'unidade', opcoes: [['unidade', 'por unidade / pedido'], ['pessoa', 'por pessoa']] },
+      { k: 'variacoes', rotulo: 'Opções com preço próprio (uma por linha: Nome = preço = descrição)', tipo: 'textarea', largo: true, valor: listaParaLinhas(p.variacoes), dica: 'Simples = 350 = Balão e até 8 polaroids\nCompleta = 600 = Com pétalas, tábua de frios e espumante' },
+      { k: 'adicionais', rotulo: 'Adicionais (uma por linha: Nome = preço)', tipo: 'textarea', largo: true, valor: listaParaLinhas(p.adicionais), dica: 'Pedras quentes = 50' },
+      { k: 'preco', rotulo: 'Preço como o cliente lê (vazio = o CRM monta)', valor: p.preco, dica: 'R$ 170 por pessoa', largo: true },
+      { k: 'descricao', rotulo: 'Descrição (vai na oferta e na página do orçamento)', tipo: 'textarea', valor: p.descricao, largo: true },
+      { k: 'regras', rotulo: 'Regras (restrições, horários)', valor: p.regras, largo: true },
+      ...PERFIS.map((x, i) => ({ k: 'perfil_' + i, rotulo: 'Para: ' + x, tipo: 'check', valor: (p.perfis || []).includes(x) })),
+      { k: 'idade_minima', rotulo: 'Idade mínima (anos)', tipo: 'number', valor: p.idade_minima ?? '', at: { min: '0' } },
+      { k: 'altura_minima_cm', rotulo: 'Altura mínima (cm)', tipo: 'number', valor: p.altura_minima_cm ?? '', at: { min: '0' } },
+      { k: 'grupo_fotos', rotulo: 'Fotos (categoria do Banco de fotos)', tipo: 'select', valor: p.grupo_fotos || '', opcoes: [['', 'Sem fotos'], ...(biblioteca || []).map(g => [g.grupo, g.nome])] },
       { k: 'tipo_reserva', rotulo: 'Como se reserva', tipo: 'select', valor: p.tipo_reserva || 'simples', opcoes: Object.entries(TIPO_RESERVA) },
       { k: 'quando_oferecer', rotulo: 'Quando oferecer', tipo: 'select', valor: p.quando_oferecer || 'Na cotação', opcoes: ['Na cotação', '3 dias antes da chegada', 'Durante a estadia', 'Cotação e estadia'].map(x => [x, x]) },
       { k: 'antecedencia_dias', rotulo: 'Antecedência mínima (dias)', tipo: 'number', valor: p.antecedencia_dias ?? 0, at: { min: '0' } },
       { k: 'prioridade', rotulo: 'Prioridade (1 = oferecer primeiro)', tipo: 'number', valor: p.prioridade ?? 9, at: { min: '0' } },
-    ], async v => { await chamarApi('/api/produto', { ...(p.id ? { id: p.id } : {}), ...v }); toast('Produto salvo. O Gilberto passa a usar em até 1 minuto.'); carregarProdutos(); });
+    ], async v => {
+      const dados = { nome: v.nome, codigo: v.codigo, preco: v.preco, descricao: v.descricao, regras: v.regras, tipo_reserva: v.tipo_reserva, quando_oferecer: v.quando_oferecer, antecedencia_dias: v.antecedencia_dias, prioridade: v.prioridade };
+      if (novos) Object.assign(dados, { preco_valor: v.preco_valor, unidade: v.unidade, variacoes: linhasParaLista(v.variacoes), adicionais: linhasParaLista(v.adicionais),
+        perfis: PERFIS.filter((x, i) => v['perfil_' + i]), idade_minima: v.idade_minima, altura_minima_cm: v.altura_minima_cm, grupo_fotos: v.grupo_fotos });
+      if (dados.variacoes && dados.variacoes.length && v.preco === (p.preco || '') && p.id) dados.preco = ''; // opções mudaram: o CRM refaz o preço de leitura
+      await chamarApi('/api/produto', { ...(p.id ? { id: p.id } : {}), ...dados });
+      toast('Produto salvo. O Gilberto passa a usar em até 1 minuto.' + (novos ? '' : ' (Rode a migração 012 para os campos novos.)'));
+      carregarProdutos();
+    });
   }
   $('prod-novo').addEventListener('click', () => formProduto(null));
 
@@ -1349,6 +1392,130 @@
     return el('select', { class: 'etapa-sel', 'aria-label': 'Etapa no funil', title: 'Etapa no funil', onchange: e => mover(n, e.target.value) },
       ETAPAS.map(([k, t]) => el('option', { value: k, text: t, selected: k === n.etapa })));
   }
+  // ---------- Produtos na conversa: sugeridos para o cliente, oferecer, resposta e venda ----------
+  let ofertaPendente = null; // registrada quando a mensagem com a oferta é enviada
+  const SIT_OFERTA = { oferecido: 'oferecido, aguardando resposta', aceito: 'aceito', recusado: 'recusado' };
+  const POR_OFERTA = { equipe: 'pela equipe', gilberto: 'pelo Gilberto', pagina: 'pelo cliente na página do orçamento' };
+  const SIT_VENDA = { vendido: 'na conta do hóspede · falta lançar', lancado: 'lançado na conta ✓', cancelado: 'cancelado' };
+  const reais = v => 'R$ ' + Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+  const precoProduto = p => {
+    const por = p.unidade === 'pessoa' ? ' por pessoa' : '', vs = p.variacoes || [];
+    if (vs.length) return vs.every(v => Number(v.preco) === Number(vs[0].preco)) ? reais(vs[0].preco) + por : vs.map(v => v.nome + ' ' + reais(v.preco)).join(' ou ') + por;
+    return p.preco_valor != null ? reais(p.preco_valor) + por : p.preco;
+  };
+  // Por que um produto não serve para este cliente (vazio = indicado)
+  function motivoNao(p, ctx) {
+    const m = [];
+    if (p.perfis && p.perfis.length && ctx.perfil && !p.perfis.includes(ctx.perfil)) m.push('pensado para ' + p.perfis.join(', '));
+    const baixas = p.idade_minima ? ctx.idades.filter(i => i < p.idade_minima) : [];
+    if (baixas.length) m.push('criança de ' + baixas.join(' e ') + (baixas.length > 1 || baixas[0] !== 1 ? ' anos' : ' ano') + ' não participa (mínimo ' + p.idade_minima + ')');
+    if (p.antecedencia_dias && ctx.dias != null && ctx.dias < p.antecedencia_dias) m.push('faltam ' + Math.max(0, ctx.dias) + ' dia(s) para a chegada (pedir com ' + p.antecedencia_dias + ')');
+    return m.join(' · ');
+  }
+  function textoOferta(p) {
+    const vs = p.variacoes || [], por = p.unidade === 'pessoa' ? ' por pessoa' : '';
+    const linhas = ['Para deixar a viagem ainda melhor: ' + p.nome + (p.descricao ? '. ' + p.descricao.replace(/\.$/, '') : '') + '.'];
+    if (vs.length > 1) linhas.push(vs.map(v => '• ' + v.nome + ': ' + reais(v.preco) + por + (v.descricao ? ' (' + v.descricao + ')' : '')).join('\n'));
+    else linhas.push(precoProduto(p) + (p.idade_minima ? ', a partir de ' + p.idade_minima + ' anos' + (p.altura_minima_cm ? ' e ' + (p.altura_minima_cm / 100).toLocaleString('pt-BR') + ' m' : '') : '') + '.');
+    linhas.push('Vai para a conta da hospedagem e é acertado no check-out. Se quiserem, já deixo reservado 🌿');
+    return linhas.join('\n');
+  }
+  async function painelProdutos(lat, c) {
+    if (!c) return;
+    const id = c.id;
+    lat.append(el('p', { class: 'lat-txt', text: 'Carregando…' }));
+    const [rp, ro, rv] = await Promise.all([
+      sb.from('produtos').select('*').eq('ativo', true).order('prioridade'),
+      sb.from('ofertas').select('*').eq('conversa_id', id).order('criado_em', { ascending: false }),
+      sb.from('vendas').select('*').eq('conversa_id', id).order('criado_em', { ascending: false }),
+    ]);
+    if (painel !== 'pro' || aberta !== id) return;
+    lat.lastChild.remove();
+    if (rp.error) { lat.append(el('p', { class: 'lat-txt', text: 'Os produtos ainda não estão no banco (migração 009).' })); return; }
+    if (ro.error || rv.error) lat.append(el('div', { class: 'aviso-sim', text: '⚠ Falta rodar a migração 012 no Supabase para registrar ofertas e vendas.' }));
+    const prods = rp.data || [], ofertas = ro.data || [], vendas = rv.data || [];
+    const n = negocioDaConversa(id), orc = orcsCache[0];
+    const entrada = (n && n.data_entrada) || (orc && orc.data_entrada) || null;
+    const ctx = { perfil: n && n.perfil, idades: (orc && orc.criancas_idades) || [], dias: entrada ? Math.round((new Date(entrada + 'T12:00:00') - new Date()) / 864e5) : null };
+    const resumoCtx = [ctx.perfil ? 'Perfil: ' + ctx.perfil : 'Perfil não informado (defina na ficha do negócio)', ctx.idades.length ? 'crianças: ' + ctx.idades.join(', ') + ' anos' : '', entrada ? 'chegada em ' + fmtData(entrada) : ''].filter(Boolean).join(' · ');
+    lat.append(el('p', { class: 'lat-txt', text: resumoCtx }));
+
+    // Ofertas desta conversa e a resposta do cliente
+    if (ofertas.length) {
+      lat.append(el('span', { class: 'rotulo', text: 'Ofertas nesta conversa' }));
+      ofertas.forEach(o => {
+        const prod = prods.find(p => p.codigo === o.produto_codigo);
+        const vendida = vendas.some(v => v.oferta_id === o.id && v.situacao !== 'cancelado');
+        lat.append(el('div', { class: 'lat-card' }, el('b', { text: o.produto_nome }),
+          el('small', { text: SIT_OFERTA[o.situacao] + ' · ' + POR_OFERTA[o.por] + ' · ' + new Date(o.criado_em).toLocaleDateString('pt-BR') + (vendida ? ' · venda registrada' : '') }),
+          el('div', { class: 'acoes' },
+            o.situacao === 'oferecido' ? el('button', { class: 'btn-mini', type: 'button', text: '✓ Aceitou', onclick: () => prod ? formVenda(c, prod, o) : toast('Produto pausado ou excluído.') }) : null,
+            o.situacao === 'oferecido' ? el('button', { class: 'btn-mini', type: 'button', text: '✕ Recusou', onclick: async () => { try { await chamarApi('/api/oferta-resposta', { id: o.id, situacao: 'recusado' }); toast('Anotado. Não oferecemos de novo nesta conversa.'); pintarPainel(); } catch (e) { toast(e.message); } } }) : null,
+            o.situacao === 'aceito' && !vendida && prod ? el('button', { class: 'btn-mini', type: 'button', text: 'Registrar venda', onclick: () => formVenda(c, prod, o) }) : null)));
+      });
+    }
+
+    // Vendas (tudo na conta do hóspede nesta fase)
+    if (vendas.length) {
+      const total = vendas.filter(v => v.situacao !== 'cancelado').reduce((s, v) => s + Number(v.valor_total), 0);
+      lat.append(el('span', { class: 'rotulo', text: 'Vendido · ' + reais(total) }));
+      vendas.forEach(v => lat.append(el('div', { class: 'lat-card' + (v.situacao === 'cancelado' ? ' inativo' : '') },
+        el('b', { text: v.produto_nome + (v.variacao ? ' (' + v.variacao + ')' : '') + ' · ' + reais(v.valor_total) }),
+        el('small', { text: [v.quantidade + 'x', v.data_uso ? fmtData(v.data_uso) : 'data a combinar', v.horario, (v.adicionais || []).map(a => a.nome).join(', '), SIT_VENDA[v.situacao]].filter(Boolean).join(' · ') }),
+        v.situacao === 'cancelado' ? null : el('div', { class: 'acoes' },
+          v.situacao === 'vendido' ? el('button', { class: 'btn-mini', type: 'button', text: '✓ Lançado na conta', onclick: () => situacaoVenda(v, 'lancado') }) : null,
+          el('button', { class: 'btn-mini', type: 'button', text: 'Cancelar venda', onclick: () => { if (confirm('Cancelar esta venda? (as tarefas ficam para a equipe conferir)')) situacaoVenda(v, 'cancelado'); } })))));
+    }
+
+    // Catálogo para este cliente: indicados primeiro, os outros com o motivo
+    const indicados = prods.filter(p => !motivoNao(p, ctx)), outros = prods.filter(p => motivoNao(p, ctx));
+    lat.append(el('div', { class: 'lat-cab' }, el('span', { class: 'rotulo', text: 'Indicados para este cliente' }), el('button', { class: 'btn-mini', type: 'button', text: 'Catálogo', onclick: () => irPara('produtos') })));
+    if (!indicados.length) lat.append(el('p', { class: 'lat-txt', text: 'Nenhum produto indicado para este perfil.' }));
+    const cartao = (p, motivo) => el('div', { class: 'sug-prod' + (motivo ? ' fora' : '') },
+      el('div', { class: 'sug-prod-cab' }, el('b', { text: p.nome }), el('span', { class: 'num', text: precoProduto(p) })),
+      p.descricao ? el('small', { text: p.descricao }) : null,
+      motivo ? el('small', { class: 'motivo', text: '⚠ ' + motivo }) : (p.regras ? el('small', { text: p.regras }) : null),
+      el('div', { class: 'acoes' },
+        el('button', { class: 'btn-mini', type: 'button', text: 'Oferecer', onclick: () => {
+          if (ofertas.length && !confirm('Já houve oferta nesta conversa (' + ofertas[0].produto_nome + '). A regra é 1 oferta por conversa. Oferecer mesmo assim?')) return;
+          if (motivo && !confirm('Atenção: ' + motivo + '. Oferecer mesmo assim?')) return;
+          const ta = $('resposta');
+          ta.value = (ta.value.trim() ? ta.value.trim() + '\n---\n' : '') + textoOferta(p);
+          ofertaPendente = { conversa: id, codigo: p.codigo, nome: p.nome };
+          ajustarAltura(); ta.focus();
+          toast('Texto da oferta no campo de resposta. A oferta é registrada quando você enviar.');
+        } }),
+        p.grupo_fotos ? el('button', { class: 'btn-mini', type: 'button', text: '🖼 Fotos', onclick: () => { gal.cat = p.grupo_fotos; if (!$('galeria').hidden) fecharGaleria(); abrirGaleria(); } }) : null,
+        el('button', { class: 'btn-mini', type: 'button', text: 'Registrar venda', onclick: () => formVenda(c, p, null) })));
+    indicados.forEach(p => lat.append(cartao(p, '')));
+    if (outros.length) {
+      const det = el('details', { class: 'fora-lista' }, el('summary', { text: 'Não indicados para este cliente (' + outros.length + ')' }));
+      outros.forEach(p => det.append(cartao(p, motivoNao(p, ctx))));
+      lat.append(det);
+    }
+    lat.append(el('p', { class: 'lat-txt', text: 'Regra: 1 oferta por conversa; recusou, não insistir. Tudo vai para a conta do hóspede e é acertado no check-out.' }));
+  }
+  async function situacaoVenda(v, situacao) {
+    try { await chamarApi('/api/venda-situacao', { id: v.id, situacao }); toast(situacao === 'lancado' ? 'Marcado como lançado na conta.' : 'Venda cancelada.'); pintarPainel(); } catch (e) { toast(e.message); }
+  }
+  function formVenda(c, p, oferta) {
+    const vs = p.variacoes || [], ads = p.adicionais || [];
+    const n = negocioDaConversa(c.id), orc = orcsCache[0];
+    const pessoas = orc ? orc.adultos + (orc.criancas_idades || []).filter(i => !p.idade_minima || i >= p.idade_minima).length : 1;
+    const campos = [];
+    if (vs.length) campos.push({ k: 'variacao', rotulo: 'Opção', tipo: 'select', valor: vs[0].nome, opcoes: vs.map(v => [v.nome, v.nome + ' · ' + reais(v.preco)]) });
+    campos.push({ k: 'quantidade', rotulo: p.unidade === 'pessoa' ? 'Pessoas' : 'Quantidade', tipo: 'number', valor: p.unidade === 'pessoa' ? pessoas : 1, at: { min: '1', max: '50' } });
+    campos.push({ k: 'data_uso', rotulo: 'Data', tipo: 'date', valor: (n && n.data_entrada) || (orc && orc.data_entrada) || '' });
+    campos.push({ k: 'horario', rotulo: 'Horário (se já combinado)', dica: 'ex.: 14h' });
+    ads.forEach((a, i) => campos.push({ k: 'ad_' + i, rotulo: 'Adicional: ' + a.nome + ' (+' + reais(a.preco) + ')', tipo: 'check' }));
+    campos.push({ k: 'observacoes', rotulo: 'Observações', tipo: 'textarea', largo: true, dica: 'Ex.: aniversário de casamento; balão com "Ana & Rui"' });
+    abrirForm('Venda: ' + p.nome, campos, async v => {
+      const r = await chamarApi('/api/venda', { conversa_id: c.id, oferta_id: oferta ? oferta.id : null, produto_codigo: p.codigo, variacao: v.variacao, quantidade: v.quantidade,
+        data_uso: v.data_uso || null, horario: v.horario, observacoes: v.observacoes, adicionais: ads.filter((a, i) => v['ad_' + i]).map(a => a.nome) });
+      toast('Venda registrada: ' + reais(r.venda.valor_total) + ' na conta do hóspede.' + (r.tarefas.length ? ' Tarefas criadas: ' + r.tarefas.join(', ') + '.' : ''));
+      if (painel === 'pro') pintarPainel();
+    });
+  }
   function painelTarefas(lat, c) {
     const n = c && negocioDaConversa(c.id);
     if (!n) { lat.append(el('p', { class: 'lat-txt', text: funilOk ? 'Esta conversa ainda não tem negócio no funil.' : 'Falta rodar a migração 008 no Supabase.' })); return; }
@@ -1395,6 +1562,12 @@
         $('ao-vivo').textContent = aoVivo ? '● ao vivo' : '○ atualiza a cada 15 s';
         $('ao-vivo').title = aoVivo ? 'Mensagens novas aparecem na hora.' : 'Tempo real indisponível (' + status + (err ? ': ' + err.message : '') + ').';
       });
+    // Ofertas e vendas num canal à parte (se o banco ainda não tiver a migração 012, não derruba o tempo real das mensagens)
+    const repintarProdutos = ({ new: r }) => { if (painel === 'pro' && r && r.conversa_id === aberta) pintarPainel(); };
+    sb.channel('caixa-produtos')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ofertas' }, repintarProdutos)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vendas' }, repintarProdutos)
+      .subscribe();
   }
 
   // ---------- Início ----------

@@ -62,6 +62,18 @@ main{max-width:560px;margin:0 auto;padding-block:20px 40px;padding-inline:16px;d
 .ex h4{margin:0;font-size:15px}
 .ex p{margin:2px 0 4px;font-size:13px;color:var(--sec)}
 .ex .pr{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+.ex{display:flex;gap:12px;align-items:flex-start}
+.ex-foto{width:96px;height:72px;object-fit:cover;border-radius:10px;flex:none}
+.ex-corpo{flex:1;min-width:0}
+.ex-var{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
+.ex-var label{display:inline-flex;align-items:center;gap:6px;font-size:13px;border:1px solid var(--borda);border-radius:999px;padding:5px 10px;cursor:pointer}
+.ex-var label:has(input:checked){border-color:var(--verde-cl);background:var(--verde-suave)}
+.ex-quero{display:inline-flex;align-items:center;gap:8px;margin-top:8px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--borda);border-radius:10px;padding:8px 12px;min-height:24px}
+.ex-quero input,.ex-var input{accent-color:var(--verde);width:18px;height:18px;margin:0}
+.ex.on .ex-quero{border-color:var(--verde-cl);background:var(--verde-suave);color:var(--verde)}
+.barra-extras{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--sup);border-top:1px solid var(--borda);box-shadow:0 -4px 16px rgba(0,0,0,.12);font-size:14px;font-weight:600}
+.barra-extras .btn{padding:10px 14px;font-size:14px}
+body:has(.barra-extras:not([hidden])) main{padding-bottom:80px}
 .cond{margin:0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:6px;color:var(--sec)}
 .cond b{color:var(--texto)}
 .rodape p{margin:0;text-align:center;font-size:13px;color:var(--sec)}

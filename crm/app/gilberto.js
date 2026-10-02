@@ -39,9 +39,22 @@ function montarSistema() {
 }
 const MODELO_SISTEMA = montarSistema();
 const SISTEMA = MODELO_SISTEMA;
+// Um produto do catálogo (tela Produtos) como o Gilberto lê: o que é, preço, opções, para quem e regras.
+const reais = v => 'R$ ' + Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+function linhaProduto(p) {
+  const por = p.unidade === 'pessoa' ? ' por pessoa' : '';
+  const vs = Array.isArray(p.variacoes) ? p.variacoes : [], ads = Array.isArray(p.adicionais) ? p.adicionais : [];
+  return [p.codigo, p.nome + (p.descricao ? ' (' + p.descricao + ')' : ''),
+    vs.length ? 'opções: ' + vs.map(v => v.nome + ' ' + reais(v.preco) + por + (v.descricao ? ' (' + v.descricao + ')' : '')).join('; ') : (p.preco_valor != null ? reais(p.preco_valor) + por : p.preco),
+    ads.length ? 'adicionais: ' + ads.map(a => a.nome + ' ' + reais(a.preco)).join(', ') : '',
+    p.perfis && p.perfis.length ? 'para: ' + p.perfis.join(', ') : '',
+    p.idade_minima ? 'a partir de ' + p.idade_minima + ' anos' : '', p.altura_minima_cm ? 'altura mínima ' + (p.altura_minima_cm / 100).toLocaleString('pt-BR') + ' m' : '',
+    p.regras, p.antecedencia_dias ? 'pedir com ' + p.antecedencia_dias + ' dias de antecedência' : '', p.quando_oferecer ? 'oferecer: ' + p.quando_oferecer : '',
+    p.grupo_fotos ? 'fotos: enviar_fotos com codigo_acomodacao "' + p.grupo_fotos + '"' : '', 'prioridade ' + p.prioridade].filter(Boolean).join(' · ');
+}
 function sistemaCom(catalogo) {
   const prods = catalogo && catalogo.produtos && catalogo.produtos.length
-    ? catalogo.produtos.map(p => [p.codigo, p.nome + (p.descricao ? ' (' + p.descricao + ')' : ''), p.preco, p.regras, p.antecedencia_dias ? 'pedir com ' + p.antecedencia_dias + ' dias de antecedência' : '', p.quando_oferecer ? 'oferecer: ' + p.quando_oferecer : '', 'prioridade ' + p.prioridade].filter(Boolean).join(' · ')).join('\n')
+    ? catalogo.produtos.map(linhaProduto).join('\n')
     : PRODUTOS;
   let fixas = catalogo && catalogo.respostas && catalogo.respostas.filter(r => r.fixa).length
     ? catalogo.respostas.filter(r => r.fixa).map(r => `- id ${r.id} · quando perguntarem: ${r.pergunta}\n  texto exato: ${r.resposta}`).join('\n')
@@ -59,8 +72,9 @@ const FORMATO = {
       mensagem: { type: 'string', description: 'O texto exato para o cliente, em 1 a 3 balões separados por uma linha contendo só ---' },
       notas_internas: { type: 'string', description: 'Para a equipe (não vai ao cliente): o que conferir ou fazer antes de enviar, ferramentas que seriam chamadas, dúvidas.' },
       precisa_equipe: { type: 'boolean', description: 'true se o caso deve ir para uma pessoa (reclamação, cancelamento, alteração, pedido especial, fora da base).' },
+      produto_oferecido: { type: 'string', description: 'Código do produto pago (de <produtos_ativos>) oferecido nesta mensagem, ex.: COMBO. String vazia se a mensagem não oferece produto.' },
     },
-    required: ['mensagem', 'notas_internas', 'precisa_equipe'],
+    required: ['mensagem', 'notas_internas', 'precisa_equipe', 'produto_oferecido'],
     additionalProperties: false,
   },
 };
@@ -127,6 +141,7 @@ Modo: sugestao
 Gatilho deste turno: a equipe pediu uma sugestão de resposta para a última mensagem do cliente
 Contato (dados já conhecidos): nome do perfil do WhatsApp: ${c.nome || 'não informado'}
 Pendências (reservas, cobranças, alertas abertos): não disponíveis nesta fase
+Ofertas de produtos nesta conversa: ${c.ofertas && c.ofertas.length ? c.ofertas.map(o => o.produto_nome + ' (' + ({ oferecido: 'oferecido, sem resposta', aceito: 'aceito', recusado: 'recusado' })[o.situacao] + ', por ' + (o.por === 'gilberto' ? 'você' : 'a equipe') + ')').join('; ') + '. Não ofereça outro produto nesta conversa (no máximo 1 oferta; recusou, não insista), a não ser que o cliente peça.' : 'nenhuma ainda. Se for o momento certo (regra 9), ofereça 1 produto que caiba no grupo e preencha produto_oferecido com o código.'}
 Resumo das conversas anteriores: não disponível
 </contexto_crm>
 Ferramentas ligadas nesta fase: consultar_disponibilidade (vagas e valores do Silbeck), gerar_orcamento (cria a página do orçamento e devolve o link; nesta fase, uma acomodação por opção) e enviar_fotos (escolhe fotos reais da biblioteca; a equipe envia junto com a sua mensagem). Use consultar_disponibilidade sempre que for falar de preço ou vaga e já tiver datas e pessoas (com a idade de cada criança); se faltar algum dado, pergunte ao cliente em vez de chamar. Ao mandar o orçamento, chame gerar_orcamento com as opções escolhidas e coloque o link devolvido na mensagem, exatamente como veio. As outras ferramentas ainda não estão ligadas: não tente chamá-las (quando uma resposta fixa da biblioteca couber, escreva o texto exato dela na mensagem, no lugar de usar_resposta_fixa). Onde precisaria delas (reserva, link de pagamento, alerta), escreva a mensagem com marcadores [[...]] no lugar do dado (ex.: [[link de pagamento]]) e diga em notas_internas o que a equipe precisa fazer. Nunca invente preço nem disponibilidade: só use os valores que a ferramenta devolveu.${silbeck.MODO() === 'simulador' ? ' Nesta fase de testes a ferramenta usa o SIMULADOR do Silbeck: os valores são fictícios; use-os normalmente na mensagem e lembre isso em notas_internas.' : ''}`;
@@ -200,7 +215,7 @@ async function sugerir(historico, conversa, executores = {}, catalogo = null) {
   const txt = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
   let out;
   try { out = JSON.parse(txt); } catch (e) { throw new ErroSugestao(502, 'A sugestão veio num formato inesperado. Tente de novo.'); }
-  return { mensagem: String(out.mensagem || ''), notas_internas: String(out.notas_internas || ''), precisa_equipe: !!out.precisa_equipe, modelo: r.model, cotacoes,
+  return { mensagem: String(out.mensagem || ''), notas_internas: String(out.notas_internas || ''), precisa_equipe: !!out.precisa_equipe, produto_oferecido: String(out.produto_oferecido || '').toUpperCase().slice(0, 8), modelo: r.model, cotacoes,
     simulador: cotacoes.some(c => c.fonte === 'simulador') || orcamentos.some(o => o.fonte === 'simulador'), orcamentos, fotos };
 }
 
