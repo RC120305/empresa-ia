@@ -97,3 +97,5 @@ button,input,textarea{font:inherit;color:inherit}
 .balao .legenda{display:block}
 .balao .transcricao{display:block;margin-top:4px;font-size:14px;color:var(--texto);font-style:italic}
 .balao .transcricao.pendente{color:var(--texto-sec)}
+.orcs{padding:6px 16px;border-bottom:1px solid var(--borda);background:var(--sup);font-size:13px;color:var(--texto-sec);display:flex;flex-direction:column;gap:2px}
+.orcs a{color:var(--prim-texto);font-weight:600}

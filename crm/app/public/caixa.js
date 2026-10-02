@@ -109,6 +109,7 @@
     let ultimoDia = '';
     data.forEach(m => { ultimoDia = adicionarMensagem(m, ultimoDia); });
     if (perto) rolarFim();
+    pintarOrcamentos(id);
   }
 
   // ---------- Lista ----------
@@ -179,6 +180,7 @@
     let ultimoDia = '';
     (data || []).forEach(m => { ultimoDia = adicionarMensagem(m, ultimoDia); });
     rolarFim();
+    pintarOrcamentos(id);
     if (c && c.nao_lidas) { c.nao_lidas = 0; sb.rpc('marcar_conversa_lida', { p_conversa: id }); }
     pintarLista();
   }
@@ -228,6 +230,28 @@
     box.append(b);
     return d;
   }
+  // ---------- Orçamentos da conversa (abertura e escolha do cliente) ----------
+  async function pintarOrcamentos(id) {
+    const box = $('orcs');
+    const { data, error } = await sb.from('orcamentos').select('id,token,fonte,opcoes,aberturas,ultima_abertura_em,escolhida,criado_em')
+      .eq('conversa_id', id).order('criado_em', { ascending: false }).limit(3);
+    if (aberta !== id) return;
+    box.textContent = '';
+    box.hidden = !!error || !data || !data.length;
+    (data || []).forEach(o => {
+      const linha = document.createElement('div');
+      const nomes = (o.opcoes || []).map(x => x.nome);
+      const esc = (o.opcoes || []).find(x => x.codigo === o.escolhida);
+      const a = document.createElement('a');
+      a.href = '/o/' + o.token + '?previa=1'; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = '📄 Orçamento de ' + dia(o.criado_em).slice(0, 5) + (o.fonte === 'simulador' ? ' (teste)' : '');
+      const st = document.createElement('span');
+      st.textContent = ' · ' + nomes.join(', ') + ' · ' + (esc ? '✅ cliente escolheu ' + esc.nome : o.aberturas ? '👀 aberto ' + o.aberturas + 'x (última ' + quando(o.ultima_abertura_em) + ')' : 'ainda não aberto');
+      linha.append(a, st);
+      box.append(linha);
+    });
+  }
+
   // ---------- Fotos, vídeos, áudios e documentos ----------
   // O arquivo vem do servidor do CRM com o login da pessoa e vira um endereço blob: só nesta aba.
   // Carrega só quando o balão aparece na tela e guarda na memória (a lista é redesenhada de tempos em tempos).
@@ -526,6 +550,9 @@
         c.ultima_msg_cliente_em = row.ultima_msg_cliente_em;
         if (aberta === c.id) pintarJanela(c);
         pintarLista();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orcamentos' }, ({ new: o }) => {
+        if (o && o.conversa_id && o.conversa_id === aberta) pintarOrcamentos(aberta);
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mensagens' }, ({ new: m }) => {
         if (m.transcricao_status) document.querySelectorAll('[data-transcricao="' + m.id + '"]').forEach(x => pintarTranscricao(x, m));

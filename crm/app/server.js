@@ -8,6 +8,7 @@ const fs = require('fs');
 const gilberto = require('./gilberto');
 const silbeck = require('./silbeck');
 const transcricao = require('./transcricao');
+const orcamento = require('./orcamento');
 const path = require('path');
 
 const porta = process.env.PORT || 8080;
@@ -28,11 +29,18 @@ const JANELA_MS = 24 * 3600 * 1000;
 
 // Arquivos da caixa de entrada (carregados uma vez; lista fechada, nada de caminho vindo da URL).
 const PUB = path.join(__dirname, 'public');
-const TIPOS = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8' };
+const TIPOS = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.json': 'application/json' };
 const ESTATICOS = {};
 for (const [rota, arquivo] of [['/caixa', 'caixa.html'], ['/caixa.css', 'caixa.css'], ['/caixa.js', 'caixa.js'], ['/vendor/supabase-2.117.2.js', 'vendor/supabase-2.117.2.js']]) {
   try { ESTATICOS[rota] = { corpo: fs.readFileSync(path.join(PUB, arquivo)), tipo: TIPOS[path.extname(arquivo)] }; } catch (e) { /* arquivo ausente: rota fica 404 */ }
 }
+// Página do orçamento e fotos das acomodações: todos os arquivos das pastas public/o e public/fotos (lidos uma vez).
+for (const pasta of ['o', 'fotos']) {
+  let nomes = [];
+  try { nomes = fs.readdirSync(path.join(PUB, pasta)); } catch (e) { /* pasta ausente */ }
+  for (const n of nomes) if (TIPOS[path.extname(n)] && /^[\w.-]+$/.test(n)) ESTATICOS[`/${pasta}/${n}`] = { corpo: fs.readFileSync(path.join(PUB, pasta, n)), tipo: TIPOS[path.extname(n)] };
+}
+const URL_PUBLICA = (process.env.URL_PUBLICA || 'https://crm-377803250649.southamerica-east1.run.app').replace(/\/$/, '');
 function cabecalhosSeguranca() {
   const sup = SUPABASE_URL ? `${SUPABASE_URL} ${SUPABASE_URL.replace(/^https:/, 'wss:')}` : '';
   return {
@@ -343,6 +351,59 @@ async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   return { ok: true, enviadas, id: ult.id, wamid: ult.wamid, enviada_em: ult.enviada_em };
 }
 
+// ---------- Orçamento (página pública /o/<token>) ----------
+const numerosWa = {}; // phone_number_id -> número público do hotel (só dígitos)
+async function numeroWhatsapp(numeroId, buscar) {
+  if (!numeroId || !WA_TOKEN) return null;
+  if (numerosWa[numeroId] !== undefined) return numerosWa[numeroId];
+  const r = await buscar(`${GRAPH}/${encodeURIComponent(numeroId)}?fields=display_phone_number`, { headers: { Authorization: 'Bearer ' + WA_TOKEN }, signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const j = r && r.ok ? await r.json().catch(() => ({})) : {};
+  const n = String(j.display_phone_number || '').replace(/\D/g, '') || null;
+  if (n) numerosWa[numeroId] = n;
+  return n;
+}
+// Cria o orçamento: recota no Silbeck na hora, grava e devolve o link (ferramenta gerar_orcamento).
+async function criarOrcamento(entrada, ctx, buscar = fetch) {
+  if (!bancoLigado()) return { ok: false, erro: 'Banco não configurado.' };
+  const cot = await silbeck.cotar(entrada, buscar);
+  if (!cot.ok) return cot;
+  const m = orcamento.montar(entrada, cot);
+  if (m.erro) return { ok: false, erro: m.erro };
+  const token = orcamento.novoToken();
+  const registro = {
+    token, conversa_id: ctx.conversa_id || null, criado_por: ctx.criado_por || 'gilberto', fonte: cot.fonte,
+    primeiro_nome: String(ctx.primeiro_nome || '').trim().split(/\s+/)[0].slice(0, 40) || null,
+    frase_de_abertura: String(entrada.frase_de_abertura || '').slice(0, 200) || null, persona: entrada.persona || null,
+    data_entrada: entrada.data_entrada, data_saida: entrada.data_saida, adultos: cot.grupo.adultos, criancas_idades: cot.grupo.idades_criancas,
+    pessoas_aptas_combo: Math.max(0, Number(entrada.pessoas_aptas_combo) || 0), opcoes: m.opcoes,
+    numero_whatsapp: await numeroWhatsapp(ctx.numero_id, buscar),
+  };
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/orcamentos`, {
+    method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify(registro), signal: AbortSignal.timeout(5000),
+  });
+  if (!r.ok) {
+    ultimoErroBanco = { quando: new Date().toISOString(), funcao: 'orcamentos', http: r.status, mensagem: (await r.text().catch(() => '')).slice(0, 200) };
+    return { ok: false, erro: 'Não consegui gravar o orçamento agora (o banco precisa da migração 006?). Escreva [[link do orçamento]] e avise a equipe.' };
+  }
+  const salvo = (await r.json())[0] || {};
+  return { ok: true, orcamento_id: salvo.id, link: `${URL_PUBLICA}/o/${token}`, fonte: cot.fonte,
+    opcoes: m.opcoes.map(o => ({ codigo: o.codigo, nome: o.nome, valor_total: o.valor_total, media_por_noite: o.media_por_noite, parcela_6x: o.parcela_6x })),
+    ...(cot.atencao ? { atencao: cot.atencao } : {}) };
+}
+async function lerOrcamento(token, buscar = fetch) {
+  if (!orcamento.tokenValido(token) || !bancoLigado()) return null;
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/orcamentos?token=eq.${token}&select=*`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+  return r.ok ? (await r.json())[0] || null : null;
+}
+// Limite simples por IP para as páginas públicas (60 por minuto).
+const acessos = new Map();
+function limiteExcedido(req) {
+  const ip = String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+  const agora = Date.now(), a = acessos.get(ip);
+  if (!a || agora - a.desde > 60000) { acessos.set(ip, { desde: agora, n: 1 }); if (acessos.size > 5000) acessos.clear(); return false; }
+  return ++a.n > 60;
+}
+
 // ---------- Transcrição de áudio ----------
 // Pedida pela tela (ao mostrar um áudio) ou antes da sugestão do Gilberto. Uma por vez por mensagem.
 const transcrevendo = new Map();
@@ -393,7 +454,7 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
   if (sugerindo.has(id)) throw new ErroEnvio(429, 'Já estou preparando uma sugestão para esta conversa.');
   sugerindo.add(id);
   try {
-    const c = await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${id}&select=id,canal,contato:contatos(nome)`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const c = await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${id}&select=id,canal,numero_id,contato:contatos(nome)`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
     const conv = c.ok ? (await c.json())[0] : null;
     if (!conv) throw new ErroEnvio(404, 'Conversa não encontrada.');
     const url = campos => `${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${id}&select=${campos}&order=enviada_em.desc&limit=40`;
@@ -403,7 +464,9 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
     // Áudios do cliente ainda sem texto: transcreve os 3 mais recentes antes de o Gilberto ler.
     const pendentes = historico.filter(m => m.tipo === 'audio' && m.direcao === 'entrada' && m.id && (!m.transcricao_status || m.transcricao_status === 'falhou')).slice(-3);
     await Promise.all(pendentes.map(m => transcreverMensagem(m, buscar).then(r => { m.transcricao = r.texto; m.transcricao_status = r.status; }).catch(() => {})));
-    return { ok: true, ...(await gilberto.sugerir(historico, { canal: conv.canal, nome: conv.contato && conv.contato.nome })) };
+    const nome = conv.contato && conv.contato.nome;
+    const executores = { gerar_orcamento: entrada => criarOrcamento(entrada, { conversa_id: conv.id, numero_id: conv.numero_id, primeiro_nome: nome, criado_por: 'gilberto' }, buscar) };
+    return { ok: true, ...(await gilberto.sugerir(historico, { canal: conv.canal, nome }, executores)) };
   } catch (e) {
     if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message);
     throw e;
@@ -442,6 +505,45 @@ const servidor = http.createServer((req, res) => {
       .then(r => json(res, 200, { ...r, ipSaida }))
       .catch(e => json(res, 200, { etapa: 'erro', erro: String(e.message || e).slice(0, 150), ipSaida }));
     return;
+  }
+
+  // Página pública do orçamento e o "Quero reservar esta".
+  const mo = url.pathname.match(/^\/o\/([A-Za-z0-9_-]{22})(\/quero)?$/);
+  if (mo) {
+    if (limiteExcedido(req)) { res.writeHead(429, { 'Content-Type': 'text/plain; charset=utf-8', 'Retry-After': '60' }); return res.end('Muitos acessos. Tente de novo em 1 minuto.'); }
+    const token = mo[1];
+    if (!mo[2] && req.method === 'GET') {
+      const previa = url.searchParams.get('previa') === '1';
+      lerOrcamento(token).then(async o => {
+        if (!o) { res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', ...cabecalhosSeguranca() }); return res.end('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hotel Cabanas</title><p style="font-family:sans-serif;padding:24px">Orçamento não encontrado. Fale com a gente pelo WhatsApp que enviamos um novo.</p>'); }
+        if (!previa) await rpc('registrar_abertura_orcamento', { p_token: token }).catch(() => {}); // antes de responder: no Cloud Run a CPU para depois da resposta
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow', ...cabecalhosSeguranca() });
+        res.end(orcamento.pagina(o, { previa }));
+      }).catch(() => { res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Página indisponível agora. Tente de novo em instantes.'); });
+      return;
+    }
+    if (mo[2] && req.method === 'POST') {
+      const partes = [];
+      let tam = 0;
+      req.on('data', p => { tam += p.length; if (tam > 2000) req.destroy(); else partes.push(p); });
+      req.on('end', async () => {
+        try {
+          const corpo = JSON.parse(Buffer.concat(partes).toString('utf8') || '{}');
+          const o = await lerOrcamento(token);
+          const op = o && (o.opcoes || []).find(x => x.codigo === corpo.codigo);
+          if (!op) return json(res, 404, { ok: false });
+          if (!corpo.previa) {
+            await fetch(`${SUPABASE_URL}/rest/v1/orcamentos?id=eq.${o.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ escolhida: op.codigo, escolhida_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) }).catch(() => {});
+            await fetch(`${SUPABASE_URL}/rest/v1/orcamento_eventos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ orcamento_id: o.id, tipo: 'quero_reservar', dados: { codigo: op.codigo } }), signal: AbortSignal.timeout(5000) }).catch(() => {});
+          }
+          const cat = orcamento.CATALOGO[op.codigo];
+          const nomeOp = cat ? cat.nome : op.nome;
+          const texto = `Oi! Quero reservar ${/^Cabana/.test(nomeOp) ? 'a' : 'o'} ${nomeOp} de ${orcamento.periodo(o.data_entrada, o.data_saida)} (orçamento ${token.slice(0, 6)}).`;
+          json(res, 200, { ok: true, whatsapp: o.numero_whatsapp ? `https://wa.me/${o.numero_whatsapp}?text=${encodeURIComponent(texto)}` : null });
+        } catch (e) { json(res, 400, { ok: false }); }
+      });
+      return;
+    }
   }
 
   if (url.pathname === '/webhook/meta' && req.method === 'GET') {

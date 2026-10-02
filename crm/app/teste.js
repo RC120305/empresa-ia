@@ -10,7 +10,8 @@ let janelaAberta = true;
 let ultimoPedidoIA = null;
 const pedidosIA = [];
 const emDias = n => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
-let iaCota = false;
+let iaCota = false, iaOrcamento = false;
+const orcs = [];
 const FAKE = {
   '/auth/v1/user': req => req.headers.authorization === 'Bearer token-equipe' ? { email: 'equipe@teste.com' }
     : req.headers.authorization === 'Bearer token-estranho' ? { email: 'estranho@teste.com' } : null,
@@ -58,6 +59,10 @@ const falso = http.createServer((req, res) => {
         midia_caminho: patch ? patch.corpo.midia_caminho : null, midia_mime: patch ? patch.corpo.midia_mime : null, midia_nome: null }] : []);
     }
     if (req.url === '/rest/v1/rpc/registrar_entrada_whatsapp') return responder(200, { nova: true, mensagem_id: MSG_MIDIA, conversa_id: '11111111-1111-1111-1111-111111111111' });
+    if (req.url === '/graph/111?fields=display_phone_number') return responder(200, { display_phone_number: '+1 555-182-9766', id: '111' });
+    if (req.url === '/rest/v1/orcamentos' && req.method === 'POST') { const o = { id: '77777777-7777-7777-7777-777777777777', aberturas: 0, ...json }; orcs.push(o); return responder(201, [o]); }
+    if (req.url.startsWith('/rest/v1/orcamentos?token=eq.')) return responder(200, orcs.filter(o => o.token === req.url.split('token=eq.')[1].split('&')[0]));
+    if (req.url.startsWith('/rest/v1/orcamentos?id=eq.') || req.url === '/rest/v1/orcamento_eventos') { res.writeHead(204); return res.end(); }
     if (req.url === '/graph/111/media') return responder(200, { id: 'midia-subida' });
     if (req.url === '/rest/v1/rpc/registrar_saida_midia') return responder(200, '44444444-4444-4444-4444-444444444444');
     if (req.url.startsWith('/silbeck/v1/Liberar?')) return req.url.includes('client_secret=sec-ok') ? responder(200, { access_token: 'tok-silbeck', token_type: 'Bearer', expires_in: 30 }) : responder(400, { erro: 'invalido' });
@@ -76,6 +81,9 @@ const falso = http.createServer((req, res) => {
       ultimoPedidoIA = { corpo: b, beta: req.headers['anthropic-beta'] || '' };
       pedidosIA.push(b);
       const jaConsultou = b.messages.some(m => Array.isArray(m.content) && m.content.some(c => c.type === 'tool_result'));
+      if (iaOrcamento && !jaConsultou) return responder(200, { id: 'msg_o', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
+        content: [{ type: 'tool_use', id: 'toolu_o', name: 'gerar_orcamento', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], opcoes: [{ acomodacoes: ['BGE'] }, { acomodacoes: ['STD'] }], persona: 'familia', pessoas_aptas_combo: 2, frase_de_abertura: 'Ana, separei as opções para a família curtir os rios' } }],
+        usage: { input_tokens: 10, output_tokens: 20 } });
       if (iaCota && !jaConsultou) return responder(200, { id: 'msg_0', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_1', name: 'consultar_disponibilidade', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], finalidade: 'cotacao' } }],
         usage: { input_tokens: 10, output_tokens: 20 } });
@@ -315,7 +323,7 @@ falso.listen(0, () => {
     assert.ok(pi.messages[3].content.includes('Modo: sugestao'));
     assert.equal(pi.output_config.format.type, 'json_schema');
     assert.equal(pi.fallbacks, 'default'); assert.ok(ultimoPedidoIA.beta.includes('server-side-fallback-2026-07-01'));
-    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade']);
+    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento']);
     assert.ok(pi.messages[3].content.includes('SIMULADOR'));
     // Cotação: o Gilberto pede, o CRM consulta o simulador do Silbeck e devolve o resultado na 2ª rodada
     iaCota = true; pedidosIA.length = 0;
@@ -331,6 +339,38 @@ falso.listen(0, () => {
     assert.ok(resCot.nao_comportam_o_grupo.includes('Cabana Casal'), 'criança de 3 anos não vai para a Cabana Casal');
     assert.equal(sug2.simulador, true); assert.equal(sug2.cotacoes.length, 1);
     iaCota = false;
+    // Orçamento: o Gilberto cria a página; o link é público, a página abre e o "Quero reservar" leva ao WhatsApp
+    iaOrcamento = true; pedidosIA.length = 0;
+    r = await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-equipe' }, body: JSON.stringify({ conversa_id: conv }) });
+    const sug3 = await r.json();
+    iaOrcamento = false;
+    assert.equal(r.status, 200, JSON.stringify(sug3));
+    const resOrc = JSON.parse(pedidosIA[1].messages.at(-1).content[0].content);
+    assert.equal(resOrc.ok, true, JSON.stringify(resOrc));
+    assert.deepEqual(resOrc.opcoes.map(o => o.codigo), ['BGE', 'STD']);
+    assert.ok(/\/o\/[A-Za-z0-9_-]{22}$/.test(resOrc.link));
+    assert.equal(sug3.orcamentos.length, 1); assert.equal(sug3.simulador, true);
+    const salvo = orcs.at(-1);
+    assert.equal(salvo.primeiro_nome, null); assert.equal(salvo.numero_whatsapp, '15551829766'); assert.equal(salvo.fonte, 'simulador');
+    const tok = resOrc.link.split('/o/')[1];
+    r = await fetch(base + '/o/' + tok);
+    const html = await r.text();
+    assert.equal(r.status, 200);
+    assert.ok(html.includes('Bangalô Especial') && html.includes('Apartamento Standard') && html.includes('valores fictícios'));
+    assert.ok(html.includes('Ana, separei as opções para a família curtir os rios.') && html.includes('noindex'));
+    assert.ok(chamadas.some(c => c.url === '/rest/v1/rpc/registrar_abertura_orcamento' && c.corpo.p_token === tok));
+    const antesPrevia = chamadas.filter(c => c.url === '/rest/v1/rpc/registrar_abertura_orcamento').length;
+    await (await fetch(base + '/o/' + tok + '?previa=1')).text();
+    assert.equal(chamadas.filter(c => c.url === '/rest/v1/rpc/registrar_abertura_orcamento').length, antesPrevia, 'prévia da equipe não conta');
+    r = await fetch(base + '/o/' + tok + '/quero', { method: 'POST', body: JSON.stringify({ codigo: 'BGE' }) });
+    const q = await r.json();
+    assert.ok(q.whatsapp.startsWith('https://wa.me/15551829766?text=') && decodeURIComponent(q.whatsapp).includes('o Bangalô Especial'));
+    assert.equal((await fetch(base + '/o/' + tok + '/quero', { method: 'POST', body: JSON.stringify({ codigo: 'CBM' }) })).status, 404);
+    assert.equal((await fetch(base + '/o/' + 'x'.repeat(22))).status, 404);
+    assert.equal((await fetch(base + '/o/curto')).status, 404);
+    for (const f of ['/o/orcamento.css', '/o/orcamento.js', '/o/logo-branco.png']) assert.equal((await fetch(base + f)).status, 200, f);
+    const { pagina } = require('./orcamento');
+    assert.ok(!pagina({ ...salvo, primeiro_nome: '<script>' }).includes('<script>alert') && pagina({ ...salvo, frase_de_abertura: '<b>x</b>' }).includes('&lt;b&gt;'));
     const { cotar } = require('./silbeck');
     assert.equal((await cotar({ data_entrada: '2020-01-01', data_saida: '2020-01-03', adultos: 2, idades_criancas: [] })).ok, false);
     assert.equal((await cotar({ data_entrada: '2026-12-10', data_saida: '2026-12-09', adultos: 2, idades_criancas: [] })).ok, false);
