@@ -1,7 +1,7 @@
 FROM node:22-alpine
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force && apk add --no-cache ffmpeg
 COPY server.js gilberto.js silbeck.js transcricao.js orcamento.js ./
 COPY public ./public
 # Instruções e base do Gilberto, copiadas de crm/gilberto/ e contexto/ na publicação

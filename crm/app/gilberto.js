@@ -82,7 +82,7 @@ const ROTULO = { image: 'uma foto', audio: 'um áudio', video: 'um vídeo', docu
 function textoParaModelo(m) {
   if (m.tipo === 'text' || m.tipo === 'button' || m.tipo === 'interactive') return m.corpo || '';
   if (m.tipo === 'audio' && m.transcricao) return `[áudio do cliente, transcrição automática: "${m.transcricao}"]`;
-  if (m.tipo === 'audio' && m.transcricao_status === 'longo') return '[enviou um áudio de mais de 1 minuto, ainda sem transcrição: a equipe vai ouvir]';
+  if (m.tipo === 'audio' && m.transcricao_status === 'longo') return '[enviou um áudio longo demais para transcrever: a equipe vai ouvir]';
   const r = ROTULO[m.tipo] || m.tipo;
   return `[enviou ${r}${m.corpo ? ': ' + m.corpo : ''}]`;
 }

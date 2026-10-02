@@ -1,6 +1,11 @@
 // Transcrição dos áudios dos clientes (Speech-to-Text v2 do Google, no mesmo projeto do CRM, sem chave:
 // usa a conta de serviço do Cloud Run). O texto aparece na caixa e o Gilberto lê como se o cliente tivesse escrito.
-// Nesta fase: áudios de até 1 minuto (reconhecimento direto). Mais longos ficam marcados para a equipe ouvir.
+// Áudio de até 1 minuto: reconhecimento direto. Mais longo: o ffmpeg corta em pedaços de 50 s e cada um é
+// reconhecido em seguida (até 10 pedaços, uns 8 minutos). Sem ffmpeg, fica marcado para a equipe ouvir.
+const { execFile } = require('child_process');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const PROJETO = process.env.GOOGLE_CLOUD_PROJECT || 'cabanas-crm';
 const BASE = process.env.TRANSCRICAO_URL || 'https://speech.googleapis.com';
 const MODELO = process.env.TRANSCRICAO_MODELO || 'long';
@@ -21,8 +26,39 @@ async function tokenGoogle(buscar) {
 }
 
 let ultimoErro = null;
+const FFMPEG = process.env.FFMPEG || 'ffmpeg';
+const PEDACO_S = 50, MAX_PEDACOS = 10;
+
+// Corta o áudio em pedaços de 50 s (Opus mono 16 kHz, formato que o reconhecimento lê sem configuração).
+function cortar(dados) {
+  return new Promise((ok, falha) => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'audio-'));
+    const entrada = path.join(dir, 'entrada');
+    fs.writeFileSync(entrada, dados);
+    execFile(FFMPEG, ['-hide_banner', '-loglevel', 'error', '-i', entrada, '-ac', '1', '-ar', '16000', '-c:a', 'libopus', '-b:a', '24k',
+      '-f', 'segment', '-segment_time', String(PEDACO_S), '-reset_timestamps', '1', path.join(dir, 'p%03d.ogg')], { timeout: 60000 }, erro => {
+      try {
+        if (erro) return falha(new ErroTranscricao('longo', 'não deu para cortar o áudio (' + (erro.code || erro.message) + ')'));
+        ok(fs.readdirSync(dir).filter(n => /^p\d+\.ogg$/.test(n)).sort().map(n => fs.readFileSync(path.join(dir, n))));
+      } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+    });
+  });
+}
+
 // Devolve { status: 'ok' | 'vazio', texto }. Lança ErroTranscricao com status 'longo' ou 'falhou'.
 async function transcrever(dados, buscar = fetch) {
+  try { return await reconhecer(dados, buscar); } catch (e) {
+    if (!(e instanceof ErroTranscricao) || e.status !== 'longo') throw e;
+    const pedacos = await cortar(dados); // sem ffmpeg ou falha ao cortar: continua "longo"
+    if (!pedacos.length || pedacos.length > MAX_PEDACOS) throw new ErroTranscricao('longo', pedacos.length + ' pedaços');
+    const textos = [];
+    for (const p of pedacos) textos.push((await reconhecer(p, buscar)).texto);
+    const texto = textos.filter(Boolean).join(' ').trim();
+    return texto ? { status: 'ok', texto } : { status: 'vazio', texto: '' };
+  }
+}
+
+async function reconhecer(dados, buscar) {
   if (dados.length > 10 * 1024 * 1024) throw new ErroTranscricao('longo', 'arquivo grande demais para o reconhecimento direto');
   const t = await tokenGoogle(buscar);
   const r = await buscar(`${BASE}/v2/projects/${PROJETO}/locations/global/recognizers/_:recognize`, {

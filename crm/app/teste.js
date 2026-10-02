@@ -46,7 +46,8 @@ const falso = http.createServer((req, res) => {
     if (req.url.startsWith('/v2/projects/cabanas-crm/locations/global/recognizers/_:recognize')) {
       if (req.headers.authorization !== 'Bearer tok-google') return responder(401, { error: { message: 'sem token' } });
       const audio = Buffer.from(json.content, 'base64').toString();
-      if (audio === 'AUDIO-LONGO') return responder(400, { error: { message: 'Audio can be of a maximum of 60 seconds duration.' } });
+      if (audio === 'AUDIO-LONGO' || json.content.length > 1500000) return responder(400, { error: { message: 'Audio can be of a maximum of 60 seconds duration.' } });
+      if (audio.startsWith('OggS')) return responder(200, { results: [{ alternatives: [{ transcript: 'pedaço' }] }] }); // pedaço cortado pelo ffmpeg
       return responder(200, { results: [{ alternatives: [{ transcript: 'oi tudo bem' }] }, { alternatives: [{ transcript: 'tem vaga pro feriado?' }] }] });
     }
     if (req.url.startsWith('/rest/v1/mensagens?id=eq.' + MSG_BIB)) return responder(200, [{ id: MSG_BIB, conversa_id: 'c', tipo: 'image', midia_id: null, midia_caminho: 'biblioteca/BGE-1.jpg', midia_mime: 'image/jpeg', midia_nome: null }]);
@@ -308,6 +309,13 @@ falso.listen(0, () => {
     guardados.set('conv/audio.ogg', { dados: Buffer.from('AUDIO-LONGO'), mime: 'audio/ogg' });
     tj = await (await transcrever('token-equipe', MSG_AUDIO)).json();
     assert.equal(tj.status, 'longo');
+    if (require('child_process').spawnSync('ffmpeg', ['-version']).status === 0) { // áudio de 2 min: cortado em 3 pedaços de 50 s
+      const wav = require('path').join(require('os').tmpdir(), 'longo.wav');
+      require('child_process').spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=120', '-ac', '1', '-ar', '16000', wav]);
+      guardados.set('conv/audio.ogg', { dados: require('fs').readFileSync(wav), mime: 'audio/wav' });
+      tj = await (await transcrever('token-equipe', MSG_AUDIO)).json();
+      assert.deepEqual([tj.status, tj.texto], ['ok', 'pedaço pedaço pedaço']);
+    } else console.log('(ffmpeg ausente: teste do áudio longo pulado)');
     assert.equal((await transcrever(null, MSG_AUDIO)).status, 401);
     assert.equal((await transcrever('token-estranho', MSG_AUDIO)).status, 403);
     assert.equal((await transcrever('token-equipe', MSG_MIDIA)).status, 404); // é foto, não áudio

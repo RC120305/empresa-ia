@@ -314,7 +314,7 @@
     const st = m.transcricao_status;
     el.classList.remove('pendente');
     if (st === 'ok' && m.transcricao) el.textContent = '📝 ' + m.transcricao;
-    else if (st === 'longo') el.textContent = '📝 Áudio com mais de 1 minuto: ouça acima.';
+    else if (st === 'longo') el.textContent = '📝 Áudio longo demais para transcrever (mais de 8 min): ouça acima.';
     else if (st === 'vazio') el.textContent = '📝 Não deu para reconhecer fala neste áudio.';
     else if (st === 'erro') el.textContent = '📝 Transcrição indisponível agora.';
     else if (st === undefined) el.textContent = ''; // banco sem a migração 005
