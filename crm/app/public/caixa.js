@@ -188,7 +188,8 @@
     $('resposta').title = abertaJ ? 'No computador, Enter envia e Shift+Enter quebra a linha. Uma linha só com --- separa os balões.' : 'Fora da janela de 24 h, só modelos aprovados pela Meta (próxima etapa).';
     if (!fim) { j.textContent = ''; j.className = 'janela'; return; }
     j.className = 'janela ' + (abertaJ ? 'aberta' : 'fechada');
-    j.textContent = abertaJ ? 'Responder até ' + hora(fim.toISOString()) : 'Janela fechada';
+    const amanha = fim.toDateString() !== new Date().toDateString();
+    j.textContent = abertaJ ? 'Responder até ' + (amanha ? 'amanhã ' : '') + hora(fim.toISOString()) : 'Janela fechada';
     j.title = abertaJ ? 'Dá para responder com texto livre até esse horário.' : 'Fora da janela, só modelos aprovados pela Meta.';
   }
 
@@ -258,6 +259,7 @@
       $('aviso-envio').hidden = false;
     } finally {
       enviando = false;
+      ajustarAltura();
       const c = conversas.find(x => x.id === aberta);
       pintarJanela(c);
       $('resposta').focus();
@@ -293,10 +295,21 @@
   }
   $('sugerir').addEventListener('click', sugerir);
   $('sug-usar').addEventListener('click', () => {
-    $('resposta').value = $('sugestao').dataset.texto || '';
+    const ta = $('resposta');
+    ta.value = $('sugestao').dataset.texto || '';
     $('sugestao').hidden = true;
-    $('resposta').focus();
+    ajustarAltura();
+    ta.focus();
+    const i = ta.value.indexOf('[['); // já seleciona o primeiro trecho para completar
+    if (i >= 0) ta.setSelectionRange(i, ta.value.indexOf(']]', i) + 2);
   });
+  // O campo cresce com o texto (até 45% da tela), para revisar a sugestão inteira
+  function ajustarAltura() {
+    const ta = $('resposta');
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight + 2, Math.round(innerHeight * 0.45)) + 'px';
+  }
+  $('resposta').addEventListener('input', ajustarAltura);
   $('sug-descartar').addEventListener('click', () => { $('sugestao').hidden = true; });
   $('resposta').addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && matchMedia('(pointer:fine)').matches) { e.preventDefault(); enviar(); }
