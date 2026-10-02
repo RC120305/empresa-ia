@@ -12,7 +12,7 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 | `003_envio.sql` | `equipe_por_email` e `registrar_saida_whatsapp` (responder pelo CRM; só o servidor chama) | 02/10/2026 (dono) |
 | `004_midias.sql` | colunas `midia_caminho`, `midia_mime`, `midia_nome` em `mensagens`; compartimento privado `midias` no Storage; `registrar_saida_midia` (só o servidor chama) | 02/10/2026 (dono) |
 | `005_transcricao.sql` | colunas `transcricao` e `transcricao_status` em `mensagens` (texto dos áudios) | 02/10/2026 (dono) |
-| `006_orcamentos.sql` | `orcamentos` e `orcamento_eventos` (página pública `/o/<token>`, aberturas e "Quero reservar"), `registrar_abertura_orcamento` (só o servidor) | **pendente** (dono) |
+| `006_orcamentos.sql` | `orcamentos` e `orcamento_eventos` (página pública `/o/<token>`, aberturas e "Quero reservar"), `registrar_abertura_orcamento` (só o servidor) | 02/10/2026 (dono) |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.
