@@ -4,6 +4,8 @@
 // São Paulo), nunca para página pública nem para o log.
 const http = require('http');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 const porta = process.env.PORT || 8080;
 const versao = process.env.VERSAO || 'local';
@@ -12,6 +14,27 @@ const APP_SECRET = process.env.META_APP_SECRET || '';
 const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
 const SUPABASE_KEY = (process.env.SUPABASE_SECRET_KEY || '').trim(); // tira espaço/quebra de linha colados por engano
 const bancoLigado = () => !!(SUPABASE_URL && SUPABASE_KEY);
+// Chave PÚBLICA (sb_publishable_…), a única que pode ir para o navegador. Os dados continuam
+// protegidos pelas regras do banco (RLS): sem login de alguém da equipe, ela não lê nada.
+const SUPABASE_PUBLICA = (process.env.SUPABASE_PUBLISHABLE_KEY || '').trim();
+const chavePublicaOk = () => SUPABASE_PUBLICA.startsWith('sb_publishable_');
+
+// Arquivos da caixa de entrada (carregados uma vez; lista fechada, nada de caminho vindo da URL).
+const PUB = path.join(__dirname, 'public');
+const TIPOS = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8' };
+const ESTATICOS = {};
+for (const [rota, arquivo] of [['/caixa', 'caixa.html'], ['/caixa.css', 'caixa.css'], ['/caixa.js', 'caixa.js'], ['/vendor/supabase-2.117.2.js', 'vendor/supabase-2.117.2.js']]) {
+  try { ESTATICOS[rota] = { corpo: fs.readFileSync(path.join(PUB, arquivo)), tipo: TIPOS[path.extname(arquivo)] }; } catch (e) { /* arquivo ausente: rota fica 404 */ }
+}
+function cabecalhosSeguranca() {
+  const sup = SUPABASE_URL ? `${SUPABASE_URL} ${SUPABASE_URL.replace(/^https:/, 'wss:')}` : '';
+  return {
+    'Content-Security-Policy': `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' ${sup}; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'`,
+    'X-Content-Type-Options': 'nosniff',
+    'Referrer-Policy': 'no-referrer',
+    'X-Frame-Options': 'DENY',
+  };
+}
 // Chaves novas (sb_secret_…) vão só no cabeçalho apikey. Chaves antigas (JWT "eyJ…") precisam também do
 // Authorization, senão o banco trata a chamada como visitante (anon) e nega as funções do servidor.
 // Tipo da chave (nunca a chave): ajuda a ver se colaram a chave errada no Secret Manager.
@@ -112,7 +135,7 @@ const servidor = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
   if (url.pathname === '/saude') {
-    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado() }, chaveSupabase: tipoChave(SUPABASE_KEY) };
+    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado(), supabasePublica: chavePublicaOk() }, chaveSupabase: tipoChave(SUPABASE_KEY) };
     if (!bancoLigado()) return json(res, 200, base);
     // Confere se o banco responde e se a chave tem permissão de servidor: chama a função de status com um
     // ID que não existe (não altera nada). Chave sem permissão de servidor recebe 401/403.
@@ -150,10 +173,22 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
+  const est = req.method === 'GET' && ESTATICOS[url.pathname];
+  if (est) {
+    res.writeHead(200, { 'Content-Type': est.tipo, 'Cache-Control': url.pathname === '/caixa' ? 'no-store' : 'public, max-age=300', ...cabecalhosSeguranca() });
+    return res.end(est.corpo);
+  }
+  if (url.pathname === '/config.js' && req.method === 'GET') {
+    const cfg = chavePublicaOk() ? { supabaseUrl: SUPABASE_URL, supabaseKey: SUPABASE_PUBLICA } : {};
+    res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store', ...cabecalhosSeguranca() });
+    return res.end('window.CRM_CONFIG = ' + JSON.stringify(cfg) + ';');
+  }
+
   if (url.pathname === '/webhook/status') return json(res, 200, { recebidos: recentes.length, ultimoErroBanco, ultimos: recentes });
 
-  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  res.end('<!doctype html><meta charset="utf-8"><title>CRM Cabanas</title><p style="font-family:sans-serif">CRM Cabanas no ar 🌿 · versão ' + versao.replace(/[^\w.-]/g, '') + '</p>');
+  if (url.pathname === '/') { res.writeHead(302, { Location: '/caixa' }); return res.end(); }
+  res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end('<!doctype html><meta charset="utf-8"><title>CRM Cabanas</title><p style="font-family:sans-serif">Página não encontrada. <a href="/caixa">Ir para a caixa de entrada</a> · versão ' + versao.replace(/[^\w.-]/g, '') + '</p>');
 });
 
 if (require.main === module) servidor.listen(porta, () => console.log('CRM Cabanas ouvindo na porta ' + porta));

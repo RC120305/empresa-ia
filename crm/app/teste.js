@@ -23,6 +23,7 @@ falso.listen(0, () => {
   process.env.META_APP_SECRET = 'segredo-de-teste';
   process.env.SUPABASE_URL = 'http://127.0.0.1:' + falso.address().port + '/';
   process.env.SUPABASE_SECRET_KEY = 'chave-de-teste';
+  process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_teste';
   const { servidor } = require('./server');
 
   servidor.listen(0, async () => {
@@ -73,13 +74,27 @@ falso.listen(0, () => {
 
     // Saúde mostra os segredos e o banco
     const saude = await (await fetch(base + '/saude')).json();
-    assert.deepEqual(saude.segredos, { verify: true, appSecret: true, supabase: true });
+    assert.deepEqual(saude.segredos, { verify: true, appSecret: true, supabase: true, supabasePublica: true });
     assert.equal(saude.banco, 'ok');
 
     // Página de status: número mascarado, sem conteúdo
     const pag = await (await fetch(base + '/webhook/status')).json();
     assert.equal(pag.ultimos.at(-1).de, '5567•••••000');
     assert.ok(!JSON.stringify(pag).includes('oi'));
+
+    // Caixa de entrada: página, cabeçalhos de segurança e configuração só com a chave pública
+    r = await fetch(base + '/caixa');
+    assert.equal(r.status, 200);
+    assert.ok((await r.text()).includes('Caixa de Entrada'));
+    const csp = r.headers.get('content-security-policy');
+    assert.ok(csp.includes("script-src 'self'") && csp.includes("frame-ancestors 'none'"));
+    assert.equal(r.headers.get('cache-control'), 'no-store');
+    for (const f of ['/caixa.js', '/caixa.css', '/vendor/supabase-2.117.2.js']) assert.equal((await fetch(base + f)).status, 200, f);
+    const cfgTxt = await (await fetch(base + '/config.js')).text();
+    assert.ok(cfgTxt.includes('sb_publishable_teste'));
+    assert.ok(!cfgTxt.includes('chave-de-teste'), 'a chave secreta nunca vai para o navegador');
+    assert.equal((await fetch(base + '/../server.js')).status, 404);
+    assert.equal((await fetch(base + '/', { redirect: 'manual' })).headers.get('location'), '/caixa');
 
     console.log('TODOS OS TESTES PASSARAM');
     servidor.close(); falso.close();
