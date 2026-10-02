@@ -112,6 +112,33 @@ function corpoDe(m) {
   return midia && midia.caption || null;
 }
 
+// Tarefas da venda (para o responsável) e alertas do sino: "Cliente pediu produto" (na hora, se veio do cliente)
+// e "Lançar na conta" às 8h do dia do check-in (com a tarefa de lançar ligada ao alerta).
+const as8h = data => { const d = new Date(data + 'T08:00:00-04:00'); return (d > new Date() ? d : new Date()).toISOString(); };
+async function criarAlerta(a, buscar = fetch) {
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/alertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(a), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  if (r && !r.ok) console.warn(JSON.stringify({ evento: 'alerta_nao_criado', http: r.status })); // banco sem a migração 013
+}
+async function tarefasEAlertasDaVenda(p, venda, { negocio, responsavel, chegada, pedidoDoCliente, origemTxt }, buscar = fetch) {
+  const nomes = [];
+  let tarefaLancar = null;
+  if (negocio) for (const t of produtos.tarefasDaVenda(p, venda, { data_entrada: chegada })) {
+    const r = await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ negocio_id: negocio, responsavel_id: responsavel || null, criado_por: 'CRM', ...t }) }).catch(() => null);
+    const criada = r && r.ok ? (await r.json().catch(() => []))[0] : null;
+    if (t.tipo === 'Lançar na conta do hóspede' && criada) tarefaLancar = criada.id;
+    nomes.push(t.tipo);
+  }
+  const nome = p.nome + (venda.variacao ? ' (' + venda.variacao + ')' : '');
+  const base = { conversa_id: venda.conversa_id, negocio_id: negocio || null, venda_id: venda.id || null };
+  if (pedidoDoCliente) await criarAlerta({ ...base, tipo: 'produto_pedido', titulo: 'Cliente pediu produto',
+    info: `${nome}${venda.valor_total != null ? ' · ' + produtos.brl(venda.valor_total) : ''} · ${origemTxt}. ${({ ativ: 'Agendar no sistema das atividades', terc: 'Pedir o horário ao parceiro', simples: 'Preparar' })[p.tipo_reserva] || 'Reservar'} e confirmar com o cliente.` }, buscar);
+  const dia = venda.data_uso && venda.data_uso < (chegada || '9999') ? venda.data_uso : (chegada || venda.data_uso);
+  if (venda.id && dia) await criarAlerta({ ...base, tarefa_id: tarefaLancar, tipo: 'lancar_conta', titulo: 'Lançar na conta do hóspede',
+    info: `${nome} · ${produtos.brl(venda.valor_total)} · check-in ${dia.split('-').reverse().join('/')}. Lançar na conta (pago no check-out).`, quando: as8h(dia) }, buscar);
+  return nomes;
+}
+
 // Aceite do cliente (botão da oferta ou extra marcado na página do orçamento): o CRM registra a venda na conta do hóspede
 // e cria as tarefas para a equipe reservar (agendar/preparar/pedir horário + lançar na conta), para o responsável da conversa.
 // Se faltar dado para fechar o valor (ex.: qual das 3 massagens), cria a tarefa de confirmar com o cliente.
@@ -141,6 +168,8 @@ async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variaca
       await tarefa({ tipo: 'Confirmar e registrar venda', descricao: `O cliente ${origemTxt}: ${p.nome}${nomeVar ? ' (' + nomeVar + ')' : ''}. Confirme ${!nomeVar && vs.length > 1 ? 'a opção (' + vs.map(x => x.nome).join(', ') + '), ' : ''}${!qtd ? 'quantas pessoas, ' : ''}a data e registre a venda no 🛍 da conversa.`, quando: new Date().toISOString() });
       await eventoNegocio(negocio.id, `Cliente ${origemTxt}: ${p.nome}${nomeVar ? ' (' + nomeVar + ')' : ''} · falta confirmar para registrar a venda`, 'cliente', buscar);
     }
+    await criarAlerta({ conversa_id, negocio_id: negocio ? negocio.id : null, tipo: 'produto_pedido', titulo: 'Cliente pediu produto',
+      info: `${p.nome}${nomeVar ? ' (' + nomeVar + ')' : ''} · ${origemTxt}. Falta confirmar ${!nomeVar && vs.length > 1 ? 'a opção, ' : ''}${!qtd ? 'quantas pessoas, ' : ''}a data, e registrar a venda.` }, buscar);
     return { venda: null };
   }
   const venda = { conversa_id, negocio_id: negocio ? negocio.id : null, oferta_id: oferta_id || null, produto_codigo: p.codigo, produto_nome: p.nome, ...v,
@@ -148,11 +177,12 @@ async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variaca
     observacoes: `O cliente ${origemTxt}. Confirmar ${p.tipo_reserva === 'simples' ? 'a data' : 'o dia e o horário'} com ele.`, criado_por: null };
   const r = await buscar(`${SUPABASE_URL}/rest/v1/vendas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify(venda), signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw new Error('venda ' + r.status);
+  const salva = (await r.json().catch(() => []))[0] || venda;
+  await tarefasEAlertasDaVenda(p, { ...venda, id: salva.id }, { negocio: negocio && negocio.id, responsavel, chegada, pedidoDoCliente: true, origemTxt }, buscar);
   if (negocio) {
-    for (const t of produtos.tarefasDaVenda(p, venda, { data_entrada: chegada })) await tarefa(t);
     await eventoNegocio(negocio.id, `Cliente ${origemTxt}: ${p.nome}${v.variacao ? ' (' + v.variacao + ')' : ''} · venda registrada ${produtos.brl(v.valor_total)} na conta do hóspede`, 'cliente', buscar);
   }
-  return { venda: (await r.json().catch(() => []))[0] || venda };
+  return { venda: salva };
 }
 async function respostaDoBotao({ oferta, aceito, opcao }, titulo, buscar) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/ofertas?id=eq.${oferta}&select=id,conversa_id,negocio_id,produto_codigo,produto_nome,situacao`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
@@ -566,6 +596,17 @@ async function patchBanco(tabela, filtro, dados, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/${tabela}?${filtro}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(dados), signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw new ErroEnvio(r.status === 400 ? 400 : 502, 'Não deu para salvar' + (r.status === 400 ? ' (o banco precisa da migração 007?)' : '') + '.');
 }
+// Fecha os alertas de uma venda (e conclui a tarefa de lançar ligada a eles)
+async function resolverAlertasDaVenda(venda, tipos, por, buscar = fetch) {
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/alertas?venda_id=eq.${venda}&situacao=eq.aberto&select=id,tipo,tarefa_id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const lista = r && r.ok ? (await r.json().catch(() => [])).filter(a => tipos.includes(a.tipo)) : [];
+  for (const a of lista) {
+    await buscar(`${SUPABASE_URL}/rest/v1/alertas?id=eq.${a.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ situacao: 'resolvido', resolvido_por: por, resolvido_em: new Date().toISOString() }) }).catch(() => null);
+    if (a.tarefa_id && a.tipo === 'lancar_conta') await buscar(`${SUPABASE_URL}/rest/v1/tarefas?id=eq.${a.tarefa_id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ feita: true, feita_em: new Date().toISOString() }) }).catch(() => null);
+  }
+}
 const uuidOk = v => /^[0-9a-f-]{36}$/i.test(String(v || ''));
 async function produtoPorCodigo(codigo, buscar = fetch) {
   const cod = String(codigo || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -817,13 +858,11 @@ const API_EQUIPE = {
     if (!r.ok) throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para registrar a venda (o banco precisa da migração 012?).');
     const salva = (await r.json())[0];
     if (oferta) await patchBanco('ofertas', `id=eq.${oferta}`, { situacao: 'aceito', respondido_em: new Date().toISOString() }).catch(() => {});
-    const tarefas = produtos.tarefasDaVenda(p, venda, negocio || {});
+    const tarefas = await tarefasEAlertasDaVenda(p, { ...venda, id: salva.id }, { negocio: negocio && negocio.id, responsavel: eu.id, chegada: negocio && negocio.data_entrada, pedidoDoCliente: false });
     if (negocio) {
-      for (const t of tarefas) await fetch(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
-        body: JSON.stringify({ negocio_id: negocio.id, responsavel_id: eu.id, criado_por: 'CRM', ...t }), signal: AbortSignal.timeout(5000) }).catch(() => {});
       await eventoNegocio(negocio.id, 'Venda: ' + p.nome + (v.variacao ? ' (' + v.variacao + ')' : '') + ' · ' + produtos.brl(v.valor_total) + ' · na conta do hóspede', eu.id);
     }
-    return { ok: true, venda: salva, tarefas: negocio ? tarefas.map(t => t.tipo) : [] };
+    return { ok: true, venda: salva, tarefas };
   },
   // Venda lançada na conta do hóspede, ou cancelada
   'POST /api/venda-situacao': async (corpo, eu) => {
@@ -834,7 +873,25 @@ const API_EQUIPE = {
     if (!v) throw new ErroEnvio(404, 'Venda não encontrada.');
     const lanc = corpo.situacao === 'lancado';
     await patchBanco('vendas', `id=eq.${v.id}`, { situacao: corpo.situacao, lancado_em: lanc ? new Date().toISOString() : null, lancado_por: lanc ? eu.id : null });
+    if (corpo.situacao !== 'vendido') await resolverAlertasDaVenda(v.id, corpo.situacao === 'lancado' ? ['lancar_conta'] : ['lancar_conta', 'produto_pedido'], eu.id);
     if (v.negocio_id) await eventoNegocio(v.negocio_id, ({ lancado: 'Lançado na conta: ', cancelado: 'Venda cancelada: ', vendido: 'Venda reaberta: ' })[corpo.situacao] + v.produto_nome + ' · ' + produtos.brl(v.valor_total), eu.id);
+    return { ok: true };
+  },
+  // Sino: resolver um alerta ("✓ Lançado na conta" também marca a venda e conclui a tarefa de lançar)
+  'POST /api/alerta': async (corpo, eu) => {
+    if (!uuidOk(corpo.id)) throw new ErroEnvio(400, 'Alerta inválido.');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/alertas?id=eq.${corpo.id}&select=id,tipo,venda_id,negocio_id,titulo,info,situacao`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const a = r.ok ? (await r.json())[0] : null;
+    if (!a) throw new ErroEnvio(404, 'Alerta não encontrado.');
+    if (a.situacao !== 'aberto') return { ok: true };
+    if (a.tipo === 'lancar_conta' && a.venda_id) {
+      await patchBanco('vendas', `id=eq.${a.venda_id}`, { situacao: 'lancado', lancado_em: new Date().toISOString(), lancado_por: eu.id });
+      await resolverAlertasDaVenda(a.venda_id, ['lancar_conta'], eu.id);
+      if (a.negocio_id) await eventoNegocio(a.negocio_id, 'Lançado na conta: ' + String(a.info || '').split(' · ')[0], eu.id);
+    } else {
+      await patchBanco('alertas', `id=eq.${a.id}`, { situacao: 'resolvido', resolvido_por: eu.id, resolvido_em: new Date().toISOString() });
+      if (a.negocio_id) await eventoNegocio(a.negocio_id, 'Alerta resolvido: ' + a.titulo + ' · ' + String(a.info || '').split(' · ')[0], eu.id);
+    }
     return { ok: true };
   },
   // Agências e operadoras parceiras

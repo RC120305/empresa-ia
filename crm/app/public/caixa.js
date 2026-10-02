@@ -121,6 +121,9 @@
     contarRevisao();
     assinar();
     vigiar();
+    carregarVendasResumo();
+    carregarAlertas();
+    setInterval(pintarSino, 30000); // alerta com hora marcada (ex.: 8h do check-in) toca quando a hora chega
   }
 
   // ---------- Casca: seções, menu recolhido e tema ----------
@@ -160,7 +163,7 @@
 
   // ---------- Atualização (tempo real + rede de segurança) ----------
   let aoVivo = false;
-  async function atualizarTudo() { await carregarConversas(); await carregarFunil(); if (aberta) await recarregarAberta(); }
+  async function atualizarTudo() { await carregarConversas(); await carregarFunil(); if (aberta) await recarregarAberta(); carregarAlertas(); carregarVendasResumo(); }
   function vigiar() {
     setInterval(() => { if (!aoVivo && !document.hidden) atualizarTudo(); }, 15000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) atualizarTudo(); });
@@ -206,10 +209,17 @@
     if (!ls.length) ul.append(el('div', { class: 'vazio', text: conversas.length ? 'Nenhuma conversa aqui.' : 'Nenhuma conversa ainda. Quando alguém mandar mensagem para o número do hotel, ela aparece aqui na hora.' }));
     ls.forEach(c => {
       const resp = c.atribuida_a ? (equipe[c.atribuida_a] || 'Equipe') : null;
-      ul.append(el('button', { class: 'cx-item', type: 'button', 'aria-selected': String(c.id === aberta), onclick: () => abrir(c.id) },
+      const n = negocioDaConversa(c.id), al = alertasVencidos().find(a => a.conversa_id === c.id), vd = vendasResumo[c.id];
+      const et = n && ETAPAS.find(e => e[0] === n.etapa);
+      ul.append(el('button', { class: 'cx-item' + (al ? ' urgente' : ''), type: 'button', 'aria-selected': String(c.id === aberta), onclick: () => abrir(c.id) },
+        al ? el('div', { class: 'cx-urg' }, el('span', { text: '⚑ ' + al.titulo }), el('small', { text: desde(al.quando) })) : null,
         el('div', { class: 'cx-l1' }, el('span', { class: 'canal-ic', title: 'WhatsApp', text: 'WA' }), el('strong', { text: c.nome }), el('span', { class: 'cx-hora num', text: quando(c.ultima_msg_em) }),
           c.nao_lidas > 0 && c.id !== aberta ? el('span', { class: 'cx-nl num', text: c.nao_lidas, 'aria-label': c.nao_lidas + ' não lidas' }) : null),
         el('div', { class: 'cx-prev', text: c.previa ? (c.previa.direcao === 'saida' ? 'Você: ' : '') + textoMsg(c.previa) : '' }),
+        n || vd ? el('div', { class: 'cx-l2' },
+          n ? el('span', { class: 'pilula o-' + n.origem, title: 'Origem do lead', text: ORIGENS[n.origem] || n.origem }) : null,
+          et ? el('span', { class: 'pilula ' + et[2], title: 'Etapa no funil', text: et[1] }) : null,
+          etiquetaProdutos(vd), ...((n && n.etiquetas) || []).map(t => el('span', { class: 'tipo t-mkt', text: t }))) : null,
         !janelaAberta(c) && c.status === 'aberta' ? el('div', { class: 'cx-janela', text: 'A janela de 24 h expirou' }) : null,
         el('div', { class: 'cx-l3' }, el('span', { class: 'resp', text: resp ? iniciais(resp) : '–' }), el('span', { text: resp ? resp : 'Sem responsável' }))));
     });
@@ -1192,6 +1202,7 @@
     if (v && v.dataset.vista === 'funil') pintarFunil();
     if (v && v.dataset.vista === 'tarefas') pintarTarefas();
     if (aberta) { pintarCabecalho(); if (painel === 'tar') pintarPainel(); }
+    pintarLista();
   }
   let recarregarT = null;
   const recarregarFunilLogo = () => { clearTimeout(recarregarT); recarregarT = setTimeout(carregarFunil, 400); };
@@ -1260,12 +1271,14 @@
     const parado = !['res', 'perd'].includes(n.etapa) && horas >= 24 ? el('span', { class: 'alerta-txt', text: 'Parado há ' + (horas >= 48 ? Math.round(horas / 24) + ' dias' : Math.round(horas) + ' h') }) : null;
     const resp = n.responsavel_id ? (equipe[n.responsavel_id] || 'Equipe') : null;
     const sel = el('select', { 'aria-label': 'Etapa de ' + n.nome, onclick: e => e.stopPropagation(), onchange: e => mover(n, e.target.value) }, ETAPAS.map(([k, t]) => el('option', { value: k, text: t, selected: k === n.etapa })));
-    return el('article', { class: 'card-lead', draggable: 'true', tabindex: '0',
+    return el('article', { class: 'card-lead' + (alertasVencidos().some(a => a.negocio_id === n.id) ? ' urgente' : ''), draggable: 'true', tabindex: '0',
       ondragstart: e => { e.dataTransfer.setData('text/plain', n.id); e.dataTransfer.effectAllowed = 'move'; e.currentTarget.classList.add('arrastando'); },
       ondragend: e => e.currentTarget.classList.remove('arrastando'),
       onclick: () => abrirFicha(n.id), onkeydown: e => { if (e.key === 'Enter') abrirFicha(n.id); } },
       el('strong', { text: n.nome }),
-      el('div', { class: 'linha' }, el('span', { class: 'pilula o-' + n.origem, text: ORIGENS[n.origem] || n.origem }), n.perfil ? el('span', { class: 'pilula', text: n.perfil }) : null),
+      el('div', { class: 'linha' }, el('span', { class: 'pilula o-' + n.origem, text: ORIGENS[n.origem] || n.origem }), n.perfil ? el('span', { class: 'pilula', text: n.perfil }) : null,
+        etiquetaProdutos(n.conversa_id && vendasResumo[n.conversa_id]), ...(n.etiquetas || []).map(t => el('span', { class: 'tipo t-mkt', text: t }))),
+      alertasVencidos().some(a => a.negocio_id === n.id) ? el('span', { class: 'alerta-txt', text: '⚑ ' + alertasVencidos().find(a => a.negocio_id === n.id).titulo }) : null,
       n.data_entrada || n.hospedes ? el('div', { class: 'linha num', text: (n.data_entrada ? fmtData(n.data_entrada) + ' a ' + fmtData(n.data_saida) : '') + (n.hospedes ? (n.data_entrada ? ' · ' : '') + n.hospedes : '') }) : null,
       n.valor_previsto || pend ? el('div', { class: 'linha num' }, n.valor_previsto ? el('span', { text: brl(n.valor_previsto) }) : null, pend ? el('span', { text: (n.valor_previsto ? '· ' : '') + pend + (pend > 1 ? ' tarefas' : ' tarefa') }) : null) : null,
       n.motivo_perda ? el('div', { class: 'linha', text: 'Motivo: ' + n.motivo_perda }) : null,
@@ -1549,6 +1562,97 @@
     formTarefas(lat, n);
   }
 
+  // ---------- Sino: alertas da equipe (cliente pediu produto; lançar na conta no dia do check-in) ----------
+  let alertas = [], alertasOk = true, painelAlertas = false, vistos = null, vendasResumo = {};
+  const ROT_ALERTA = { produto_pedido: 'Cliente pediu produto', lancar_conta: 'Lançar na conta do hóspede' };
+  const alertasVencidos = () => alertas.filter(a => new Date(a.quando) <= new Date());
+  const desde = q => { const m = Math.max(0, Math.round((Date.now() - new Date(q)) / 6e4)); return m < 1 ? 'agora' : m < 60 ? 'há ' + m + ' min' : m < 1440 ? 'há ' + Math.round(m / 60) + ' h' : 'há ' + Math.round(m / 1440) + ' dias'; };
+  async function carregarAlertas() {
+    const { data, error } = await sb.from('alertas').select('*').eq('situacao', 'aberto').order('quando').limit(200);
+    alertasOk = !error;
+    alertas = data || [];
+    if (vistos === null && alertasVencidos().length) { // ao entrar: abre a lista e toca no primeiro clique (o navegador só libera som depois dele)
+      painelAlertas = true;
+      document.addEventListener('pointerdown', () => setTimeout(() => { if (alertasVencidos().length) bip(); }, 150), { once: true });
+    }
+    pintarSino();
+  }
+  async function carregarVendasResumo() {
+    const { data, error } = await sb.from('vendas').select('conversa_id,situacao').neq('situacao', 'cancelado').limit(2000);
+    vendasResumo = {};
+    if (!error) (data || []).forEach(v => { if (!v.conversa_id) return; const r = vendasResumo[v.conversa_id] = vendasResumo[v.conversa_id] || { n: 0, pend: 0 }; r.n++; if (v.situacao === 'vendido') r.pend++; });
+    pintarLista();
+    if (document.querySelector('.nav [aria-selected="true"]')?.dataset.vista === 'funil') pintarFunil();
+  }
+  const etiquetaProdutos = vd => vd && vd.n ? el('span', { class: 'tipo t-prod' + (vd.pend ? ' pendente' : ''), title: vd.pend ? 'Comprou produtos: ' + vd.pend + ' ainda não lançado(s) na conta' : 'Comprou produtos (lançados na conta)', text: '🛍 ' + vd.n + (vd.n > 1 ? ' produtos' : ' produto') + (vd.pend ? ' · falta lançar' : '') }) : null;
+  // Som de 3 notas (o navegador só libera som depois do primeiro clique na página)
+  let audio = null;
+  function bip() {
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      if (audio.state === 'suspended') audio.resume();
+      const t0 = audio.currentTime + 0.05;
+      [[0, 880], [0.22, 1175], [0.44, 1568]].forEach(([t, f]) => {
+        const o = audio.createOscillator(), g = audio.createGain();
+        o.type = 'triangle'; o.frequency.value = f; o.connect(g); g.connect(audio.destination);
+        g.gain.setValueAtTime(0.0001, t0 + t); g.gain.exponentialRampToValueAtTime(0.3, t0 + t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + t + 0.3);
+        o.start(t0 + t); o.stop(t0 + t + 0.32);
+      });
+    } catch (e) { /* sem som */ }
+  }
+  function pintarSino() {
+    const ab = alertasVencidos();
+    const novos = vistos ? ab.filter(a => !vistos.has(a.id)) : [];
+    vistos = new Set(ab.map(a => a.id));
+    $('sino-n').hidden = !ab.length; $('sino-n').textContent = ab.length;
+    $('bt-sino').setAttribute('aria-label', ab.length ? ab.length + (ab.length > 1 ? ' alertas da equipe' : ' alerta da equipe') : 'Sem alertas');
+    if (novos.length) {
+      const s = $('bt-sino'); s.classList.remove('ativo'); void s.offsetWidth; s.classList.add('ativo');
+      bip();
+      if ('Notification' in window && Notification.permission === 'granted' && document.hidden) novos.forEach(a => { try { new Notification(a.titulo, { body: a.info || '', tag: a.id }); } catch (e) { /* sem notificação */ } });
+      painelAlertas = true;
+    }
+    if (!ab.length) $('bt-sino').classList.remove('ativo');
+    pintarAlertas();
+    pintarLista();
+  }
+  function pintarAlertas() {
+    const box = $('alertas'), ab = alertasVencidos();
+    $('bt-sino').setAttribute('aria-expanded', String(painelAlertas));
+    box.hidden = !painelAlertas; box.textContent = '';
+    if (box.hidden) return;
+    box.append(el('div', { class: 'al-cab' }, el('b', { text: ab.length ? ab.length + (ab.length > 1 ? ' alertas para a equipe' : ' alerta para a equipe') : 'Nenhum alerta agora' }),
+      el('button', { class: 'fechar', type: 'button', 'aria-label': 'Fechar alertas', text: '✕', onclick: () => { painelAlertas = false; pintarAlertas(); } })));
+    if (!alertasOk) box.append(el('p', { class: 'vazio-al', text: 'Falta rodar a migração 013 no Supabase para os alertas funcionarem.' }));
+    if (!ab.length) {
+      const prox = alertas.filter(a => new Date(a.quando) > new Date()).length;
+      box.append(el('p', { class: 'vazio-al', text: 'Quando um cliente pedir um produto, o alerta toca aqui com som. No dia do check-in, às 8h, toca o aviso para lançar na conta.' + (prox ? ' Agendados: ' + prox + '.' : '') }));
+      box.append(el('div', { class: 'al-acoes' }, el('button', { class: 'btn-mini', type: 'button', text: '🔊 Testar som', onclick: bip })));
+      return;
+    }
+    ab.forEach(a => {
+      const c = conversas.find(x => x.id === a.conversa_id);
+      const abrirConv = () => { painelAlertas = false; pintarAlertas(); irPara('conversas'); if (c) abrir(c.id); painel = 'pro'; guardar('crm-painel', painel); pintarPainel(); };
+      box.append(el('div', { class: 'al-item' + (a.tipo === 'lancar_conta' ? ' lancar' : '') },
+        el('span', { class: 'al-tipo', text: '⚑ ' + (ROT_ALERTA[a.tipo] || a.titulo) }),
+        el('b', { text: (c ? c.nome : 'Cliente') + ' · ' + desde(a.quando) }),
+        a.info ? el('span', { class: 'lat-txt', text: a.info }) : null,
+        el('div', { class: 'al-acoes' },
+          a.tipo === 'lancar_conta'
+            ? el('button', { class: 'btn-mini', type: 'button', text: '✓ Lançado na conta', onclick: () => resolverAlerta(a, 'Lançamento registrado. Alerta resolvido.') })
+            : el('button', { class: 'btn-mini', type: 'button', text: '✓ Reservado', onclick: () => resolverAlerta(a, 'Alerta resolvido.') }),
+          c ? el('button', { class: 'btn-mini', type: 'button', text: 'Abrir conversa', onclick: abrirConv }) : null)));
+    });
+  }
+  async function resolverAlerta(a, msg) {
+    try { await chamarApi('/api/alerta', { id: a.id }); alertas = alertas.filter(x => x.id !== a.id); pintarSino(); toast(msg); if (painel === 'pro') pintarPainel(); }
+    catch (e) { toast(e.message); }
+  }
+  $('bt-sino').addEventListener('click', () => {
+    painelAlertas = !painelAlertas; pintarAlertas();
+    if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission().catch(() => {});
+  });
+
   // ---------- Tempo real ----------
   function assinar() {
     if (canal) return;
@@ -1590,9 +1694,13 @@
       });
     // Ofertas e vendas num canal à parte (se o banco ainda não tiver a migração 012, não derruba o tempo real das mensagens)
     const repintarProdutos = ({ new: r }) => { if (painel === 'pro' && r && r.conversa_id === aberta) pintarPainel(); };
+    let vendasT = null, alertasT = null;
     sb.channel('caixa-produtos')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ofertas' }, repintarProdutos)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'vendas' }, repintarProdutos)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vendas' }, e => { repintarProdutos(e); clearTimeout(vendasT); vendasT = setTimeout(carregarVendasResumo, 400); })
+      .subscribe();
+    sb.channel('caixa-alertas')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'alertas' }, () => { clearTimeout(alertasT); alertasT = setTimeout(carregarAlertas, 300); })
       .subscribe();
   }
 

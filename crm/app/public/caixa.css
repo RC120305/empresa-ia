@@ -254,7 +254,7 @@ section[data-painel]{flex:1;min-height:0;display:flex;flex-direction:column}
   .nav button[aria-selected="true"]{border-bottom-color:var(--lat-ativo)}
   .quem{grid-column:2;grid-row:1;justify-content:flex-end}
   .principal{padding:10px 12px}
-  .topo{display:none}
+  .topo{justify-content:flex-end}.topo h1,.topo .tema{display:none}
   .cx,.cx.com-painel,.cx.com-painel.painel-largo{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr)}
   .cx-col{grid-row:auto}
   .cx-cab,.cx-chat,.cx-lateral,.cx-trilho{grid-column:1;grid-row:auto}
@@ -398,3 +398,27 @@ section[data-painel="produtos"],section[data-painel="agencias"],section[data-pai
 .prod-foto{width:100%;max-width:200px;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r-sm)}
 .form-img{grid-column:1/-1;width:100%;max-width:320px;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r-md)}
 .lat-txt.largo{grid-column:1/-1}
+
+/* Sino de alertas da equipe */
+.sino{all:unset;cursor:pointer;position:relative;width:40px;height:40px;border-radius:999px;display:grid;place-items:center;border:1px solid var(--cor-borda);background:var(--cor-superficie);color:var(--cor-texto)}
+.sino svg{width:20px;height:20px}
+.sino:focus-visible{outline:2px solid var(--cor-primaria);outline-offset:2px}
+.sino.ativo{border-color:var(--cor-erro);color:var(--cor-erro);animation:balanca 1s ease-in-out 2}
+.sino-n{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:var(--cor-erro);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;box-sizing:border-box}
+@keyframes balanca{0%,100%{transform:rotate(0)}20%{transform:rotate(14deg)}40%{transform:rotate(-12deg)}60%{transform:rotate(8deg)}80%{transform:rotate(-4deg)}}
+@media (prefers-reduced-motion:reduce){.sino.ativo{animation:none}}
+.alertas{position:fixed;top:calc(64px + env(safe-area-inset-top,0px));right:16px;z-index:45;width:min(380px,calc(100% - 32px));background:var(--cor-superficie);border:2px solid var(--cor-erro);border-radius:var(--r-lg);box-shadow:var(--sombra-2);padding:10px 12px;display:flex;flex-direction:column;gap:8px;max-height:70vh;overflow:auto}
+.alertas .al-cab{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--cor-erro)}
+.alertas .al-item{border-top:1px solid var(--cor-borda);padding-top:8px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.alertas .al-tipo{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--cor-erro)}
+.alertas .al-item.lancar .al-tipo{color:var(--cor-alerta)}
+.alertas .al-acoes{display:flex;gap:6px;flex-wrap:wrap}
+.alertas .vazio-al{font-size:13px;color:var(--cor-texto-sec)}
+/* Etiquetas e destaque no card do lead (lista de conversas e funil) */
+.cx-l2{display:flex;gap:4px;flex-wrap:wrap}
+.cx-l2 .pilula,.cx-l2 .tipo{font-size:11px}
+.cx-item.urgente{border:2px solid var(--cor-erro);border-left-width:6px;background:var(--cor-erro-suave)}
+.cx-urg{display:flex;justify-content:space-between;gap:6px;font-size:12px;font-weight:700;color:var(--cor-erro);text-transform:uppercase;letter-spacing:.03em}
+.t-prod{background:var(--cor-sucesso-suave);color:var(--cor-sucesso)}
+.t-prod.pendente{background:var(--cor-alerta-suave);color:var(--cor-alerta)}
+.card-lead.urgente{border-color:var(--cor-erro);box-shadow:inset 4px 0 0 var(--cor-erro)}
