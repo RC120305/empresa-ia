@@ -12,6 +12,7 @@ const orcamento = require('./orcamento');
 const drive = require('./drive');
 const produtos = require('./produtos');
 const vitrine = require('./vitrine');
+const bb = require('./bb');
 const path = require('path');
 
 const porta = process.env.PORT || 8080;
@@ -628,6 +629,58 @@ async function patchBanco(tabela, filtro, dados, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/${tabela}?${filtro}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(dados), signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw new ErroEnvio(r.status === 400 ? 400 : 502, 'Não deu para salvar' + (r.status === 400 ? ' (o banco precisa da migração 007?)' : '') + '.');
 }
+// ---------- Cobrança por Pix (Banco do Brasil) e baixa automática ----------
+// Prazo: 48 h; 2 h se o check-in for em até 3 dias; nunca depois das 15h do dia do check-in (horário de Bonito).
+function prazoCobranca(dataEntrada, agora = new Date()) {
+  const checkin = dataEntrada ? new Date(dataEntrada + 'T15:00:00-04:00') : null;
+  const curto = checkin && checkin - agora < 3 * 864e5;
+  let fim = new Date(agora.getTime() + (curto ? 2 : 48) * 3600e3);
+  if (checkin && checkin > agora && fim > checkin) fim = checkin;
+  if (fim - agora < 15 * 60e3) fim = new Date(agora.getTime() + 15 * 60e3);
+  return fim;
+}
+let verificandoPix = null, ultimaVerificacaoPix = 0;
+// Confere as cobranças ativas no banco: paga → baixa; passou do prazo → vencida. Roda pelo agendador (a cada 2 min) e ao abrir o painel.
+function verificarCobrancas(buscar = fetch) {
+  if (verificandoPix) return verificandoPix;
+  if (Date.now() - ultimaVerificacaoPix < Number(process.env.PIX_INTERVALO_MS || 15000)) return Promise.resolve({ verificadas: 0, pagas: 0, vencidas: 0, cedo: true });
+  ultimaVerificacaoPix = Date.now();
+  verificandoPix = (async () => {
+    const r = await buscar(`${SUPABASE_URL}/rest/v1/cobrancas?situacao=eq.ativa&select=*&order=criado_em&limit=100`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+    const lista = r && r.ok ? await r.json().catch(() => []) : [];
+    let pagas = 0, vencidas = 0;
+    for (const cob of lista) {
+      try {
+        const c = await bb.consultar(cob.txid, cob.fonte);
+        if (c.status === 'CONCLUIDA' || (c.pagamentos || []).length) { await baixaCobranca(cob, (c.pagamentos || [])[0] || {}, buscar); pagas++; }
+        else if (/^REMOVIDA/.test(c.status || '')) await patchBanco('cobrancas', `id=eq.${cob.id}`, { situacao: 'cancelada', atualizado_em: new Date().toISOString() });
+        else if (new Date(cob.expira_em) < new Date()) { await cobrancaVencida(cob, buscar); vencidas++; }
+      } catch (e) { console.warn(JSON.stringify({ evento: 'pix_consulta', txid: cob.txid, erro: String(e.message || e).slice(0, 200) })); }
+    }
+    return { verificadas: lista.length, pagas, vencidas };
+  })().finally(() => { verificandoPix = null; });
+  return verificandoPix;
+}
+async function baixaCobranca(cob, pg, buscar = fetch) {
+  const valor = pg.valor || Number(cob.valor);
+  await patchBanco('cobrancas', `id=eq.${cob.id}`, { situacao: 'paga', valor_pago: valor, pago_em: pg.horario || new Date().toISOString(), e2e_id: pg.e2e || null, pagador: pg.pagador || null, atualizado_em: new Date().toISOString() });
+  const txt = 'Pagamento recebido por Pix: ' + produtos.brl(valor) + ' (' + (cob.descricao || cob.tipo) + ')' + (pg.pagador ? ' · ' + pg.pagador : '');
+  if (cob.negocio_id) {
+    await patchBanco('negocios', `id=eq.${cob.negocio_id}`, { etapa: 'res', etapa_desde: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
+    await eventoNegocio(cob.negocio_id, txt + ' · card em Reservado', 'CRM', buscar);
+    await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ negocio_id: cob.negocio_id, responsavel_id: cob.criado_por || null, criado_por: 'CRM', tipo: 'Confirmar a reserva', descricao: txt + '. Lançar o adiantamento e confirmar a reserva no Silbeck, e mandar a confirmação ao cliente.', quando: new Date().toISOString() }) }).catch(() => null);
+  }
+  await criarAlerta({ tipo: 'pagamento_recebido', titulo: 'Pagamento recebido', info: txt, conversa_id: cob.conversa_id, negocio_id: cob.negocio_id, cobranca_id: cob.id }, buscar);
+}
+async function cobrancaVencida(cob, buscar = fetch) {
+  await patchBanco('cobrancas', `id=eq.${cob.id}`, { situacao: 'expirada', atualizado_em: new Date().toISOString() });
+  await bb.cancelar(cob.txid, cob.fonte).catch(() => {});
+  const txt = 'Pix de ' + produtos.brl(cob.valor) + ' (' + (cob.descricao || cob.tipo) + ') venceu sem pagamento';
+  if (cob.negocio_id) await eventoNegocio(cob.negocio_id, txt, 'CRM', buscar);
+  await criarAlerta({ tipo: 'cobranca_vencida', titulo: 'Cobrança vencida', info: txt + '. Falar com o cliente: mandar um novo Pix ou liberar a vaga.', conversa_id: cob.conversa_id, negocio_id: cob.negocio_id, cobranca_id: cob.id }, buscar);
+}
+
 // Fecha os alertas de uma venda (e conclui a tarefa de lançar ligada a eles)
 async function resolverAlertasDaVenda(venda, tipos, por, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/alertas?venda_id=eq.${venda}&situacao=eq.aberto&select=id,tipo,tarefa_id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
@@ -1130,6 +1183,51 @@ const API_EQUIPE = {
     if (v.negocio_id) await eventoNegocio(v.negocio_id, ({ lancado: 'Lançado na conta: ', cancelado: 'Venda cancelada: ', vendido: 'Venda reaberta: ' })[corpo.situacao] + v.produto_nome + ' · ' + produtos.brl(v.valor_total), eu.id);
     return { ok: true };
   },
+  // Cobrança por Pix: cria no Banco do Brasil (ou no simulador) e devolve o copia e cola para mandar ao cliente
+  'POST /api/cobranca': async (corpo, eu) => {
+    const conversa = String(corpo.conversa_id || '');
+    if (!uuidOk(conversa)) throw new ErroEnvio(400, 'Conversa inválida.');
+    const valor = Math.round(Number(String(corpo.valor || '').replace(',', '.')) * 100) / 100;
+    if (!(valor >= 1 && valor <= 100000)) throw new ErroEnvio(400, 'Valor inválido (de R$ 1 a R$ 100.000).');
+    const tipo = ['sinal', 'total', 'outro'].includes(corpo.tipo) ? corpo.tipo : 'sinal';
+    const descricao = String(corpo.descricao || '').trim().slice(0, 120) || ({ sinal: 'Sinal de 50% da hospedagem', total: 'Hospedagem (valor total)', outro: 'Hotel Cabanas' })[tipo];
+    const negocio = await negocioDaConversa(conversa, 'id,etapa,data_entrada');
+    const est = await estadiaDaConversa(conversa);
+    const expira = prazoCobranca((negocio && negocio.data_entrada) || est.data_entrada);
+    const txid = bb.novoTxid();
+    const c = await bb.criarCobranca({ txid, valor, expiracaoSeg: Math.round((expira - new Date()) / 1000), descricao: 'Hotel Cabanas · ' + descricao });
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/cobrancas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ txid, conversa_id: conversa, negocio_id: negocio ? negocio.id : null, tipo, descricao, valor, expira_em: expira.toISOString(), copia_e_cola: c.copia_e_cola, fonte: c.fonte, criado_por: eu.id }) });
+    if (!r.ok) { await bb.cancelar(txid, c.fonte).catch(() => {}); throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para registrar a cobrança (o banco precisa da migração 017?).'); }
+    const cob = (await r.json())[0];
+    if (negocio) {
+      if (['novo', 'atend', 'orc'].includes(negocio.etapa)) await patchBanco('negocios', `id=eq.${negocio.id}`, { etapa: 'pag', etapa_desde: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
+      await eventoNegocio(negocio.id, 'Pix gerado: ' + produtos.brl(valor) + ' (' + descricao + '), vale até ' + expira.toLocaleString('pt-BR', { timeZone: 'America/Campo_Grande', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }), eu.id);
+    }
+    return { ok: true, cobranca: cob };
+  },
+  // Cancelar, conferir agora, ou (só no simulador) simular o pagamento
+  'POST /api/cobranca-acao': async (corpo, eu) => {
+    if (corpo.acao === 'verificar') return { ok: true, ...(await verificarCobrancas()) };
+    if (!uuidOk(corpo.id)) throw new ErroEnvio(400, 'Cobrança inválida.');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/cobrancas?id=eq.${corpo.id}&select=*`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const cob = r.ok ? (await r.json())[0] : null;
+    if (!cob) throw new ErroEnvio(404, 'Cobrança não encontrada.');
+    if (corpo.acao === 'cancelar') {
+      if (cob.situacao !== 'ativa') throw new ErroEnvio(409, 'Só dá para cancelar cobrança ativa.');
+      await bb.cancelar(cob.txid, cob.fonte);
+      await patchBanco('cobrancas', `id=eq.${cob.id}`, { situacao: 'cancelada', atualizado_em: new Date().toISOString() });
+      if (cob.negocio_id) await eventoNegocio(cob.negocio_id, 'Pix cancelado: ' + produtos.brl(cob.valor), eu.id);
+      return { ok: true };
+    }
+    if (corpo.acao === 'simular_pagamento') {
+      if (cob.fonte !== 'simulador') throw new ErroEnvio(400, 'Só cobranças do simulador.');
+      bb.simularPagamento(cob.txid);
+      ultimaVerificacaoPix = 0;
+      return { ok: true, ...(await verificarCobrancas()) };
+    }
+    throw new ErroEnvio(400, 'Ação inválida.');
+  },
   // Sino: resolver um alerta ("✓ Lançado na conta" também marca a venda e conclui a tarefa de lançar)
   'POST /api/alerta': async (corpo, eu) => {
     if (!uuidOk(corpo.id)) throw new ErroEnvio(400, 'Alerta inválido.');
@@ -1416,7 +1514,7 @@ const servidor = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
   if (url.pathname === '/saude') {
-    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado(), supabasePublica: chavePublicaOk(), whatsappToken: !!WA_TOKEN, anthropic: !!process.env.ANTHROPIC_API_KEY }, gilberto: { instrucoes: gilberto.sistemaPronto(), modelo: gilberto.MODELO, ferramentas: gilberto.ferramentas() }, silbeck: silbeck.MODO(), chaveSupabase: tipoChave(SUPABASE_KEY), ipSaida };
+    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado(), supabasePublica: chavePublicaOk(), whatsappToken: !!WA_TOKEN, anthropic: !!process.env.ANTHROPIC_API_KEY }, gilberto: { instrucoes: gilberto.sistemaPronto(), modelo: gilberto.MODELO, ferramentas: gilberto.ferramentas() }, silbeck: silbeck.MODO(), pix: bb.MODO(), chaveSupabase: tipoChave(SUPABASE_KEY), ipSaida };
     if (!bancoLigado()) return json(res, 200, base);
     // Confere se o banco responde e se a chave tem permissão de servidor: chama a função de status com um
     // ID que não existe (não altera nada). Chave sem permissão de servidor recebe 401/403.
@@ -1574,6 +1672,13 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
+  // Agendador do Google (a cada 2 min): confere as cobranças Pix ativas. Não devolve dado nenhum, só contagens.
+  if (url.pathname === '/cron/pix' && req.method === 'POST') {
+    if (!bancoLigado()) return json(res, 503, { ok: false });
+    verificarCobrancas().then(r => json(res, 200, { ok: true, ...r })).catch(() => json(res, 500, { ok: false }));
+    return;
+  }
+
   const rotaEquipe = API_EQUIPE[req.method + ' ' + url.pathname];
   if (rotaEquipe) {
     const auth = req.headers.authorization || '';
@@ -1584,6 +1689,7 @@ const servidor = http.createServer((req, res) => {
       const corpo = req.method === 'POST' ? await lerCorpo(req) : {};
       return rotaEquipe(corpo, eu, url);
     })().then(r => json(res, 200, r)).catch(e => {
+      if (e instanceof bb.ErroBB) e = new ErroEnvio(e.http, e.message);
       if (e instanceof silbeck.ErroSilbeck) e = e.http === 400 ? new ErroEnvio(400, 'Pedido inválido: ' + e.message + '.') : new ErroEnvio(502, 'O Silbeck não respondeu agora (' + e.message + ').');
       if (!(e instanceof ErroEnvio)) console.error(JSON.stringify({ evento: 'falha_api', rota: url.pathname, erro: String(e.message || e).slice(0, 200) }));
       json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Não deu agora. Tente de novo.' });
@@ -1691,4 +1797,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => { console.log('CRM Cabanas ouvindo na porta ' + porta); conferirIpSaida(); });
-module.exports = { servidor, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto };
+module.exports = { servidor, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca };

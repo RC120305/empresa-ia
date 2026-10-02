@@ -1,0 +1,18 @@
+bash <<'FIM'
+# CRM Cabanas: agenda a conferência das cobranças Pix a cada 2 minutos (Cloud Scheduler).
+# Rodar UMA vez no Cloud Shell. Não cria chave. Custa centavos (3 agendamentos por mês são gratuitos).
+set -euo pipefail
+gcloud config set project cabanas-crm >/dev/null
+echo "1/2 Ligando o Cloud Scheduler (pode levar 1 minuto)..."
+gcloud services enable cloudscheduler.googleapis.com
+echo "2/2 Criando o agendamento..."
+URL="https://crm-377803250649.southamerica-east1.run.app/cron/pix"
+if gcloud scheduler jobs describe crm-pix --location=southamerica-east1 >/dev/null 2>&1; then
+  gcloud scheduler jobs update http crm-pix --location=southamerica-east1 --schedule="*/2 * * * *" --uri="$URL" --http-method=POST --time-zone="America/Campo_Grande" >/dev/null
+else
+  gcloud scheduler jobs create http crm-pix --location=southamerica-east1 --schedule="*/2 * * * *" --uri="$URL" --http-method=POST --time-zone="America/Campo_Grande" >/dev/null
+fi
+echo "----------------------------------------------------------------"
+echo "Pronto! O CRM confere os Pix a cada 2 minutos. Mande 'agendador ligado' no chat."
+echo "----------------------------------------------------------------"
+FIM

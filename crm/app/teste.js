@@ -31,6 +31,8 @@ const PRODS = [
 ];
 const ofertasF = [], vendasF = [], alertasF = [], vitrinesF = [];
 let iaVitrines = null;
+const cobrancasF = [];
+let bbPago = false;
 let iaOferta = '';
 const RAIZ_DRIVE = '1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5';
 const JPG_DRIVE = require('child_process').execFileSync('ffmpeg', ['-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc=size=1600x900', '-frames:v', '1', '-f', 'mjpeg', '-']);
@@ -65,6 +67,22 @@ const falso = http.createServer((req, res) => {
       if (req.method === 'PATCH') { Object.assign(ofertasF.find(o => o.id === id), json); res.writeHead(204); return res.end(); }
       if (req.url.includes('conversa_id=eq.')) return responder(200, ofertasF.filter(o => o.conversa_id === req.url.split('conversa_id=eq.')[1].split('&')[0]));
       return responder(200, ofertasF.filter(o => o.id === id));
+    }
+    // Banco do Brasil falso (API Pix v2)
+    if (req.url === '/bb/oauth' && req.method === 'POST') return req.headers.authorization === 'Basic ' + Buffer.from('bb-id:bb-sec').toString('base64') && corpo.includes('grant_type=client_credentials') ? responder(200, { access_token: 'tok-bb', expires_in: 600 }) : responder(401, {});
+    if (req.url.startsWith('/bb/pix/cob/')) {
+      if (req.headers.authorization !== 'Bearer tok-bb' || !req.url.includes('gw-dev-app-key=bb-key')) return responder(401, {});
+      const tx = req.url.split('/bb/pix/cob/')[1].split('?')[0];
+      if (req.method === 'PUT') return responder(201, { txid: tx, status: 'ATIVA', pixCopiaECola: '00020126BB' + tx, valor: json.valor, chave: json.chave, calendario: json.calendario });
+      if (req.method === 'PATCH') return responder(200, { txid: tx, status: json.status });
+      return responder(200, bbPago ? { txid: tx, status: 'CONCLUIDA', pix: [{ endToEndId: 'E123', valor: '500.00', horario: '2026-10-02T20:00:00Z', pagador: { nome: 'ANA SOUZA' } }] } : { txid: tx, status: 'ATIVA' });
+    }
+    if (req.url.startsWith('/rest/v1/cobrancas')) {
+      if (req.method === 'POST') { const c = { id: crypto.randomUUID(), situacao: 'ativa', ...json }; cobrancasF.push(c); return responder(201, [c]); }
+      const id = (req.url.match(/id=eq\.([0-9a-f-]+)/) || [])[1];
+      if (req.method === 'PATCH') { Object.assign(cobrancasF.find(c => c.id === id), json); res.writeHead(204); return res.end(); }
+      if (req.url.includes('situacao=eq.ativa')) return responder(200, cobrancasF.filter(c => c.situacao === 'ativa'));
+      return responder(200, cobrancasF.filter(c => c.id === id));
     }
     if (req.url.startsWith('/rest/v1/vitrines')) {
       if (req.method === 'POST') { const v = { id: crypto.randomUUID(), aberturas: 0, pedido: null, pedido_em: null, criado_em: new Date().toISOString(), ...json }; vitrinesF.unshift(v); return responder(201, [v]); }
@@ -212,6 +230,7 @@ falso.listen(0, () => {
   process.env.META_GRAPH_URL = 'http://127.0.0.1:' + falso.address().port + '/graph';
   process.env.DRIVE_URL = 'http://127.0.0.1:' + falso.address().port;
   process.env.DRIVE_TOKEN = 'tok-drive';
+  process.env.PIX_INTERVALO_MS = '0';
   const { servidor } = require('./server');
 
   servidor.listen(0, async () => {
@@ -494,6 +513,46 @@ falso.listen(0, () => {
     assert.equal((await api('/api/modelo', { numero_id: '111', nome: 'ruim', categoria: 'UTILITY', texto: 'Texto qualquer de teste' })).status, 400);
     r = await api('/api/numeros', null, 'token-equipe', 'GET');
     assert.deepEqual((await r.json()).numeros, [{ id: '111', numero: '15551829766' }]);
+    // Cobrança por Pix (E1): simulador
+    r = await api('/api/cobranca', { conversa_id: conv, tipo: 'sinal', valor: '1254,60', descricao: 'Sinal do Bangalô' });
+    const cj1 = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(cj1));
+    assert.ok(/^CAB[A-Za-z0-9]{26}$/.test(cj1.cobranca.txid) && cj1.cobranca.copia_e_cola.includes('SIMULADOR') && cj1.cobranca.valor === 1254.6 && cj1.cobranca.fonte === 'simulador');
+    assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'pag'), 'card em Aguardando pagamento');
+    assert.equal((await api('/api/cobranca', { conversa_id: conv, valor: '0' })).status, 400);
+    r = await fetch(base + '/cron/pix', { method: 'POST' });
+    assert.deepEqual(await r.json(), { ok: true, verificadas: 1, pagas: 0, vencidas: 0 });
+    r = await api('/api/cobranca-acao', { id: cobrancasF[0].id, acao: 'simular_pagamento' });
+    assert.equal((await r.json()).pagas, 1);
+    assert.deepEqual([cobrancasF[0].situacao, cobrancasF[0].valor_pago, cobrancasF[0].pagador], ['paga', 1254.6, 'Cliente de teste']);
+    assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'res'), 'card em Reservado');
+    assert.equal(alertasF.at(-1).tipo, 'pagamento_recebido'); assert.ok(alertasF.at(-1).info.includes('R$ 1.254,60'));
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.tipo, 'Confirmar a reserva');
+    // Prazo: 48 h; 2 h com check-in em até 3 dias; nunca depois das 15h do check-in
+    const { prazoCobranca } = require('./server');
+    const ag = new Date('2026-10-02T12:00:00Z');
+    assert.equal(prazoCobranca('2026-11-20', ag).toISOString(), '2026-10-04T12:00:00.000Z');
+    assert.equal(prazoCobranca('2026-10-03', ag).toISOString(), '2026-10-02T14:00:00.000Z');
+    assert.equal(prazoCobranca('2026-10-02', new Date('2026-10-02T18:30:00Z')).toISOString(), '2026-10-02T19:00:00.000Z');
+    // Vencida
+    r = await api('/api/cobranca', { conversa_id: conv, tipo: 'total', valor: 300 });
+    const cv = cobrancasF.at(-1); cv.expira_em = new Date(Date.now() - 60000).toISOString();
+    r = await fetch(base + '/cron/pix', { method: 'POST' });
+    assert.equal((await r.json()).vencidas, 1); assert.equal(cv.situacao, 'expirada'); assert.equal(alertasF.at(-1).tipo, 'cobranca_vencida');
+    // Banco do Brasil real (contra o BB falso): OAuth, cobrança com chave e valor, consulta e baixa
+    Object.assign(process.env, { BB_MODO: 'real', BB_CLIENT_ID: 'bb-id', BB_CLIENT_SECRET: 'bb-sec', BB_APP_KEY: 'bb-key', BB_CHAVE_PIX: '12345678000199', BB_AMBIENTE: 'producao', BB_API_URL: process.env.SUPABASE_URL.replace(/\/$/, '') + '/bb/pix', BB_OAUTH_URL: process.env.SUPABASE_URL.replace(/\/$/, '') + '/bb/oauth' });
+    r = await api('/api/cobranca', { conversa_id: conv, tipo: 'sinal', valor: 500 });
+    const cr = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(cr));
+    const put = chamadas.findLast(c => c.url.startsWith('/bb/pix/cob/') && c.metodo === 'PUT').corpo;
+    assert.deepEqual([put.valor.original, put.chave, put.calendario.expiracao > 7000], ['500.00', '12345678000199', true]);
+    assert.equal(cr.cobranca.copia_e_cola, '00020126BB' + cr.cobranca.txid); assert.equal(cr.cobranca.fonte, 'bb');
+    assert.equal((await api('/api/cobranca-acao', { id: cobrancasF.at(-1).id, acao: 'simular_pagamento' })).status, 400, 'simular só no simulador');
+    bbPago = true;
+    r = await fetch(base + '/cron/pix', { method: 'POST' });
+    assert.equal((await r.json()).pagas, 1);
+    assert.deepEqual([cobrancasF.at(-1).situacao, cobrancasF.at(-1).e2e_id, cobrancasF.at(-1).pagador, cobrancasF.at(-1).valor_pago], ['paga', 'E123', 'ANA SOUZA', 500]);
+    process.env.BB_MODO = 'simulador';
     // Completar o contato de um lead que chegou sem WhatsApp/e-mail (Instagram, Facebook, balcão)
     r = await api('/api/contato', { negocio_id: 'eeeeeeee-0000-0000-0000-000000000001', telefone: '+55 (67) 98888-7777', email: 'cli@exemplo.com', nome: 'Ana Souza' });
     assert.equal(r.status, 200, await r.clone().text());

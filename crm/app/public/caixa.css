@@ -459,3 +459,11 @@ section[data-painel="produtos"],section[data-painel="agencias"],section[data-pai
 .pf-acoes button:focus-visible{outline:2px solid var(--cor-primaria)}
 .pf-botoes{display:flex;gap:8px;flex-wrap:wrap}
 .pf-area{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto}
+
+/* Cobranças Pix (painel 💳) */
+.cob-sit{font-weight:700}
+.cob-sit.pendente{color:var(--cor-alerta)}
+.cob-sit.ok{color:var(--cor-sucesso)}
+.cob-sit.erro{color:var(--cor-erro)}
+.cob-sit.off{color:var(--cor-texto-sec)}
+.alertas .al-item.pago .al-tipo{color:var(--cor-sucesso)}

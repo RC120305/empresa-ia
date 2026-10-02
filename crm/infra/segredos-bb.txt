@@ -1,0 +1,40 @@
+bash <<'FIM'
+# CRM Cabanas: guarda no cofre do Google (Secret Manager) as credenciais da API Pix do Banco do Brasil.
+# Rodar no Cloud Shell. O script PERGUNTA cada valor: digite ali, nunca no chat. Os segredos não aparecem na tela.
+# Onde achar: Portal Developers BB (developers.bb.com.br) > sua aplicação > Credenciais (produção).
+# Pode rodar de novo para trocar um valor (Enter = manter o que já está no cofre).
+set -euo pipefail
+gcloud config set project cabanas-crm >/dev/null
+guardar() { # nome valor
+  if gcloud secrets describe "$1" >/dev/null 2>&1; then
+    printf '%s' "$2" | gcloud secrets versions add "$1" --data-file=- >/dev/null
+  else
+    printf '%s' "$2" | gcloud secrets create "$1" --replication-policy=user-managed --locations=southamerica-east1 --data-file=- >/dev/null
+  fi
+  echo "  ✓ $1 guardado"
+}
+existe() { gcloud secrets describe "$1" >/dev/null 2>&1; }
+pedir() { # nome rótulo oculto
+  local v
+  if [ "$3" = "s" ]; then read -r -s -p "$2 (não aparece ao digitar; Enter = manter): " v </dev/tty; echo; else read -r -p "$2 (Enter = manter): " v </dev/tty; fi
+  v="$(printf '%s' "$v" | tr -d '[:space:]')"
+  if [ -n "$v" ]; then guardar "$1" "$v"; elif ! existe "$1"; then echo "Faltou: $2"; exit 1; fi
+}
+pedir bb-client-id "client_id" n
+pedir bb-client-secret "client_secret" s
+pedir bb-app-key "developer_application_key (gw-dev-app-key)" s
+pedir bb-chave-pix "Chave Pix que recebe (CNPJ só números, e-mail ou chave aleatória)" n
+read -r -p "Ambiente [producao/homologacao] (Enter = producao): " AMB </dev/tty
+AMB="${AMB:-producao}"; case "$AMB" in producao|homologacao) guardar bb-ambiente "$AMB";; *) echo "Use producao ou homologacao."; exit 1;; esac
+read -r -p "Certificado A1 (.pfx) já enviado ao Cloud Shell? Caminho do arquivo (Enter = sem certificado / manter): " PFX </dev/tty
+if [ -n "$PFX" ]; then
+  [ -f "$PFX" ] || { echo "Arquivo não encontrado: $PFX"; exit 1; }
+  guardar bb-certificado "$(base64 -w0 "$PFX")"
+  read -r -s -p "Senha do certificado (não aparece ao digitar): " SENHA </dev/tty; echo
+  guardar bb-certificado-senha "$SENHA"; unset SENHA
+  echo "  (pode apagar o .pfx do Cloud Shell agora: rm \"$PFX\")"
+fi
+echo "----------------------------------------------------------------"
+echo "Pronto! Mande 'credenciais do BB no cofre' no chat (sem nenhum valor)."
+echo "----------------------------------------------------------------"
+FIM

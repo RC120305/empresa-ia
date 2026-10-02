@@ -865,7 +865,7 @@
     if (painel === 'his') painelFicha(lat, c);
     if (painel === 'orc') painelOrcamento(lat, c);
     if (painel === 'vag') painelVagas(lat);
-    if (painel === 'res') lat.append(el('p', { class: 'lat-txt', text: 'As reservas criadas no Silbeck, a cobrança do sinal (Pix ou cartão) e a baixa automática aparecem aqui. Chega na etapa E, depois que o Silbeck real e os bancos estiverem ligados.' }));
+    if (painel === 'res') painelPagamentos(lat, c);
     if (painel === 'tar') painelTarefas(lat, c);
     if (painel === 'pro') painelProdutos(lat, c);
   }
@@ -1628,6 +1628,75 @@
     return el('select', { class: 'etapa-sel', 'aria-label': 'Etapa no funil', title: 'Etapa no funil', onchange: e => mover(n, e.target.value) },
       ETAPAS.map(([k, t]) => el('option', { value: k, text: t, selected: k === n.etapa })));
   }
+  // ---------- Pagamentos: cobrança por Pix (Banco do Brasil) com baixa automática ----------
+  const SIT_COB = { ativa: ['Aguardando pagamento', 'pendente'], paga: ['Pago ✓', 'ok'], expirada: ['Venceu sem pagamento', 'erro'], cancelada: ['Cancelada', 'off'] };
+  const quandoBR = d => new Date(d).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', ' às');
+  let modoPix = null;
+  async function painelPagamentos(lat, c) {
+    if (!c) return;
+    const id = c.id;
+    lat.append(el('p', { class: 'lat-txt', text: 'Carregando…' }));
+    chamarApi('/api/cobranca-acao', { acao: 'verificar' }).catch(() => {}); // confere o banco ao abrir
+    if (!modoPix) modoPix = await fetch('/saude').then(r => r.json()).then(j => j.pix || 'simulador').catch(() => 'simulador');
+    const { data, error } = await sb.from('cobrancas').select('*').eq('conversa_id', id).order('criado_em', { ascending: false });
+    if (painel !== 'res' || aberta !== id) return;
+    lat.lastChild.remove();
+    if (error) { lat.append(el('div', { class: 'aviso-sim', text: '⚠ Falta rodar a migração 017 no Supabase para as cobranças por Pix.' })); return; }
+    if (modoPix === 'simulador') lat.append(el('div', { class: 'aviso-sim', text: '⚠ Modo de teste: o Pix é fictício (simulador do Banco do Brasil). Não envie a clientes reais.' }));
+    // Valor sugerido: a opção que o cliente escolheu no orçamento (ou o valor previsto do negócio)
+    const orc = orcsCache.find(o => o.escolhida) || orcsCache[0];
+    const op = orc && ((orc.opcoes || []).find(x => x.codigo === orc.escolhida) || (orc.opcoes || [])[0]);
+    const n = negocioDaConversa(id);
+    const total = op ? Number(op.valor_total) : n && n.valor_previsto ? Number(n.valor_previsto) : null;
+    const tipo = el('select', {}, [['sinal', 'Sinal de 50%'], ['total', 'Valor total (100%)'], ['outro', 'Outro valor']].map(([v, t]) => el('option', { value: v, text: t })));
+    const valor = el('input', { type: 'number', min: '1', step: '0.01', value: total ? (total / 2).toFixed(2) : '' });
+    const desc = el('input', { type: 'text', placeholder: 'Ex.: Sinal da Cabana Master, 14 a 17/11' });
+    tipo.addEventListener('change', () => { if (total && tipo.value !== 'outro') valor.value = (tipo.value === 'sinal' ? total / 2 : total).toFixed(2); });
+    lat.append(el('span', { class: 'rotulo', text: 'Cobrar por Pix' }),
+      total ? el('p', { class: 'lat-txt', text: 'Base: ' + (op ? op.nome + ' · ' : '') + brl(total) + (orc && orc.escolhida ? ' (o cliente escolheu no orçamento)' : '') }) : el('p', { class: 'lat-txt', text: 'Sem orçamento escolhido: digite o valor.' }),
+      el('div', { class: 'grade2' }, el('label', { class: 'campo' }, 'Cobrança', tipo), el('label', { class: 'campo' }, 'Valor (R$)', valor)),
+      el('label', { class: 'campo' }, 'Descrição (o cliente vê no app do banco)', desc),
+      el('button', { class: 'btn btn-enviar', type: 'button', text: 'Gerar Pix', onclick: async e => {
+        const b = e.currentTarget; b.disabled = true; b.textContent = 'Gerando…';
+        try {
+          const j = await chamarApi('/api/cobranca', { conversa_id: id, tipo: tipo.value, valor: valor.value, descricao: desc.value });
+          porNoCampo(j.cobranca);
+          toast('Pix gerado. A mensagem com o copia e cola está no campo de resposta: revise e envie.');
+          pintarPainel();
+        } catch (err) { toast(err.message); b.disabled = false; b.textContent = 'Gerar Pix'; }
+      } }),
+      el('p', { class: 'lat-txt', text: 'Prazo: 48 h (2 h se o check-in for em até 3 dias). Quando o Pix cair, o CRM dá baixa sozinho: o card vai para Reservado e o sino avisa.' }));
+    if ((data || []).length) {
+      lat.append(el('span', { class: 'rotulo', text: 'Cobranças desta conversa' }));
+      data.forEach(cob => {
+        const [sit, cl] = SIT_COB[cob.situacao] || [cob.situacao, ''];
+        lat.append(el('div', { class: 'lat-card' },
+          el('b', { text: brl(cob.valor) + ' · ' + (cob.descricao || cob.tipo) }),
+          el('small', {}, el('span', { class: 'cob-sit ' + cl, text: sit }), ' · ' + (cob.situacao === 'paga' ? 'pago em ' + quandoBR(cob.pago_em) + (cob.pagador ? ' por ' + cob.pagador : '') : cob.situacao === 'ativa' ? 'vale até ' + quandoBR(cob.expira_em) : 'gerado em ' + quandoBR(cob.criado_em)) + (cob.fonte === 'simulador' ? ' · teste' : '')),
+          cob.situacao === 'ativa' ? el('div', { class: 'acoes' },
+            el('button', { class: 'btn-mini', type: 'button', text: 'Pôr no campo', onclick: () => porNoCampo(cob) }),
+            el('button', { class: 'btn-mini', type: 'button', text: 'Copiar código', onclick: () => navigator.clipboard.writeText(cob.copia_e_cola || '').then(() => toast('Copia e cola copiado.')).catch(() => toast('Não deu para copiar.')) }),
+            el('button', { class: 'btn-mini', type: 'button', text: 'Conferir agora', onclick: () => acaoCobranca(cob, 'verificar') }),
+            cob.fonte === 'simulador' ? el('button', { class: 'btn-mini', type: 'button', text: '🧪 Simular pagamento', onclick: () => acaoCobranca(cob, 'simular_pagamento') }) : null,
+            el('button', { class: 'btn-mini', type: 'button', text: 'Cancelar', onclick: () => { if (confirm('Cancelar este Pix? O cliente não vai mais conseguir pagar por ele.')) acaoCobranca(cob, 'cancelar'); } })) : null));
+      });
+    }
+    lat.append(el('span', { class: 'rotulo', text: 'Reservas no Silbeck' }), el('p', { class: 'lat-txt', text: 'Aparecem aqui quando a ponte com o Silbeck estiver ligada. Link de cartão (Cielo): numa próxima etapa.' }));
+  }
+  function porNoCampo(cob) {
+    const ta = $('resposta');
+    const t = 'Segue o Pix ' + (cob.tipo === 'sinal' ? 'do sinal (50%)' : cob.tipo === 'total' ? 'do valor total' : '') + ' de ' + brl(cob.valor) + ', válido até ' + quandoBR(cob.expira_em) + '. É só copiar o código abaixo e colar no app do seu banco, em Pix Copia e Cola. Assim que o pagamento cair, eu confirmo sua reserva por aqui 🌿';
+    ta.value = (ta.value.trim() ? ta.value.trim() + '\n---\n' : '') + t + '\n---\n' + (cob.copia_e_cola || '');
+    ajustarAltura(); ta.focus();
+  }
+  async function acaoCobranca(cob, acao) {
+    try {
+      const j = await chamarApi('/api/cobranca-acao', { id: cob.id, acao });
+      toast(acao === 'cancelar' ? 'Pix cancelado.' : j.pagas ? 'Pagamento recebido! O card foi para Reservado.' : j.cedo ? 'Conferido há poucos segundos. Tente de novo já já.' : 'Ainda não pago.');
+      pintarPainel();
+    } catch (e) { toast(e.message); }
+  }
+
   // ---------- Produtos na conversa: sugeridos para o cliente, oferecer, resposta e venda ----------
   const SIT_OFERTA = { oferecido: 'oferecido, aguardando resposta', aceito: 'aceito', recusado: 'recusado' };
   const POR_OFERTA = { equipe: 'pela equipe', gilberto: 'pelo Gilberto', pagina: 'pelo cliente na página do orçamento' };
@@ -1794,7 +1863,7 @@
 
   // ---------- Sino: alertas da equipe (cliente pediu produto; lançar na conta no dia do check-in) ----------
   let alertas = [], alertasOk = true, painelAlertas = false, vistos = null, vendasResumo = {};
-  const ROT_ALERTA = { produto_pedido: 'Cliente pediu produto', lancar_conta: 'Lançar na conta do hóspede' };
+  const ROT_ALERTA = { produto_pedido: 'Cliente pediu produto', lancar_conta: 'Lançar na conta do hóspede', pagamento_recebido: 'Pagamento recebido', cobranca_vencida: 'Cobrança vencida' };
   const alertasVencidos = () => alertas.filter(a => new Date(a.quando) <= new Date());
   const desde = q => { const m = Math.max(0, Math.round((Date.now() - new Date(q)) / 6e4)); return m < 1 ? 'agora' : m < 60 ? 'há ' + m + ' min' : m < 1440 ? 'há ' + Math.round(m / 60) + ' h' : 'há ' + Math.round(m / 1440) + ' dias'; };
   async function carregarAlertas() {
@@ -1862,7 +1931,7 @@
     }
     ab.forEach(a => {
       const c = conversas.find(x => x.id === a.conversa_id);
-      const abrirConv = () => { painelAlertas = false; pintarAlertas(); irPara('conversas'); if (c) abrir(c.id); painel = 'pro'; guardar('crm-painel', painel); pintarPainel(); };
+      const abrirConv = () => { painelAlertas = false; pintarAlertas(); irPara('conversas'); if (c) abrir(c.id); painel = /pagamento|cobranca/.test(a.tipo) ? 'res' : 'pro'; guardar('crm-painel', painel); pintarPainel(); };
       box.append(el('div', { class: 'al-item' + (a.tipo === 'lancar_conta' ? ' lancar' : '') },
         el('span', { class: 'al-tipo', text: '⚑ ' + (ROT_ALERTA[a.tipo] || a.titulo) }),
         el('b', { text: (c ? c.nome : 'Cliente') + ' · ' + desde(a.quando) }),
@@ -1870,7 +1939,7 @@
         el('div', { class: 'al-acoes' },
           a.tipo === 'lancar_conta'
             ? el('button', { class: 'btn-mini', type: 'button', text: '✓ Lançado na conta', onclick: () => resolverAlerta(a, 'Lançamento registrado. Alerta resolvido.') })
-            : el('button', { class: 'btn-mini', type: 'button', text: '✓ Reservado', onclick: () => resolverAlerta(a, 'Alerta resolvido.') }),
+            : el('button', { class: 'btn-mini', type: 'button', text: a.tipo === 'pagamento_recebido' ? '✓ Visto' : a.tipo === 'cobranca_vencida' ? '✓ Resolvido' : '✓ Reservado', onclick: () => resolverAlerta(a, 'Alerta resolvido.') }),
           c ? el('button', { class: 'btn-mini', type: 'button', text: 'Abrir conversa', onclick: abrirConv }) : null)));
     });
   }
@@ -1928,6 +1997,9 @@
     sb.channel('caixa-produtos')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'ofertas' }, repintarProdutos)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'vendas' }, e => { repintarProdutos(e); clearTimeout(vendasT); vendasT = setTimeout(carregarVendasResumo, 400); })
+      .subscribe();
+    sb.channel('caixa-cobrancas')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cobrancas' }, ({ new: r }) => { if (painel === 'res' && r && r.conversa_id === aberta) pintarPainel(); })
       .subscribe();
     sb.channel('caixa-alertas')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alertas' }, () => { clearTimeout(alertasT); alertasT = setTimeout(carregarAlertas, 300); })

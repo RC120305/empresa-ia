@@ -23,6 +23,7 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 | `014_vitrines.sql` | links de extras (`vitrines`): páginas "Aventuras no Rio Formoso" e "Momentos especiais"; campo `vitrine` nos produtos; `registrar_abertura_vitrine` | (pendente: rodar no SQL Editor) |
 | `015_correcoes_questionario.sql` | origem `correcao` nas respostas: edição das respostas do questionário (o Gilberto usa a versão corrigida) | (pendente: rodar no SQL Editor) |
 | `016_produtos_fotos.sql` | `fotos` nos produtos: fotos escolhidas (do Drive ou do Banco de fotos), a primeira é a capa | (pendente: rodar no SQL Editor) |
+| `017_cobrancas_pix.sql` | `cobrancas` (Pix do Banco do Brasil: txid, valor, prazo, copia e cola, baixa) e alertas "Pagamento recebido" / "Cobrança vencida" | (pendente: rodar no SQL Editor) |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.
