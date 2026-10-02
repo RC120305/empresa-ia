@@ -19,6 +19,7 @@ const FAKE = {
 const guardados = new Map(); // "Storage" falso: caminho -> {dados, mime}
 const MSG_MIDIA = '33333333-3333-3333-3333-333333333333';
 const MSG_AUDIO = '66666666-6666-6666-6666-666666666666';
+const MSG_BIB = '88888888-8888-8888-8888-888888888888';
 const falso = http.createServer((req, res) => {
   const pedacos = [];
   req.on('data', p => pedacos.push(p));
@@ -48,6 +49,7 @@ const falso = http.createServer((req, res) => {
       if (audio === 'AUDIO-LONGO') return responder(400, { error: { message: 'Audio can be of a maximum of 60 seconds duration.' } });
       return responder(200, { results: [{ alternatives: [{ transcript: 'oi tudo bem' }] }, { alternatives: [{ transcript: 'tem vaga pro feriado?' }] }] });
     }
+    if (req.url.startsWith('/rest/v1/mensagens?id=eq.' + MSG_BIB)) return responder(200, [{ id: MSG_BIB, conversa_id: 'c', tipo: 'image', midia_id: null, midia_caminho: 'biblioteca/BGE-1.jpg', midia_mime: 'image/jpeg', midia_nome: null }]);
     if (req.url.startsWith('/rest/v1/mensagens?id=eq.' + MSG_AUDIO)) {
       if (req.method === 'PATCH') { res.writeHead(204); return res.end(); }
       return responder(200, [{ id: MSG_AUDIO, tipo: 'audio', midia_id: null, midia_caminho: 'conv/audio.ogg', transcricao: null, transcricao_status: null }]);
@@ -107,6 +109,13 @@ falso.listen(0, () => {
   process.env.META_WHATSAPP_TOKEN = 'token-meta-teste';
   process.env.FATOR_DIGITACAO = '0';
   process.env.SILBECK_MODO = 'simulador';
+  // Biblioteca de fotos de teste (a real fica em public/fotos)
+  const os = require('os'), fsT = require('fs'), pathT = require('path');
+  const dirFotos = fsT.mkdtempSync(pathT.join(os.tmpdir(), 'fotos-'));
+  fsT.writeFileSync(pathT.join(dirFotos, 'BGE-1.jpg'), 'JPG-BGE-1'); fsT.writeFileSync(pathT.join(dirFotos, 'BGE-2.jpg'), 'JPG-BGE-2'); fsT.writeFileSync(pathT.join(dirFotos, 'BOIA-1.jpg'), 'JPG-BOIA-1');
+  fsT.writeFileSync(pathT.join(dirFotos, 'fotos.json'), JSON.stringify({ BGE: ['BGE-1.jpg', 'BGE-2.jpg'], BOIA: ['BOIA-1.jpg'] }));
+  fsT.writeFileSync(pathT.join(dirFotos, 'descricoes.json'), JSON.stringify({ 'BGE-1.jpg': { descricao: 'Quarto com duas camas king', etiquetas: ['quarto', 'cama'] }, 'BOIA-1.jpg': { descricao: 'Boia cross no Rio Formoso', etiquetas: ['boia cross', 'rio formoso'] } }));
+  process.env.FOTOS_DIR = dirFotos;
   process.env.GOOGLE_TOKEN = 'tok-google';
   process.env.TRANSCRICAO_URL = 'http://127.0.0.1:' + falso.address().port;
   process.env.ANTHROPIC_API_KEY = 'chave-ia-teste';
@@ -323,7 +332,7 @@ falso.listen(0, () => {
     assert.ok(pi.messages[3].content.includes('Modo: sugestao'));
     assert.equal(pi.output_config.format.type, 'json_schema');
     assert.equal(pi.fallbacks, 'default'); assert.ok(ultimoPedidoIA.beta.includes('server-side-fallback-2026-07-01'));
-    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento']);
+    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'enviar_fotos']);
     assert.ok(pi.messages[3].content.includes('SIMULADOR'));
     // Cotação: o Gilberto pede, o CRM consulta o simulador do Silbeck e devolve o resultado na 2ª rodada
     iaCota = true; pedidosIA.length = 0;
@@ -369,6 +378,31 @@ falso.listen(0, () => {
     assert.equal((await fetch(base + '/o/' + 'x'.repeat(22))).status, 404);
     assert.equal((await fetch(base + '/o/curto')).status, 404);
     for (const f of ['/o/orcamento.css', '/o/orcamento.js', '/o/logo-branco.png']) assert.equal((await fetch(base + f)).status, 200, f);
+    assert.ok(html.includes('src="/fotos/BGE-1.jpg"') && html.includes('src="/fotos/BGE-2.jpg"'), 'fotos reais na página');
+    // Biblioteca de fotos: lista para a equipe, envio pela Meta por link público, e a foto aparece na caixa
+    r = await fetch(base + '/api/fotos', { headers: { Authorization: 'Bearer token-equipe' } });
+    const bib = await r.json();
+    assert.deepEqual(bib.grupos.map(g => [g.grupo, g.nome, g.fotos.length]), [['BGE', 'Bangalô Especial', 2], ['BOIA', 'Boia cross', 1]]);
+    assert.equal((await fetch(base + '/api/fotos', { headers: { Authorization: 'Bearer token-estranho' } })).status, 403);
+    assert.equal((await fetch(base + '/fotos/BGE-1.jpg')).status, 200);
+    assert.equal((await fetch(base + '/fotos/fotos.json')).status, 404);
+    const envF = (corpo, tok = 'token-equipe') => fetch(base + '/api/enviar-fotos', { method: 'POST', headers: { Authorization: 'Bearer ' + tok }, body: JSON.stringify(corpo) });
+    r = await envF({ conversa_id: conv, fotos: ['BGE-1.jpg', 'BOIA-1.jpg'], legenda: 'Olha o Bangalô Especial 🌿' });
+    const ef = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(ef)); assert.equal(ef.enviadas.length, 2);
+    const imgs = chamadas.filter(c => c.url === '/graph/111/messages' && c.corpo.type === 'image' && c.corpo.image.link).slice(-2);
+    assert.ok(imgs[0].corpo.image.link.endsWith('/fotos/BGE-1.jpg') && imgs[0].corpo.image.caption === 'Olha o Bangalô Especial 🌿' && !imgs[1].corpo.image.caption);
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/rpc/registrar_saida_midia').corpo.p_caminho, 'biblioteca/BOIA-1.jpg');
+    assert.equal((await envF({ conversa_id: conv, fotos: ['../server.js'] })).status, 400);
+    assert.equal((await envF({ conversa_id: conv, fotos: ['naoexiste.jpg'] })).status, 400);
+    assert.equal((await envF({ conversa_id: conv, fotos: Array(6).fill('BGE-1.jpg').map((f, i) => i + f) })).status, 400);
+    assert.equal((await envF({ conversa_id: conv, fotos: ['BGE-1.jpg'] }, 'token-estranho')).status, 403);
+    r = await fetch(base + '/api/midia/' + MSG_BIB, { headers: { Authorization: 'Bearer token-equipe' } });
+    assert.equal(r.status, 200); assert.equal(await r.text(), 'JPG-BGE-1');
+    const { escolherFotos } = require('./orcamento');
+    assert.deepEqual(escolherFotos({ codigo_acomodacao: 'BGE', etiquetas: [], quantidade: 5 }).map(f => f.arquivo), ['BGE-1.jpg', 'BGE-2.jpg']);
+    assert.deepEqual(escolherFotos({ codigo_acomodacao: '', etiquetas: ['boia cross'], quantidade: 2 }).map(f => f.arquivo), ['BOIA-1.jpg']);
+    assert.deepEqual(escolherFotos({ codigo_acomodacao: 'CBM', etiquetas: [], quantidade: 2 }), []);
     const { pagina } = require('./orcamento');
     assert.ok(!pagina({ ...salvo, primeiro_nome: '<script>' }).includes('<script>alert') && pagina({ ...salvo, frase_de_abertura: '<b>x</b>' }).includes('&lt;b&gt;'));
     const { cotar } = require('./silbeck');

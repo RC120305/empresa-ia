@@ -99,3 +99,17 @@ button,input,textarea{font:inherit;color:inherit}
 .balao .transcricao.pendente{color:var(--texto-sec)}
 .orcs{padding:6px 16px;border-bottom:1px solid var(--borda);background:var(--sup);font-size:13px;color:var(--texto-sec);display:flex;flex-direction:column;gap:2px}
 .orcs a{color:var(--prim-texto);font-weight:600}
+.galeria{border-top:1px solid var(--borda);background:var(--sup);max-height:45vh;overflow:auto;padding:8px 16px}
+.gal-topo{display:flex;align-items:center;gap:10px;position:sticky;top:-8px;background:var(--sup);padding:6px 0;z-index:1}
+.gal-topo b{flex:1}
+.gal-topo span{font-size:13px;color:var(--texto-sec)}
+.galeria h4{margin:8px 0 4px;font-size:13px;color:var(--texto-sec)}
+.gal-linha{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}
+.gal-foto{all:unset;cursor:pointer;flex:0 0 auto;border-radius:8px;border:3px solid transparent;line-height:0}
+.gal-foto img{width:120px;height:90px;object-fit:cover;border-radius:6px}
+.gal-foto[aria-pressed="true"]{border-color:var(--laranja)}
+.gal-foto:focus-visible{outline:2px solid var(--foco)}
+.sug-fotos{display:flex;flex-direction:column;gap:6px;margin:6px 0}
+.sug-fotos-lista{display:flex;gap:6px;overflow-x:auto}
+.sug-fotos-lista img{width:96px;height:72px;object-fit:cover;border-radius:6px}
+.sug-fotos .btn{align-self:flex-start}

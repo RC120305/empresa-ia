@@ -29,8 +29,29 @@ const EXTRAS = [
 ];
 
 // Fotos reais por acomodação (item 2): public/fotos/<CODIGO>-<n>.jpg, listadas em public/fotos/fotos.json.
-let FOTOS = {};
-try { FOTOS = JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'fotos', 'fotos.json'), 'utf8')); } catch (e) { /* sem fotos ainda */ }
+const PASTA_FOTOS = process.env.FOTOS_DIR || path.join(__dirname, 'public', 'fotos');
+let FOTOS = {}, DESCRICOES = {};
+try { FOTOS = JSON.parse(fs.readFileSync(path.join(PASTA_FOTOS, 'fotos.json'), 'utf8')); } catch (e) { /* sem fotos ainda */ }
+try { DESCRICOES = JSON.parse(fs.readFileSync(path.join(PASTA_FOTOS, 'descricoes.json'), 'utf8')); } catch (e) { /* sem descrições */ }
+const ROTULOS = { BOIA: 'Boia cross', ARVO: 'Arvorismo', RIO: 'Rios e decks', PISCINA: 'Piscina e hidromassagem', CAFE: 'Café da manhã', DECO: 'Decoração especial (opcional)' };
+// Biblioteca para a caixa e para o Gilberto: [{grupo, nome, fotos: [{arquivo, descricao, etiquetas}]}]
+function biblioteca() {
+  return Object.entries(FOTOS).map(([grupo, arqs]) => ({
+    grupo, nome: (CATALOGO[grupo] && CATALOGO[grupo].nome) || ROTULOS[grupo] || grupo,
+    fotos: arqs.map(a => ({ arquivo: a, descricao: (DESCRICOES[a] && DESCRICOES[a].descricao) || '', etiquetas: (DESCRICOES[a] && DESCRICOES[a].etiquetas) || [] })),
+  }));
+}
+// Escolhe fotos para o Gilberto: pelo código da acomodação e/ou etiquetas (até 5).
+function escolherFotos({ codigo_acomodacao, etiquetas, quantidade }) {
+  const n = Math.min(5, Math.max(1, Number(quantidade) || 3));
+  const tudo = biblioteca().flatMap(g => g.fotos.map(f => ({ ...f, grupo: g.grupo })));
+  const cod = String(codigo_acomodacao || '').toUpperCase();
+  const termos = (etiquetas || []).map(t => String(t).toLowerCase()).filter(Boolean);
+  // Fotos de apartamento quádruplo usam a pasta do duplo/triplo correspondente.
+  const grupoDe = { QES: 'SUP', QST: 'STD', CST: 'STD' }[cod] || cod;
+  const pontos = f => (f.grupo === grupoDe ? 10 : 0) + termos.filter(t => f.etiquetas.some(e => e.toLowerCase().includes(t)) || f.descricao.toLowerCase().includes(t)).length;
+  return tudo.map(f => ({ f, p: pontos(f) })).filter(x => x.p > 0).sort((a, b) => b.p - a.p).slice(0, n).map(x => x.f);
+}
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const brl = v => 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -69,7 +90,7 @@ function montar(entrada, cotacao) {
 function pagina(o, { previa = false } = {}) {
   const n = noites(o.data_entrada, o.data_saida);
   const nome = o.primeiro_nome ? esc(o.primeiro_nome) : '';
-  const fotosDe = cod => (FOTOS[cod] || []).slice(0, 5);
+  const fotosDe = cod => (FOTOS[cod] || FOTOS[{ QES: 'SUP', QST: 'STD', CST: 'STD' }[cod]] || []).slice(0, 5);
   const cards = (o.opcoes || []).map((op, i) => {
     const cat = CATALOGO[op.codigo] || { nome: op.nome, cap: '', dest: [] };
     const fotos = fotosDe(op.codigo);
@@ -113,4 +134,4 @@ ${cards}
 <script src="/o/orcamento.js"></script></body></html>`;
 }
 
-module.exports = { montar, pagina, novoToken, tokenValido, CATALOGO, periodo };
+module.exports = { montar, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS };

@@ -192,6 +192,7 @@
     $('resposta').disabled = !abertaJ;
     $('enviar').toggleAttribute('disabled', !abertaJ);
     $('anexar').toggleAttribute('disabled', !abertaJ);
+    $('abrir-fotos').toggleAttribute('disabled', !abertaJ);
     $('resposta').placeholder = abertaJ ? 'Escreva a resposta…' : 'Janela de 24 h fechada';
     $('resposta').title = abertaJ ? 'No computador, Enter envia e Shift+Enter quebra a linha. Uma linha só com --- separa os balões.' : 'Fora da janela de 24 h, só modelos aprovados pela Meta (próxima etapa).';
     if (!fim) { j.textContent = ''; j.className = 'janela'; return; }
@@ -468,6 +469,93 @@
     }
   }
 
+  // ---------- Fotos da biblioteca do hotel (🖼 e fotos sugeridas pelo Gilberto) ----------
+  async function enviarFotos(lista) {
+    if (!aberta || !lista.length || enviando) return false;
+    const id = aberta;
+    enviando = true;
+    $('aviso-envio').hidden = true;
+    const mostrar = env => (env || []).forEach(m => {
+      if (!m.id) return;
+      arquivos.set(m.id, Promise.resolve({ url: '/fotos/' + m.arquivo, nome: m.arquivo, mime: 'image/jpeg' }));
+      if (aberta !== id || $('mensagens').querySelector('[data-id="' + m.id + '"]')) return;
+      const dias = $('mensagens').querySelectorAll('.dia');
+      adicionarMensagem({ id: m.id, direcao: 'saida', tipo: 'image', corpo: m.corpo, status_entrega: 'sent', enviada_em: m.enviada_em }, dias.length ? dias[dias.length - 1].textContent : '');
+      rolarFim();
+    });
+    try {
+      const j = await chamarApi('/api/enviar-fotos', { conversa_id: id, fotos: lista });
+      mostrar(j.enviadas);
+      return true;
+    } catch (e) {
+      mostrar(e.dados && e.dados.enviadas);
+      $('aviso-envio').textContent = e.message;
+      $('aviso-envio').hidden = false;
+      return false;
+    } finally { enviando = false; }
+  }
+
+  let biblioteca = null;
+  const escolhidas = new Set();
+  function contarGaleria() {
+    $('gal-cont').textContent = escolhidas.size ? escolhidas.size + ' de 5' : 'escolha até 5';
+    $('gal-enviar').toggleAttribute('disabled', !escolhidas.size);
+    $('gal-enviar').textContent = escolhidas.size > 1 ? 'Enviar ' + escolhidas.size + ' fotos' : 'Enviar';
+  }
+  async function abrirGaleria() {
+    const g = $('galeria');
+    if (!g.hidden) { g.hidden = true; $('abrir-fotos').setAttribute('aria-expanded', 'false'); return; }
+    g.hidden = false; $('abrir-fotos').setAttribute('aria-expanded', 'true');
+    escolhidas.clear(); contarGaleria();
+    const box = $('gal-grupos');
+    if (!biblioteca) {
+      box.textContent = 'Carregando…';
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        const r = await fetch('/api/fotos', { headers: { Authorization: 'Bearer ' + (session ? session.access_token : '') } });
+        const j = await r.json();
+        if (!r.ok || !j.ok) throw new Error(j.erro || 'Não deu agora.');
+        biblioteca = j.grupos;
+      } catch (e) { box.textContent = e.message; return; }
+    }
+    box.textContent = '';
+    if (!biblioteca.length) { box.textContent = 'A biblioteca de fotos ainda está vazia.'; return; }
+    biblioteca.forEach(gr => {
+      const sec = document.createElement('section');
+      const h = document.createElement('h4'); h.textContent = gr.nome; sec.append(h);
+      const lin = document.createElement('div'); lin.className = 'gal-linha';
+      gr.fotos.forEach(f => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'gal-foto'; b.setAttribute('aria-pressed', 'false');
+        b.title = f.descricao || gr.nome;
+        const im = document.createElement('img'); im.src = '/fotos/' + f.arquivo; im.alt = f.descricao || gr.nome; im.loading = 'lazy';
+        b.append(im);
+        b.addEventListener('click', () => {
+          if (escolhidas.has(f.arquivo)) escolhidas.delete(f.arquivo); else if (escolhidas.size < 5) escolhidas.add(f.arquivo);
+          b.setAttribute('aria-pressed', String(escolhidas.has(f.arquivo)));
+          contarGaleria();
+        });
+        lin.append(b);
+      });
+      sec.append(lin); box.append(sec);
+    });
+  }
+  $('abrir-fotos').addEventListener('click', abrirGaleria);
+  $('gal-fechar').addEventListener('click', () => { $('galeria').hidden = true; $('abrir-fotos').setAttribute('aria-expanded', 'false'); });
+  $('gal-enviar').addEventListener('click', async () => {
+    const lista = [...escolhidas];
+    $('gal-enviar').setAttribute('disabled', ''); $('gal-enviar').textContent = 'Enviando…';
+    if (await enviarFotos(lista)) { $('galeria').hidden = true; $('abrir-fotos').setAttribute('aria-expanded', 'false'); }
+    contarGaleria();
+  });
+  $('sug-fotos-enviar').addEventListener('click', async () => {
+    const lista = JSON.parse($('sug-fotos').dataset.fotos || '[]');
+    $('sug-fotos-enviar').setAttribute('disabled', ''); $('sug-fotos-enviar').textContent = 'Enviando…';
+    const ok = await enviarFotos(lista);
+    $('sug-fotos-enviar').removeAttribute('disabled');
+    $('sug-fotos-enviar').textContent = ok ? 'Fotos enviadas ✓' : 'Enviar estas fotos';
+    if (ok) $('sug-fotos-enviar').setAttribute('disabled', '');
+  });
+
   // ---------- Sugestão do Gilberto ----------
   async function sugerir() {
     if (!aberta) return;
@@ -486,6 +574,11 @@
       $('sug-notas').className = 'sug-notas' + (j.precisa_equipe || j.simulador ? ' alerta' : '');
       $('sug-modelo').textContent = /[[]{2}/.test(j.mensagem) ? 'complete os [[ ]] antes de enviar' : '';
       $('sugestao').dataset.texto = j.mensagem;
+      const fl = $('sug-fotos-lista'); fl.textContent = '';
+      (j.fotos || []).forEach(f => { const im = document.createElement('img'); im.src = '/fotos/' + f.arquivo; im.alt = f.descricao || 'Foto do hotel'; im.title = f.descricao || ''; fl.append(im); });
+      $('sug-fotos').hidden = !(j.fotos && j.fotos.length);
+      $('sug-fotos').dataset.fotos = JSON.stringify((j.fotos || []).map(f => f.arquivo));
+      $('sug-fotos-enviar').removeAttribute('disabled'); $('sug-fotos-enviar').textContent = (j.fotos || []).length > 1 ? 'Enviar estas ' + j.fotos.length + ' fotos' : 'Enviar esta foto';
       $('sugestao').hidden = false;
     } catch (e) {
       $('aviso-envio').textContent = e.message;

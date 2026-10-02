@@ -35,10 +35,10 @@ for (const [rota, arquivo] of [['/caixa', 'caixa.html'], ['/caixa.css', 'caixa.c
   try { ESTATICOS[rota] = { corpo: fs.readFileSync(path.join(PUB, arquivo)), tipo: TIPOS[path.extname(arquivo)] }; } catch (e) { /* arquivo ausente: rota fica 404 */ }
 }
 // Página do orçamento e fotos das acomodações: todos os arquivos das pastas public/o e public/fotos (lidos uma vez).
-for (const pasta of ['o', 'fotos']) {
+for (const [pasta, dir] of [['o', path.join(PUB, 'o')], ['fotos', process.env.FOTOS_DIR || path.join(PUB, 'fotos')]]) {
   let nomes = [];
-  try { nomes = fs.readdirSync(path.join(PUB, pasta)); } catch (e) { /* pasta ausente */ }
-  for (const n of nomes) if (TIPOS[path.extname(n)] && /^[\w.-]+$/.test(n)) ESTATICOS[`/${pasta}/${n}`] = { corpo: fs.readFileSync(path.join(PUB, pasta, n)), tipo: TIPOS[path.extname(n)] };
+  try { nomes = fs.readdirSync(dir); } catch (e) { /* pasta ausente */ }
+  for (const n of nomes) if (TIPOS[path.extname(n)] && /^[\w.-]+$/.test(n) && !n.endsWith('.json')) ESTATICOS[`/${pasta}/${n}`] = { corpo: fs.readFileSync(path.join(dir, n)), tipo: TIPOS[path.extname(n)] };
 }
 const URL_PUBLICA = (process.env.URL_PUBLICA || 'https://crm-377803250649.southamerica-east1.run.app').replace(/\/$/, '');
 function cabecalhosSeguranca() {
@@ -261,6 +261,11 @@ async function midiaParaEquipe(tokenUsuario, mensagemId, buscar = fetch) {
     { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
   const msg = r.ok ? (await r.json())[0] : null;
   if (!msg || (!msg.midia_caminho && !msg.midia_id)) throw new ErroEnvio(404, 'Arquivo não encontrado.');
+  if (msg.midia_caminho && msg.midia_caminho.startsWith('biblioteca/')) { // foto da biblioteca do hotel, enviada pelo CRM
+    const f = ESTATICOS['/fotos/' + msg.midia_caminho.slice('biblioteca/'.length)];
+    if (!f) throw new ErroEnvio(404, 'Foto não encontrada.');
+    return { dados: f.corpo, mime: f.tipo, nome: msg.midia_caminho.slice(11) };
+  }
   if (msg.midia_caminho) return { dados: await lerDoStorage(msg.midia_caminho, buscar), mime: msg.midia_mime, nome: msg.midia_nome };
   if (!WA_TOKEN) throw new ErroEnvio(503, 'O WhatsApp ainda não está configurado.');
   const g = await guardarMidia(msg, buscar).catch(() => null) || await baixarDaMeta(msg.midia_id, buscar);
@@ -404,6 +409,34 @@ function limiteExcedido(req) {
   return ++a.n > 60;
 }
 
+// ---------- Fotos da biblioteca do hotel (envio pela caixa) ----------
+// A Meta baixa a foto pelo endereço público do CRM (/fotos/...). Uma mensagem por foto, com 1,5 s entre elas.
+async function enviarFotosPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
+  if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
+  const fotos = Array.isArray(corpo.fotos) ? [...new Set(corpo.fotos.map(String))] : [];
+  if (!fotos.length || fotos.length > 5) throw new ErroEnvio(400, 'Escolha de 1 a 5 fotos.');
+  if (fotos.some(f => !/^[\w.-]+\.jpg$/.test(f) || !ESTATICOS['/fotos/' + f])) throw new ErroEnvio(400, 'Foto fora da biblioteca do hotel.');
+  const legenda = String(corpo.legenda || '').trim().slice(0, 1024);
+  const equipe = await autenticarEquipe(tokenUsuario, buscar);
+  const { conv, para } = await carregarConversaParaEnvio(corpo.conversa_id, buscar);
+  const enviadas = [];
+  for (const [i, f] of fotos.entries()) {
+    if (i) await esperar(1500 * FATOR_DIGITACAO);
+    const image = { link: `${URL_PUBLICA}/fotos/${f}`, ...(i === 0 && legenda ? { caption: legenda } : {}) };
+    const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: para, type: 'image', image }, buscar);
+    if (!r.ok || !r.json.messages || !r.json.messages[0]) {
+      const e = r.json.error || {};
+      ultimoErroMeta = { quando: new Date().toISOString(), http: r.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
+      const err = new ErroEnvio(502, 'A Meta não aceitou a foto' + (e.code ? ` (código ${e.code})` : '') + '.');
+      err.enviadas = enviadas;
+      throw err;
+    }
+    const id = await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: r.json.messages[0].id, p_tipo: 'image', p_legenda: i === 0 ? legenda : '', p_caminho: 'biblioteca/' + f, p_mime: 'image/jpeg', p_nome: null, p_autor: equipe.id }, buscar);
+    enviadas.push({ id, arquivo: f, corpo: i === 0 ? legenda : '', enviada_em: new Date().toISOString() });
+  }
+  return { ok: true, enviadas };
+}
+
 // ---------- Transcrição de áudio ----------
 // Pedida pela tela (ao mostrar um áudio) ou antes da sugestão do Gilberto. Uma por vez por mensagem.
 const transcrevendo = new Map();
@@ -465,7 +498,16 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
     const pendentes = historico.filter(m => m.tipo === 'audio' && m.direcao === 'entrada' && m.id && (!m.transcricao_status || m.transcricao_status === 'falhou')).slice(-3);
     await Promise.all(pendentes.map(m => transcreverMensagem(m, buscar).then(r => { m.transcricao = r.texto; m.transcricao_status = r.status; }).catch(() => {})));
     const nome = conv.contato && conv.contato.nome;
-    const executores = { gerar_orcamento: entrada => criarOrcamento(entrada, { conversa_id: conv.id, numero_id: conv.numero_id, primeiro_nome: nome, criado_por: 'gilberto' }, buscar) };
+    const executores = {
+      gerar_orcamento: entrada => criarOrcamento(entrada, { conversa_id: conv.id, numero_id: conv.numero_id, primeiro_nome: nome, criado_por: 'gilberto' }, buscar),
+      // Modo sugestão: o Gilberto escolhe as fotos; quem envia é a equipe, pelo painel da sugestão.
+      enviar_fotos: async entrada => {
+        const fotos = orcamento.escolherFotos(entrada);
+        return fotos.length
+          ? { ok: true, modo: 'sugestao', fotos: fotos.map(f => ({ arquivo: f.arquivo, descricao: f.descricao })), aviso: 'Nesta fase a equipe envia as fotos junto com a sua mensagem: escreva o texto como se as fotos fossem logo em seguida, sem descrevê-las como se você as tivesse tirado.' }
+          : { ok: false, erro: 'Não há foto na biblioteca para esse pedido. Não prometa foto: ofereça descrever ou avise a equipe nas notas_internas.' };
+      },
+    };
     return { ok: true, ...(await gilberto.sugerir(historico, { canal: conv.canal, nome }, executores)) };
   } catch (e) {
     if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message);
@@ -573,6 +615,14 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
+  if (url.pathname === '/api/fotos' && req.method === 'GET') {
+    const auth = req.headers.authorization || '';
+    if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
+    autenticarEquipe(auth.slice(7)).then(() => json(res, 200, { ok: true, grupos: orcamento.biblioteca() }))
+      .catch(e => json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Não deu agora.' }));
+    return;
+  }
+
   if (url.pathname.startsWith('/api/midia/') && req.method === 'GET') {
     const auth = req.headers.authorization || '';
     if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
@@ -608,7 +658,7 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
-  if ((url.pathname === '/api/enviar' || url.pathname === '/api/sugerir' || url.pathname === '/api/transcrever') && req.method === 'POST') {
+  if ((url.pathname === '/api/enviar' || url.pathname === '/api/sugerir' || url.pathname === '/api/transcrever' || url.pathname === '/api/enviar-fotos') && req.method === 'POST') {
     const auth = req.headers.authorization || '';
     if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
     const partes = [];
@@ -617,7 +667,7 @@ const servidor = http.createServer((req, res) => {
     req.on('end', () => {
       let corpo;
       try { corpo = JSON.parse(Buffer.concat(partes).toString('utf8')); } catch (e) { return json(res, 400, { ok: false, erro: 'Pedido inválido.' }); }
-      ({ '/api/enviar': enviarPelaEquipe, '/api/sugerir': sugerirParaEquipe, '/api/transcrever': transcreverParaEquipe })[url.pathname](auth.slice(7), corpo)
+      ({ '/api/enviar': enviarPelaEquipe, '/api/sugerir': sugerirParaEquipe, '/api/transcrever': transcreverParaEquipe, '/api/enviar-fotos': enviarFotosPelaEquipe })[url.pathname](auth.slice(7), corpo)
         .then(r => json(res, 200, r))
         .catch(e => {
           if (!(e instanceof ErroEnvio)) console.error(JSON.stringify({ evento: 'falha_envio', erro: String(e.message || e).slice(0, 200) }));

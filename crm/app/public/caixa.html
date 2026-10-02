@@ -53,14 +53,20 @@
         <div class="sug-topo"><b>Sugestão do Gilberto</b><span id="sug-modelo"></span></div>
         <div class="sug-texto" id="sug-texto"></div>
         <p class="sug-notas" id="sug-notas"></p>
+        <div class="sug-fotos" id="sug-fotos" hidden><div class="sug-fotos-lista" id="sug-fotos-lista"></div><button type="button" class="btn" id="sug-fotos-enviar">Enviar estas fotos</button></div>
         <div class="sug-acoes">
           <button type="button" class="btn" id="sug-usar">Usar (revisar e enviar)</button>
           <button type="button" class="link" id="sug-descartar">Descartar</button>
         </div>
       </div>
+      <div class="galeria" id="galeria" hidden>
+        <div class="gal-topo"><b>Fotos do hotel</b><span id="gal-cont"></span><button type="button" class="btn" id="gal-enviar" disabled>Enviar</button><button type="button" class="link" id="gal-fechar">Fechar</button></div>
+        <div class="gal-grupos" id="gal-grupos"></div>
+      </div>
       <div class="responder">
         <button type="button" class="btn-sug" id="sugerir" title="O Gilberto escreve uma resposta para você revisar">✨ Sugerir</button>
         <button type="button" class="btn-sug btn-anexo" id="anexar" title="Enviar foto, vídeo, áudio ou PDF (o texto do campo vira a legenda)" aria-label="Anexar arquivo">📎</button>
+        <button type="button" class="btn-sug btn-anexo" id="abrir-fotos" title="Fotos reais do hotel (biblioteca)" aria-label="Fotos do hotel" aria-expanded="false">🖼</button>
         <input type="file" id="arquivo" accept="image/jpeg,image/png,image/*,video/mp4,video/3gpp,audio/*,application/pdf" hidden>
         <textarea id="resposta" rows="2" placeholder="Escreva a resposta…" aria-label="Resposta"></textarea>
         <button type="button" class="btn" id="enviar">Enviar</button>
