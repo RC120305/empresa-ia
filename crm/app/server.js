@@ -368,11 +368,17 @@ function json(res, cod, obj) {
   res.end(JSON.stringify(obj));
 }
 
+// IP de saída do CRM na internet (deve ser o IP fixo 35.247.204.86, liberado no roteador do hotel para o Silbeck).
+let ipSaida = null;
+function conferirIpSaida() {
+  fetch('https://api.ipify.org', { signal: AbortSignal.timeout(5000) }).then(r => r.text()).then(t => { ipSaida = t.trim().slice(0, 45); }).catch(() => {});
+}
+
 const servidor = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
   if (url.pathname === '/saude') {
-    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado(), supabasePublica: chavePublicaOk(), whatsappToken: !!WA_TOKEN, anthropic: !!process.env.ANTHROPIC_API_KEY }, gilberto: { instrucoes: gilberto.sistemaPronto(), modelo: gilberto.MODELO }, chaveSupabase: tipoChave(SUPABASE_KEY) };
+    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado(), supabasePublica: chavePublicaOk(), whatsappToken: !!WA_TOKEN, anthropic: !!process.env.ANTHROPIC_API_KEY }, gilberto: { instrucoes: gilberto.sistemaPronto(), modelo: gilberto.MODELO }, chaveSupabase: tipoChave(SUPABASE_KEY), ipSaida };
     if (!bancoLigado()) return json(res, 200, base);
     // Confere se o banco responde e se a chave tem permissão de servidor: chama a função de status com um
     // ID que não existe (não altera nada). Chave sem permissão de servidor recebe 401/403.
@@ -482,5 +488,5 @@ const servidor = http.createServer((req, res) => {
   res.end('<!doctype html><meta charset="utf-8"><title>CRM Cabanas</title><p style="font-family:sans-serif">Página não encontrada. <a href="/caixa">Ir para a caixa de entrada</a> · versão ' + versao.replace(/[^\w.-]/g, '') + '</p>');
 });
 
-if (require.main === module) servidor.listen(porta, () => console.log('CRM Cabanas ouvindo na porta ' + porta));
+if (require.main === module) servidor.listen(porta, () => { console.log('CRM Cabanas ouvindo na porta ' + porta); conferirIpSaida(); });
 module.exports = { servidor, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe };
