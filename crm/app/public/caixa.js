@@ -1101,7 +1101,7 @@
       const itens = sec.itens.filter(i => !q || semAcento(i.p + ' ' + i.r).includes(q));
       if (!itens.length) return;
       box.append(el('div', { class: 'cartao con-sec' }, el('h3', {}, sec.titulo, ' ', el('small', { class: 'dica', text: itens.length + (itens.length > 1 ? ' itens' : ' item') })),
-        itens.map(i => el('div', { class: 'con-item' }, i.p ? el('b', { text: i.p }) : null, el('span', { text: i.r }),
+        itens.map(i => el('div', { class: 'con-item' }, i.p ? el('b', { class: 'con-p', text: i.p }) : null, el('p', { class: 'con-r', text: i.r }),
           i.p ? (naBib.has(semAcento(i.p)) ? el('span', { class: 'origem', text: 'Na biblioteca' }) : el('button', { class: 'btn-mini', type: 'button', text: '+ Biblioteca', onclick: () => formResposta({ pergunta: i.p, resposta: i.r, origem: 'questionario' }) })) : null))));
     });
     if (!box.children.length) box.append(el('div', { class: 'vazio', text: 'Nada encontrado no questionário.' }));
