@@ -310,7 +310,7 @@
       opcoes.map(([v, t]) => el('option', { value: v, text: t, selected: (c.atribuida_a || '') === v })));
     cab.append(
       el('button', { class: 'voltar', type: 'button', 'aria-label': 'Voltar para a lista', text: '←', onclick: voltar }),
-      el('div', { class: 'cx-quem' }, nomeBox, el('span', { class: 'canal', text: 'WhatsApp' }), linhaContato(c)),
+      el('div', { class: 'cx-quem' }, nomeBox, linhaContato(c)),
       el('div', { class: 'cx-ctrl' },
         seletorEtapaConversa(c),
         fim ? el('span', { class: 'pilula ' + (aj ? 'p-ok' : 'p-erro'), title: aj ? 'Dá para responder com texto livre até esse horário.' : 'Fora da janela, só modelos aprovados pela Meta.',
@@ -324,8 +324,8 @@
   function linhaContato(c) {
     const campo = (rotulo, valor, salvar, tipo, travado) => {
       const box = el('span', { class: 'dado' });
-      const mostrar = () => box.replaceChildren(rotulo + ': ', valor ? el('b', { text: valor }) : el('em', { class: 'vazio-dado', text: 'inserir' }),
-        travado ? null : el('button', { class: 'lapis', type: 'button', 'aria-label': (valor ? 'Editar ' : 'Inserir ') + rotulo, text: '✎', onclick: editar }));
+      const mostrar = () => box.replaceChildren(...[rotulo + ': ', valor ? el('b', { text: valor }) : el('em', { class: 'vazio-dado', text: 'inserir' }),
+        travado ? null : el('button', { class: 'lapis', type: 'button', 'aria-label': (valor ? 'Editar ' : 'Inserir ') + rotulo, text: '✎', onclick: editar })].filter(Boolean));
       const editar = () => {
         const inp = el('input', { class: 'nome-edit', type: tipo, value: valor || '', 'aria-label': rotulo, placeholder: tipo === 'email' ? 'nome@exemplo.com' : '67 99999-0000' });
         let feito = false;
