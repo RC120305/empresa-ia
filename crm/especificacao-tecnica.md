@@ -577,7 +577,7 @@ Ordem de verificação a cada mensagem: (1) geral desligado? (2) número/canal e
 
 ### 6.6 Humanização
 - **Agrupar mensagens seguidas:** espera de 12 s (editável) sem nova mensagem do cliente antes de responder.
-- **"Digitando…"** e intervalo proporcional ao tamanho de cada balão (proposta: ~4–6 caracteres por segundo, mínimo 2 s, máximo 12 s por balão; calibrar nos testes).
+- **"Digitando…"** e intervalo proporcional ao tamanho de cada balão. **Implementado (02/10/2026, pedido do dono: "não mandar tudo em bloco"):** cada balão sai separado; antes de cada um o CRM marca a mensagem do cliente como **lida** e liga o **"digitando…"** da Meta, espera 1 s + ~140 ms por caractere (mínimo 2 s, máximo 12 s; ajustável por `FATOR_DIGITACAO`) e só então envia. Vale para a equipe e, no modo automático, para o Gilberto. A sugestão do Gilberto já vem em balões curtos (separados por `---`).
 - Apresentação "Aqui é o Gilberto, do Hotel Cabanas", nome do cliente, memória da conversa (não perguntar de novo).
 - **Passagem invisível:** "Vou ver isso com o pessoal da reserva e já te retorno".
 

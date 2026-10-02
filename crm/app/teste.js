@@ -26,7 +26,7 @@ const falso = http.createServer((req, res) => {
       ultima_msg_cliente_em: new Date(Date.now() - (janelaAberta ? 3600e3 : 30 * 3600e3)).toISOString(),
       contato: { contato_identificadores: [{ tipo: 'whatsapp', valor: '+5567999990000' }] } }]);
     if (req.url.startsWith('/rest/v1/mensagens?')) return responder(200, [
-      { direcao: 'entrada', tipo: 'text', corpo: 'Tem vaga de 14 a 16/11 para 2 adultos?', enviada_em: '2026-10-02T10:01:00Z' },
+      { direcao: 'entrada', tipo: 'text', corpo: 'Tem vaga de 14 a 16/11 para 2 adultos?', enviada_em: '2026-10-02T10:01:00Z', id_externo: 'wamid.CLIENTE' },
       { direcao: 'saida', tipo: 'text', corpo: 'Oi! Vou ver para você.', enviada_em: '2026-10-02T10:00:30Z' },
       { direcao: 'entrada', tipo: 'text', corpo: 'Oi', enviada_em: '2026-10-02T10:00:00Z' }]);
     if (req.url.split('?')[0] === '/v1/messages') {
@@ -50,6 +50,7 @@ falso.listen(0, () => {
   process.env.SUPABASE_SECRET_KEY = 'chave-de-teste';
   process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_teste';
   process.env.META_WHATSAPP_TOKEN = 'token-meta-teste';
+  process.env.FATOR_DIGITACAO = '0';
   process.env.ANTHROPIC_API_KEY = 'chave-ia-teste';
   process.env.ANTHROPIC_BASE_URL = 'http://127.0.0.1:' + falso.address().port;
   process.env.META_GRAPH_URL = 'http://127.0.0.1:' + falso.address().port + '/graph';
@@ -133,10 +134,20 @@ falso.listen(0, () => {
     assert.equal(r.status, 200);
     const env = await r.json();
     assert.equal(env.wamid, 'wamid.SAIDA');
-    const g = chamadas.find(c => c.url === '/graph/111/messages');
+    const g = chamadas.find(c => c.url === '/graph/111/messages' && c.corpo.type === 'text');
+    const dig = chamadas.find(c => c.url === '/graph/111/messages' && c.corpo.typing_indicator);
+    assert.deepEqual(dig.corpo, { messaging_product: 'whatsapp', status: 'read', message_id: 'wamid.CLIENTE', typing_indicator: { type: 'text' } });
     assert.equal(g.corpo.to, '5567999990000'); assert.equal(g.corpo.text.body, 'Oi! Aqui é o Ricardo.');
     const sai = chamadas.find(c => c.url === '/rest/v1/rpc/registrar_saida_whatsapp');
     assert.deepEqual(sai.corpo, { p_conversa: conv, p_wamid: 'wamid.SAIDA', p_corpo: 'Oi! Aqui é o Ricardo.', p_autor: 'u-1' });
+    // Vários balões: um por vez, com "digitando…" antes de cada um
+    const antesB = chamadas.length;
+    r = await enviar('token-equipe', { conversa_id: conv, baloes: ['Oi, Ana!', 'Tenho sim 🌿', '  '] });
+    assert.equal(r.status, 200);
+    assert.equal((await r.json()).enviadas.length, 2);
+    const seq = chamadas.slice(antesB).filter(c => c.url === '/graph/111/messages').map(c => c.corpo.type === 'text' ? c.corpo.text.body : 'digitando');
+    assert.deepEqual(seq, ['digitando', 'Oi, Ana!', 'digitando', 'Tenho sim 🌿']);
+    assert.equal((await enviar('token-equipe', { conversa_id: conv, baloes: Array(7).fill('x') })).status, 400);
     assert.equal((await enviar(null, { conversa_id: conv, texto: 'x' })).status, 401);
     assert.equal((await enviar('token-invalido', { conversa_id: conv, texto: 'x' })).status, 401);
     assert.equal((await enviar('token-estranho', { conversa_id: conv, texto: 'x' })).status, 403);

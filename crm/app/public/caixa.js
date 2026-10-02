@@ -222,7 +222,7 @@
       body: JSON.stringify(corpo),
     });
     const j = await r.json().catch(() => ({}));
-    if (!r.ok || !j.ok) throw new Error(j.erro || 'Não deu agora. Tente de novo.');
+    if (!r.ok || !j.ok) { const e = new Error(j.erro || 'Não deu agora. Tente de novo.'); e.dados = j; throw e; }
     return j;
   }
 
@@ -241,23 +241,30 @@
     $('enviar').setAttribute('disabled', '');
     $('aviso-envio').hidden = true;
     const id = aberta;
+    const partes = baloes(txt);
+    const mostrar = lista => (lista || []).forEach(m => {
+      if (aberta !== id || !m.id || $('mensagens').querySelector('[data-id="' + m.id + '"]')) return;
+      const dias = $('mensagens').querySelectorAll('.dia');
+      adicionarMensagem({ id: m.id, direcao: 'saida', tipo: 'text', corpo: m.corpo, status_entrega: 'sent', enviada_em: m.enviada_em }, dias.length ? dias[dias.length - 1].textContent : '');
+      rolarFim();
+    });
+    // O servidor manda um balão por vez, com "digitando…" no WhatsApp do cliente antes de cada um.
+    $('enviar').textContent = partes.length > 1 ? 'Digitando… (' + partes.length + ')' : 'Digitando…';
+    $('resposta').disabled = true;
     try {
-      const partes = baloes(txt);
-      for (let i = 0; i < partes.length; i++) {
-        const j = await chamarApi('/api/enviar', { conversa_id: id, texto: partes[i] });
-        $('resposta').value = partes.slice(i + 1).join('\n---\n'); // se falhar no meio, sobra só o que não foi
-        if (aberta === id && j.id && !$('mensagens').querySelector('[data-id="' + j.id + '"]')) {
-          const dias = $('mensagens').querySelectorAll('.dia');
-          adicionarMensagem({ id: j.id, direcao: 'saida', tipo: 'text', corpo: partes[i], status_entrega: 'sent', enviada_em: j.enviada_em }, dias.length ? dias[dias.length - 1].textContent : '');
-          rolarFim();
-        }
-        if (i < partes.length - 1) await new Promise(ok => setTimeout(ok, 1200)); // ritmo de gente digitando
-      }
+      const j = await chamarApi('/api/enviar', { conversa_id: id, baloes: partes });
+      mostrar(j.enviadas);
+      $('resposta').value = '';
       $('sugestao').hidden = true;
     } catch (e) {
-      $('aviso-envio').textContent = e.message;
+      const ja = (e.dados && e.dados.enviadas) || [];
+      mostrar(ja);
+      $('resposta').value = partes.slice(ja.length).join('\n---\n'); // sobra só o que não foi
+      $('aviso-envio').textContent = e.message + (ja.length ? ' (' + ja.length + ' de ' + partes.length + ' balões já foram.)' : '');
       $('aviso-envio').hidden = false;
     } finally {
+      $('enviar').textContent = 'Enviar';
+      $('resposta').disabled = false;
       enviando = false;
       ajustarAltura();
       const c = conversas.find(x => x.id === aberta);

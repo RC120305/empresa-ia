@@ -152,12 +152,56 @@ async function autenticarEquipe(tokenUsuario, buscar = fetch) {
   return equipe[0];
 }
 
+// Ritmo de gente: antes de cada balão o cliente vê "digitando…" por um tempo proporcional ao texto.
+// Especificação §6.6: ~6 a 8 caracteres por segundo, mínimo 2 s e máximo 12 s por balão (calibrar nos testes).
+// FATOR_DIGITACAO ajusta tudo sem mexer no código (0 nos testes; 0,5 = metade do tempo).
+const FATOR_DIGITACAO = process.env.FATOR_DIGITACAO !== undefined ? Number(process.env.FATOR_DIGITACAO) : 1;
+const tempoDigitacao = t => FATOR_DIGITACAO * Math.min(12000, Math.max(2000, 1000 + t.length * 140));
+const esperar = ms => new Promise(ok => setTimeout(ok, ms));
+
+async function chamarMeta(caminho, corpo, buscar) {
+  const m = await buscar(`${GRAPH}/${caminho}`, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + WA_TOKEN, 'Content-Type': 'application/json' },
+    body: JSON.stringify(corpo),
+    signal: AbortSignal.timeout(10000),
+  });
+  return { ok: m.ok, status: m.status, json: await m.json().catch(() => ({})) };
+}
+
+// Marca a última mensagem do cliente como lida e liga o "digitando…" (dura até 25 s ou até o próximo envio).
+// É só cortesia: se a Meta recusar, o envio segue normalmente.
+async function mostrarDigitando(conv, wamidCliente, buscar) {
+  if (!wamidCliente) return;
+  try {
+    const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`,
+      { messaging_product: 'whatsapp', status: 'read', message_id: wamidCliente, typing_indicator: { type: 'text' } }, buscar);
+    if (!r.ok) console.warn(JSON.stringify({ evento: 'digitando_recusado', http: r.status, codigo: r.json.error && r.json.error.code }));
+  } catch (e) { /* segue sem o indicador */ }
+}
+
+async function enviarTexto(conv, para, texto, autor, buscar) {
+  const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`,
+    { messaging_product: 'whatsapp', recipient_type: 'individual', to: para, type: 'text', text: { body: texto, preview_url: true } }, buscar);
+  if (!r.ok || !r.json.messages || !r.json.messages[0]) {
+    const e = r.json.error || {};
+    console.error(JSON.stringify({ evento: 'falha_envio_meta', http: r.status, codigo: e.code, sub: e.error_subcode, msg: String(e.message || '').slice(0, 200) }));
+    ultimoErroMeta = { quando: new Date().toISOString(), http: r.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
+    throw new ErroEnvio(502, 'A Meta não aceitou o envio' + (e.code ? ` (código ${e.code})` : '') + '. Tente de novo; se repetir, avise o Ricardo.');
+  }
+  const wamid = r.json.messages[0].id;
+  const id = await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: wamid, p_corpo: texto, p_autor: autor }, buscar);
+  return { id, wamid, corpo: texto, enviada_em: new Date().toISOString() };
+}
+
+// Envia 1 ou mais balões (texto separado por uma linha só com ---), um por vez, com "digitando…" antes de cada um.
 async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
-  const texto = typeof corpo.texto === 'string' ? corpo.texto.trim() : '';
-  if (!texto || texto.length > 4096) throw new ErroEnvio(400, 'A mensagem precisa ter de 1 a 4.096 caracteres.');
+  const bruto = Array.isArray(corpo.baloes) ? corpo.baloes : [typeof corpo.texto === 'string' ? corpo.texto : ''];
+  const baloes = bruto.map(b => String(b || '').trim()).filter(Boolean);
+  if (!baloes.length || baloes.length > 6 || baloes.some(b => b.length > 4096)) throw new ErroEnvio(400, 'Envie de 1 a 6 balões, cada um com até 4.096 caracteres.');
   if (!/^[0-9a-f-]{36}$/i.test(String(corpo.conversa_id || ''))) throw new ErroEnvio(400, 'Conversa inválida.');
-  const equipe = [await autenticarEquipe(tokenUsuario, buscar)];
+  const equipe = await autenticarEquipe(tokenUsuario, buscar);
 
   const c = await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${corpo.conversa_id}&select=id,canal,numero_id,ultima_msg_cliente_em,contato:contatos(contato_identificadores(tipo,valor))`,
     { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
@@ -169,22 +213,23 @@ async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   const wa = ((conv.contato && conv.contato.contato_identificadores) || []).find(i => i.tipo === 'whatsapp');
   if (!wa) throw new ErroEnvio(400, 'Este contato não tem WhatsApp.');
 
-  const m = await buscar(`${GRAPH}/${encodeURIComponent(conv.numero_id)}/messages`, {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + WA_TOKEN, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: numeroParaEnvio(wa.valor), type: 'text', text: { body: texto, preview_url: true } }),
-    signal: AbortSignal.timeout(10000),
-  });
-  const mr = await m.json().catch(() => ({}));
-  if (!m.ok || !mr.messages || !mr.messages[0]) {
-    const e = mr.error || {};
-    console.error(JSON.stringify({ evento: 'falha_envio_meta', http: m.status, codigo: e.code, sub: e.error_subcode, msg: String(e.message || '').slice(0, 200) }));
-    ultimoErroMeta = { quando: new Date().toISOString(), http: m.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
-    throw new ErroEnvio(502, 'A Meta não aceitou o envio' + (e.code ? ` (código ${e.code})` : '') + '. Tente de novo; se repetir, avise o Ricardo.');
+  const u = await buscar(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${conv.id}&direcao=eq.entrada&select=id_externo&order=enviada_em.desc&limit=1`,
+    { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const wamidCliente = u && u.ok ? ((await u.json())[0] || {}).id_externo : null;
+
+  const enviadas = [];
+  for (const texto of baloes) {
+    await mostrarDigitando(conv, wamidCliente, buscar);
+    await esperar(tempoDigitacao(texto));
+    try {
+      enviadas.push(await enviarTexto(conv, numeroParaEnvio(wa.valor), texto, equipe.id, buscar));
+    } catch (e) {
+      if (enviadas.length && e instanceof ErroEnvio) { e.enviadas = enviadas; } // a tela sabe o que já saiu
+      throw e;
+    }
   }
-  const wamid = mr.messages[0].id;
-  const id = await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: wamid, p_corpo: texto, p_autor: equipe[0].id }, buscar);
-  return { ok: true, id, wamid, enviada_em: new Date().toISOString() };
+  const ult = enviadas[enviadas.length - 1];
+  return { ok: true, enviadas, id: ult.id, wamid: ult.wamid, enviada_em: ult.enviada_em };
 }
 
 // Sugestão do Gilberto para a última mensagem do cliente (não envia nada).
@@ -269,7 +314,7 @@ const servidor = http.createServer((req, res) => {
         .then(r => json(res, 200, r))
         .catch(e => {
           if (!(e instanceof ErroEnvio)) console.error(JSON.stringify({ evento: 'falha_envio', erro: String(e.message || e).slice(0, 200) }));
-          json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Não deu para enviar agora. Tente de novo.' });
+          json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Não deu para enviar agora. Tente de novo.', enviadas: e.enviadas || [] });
         });
     });
     return;
