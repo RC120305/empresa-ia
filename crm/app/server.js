@@ -35,6 +35,9 @@ const ESTATICOS = {};
 for (const [rota, arquivo] of [['/caixa', 'caixa.html'], ['/caixa.css', 'caixa.css'], ['/caixa.js', 'caixa.js'], ['/vendor/supabase-2.117.2.js', 'vendor/supabase-2.117.2.js']]) {
   try { ESTATICOS[rota] = { corpo: fs.readFileSync(path.join(PUB, arquivo)), tipo: TIPOS[path.extname(arquivo)] }; } catch (e) { /* arquivo ausente: rota fica 404 */ }
 }
+// A cada publicação a tela pede caixa.js/caixa.css com a versão no endereço: o navegador nunca fica com a versão velha.
+const V = encodeURIComponent((process.env.VERSAO || 'local').replace(/[^\w.-]/g, ''));
+if (ESTATICOS['/caixa']) ESTATICOS['/caixa'].corpo = Buffer.from(ESTATICOS['/caixa'].corpo.toString('utf8').replace('href="/caixa.css"', `href="/caixa.css?v=${V}"`).replace('src="/caixa.js"', `src="/caixa.js?v=${V}"`));
 // Página do orçamento e fotos das acomodações: todos os arquivos das pastas public/o e public/fotos (lidos uma vez).
 for (const [pasta, dir] of [['o', path.join(PUB, 'o')], ['fotos', process.env.FOTOS_DIR || path.join(PUB, 'fotos')]]) {
   let nomes = [];

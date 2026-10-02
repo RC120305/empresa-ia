@@ -77,6 +77,7 @@ function periodo(ini, fim) {
   return `${d1} de ${MESES[m1 - 1]}${a1 !== a2 ? ' de ' + a1 : ''} a ${d2} de ${MESES[m2 - 1]}${a1 !== a2 ? ' de ' + a2 : ''}`;
 }
 // Sem limite prático: cabem todas as acomodações do hotel (a página mostra uma abaixo da outra).
+const VERSAO = encodeURIComponent((process.env.VERSAO || 'local').replace(/[^\w.-]/g, ''));
 const MAX_OPCOES = Object.keys(CATALOGO).length;
 // Resumo para a mensagem da equipe: "14 a 17 de novembro (3 noites), 2 adultos e 1 criança (3 anos)"
 const resumo = o => { const n = noites(o.data_entrada, o.data_saida); return `${periodo(o.data_entrada, o.data_saida)} (${n} ${n > 1 ? 'noites' : 'noite'}), ${grupo(o)}`; };
@@ -134,7 +135,7 @@ ${i === 0 ? '<span class="selo">Nossa sugestão para vocês</span>' : ''}<h2>${e
   return `<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
-<title>Orçamento · Hotel Cabanas</title><link rel="stylesheet" href="/o/orcamento.css"></head>
+<title>Orçamento · Hotel Cabanas</title><link rel="stylesheet" href="/o/orcamento.css?v=${VERSAO}"></head>
 <body data-token="${esc(o.token)}"${previa ? ' data-previa="1"' : ''}>
 ${o.fonte === 'simulador' ? '<div class="aviso-teste">Página de teste: valores fictícios do simulador, não são preços reais.</div>' : ''}
 ${previa ? '<div class="aviso-teste">Prévia da equipe: esta visita não conta como abertura do cliente.</div>' : ''}
@@ -157,7 +158,7 @@ ${cards}
 </main>
 <div class="passo" id="passo" hidden><div class="folha" role="dialog" aria-modal="true" aria-labelledby="p-tit"><h3 id="p-tit">Ótima escolha!</h3><p id="p-txt"></p>
 <a class="btn" id="p-wa" href="#" rel="noopener">Continuar no WhatsApp</a><button class="btn sec" type="button" id="p-voltar">Voltar</button></div></div>
-<script src="/o/orcamento.js"></script></body></html>`;
+<script src="/o/orcamento.js?v=${VERSAO}"></script></body></html>`;
 }
 
 module.exports = { resumo, MAX_OPCOES, montar, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };
