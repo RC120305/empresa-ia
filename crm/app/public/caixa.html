@@ -49,9 +49,10 @@
       </div>
       <div class="mensagens" id="mensagens" aria-live="polite"></div>
       <div class="responder">
-        <textarea id="resposta" rows="2" disabled placeholder="Responder pelo CRM: na próxima etapa" title="Falta o token permanente da Meta para enviar."></textarea>
-        <button type="button" class="btn" disabled>Enviar</button>
+        <textarea id="resposta" rows="2" placeholder="Escreva a resposta…" aria-label="Resposta"></textarea>
+        <button type="button" class="btn" id="enviar">Enviar</button>
       </div>
+      <p class="aviso-envio" id="aviso-envio" role="status" hidden></p>
     </div>
   </section>
 </main>

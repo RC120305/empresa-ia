@@ -55,7 +55,7 @@ jobs:
             --region "${REGION}" \
             --service-account "crm-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
             --set-env-vars "VERSAO=${GITHUB_SHA::7},SUPABASE_URL=https://gpvhnclniolxxxjkslkf.supabase.co" \
-            --set-secrets "META_APP_SECRET=meta-app-secret:latest,META_VERIFY_TOKEN=meta-verify-token:latest,SUPABASE_SECRET_KEY=supabase-secret-key:latest,SUPABASE_PUBLISHABLE_KEY=supabase-publishable-key:latest" \
+            --set-secrets "META_APP_SECRET=meta-app-secret:latest,META_VERIFY_TOKEN=meta-verify-token:latest,SUPABASE_SECRET_KEY=supabase-secret-key:latest,SUPABASE_PUBLISHABLE_KEY=supabase-publishable-key:latest,META_WHATSAPP_TOKEN=meta-whatsapp-token:latest" \
             --allow-unauthenticated \
             --min-instances 0 --max-instances 1 --memory 256Mi \
             --quiet

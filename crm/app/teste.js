@@ -6,6 +6,11 @@ const assert = require('assert');
 
 const chamadas = [];
 let bancoQuebrado = false;
+let janelaAberta = true;
+const FAKE = {
+  '/auth/v1/user': req => req.headers.authorization === 'Bearer token-equipe' ? { email: 'equipe@teste.com' }
+    : req.headers.authorization === 'Bearer token-estranho' ? { email: 'estranho@teste.com' } : null,
+};
 const falso = http.createServer((req, res) => {
   let corpo = '';
   req.on('data', p => (corpo += p));
@@ -13,6 +18,14 @@ const falso = http.createServer((req, res) => {
     chamadas.push({ url: req.url, apikey: req.headers.apikey, corpo: corpo ? JSON.parse(corpo) : null });
     if (bancoQuebrado) { res.writeHead(503); return res.end(); }
     if (req.url.startsWith('/rest/v1/rpc/registrar_status')) { res.writeHead(204); return res.end(); }
+    const responder = (cod, obj) => { res.writeHead(cod, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(obj)); };
+    if (req.url === '/auth/v1/user') { const u = FAKE['/auth/v1/user'](req); return u ? responder(200, u) : responder(401, { msg: 'invalid' }); }
+    if (req.url === '/rest/v1/rpc/equipe_por_email') { const b = JSON.parse(corpo); return responder(200, b.p_email === 'equipe@teste.com' ? [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }] : []); }
+    if (req.url.startsWith('/rest/v1/conversas?')) return responder(200, [{ id: '11111111-1111-1111-1111-111111111111', canal: 'wa', numero_id: '111',
+      ultima_msg_cliente_em: new Date(Date.now() - (janelaAberta ? 3600e3 : 30 * 3600e3)).toISOString(),
+      contato: { contato_identificadores: [{ tipo: 'whatsapp', valor: '+5567999990000' }] } }]);
+    if (req.url === '/graph/111/messages') return responder(200, { messages: [{ id: 'wamid.SAIDA' }] });
+    if (req.url === '/rest/v1/rpc/registrar_saida_whatsapp') return responder(200, '22222222-2222-2222-2222-222222222222');
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(req.url.startsWith('/rest/v1/rpc/') ? '{"nova":true}' : '[]');
   });
@@ -24,6 +37,8 @@ falso.listen(0, () => {
   process.env.SUPABASE_URL = 'http://127.0.0.1:' + falso.address().port + '/';
   process.env.SUPABASE_SECRET_KEY = 'chave-de-teste';
   process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_teste';
+  process.env.META_WHATSAPP_TOKEN = 'token-meta-teste';
+  process.env.META_GRAPH_URL = 'http://127.0.0.1:' + falso.address().port + '/graph';
   const { servidor } = require('./server');
 
   servidor.listen(0, async () => {
@@ -74,7 +89,7 @@ falso.listen(0, () => {
 
     // Saúde mostra os segredos e o banco
     const saude = await (await fetch(base + '/saude')).json();
-    assert.deepEqual(saude.segredos, { verify: true, appSecret: true, supabase: true, supabasePublica: true });
+    assert.deepEqual(saude.segredos, { verify: true, appSecret: true, supabase: true, supabasePublica: true, whatsappToken: true });
     assert.equal(saude.banco, 'ok');
 
     // Página de status: número mascarado, sem conteúdo
@@ -95,6 +110,27 @@ falso.listen(0, () => {
     assert.ok(!cfgTxt.includes('chave-de-teste'), 'a chave secreta nunca vai para o navegador');
     assert.equal((await fetch(base + '/../server.js')).status, 404);
     assert.equal((await fetch(base + '/', { redirect: 'manual' })).headers.get('location'), '/caixa');
+
+    // Responder pelo CRM
+    const enviar = (tok, corpo) => fetch(base + '/api/enviar', { method: 'POST', headers: tok ? { Authorization: 'Bearer ' + tok } : {}, body: JSON.stringify(corpo) });
+    const conv = '11111111-1111-1111-1111-111111111111';
+    r = await enviar('token-equipe', { conversa_id: conv, texto: 'Oi! Aqui é o Ricardo.' });
+    assert.equal(r.status, 200);
+    const env = await r.json();
+    assert.equal(env.wamid, 'wamid.SAIDA');
+    const g = chamadas.find(c => c.url === '/graph/111/messages');
+    assert.equal(g.corpo.to, '5567999990000'); assert.equal(g.corpo.text.body, 'Oi! Aqui é o Ricardo.');
+    const sai = chamadas.find(c => c.url === '/rest/v1/rpc/registrar_saida_whatsapp');
+    assert.deepEqual(sai.corpo, { p_conversa: conv, p_wamid: 'wamid.SAIDA', p_corpo: 'Oi! Aqui é o Ricardo.', p_autor: 'u-1' });
+    assert.equal((await enviar(null, { conversa_id: conv, texto: 'x' })).status, 401);
+    assert.equal((await enviar('token-invalido', { conversa_id: conv, texto: 'x' })).status, 401);
+    assert.equal((await enviar('token-estranho', { conversa_id: conv, texto: 'x' })).status, 403);
+    assert.equal((await enviar('token-equipe', { conversa_id: conv, texto: '   ' })).status, 400);
+    assert.equal((await enviar('token-equipe', { conversa_id: 'x; drop', texto: 'oi' })).status, 400);
+    janelaAberta = false;
+    r = await enviar('token-equipe', { conversa_id: conv, texto: 'oi' });
+    assert.equal(r.status, 409); assert.ok((await r.json()).erro.includes('24 h'));
+    janelaAberta = true;
 
     console.log('TODOS OS TESTES PASSARAM');
     servidor.close(); falso.close();

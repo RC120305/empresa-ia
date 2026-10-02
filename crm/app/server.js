@@ -18,6 +18,10 @@ const bancoLigado = () => !!(SUPABASE_URL && SUPABASE_KEY);
 // protegidos pelas regras do banco (RLS): sem login de alguém da equipe, ela não lê nada.
 const SUPABASE_PUBLICA = (process.env.SUPABASE_PUBLISHABLE_KEY || '').trim();
 const chavePublicaOk = () => SUPABASE_PUBLICA.startsWith('sb_publishable_');
+// Token permanente do usuário do sistema "CRM Cabanas" (Meta), para enviar mensagens.
+const WA_TOKEN = (process.env.META_WHATSAPP_TOKEN || '').trim();
+const GRAPH = process.env.META_GRAPH_URL || 'https://graph.facebook.com/v26.0'; // trocável só nos testes
+const JANELA_MS = 24 * 3600 * 1000;
 
 // Arquivos da caixa de entrada (carregados uma vez; lista fechada, nada de caminho vindo da URL).
 const PUB = path.join(__dirname, 'public');
@@ -51,7 +55,8 @@ const cabecalhosBanco = () => Object.assign({ apikey: SUPABASE_KEY, 'Content-Typ
   SUPABASE_KEY.startsWith('eyJ') ? { Authorization: 'Bearer ' + SUPABASE_KEY } : {});
 
 const recentes = []; // últimos eventos (sem conteúdo), só para a página de status
-let ultimoErroBanco = null; // código e mensagem do banco (sem dados de cliente), para diagnóstico
+let ultimoErroBanco = null;
+let ultimoErroMeta = null; // último erro de envio da Meta (código e mensagem, sem dados de cliente) // código e mensagem do banco (sem dados de cliente), para diagnóstico
 const mascarar = n => (n ? String(n).replace(/^(\d{4})\d+(\d{3})$/, '$1•••••$2') : '?');
 
 function assinaturaValida(corpo, cabecalho) {
@@ -126,6 +131,49 @@ async function registrar(evento, buscar = fetch) {
   return gravadas;
 }
 
+// Envio pela caixa de entrada: confere quem é a pessoa (login do Supabase), se ela é da equipe,
+// se a janela de 24 h está aberta, manda pela Meta e grava a mensagem de saída.
+class ErroEnvio extends Error { constructor(http, msg) { super(msg); this.http = http; } }
+async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
+  if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
+  const texto = typeof corpo.texto === 'string' ? corpo.texto.trim() : '';
+  if (!texto || texto.length > 4096) throw new ErroEnvio(400, 'A mensagem precisa ter de 1 a 4.096 caracteres.');
+  if (!/^[0-9a-f-]{36}$/i.test(String(corpo.conversa_id || ''))) throw new ErroEnvio(400, 'Conversa inválida.');
+
+  const u = await buscar(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + tokenUsuario }, signal: AbortSignal.timeout(5000) });
+  if (!u.ok) throw new ErroEnvio(401, 'Sua sessão expirou. Entre de novo.');
+  const email = (await u.json()).email;
+  const equipe = await rpc('equipe_por_email', { p_email: email || '' }, buscar);
+  if (!Array.isArray(equipe) || !equipe.length) throw new ErroEnvio(403, 'Seu e-mail não está liberado para enviar.');
+
+  const c = await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${corpo.conversa_id}&select=id,canal,numero_id,ultima_msg_cliente_em,contato:contatos(contato_identificadores(tipo,valor))`,
+    { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+  const conv = c.ok ? (await c.json())[0] : null;
+  if (!conv) throw new ErroEnvio(404, 'Conversa não encontrada.');
+  if (conv.canal !== 'wa') throw new ErroEnvio(400, 'Por enquanto só dá para responder pelo WhatsApp.');
+  const ultima = conv.ultima_msg_cliente_em ? new Date(conv.ultima_msg_cliente_em).getTime() : 0;
+  if (Date.now() - ultima > JANELA_MS) throw new ErroEnvio(409, 'A janela de 24 h fechou: fora dela a Meta só aceita modelos aprovados.');
+  const wa = ((conv.contato && conv.contato.contato_identificadores) || []).find(i => i.tipo === 'whatsapp');
+  if (!wa) throw new ErroEnvio(400, 'Este contato não tem WhatsApp.');
+
+  const m = await buscar(`${GRAPH}/${encodeURIComponent(conv.numero_id)}/messages`, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + WA_TOKEN, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: wa.valor.replace(/\D/g, ''), type: 'text', text: { body: texto, preview_url: true } }),
+    signal: AbortSignal.timeout(10000),
+  });
+  const mr = await m.json().catch(() => ({}));
+  if (!m.ok || !mr.messages || !mr.messages[0]) {
+    const e = mr.error || {};
+    console.error(JSON.stringify({ evento: 'falha_envio_meta', http: m.status, codigo: e.code, sub: e.error_subcode, msg: String(e.message || '').slice(0, 200) }));
+    ultimoErroMeta = { quando: new Date().toISOString(), http: m.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
+    throw new ErroEnvio(502, 'A Meta não aceitou o envio' + (e.code ? ` (código ${e.code})` : '') + '. Tente de novo; se repetir, avise o Ricardo.');
+  }
+  const wamid = mr.messages[0].id;
+  const id = await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: wamid, p_corpo: texto, p_autor: equipe[0].id }, buscar);
+  return { ok: true, id, wamid, enviada_em: new Date().toISOString() };
+}
+
 function json(res, cod, obj) {
   res.writeHead(cod, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(obj));
@@ -135,7 +183,7 @@ const servidor = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
   if (url.pathname === '/saude') {
-    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado(), supabasePublica: chavePublicaOk() }, chaveSupabase: tipoChave(SUPABASE_KEY) };
+    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado(), supabasePublica: chavePublicaOk(), whatsappToken: !!WA_TOKEN }, chaveSupabase: tipoChave(SUPABASE_KEY) };
     if (!bancoLigado()) return json(res, 200, base);
     // Confere se o banco responde e se a chave tem permissão de servidor: chama a função de status com um
     // ID que não existe (não altera nada). Chave sem permissão de servidor recebe 401/403.
@@ -173,6 +221,25 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
+  if (url.pathname === '/api/enviar' && req.method === 'POST') {
+    const auth = req.headers.authorization || '';
+    if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
+    const partes = [];
+    let tamanho = 0;
+    req.on('data', p => { tamanho += p.length; if (tamanho > 64e3) req.destroy(); else partes.push(p); });
+    req.on('end', () => {
+      let corpo;
+      try { corpo = JSON.parse(Buffer.concat(partes).toString('utf8')); } catch (e) { return json(res, 400, { ok: false, erro: 'Pedido inválido.' }); }
+      enviarPelaEquipe(auth.slice(7), corpo)
+        .then(r => json(res, 200, r))
+        .catch(e => {
+          if (!(e instanceof ErroEnvio)) console.error(JSON.stringify({ evento: 'falha_envio', erro: String(e.message || e).slice(0, 200) }));
+          json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Não deu para enviar agora. Tente de novo.' });
+        });
+    });
+    return;
+  }
+
   const est = req.method === 'GET' && ESTATICOS[url.pathname];
   if (est) {
     res.writeHead(200, { 'Content-Type': est.tipo, 'Cache-Control': url.pathname === '/caixa' ? 'no-store' : 'public, max-age=300', ...cabecalhosSeguranca() });
@@ -184,7 +251,7 @@ const servidor = http.createServer((req, res) => {
     return res.end('window.CRM_CONFIG = ' + JSON.stringify(cfg) + ';');
   }
 
-  if (url.pathname === '/webhook/status') return json(res, 200, { recebidos: recentes.length, ultimoErroBanco, ultimos: recentes });
+  if (url.pathname === '/webhook/status') return json(res, 200, { recebidos: recentes.length, ultimoErroBanco, ultimoErroMeta, ultimos: recentes });
 
   if (url.pathname === '/') { res.writeHead(302, { Location: '/caixa' }); return res.end(); }
   res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });

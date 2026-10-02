@@ -177,9 +177,12 @@
 
   function pintarJanela(c) {
     const j = $('conv-janela');
-    if (!c || !c.ultima_msg_cliente_em) { j.textContent = ''; j.className = 'janela'; return; }
-    const fim = new Date(new Date(c.ultima_msg_cliente_em).getTime() + 24 * 3600 * 1000);
-    const abertaJ = fim > new Date();
+    const fim = c && c.ultima_msg_cliente_em ? new Date(new Date(c.ultima_msg_cliente_em).getTime() + 24 * 3600 * 1000) : null;
+    const abertaJ = !!fim && fim > new Date();
+    $('resposta').disabled = !abertaJ;
+    $('enviar').toggleAttribute('disabled', !abertaJ);
+    $('resposta').placeholder = abertaJ ? 'Escreva a resposta… (Enter envia; Shift+Enter quebra a linha)' : 'Janela de 24 h fechada: fora dela só modelos aprovados (próxima etapa).';
+    if (!fim) { j.textContent = ''; j.className = 'janela'; return; }
     j.className = 'janela ' + (abertaJ ? 'aberta' : 'fechada');
     j.textContent = abertaJ ? 'Responder até ' + hora(fim.toISOString()) : 'Janela fechada';
     j.title = abertaJ ? 'Dá para responder com texto livre até esse horário.' : 'Fora da janela, só modelos aprovados pela Meta.';
@@ -203,6 +206,45 @@
     return d;
   }
   const rolarFim = () => { const box = $('mensagens'); box.scrollTop = box.scrollHeight; };
+
+  // ---------- Enviar ----------
+  let enviando = false;
+  async function enviar() {
+    const txt = $('resposta').value.trim();
+    if (!txt || enviando || !aberta) return;
+    enviando = true;
+    $('enviar').setAttribute('disabled', '');
+    $('aviso-envio').hidden = true;
+    const id = aberta;
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const r = await fetch('/api/enviar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (session ? session.access_token : '') },
+        body: JSON.stringify({ conversa_id: id, texto: txt }),
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.ok) throw new Error(j.erro || 'Não deu para enviar agora.');
+      $('resposta').value = '';
+      if (aberta === id && j.id && !$('mensagens').querySelector('[data-id="' + j.id + '"]')) {
+        const dias = $('mensagens').querySelectorAll('.dia');
+        adicionarMensagem({ id: j.id, direcao: 'saida', tipo: 'text', corpo: txt, status_entrega: 'sent', enviada_em: j.enviada_em }, dias.length ? dias[dias.length - 1].textContent : '');
+        rolarFim();
+      }
+    } catch (e) {
+      $('aviso-envio').textContent = e.message;
+      $('aviso-envio').hidden = false;
+    } finally {
+      enviando = false;
+      const c = conversas.find(x => x.id === aberta);
+      pintarJanela(c);
+      $('resposta').focus();
+    }
+  }
+  $('enviar').addEventListener('click', enviar);
+  $('resposta').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && matchMedia('(pointer:fine)').matches) { e.preventDefault(); enviar(); }
+  });
 
   $('voltar').addEventListener('click', () => {
     aberta = null; $('tela-caixa').classList.remove('aberta'); $('conv').hidden = true; $('sem-conversa').hidden = false; pintarLista();

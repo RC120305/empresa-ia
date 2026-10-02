@@ -9,6 +9,7 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 |---|---|---|
 | `001_inicial.sql` | contatos, identificadores, conversas, mensagens, eventos de entrada; funções `registrar_entrada_whatsapp` e `registrar_status_whatsapp` (só o servidor pode chamar) | 01/10/2026 (dono, SQL Editor) |
 | `002_caixa_entrada.sql` | tabela `usuarios` (equipe liberada), regras de leitura só para a equipe, `marcar_conversa_lida`, tempo real em `mensagens` e `conversas` | 02/10/2026 (dono, SQL Editor) |
+| `003_envio.sql` | `equipe_por_email` e `registrar_saida_whatsapp` (responder pelo CRM; só o servidor chama) | pendente |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.
