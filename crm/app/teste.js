@@ -17,6 +17,7 @@ const FAKE = {
 };
 const guardados = new Map(); // "Storage" falso: caminho -> {dados, mime}
 const MSG_MIDIA = '33333333-3333-3333-3333-333333333333';
+const MSG_AUDIO = '66666666-6666-6666-6666-666666666666';
 const falso = http.createServer((req, res) => {
   const pedacos = [];
   req.on('data', p => pedacos.push(p));
@@ -39,6 +40,16 @@ const falso = http.createServer((req, res) => {
       const g = guardados.get(req.url.slice('/storage/v1/object/authenticated/midias/'.length));
       if (!g) return responder(404, { error: 'not_found' });
       res.writeHead(200, { 'Content-Type': g.mime }); return res.end(g.dados);
+    }
+    if (req.url.startsWith('/v2/projects/cabanas-crm/locations/global/recognizers/_:recognize')) {
+      if (req.headers.authorization !== 'Bearer tok-google') return responder(401, { error: { message: 'sem token' } });
+      const audio = Buffer.from(json.content, 'base64').toString();
+      if (audio === 'AUDIO-LONGO') return responder(400, { error: { message: 'Audio can be of a maximum of 60 seconds duration.' } });
+      return responder(200, { results: [{ alternatives: [{ transcript: 'oi tudo bem' }] }, { alternatives: [{ transcript: 'tem vaga pro feriado?' }] }] });
+    }
+    if (req.url.startsWith('/rest/v1/mensagens?id=eq.' + MSG_AUDIO)) {
+      if (req.method === 'PATCH') { res.writeHead(204); return res.end(); }
+      return responder(200, [{ id: MSG_AUDIO, tipo: 'audio', midia_id: null, midia_caminho: 'conv/audio.ogg', transcricao: null, transcricao_status: null }]);
     }
     if (req.url.startsWith('/rest/v1/mensagens?id=eq.')) {
       if (req.method === 'PATCH') { res.writeHead(204); return res.end(); }
@@ -88,6 +99,8 @@ falso.listen(0, () => {
   process.env.META_WHATSAPP_TOKEN = 'token-meta-teste';
   process.env.FATOR_DIGITACAO = '0';
   process.env.SILBECK_MODO = 'simulador';
+  process.env.GOOGLE_TOKEN = 'tok-google';
+  process.env.TRANSCRICAO_URL = 'http://127.0.0.1:' + falso.address().port;
   process.env.ANTHROPIC_API_KEY = 'chave-ia-teste';
   process.env.ANTHROPIC_BASE_URL = 'http://127.0.0.1:' + falso.address().port;
   process.env.META_GRAPH_URL = 'http://127.0.0.1:' + falso.address().port + '/graph';
@@ -266,6 +279,23 @@ falso.listen(0, () => {
     r = await fetch(base + '/saude/silbeck');
     assert.equal(r.status, 200); assert.equal((await r.json()).etapa, 'segredos');
 
+    // Transcrição de áudio: lê do Storage, manda ao Speech-to-Text e grava o texto na mensagem
+    guardados.set('conv/audio.ogg', { dados: Buffer.from('AUDIO-CURTO'), mime: 'audio/ogg' });
+    const transcrever = (tok, id) => fetch(base + '/api/transcrever', { method: 'POST', headers: tok ? { Authorization: 'Bearer ' + tok } : {}, body: JSON.stringify({ mensagem_id: id }) });
+    r = await transcrever('token-equipe', MSG_AUDIO);
+    let tj = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(tj));
+    assert.deepEqual([tj.status, tj.texto], ['ok', 'oi tudo bem tem vaga pro feriado?']);
+    const patchT = chamadas.findLast(c => c.metodo === 'PATCH' && c.url === '/rest/v1/mensagens?id=eq.' + MSG_AUDIO);
+    assert.deepEqual(patchT.corpo, { transcricao: 'oi tudo bem tem vaga pro feriado?', transcricao_status: 'ok' });
+    guardados.set('conv/audio.ogg', { dados: Buffer.from('AUDIO-LONGO'), mime: 'audio/ogg' });
+    tj = await (await transcrever('token-equipe', MSG_AUDIO)).json();
+    assert.equal(tj.status, 'longo');
+    assert.equal((await transcrever(null, MSG_AUDIO)).status, 401);
+    assert.equal((await transcrever('token-estranho', MSG_AUDIO)).status, 403);
+    assert.equal((await transcrever('token-equipe', MSG_MIDIA)).status, 404); // é foto, não áudio
+    assert.equal((await transcrever('token-equipe', 'x')).status, 400);
+
     const { numeroParaEnvio } = require('./server');
     assert.equal(numeroParaEnvio('+556798070981'), '5567998070981');
     assert.equal(numeroParaEnvio('5567998070981'), '5567998070981');
@@ -310,6 +340,8 @@ falso.listen(0, () => {
     }
     assert.equal((await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-estranho' }, body: JSON.stringify({ conversa_id: conv }) })).status, 403);
     const { montarMensagens } = require('./gilberto');
+    assert.deepEqual(montarMensagens([{ direcao: 'entrada', tipo: 'audio', transcricao: 'quero 2 noites', transcricao_status: 'ok' }]),
+      [{ role: 'user', content: '[áudio do cliente, transcrição automática: "quero 2 noites"]' }]);
     assert.deepEqual(montarMensagens([{ direcao: 'saida', tipo: 'text', corpo: 'oi' }, { direcao: 'entrada', tipo: 'image', corpo: 'essa?' }, { direcao: 'entrada', tipo: 'text', corpo: 'tem vaga?' }]),
       [{ role: 'user', content: '[enviou uma foto: essa?]\ntem vaga?' }]);
 

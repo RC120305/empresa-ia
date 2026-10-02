@@ -92,10 +92,16 @@
     setInterval(() => { if (!aoVivo && !document.hidden) atualizarTudo(); }, 15000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) atualizarTudo(); });
   }
+  // Mensagens da conversa. Se o banco ainda não tem as colunas da transcrição (migração 005), busca sem elas.
+  async function buscarMensagens(id) {
+    const q = campos => sb.from('mensagens').select(campos).eq('conversa_id', id).order('enviada_em', { ascending: true }).limit(500);
+    let r = await q('id,direcao,tipo,corpo,status_entrega,enviada_em,transcricao,transcricao_status');
+    if (r.error) r = await q('id,direcao,tipo,corpo,status_entrega,enviada_em');
+    return r.data;
+  }
   async function recarregarAberta() {
     const id = aberta;
-    const { data } = await sb.from('mensagens').select('id,direcao,tipo,corpo,status_entrega,enviada_em')
-      .eq('conversa_id', id).order('enviada_em', { ascending: true }).limit(500);
+    const data = await buscarMensagens(id);
     if (aberta !== id || !data) return;
     const box = $('mensagens');
     const perto = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
@@ -167,8 +173,7 @@
     $('conv-tel').textContent = c && c.tel !== c.nome ? c.tel : '';
     pintarJanela(c);
     $('mensagens').textContent = 'Carregando…';
-    const { data } = await sb.from('mensagens').select('id,direcao,tipo,corpo,status_entrega,enviada_em')
-      .eq('conversa_id', id).order('enviada_em', { ascending: true }).limit(500);
+    const data = await buscarMensagens(id);
     if (aberta !== id) return;
     $('mensagens').textContent = '';
     let ultimoDia = '';
@@ -210,6 +215,11 @@
       caixa.append(st); b.append(caixa);
       if (m.corpo) { const l = document.createElement('span'); l.className = 'legenda'; l.textContent = m.corpo; b.append(l); }
       vigiarMidia(caixa);
+      if (m.tipo === 'audio' && m.direcao === 'entrada') {
+        const t = document.createElement('span'); t.className = 'transcricao'; t.dataset.transcricao = m.id;
+        b.append(t);
+        pintarTranscricao(t, m);
+      }
     }
     else { const em = document.createElement('em'); em.textContent = textoMsg(m); b.append(em); }
     const s = document.createElement('small');
@@ -273,6 +283,33 @@
     } else {
       caixa.append(baixar('📄 ' + a.nome));
     }
+  }
+  // Transcrição dos áudios do cliente: mostra o texto; se ainda não há, pede ao servidor quando o balão aparece.
+  function pintarTranscricao(el, m) {
+    const st = m.transcricao_status;
+    el.classList.remove('pendente');
+    if (st === 'ok' && m.transcricao) el.textContent = '📝 ' + m.transcricao;
+    else if (st === 'longo') el.textContent = '📝 Áudio com mais de 1 minuto: ouça acima.';
+    else if (st === 'vazio') el.textContent = '📝 Não deu para reconhecer fala neste áudio.';
+    else if (st === 'erro') el.textContent = '📝 Transcrição indisponível agora.';
+    else if (st === undefined) el.textContent = ''; // banco sem a migração 005
+    else { el.textContent = '📝 Transcrevendo…'; el.classList.add('pendente'); observadorT ? observadorT.observe(el) : pedirTranscricao(el); }
+  }
+  const observadorT = 'IntersectionObserver' in window
+    ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { observadorT.unobserve(e.target); pedirTranscricao(e.target); } }), { rootMargin: '200px' })
+    : null;
+  const pedidas = new Set();
+  async function pedirTranscricao(el) {
+    const id = el.dataset.transcricao;
+    if (pedidas.has(id)) return;
+    pedidas.add(id);
+    try {
+      const j = await chamarApi('/api/transcrever', { mensagem_id: id });
+      document.querySelectorAll('[data-transcricao="' + id + '"]').forEach(x => pintarTranscricao(x, { transcricao: j.texto, transcricao_status: j.status === 'falhou' ? 'erro' : j.status }));
+    } catch (e) {
+      el.textContent = '📝 Transcrição indisponível agora.';
+      el.classList.remove('pendente');
+    } finally { setTimeout(() => pedidas.delete(id), 60000); }
   }
   // Se a pessoa está no fim da conversa, continua no fim quando a foto termina de carregar.
   function manterNoFim() { const box = $('mensagens'); if (box.scrollHeight - box.scrollTop - box.clientHeight < 400) rolarFim(); }
@@ -491,6 +528,7 @@
         pintarLista();
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mensagens' }, ({ new: m }) => {
+        if (m.transcricao_status) document.querySelectorAll('[data-transcricao="' + m.id + '"]').forEach(x => pintarTranscricao(x, m));
         const el = document.querySelector('.balao[data-id="' + m.id + '"] small');
         if (el && m.direcao === 'saida') el.textContent = hora(m.enviada_em) + (m.status_entrega ? ' · ' + (STATUS[m.status_entrega] || m.status_entrega) : '');
       })

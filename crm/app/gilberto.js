@@ -75,6 +75,8 @@ async function executarFerramenta(nome, entrada) {
 const ROTULO = { image: 'uma foto', audio: 'um áudio', video: 'um vídeo', document: 'um documento', sticker: 'uma figurinha', location: 'uma localização', contacts: 'um contato', reaction: 'uma reação' };
 function textoParaModelo(m) {
   if (m.tipo === 'text' || m.tipo === 'button' || m.tipo === 'interactive') return m.corpo || '';
+  if (m.tipo === 'audio' && m.transcricao) return `[áudio do cliente, transcrição automática: "${m.transcricao}"]`;
+  if (m.tipo === 'audio' && m.transcricao_status === 'longo') return '[enviou um áudio de mais de 1 minuto, ainda sem transcrição: a equipe vai ouvir]';
   const r = ROTULO[m.tipo] || m.tipo;
   return `[enviou ${r}${m.corpo ? ': ' + m.corpo : ''}]`;
 }

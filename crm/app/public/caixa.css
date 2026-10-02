@@ -95,3 +95,5 @@ button,input,textarea{font:inherit;color:inherit}
 .midia .m-baixar{display:inline-block;margin-top:4px;font-size:12px}
 .midia .m-status{display:block;color:var(--texto-sec);font-style:italic;padding:6px}
 .balao .legenda{display:block}
+.balao .transcricao{display:block;margin-top:4px;font-size:14px;color:var(--texto);font-style:italic}
+.balao .transcricao.pendente{color:var(--texto-sec)}

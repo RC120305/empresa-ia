@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const gilberto = require('./gilberto');
 const silbeck = require('./silbeck');
+const transcricao = require('./transcricao');
 const path = require('path');
 
 const porta = process.env.PORT || 8080;
@@ -342,6 +343,46 @@ async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   return { ok: true, enviadas, id: ult.id, wamid: ult.wamid, enviada_em: ult.enviada_em };
 }
 
+// ---------- Transcrição de áudio ----------
+// Pedida pela tela (ao mostrar um áudio) ou antes da sugestão do Gilberto. Uma por vez por mensagem.
+const transcrevendo = new Map();
+async function transcreverMensagem(msg, buscar = fetch) {
+  if (transcrevendo.has(msg.id)) return transcrevendo.get(msg.id);
+  const p = (async () => {
+    let dados;
+    if (msg.midia_caminho) dados = await lerDoStorage(msg.midia_caminho, buscar);
+    else if (msg.midia_id && WA_TOKEN) dados = (await baixarDaMeta(msg.midia_id, buscar)).dados;
+    else return { status: 'falhou', texto: '' };
+    let r;
+    try { r = await transcricao.transcrever(dados, buscar); } catch (e) {
+      if (!(e instanceof transcricao.ErroTranscricao)) throw e;
+      console.warn(JSON.stringify({ evento: 'transcricao_falhou', status: e.status, erro: String(e.message).slice(0, 200) }));
+      r = { status: e.status, texto: '' };
+    }
+    if (r.status !== 'falhou') { // falha passageira não fica gravada: tenta de novo na próxima vez
+      await buscar(`${SUPABASE_URL}/rest/v1/mensagens?id=eq.${msg.id}`, {
+        method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
+        body: JSON.stringify({ transcricao: r.texto || null, transcricao_status: r.status }), signal: AbortSignal.timeout(5000),
+      }).catch(() => {});
+    }
+    return r;
+  })().finally(() => transcrevendo.delete(msg.id));
+  transcrevendo.set(msg.id, p);
+  return p;
+}
+async function transcreverParaEquipe(tokenUsuario, corpo, buscar = fetch) {
+  if (!bancoLigado()) throw new ErroEnvio(503, 'O banco ainda não está configurado.');
+  const id = String(corpo.mensagem_id || '');
+  if (!/^[0-9a-f-]{36}$/i.test(id)) throw new ErroEnvio(400, 'Mensagem inválida.');
+  await autenticarEquipe(tokenUsuario, buscar);
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/mensagens?id=eq.${id}&select=id,tipo,midia_id,midia_caminho,transcricao,transcricao_status`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+  if (!r.ok) throw new ErroEnvio(503, 'A transcrição ainda não está ligada no banco (falta a migração 005).');
+  const msg = (await r.json())[0];
+  if (!msg || msg.tipo !== 'audio') throw new ErroEnvio(404, 'Áudio não encontrado.');
+  if (msg.transcricao_status && msg.transcricao_status !== 'falhou') return { ok: true, status: msg.transcricao_status, texto: msg.transcricao || '' };
+  return { ok: true, ...(await transcreverMensagem(msg, buscar)) };
+}
+
 // Sugestão do Gilberto para a última mensagem do cliente (não envia nada).
 const sugerindo = new Set();
 async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
@@ -355,8 +396,13 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
     const c = await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${id}&select=id,canal,contato:contatos(nome)`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
     const conv = c.ok ? (await c.json())[0] : null;
     if (!conv) throw new ErroEnvio(404, 'Conversa não encontrada.');
-    const h = await buscar(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${id}&select=direcao,tipo,corpo,enviada_em&order=enviada_em.desc&limit=40`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const url = campos => `${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${id}&select=${campos}&order=enviada_em.desc&limit=40`;
+    let h = await buscar(url('id,direcao,tipo,corpo,enviada_em,midia_id,midia_caminho,transcricao,transcricao_status'), { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    if (!h.ok) h = await buscar(url('direcao,tipo,corpo,enviada_em'), { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }); // banco sem a migração 005
     const historico = h.ok ? (await h.json()).reverse() : [];
+    // Áudios do cliente ainda sem texto: transcreve os 3 mais recentes antes de o Gilberto ler.
+    const pendentes = historico.filter(m => m.tipo === 'audio' && m.direcao === 'entrada' && m.id && (!m.transcricao_status || m.transcricao_status === 'falhou')).slice(-3);
+    await Promise.all(pendentes.map(m => transcreverMensagem(m, buscar).then(r => { m.transcricao = r.texto; m.transcricao_status = r.status; }).catch(() => {})));
     return { ok: true, ...(await gilberto.sugerir(historico, { canal: conv.canal, nome: conv.contato && conv.contato.nome })) };
   } catch (e) {
     if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message);
@@ -460,7 +506,7 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
-  if ((url.pathname === '/api/enviar' || url.pathname === '/api/sugerir') && req.method === 'POST') {
+  if ((url.pathname === '/api/enviar' || url.pathname === '/api/sugerir' || url.pathname === '/api/transcrever') && req.method === 'POST') {
     const auth = req.headers.authorization || '';
     if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
     const partes = [];
@@ -469,7 +515,7 @@ const servidor = http.createServer((req, res) => {
     req.on('end', () => {
       let corpo;
       try { corpo = JSON.parse(Buffer.concat(partes).toString('utf8')); } catch (e) { return json(res, 400, { ok: false, erro: 'Pedido inválido.' }); }
-      (url.pathname === '/api/enviar' ? enviarPelaEquipe : sugerirParaEquipe)(auth.slice(7), corpo)
+      ({ '/api/enviar': enviarPelaEquipe, '/api/sugerir': sugerirParaEquipe, '/api/transcrever': transcreverParaEquipe })[url.pathname](auth.slice(7), corpo)
         .then(r => json(res, 200, r))
         .catch(e => {
           if (!(e instanceof ErroEnvio)) console.error(JSON.stringify({ evento: 'falha_envio', erro: String(e.message || e).slice(0, 200) }));
@@ -490,7 +536,7 @@ const servidor = http.createServer((req, res) => {
     return res.end('window.CRM_CONFIG = ' + JSON.stringify(cfg) + ';');
   }
 
-  if (url.pathname === '/webhook/status') return json(res, 200, { recebidos: recentes.length, ultimoErroBanco, ultimoErroMeta, ultimoDigitando, ultimos: recentes });
+  if (url.pathname === '/webhook/status') return json(res, 200, { recebidos: recentes.length, ultimoErroBanco, ultimoErroMeta, ultimoDigitando, ultimoErroTranscricao: transcricao.ultimoErro(), ultimos: recentes });
 
   if (url.pathname === '/') { res.writeHead(302, { Location: '/caixa' }); return res.end(); }
   res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });

@@ -1,0 +1,15 @@
+bash <<'FIM'
+# CRM Cabanas: liga a transcrição de áudio (Speech-to-Text do Google). Rodar UMA vez no Cloud Shell.
+# Liga o serviço e dá à conta do CRM permissão só para transcrever. Não cria nem mostra nenhuma chave.
+set -euo pipefail
+gcloud config set project cabanas-crm >/dev/null
+echo "1/2 Ligando o Speech-to-Text (leva 1 a 2 minutos)..."
+gcloud services enable speech.googleapis.com
+echo "2/2 Permissão para o CRM transcrever..."
+gcloud projects add-iam-policy-binding cabanas-crm \
+  --member="serviceAccount:crm-runtime@cabanas-crm.iam.gserviceaccount.com" \
+  --role="roles/speech.client" --condition=None >/dev/null
+echo "----------------------------------------------------------------"
+echo "Pronto! Transcrição ligada. Mande 'transcrição ligada' no chat."
+echo "----------------------------------------------------------------"
+FIM
