@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const Anthropic = require('@anthropic-ai/sdk');
+const silbeck = require('./silbeck');
 
 // Modelo escolhido pelo dono (A6): Sonnet 5.5 no dia a dia; troca por configuração, sem mexer no código.
 const MODELO = process.env.GILBERTO_MODELO || 'claude-sonnet-5-5';
@@ -54,6 +55,23 @@ const FORMATO = {
   },
 };
 
+// Ferramentas ligadas nesta fase: só a cotação no Silbeck (definição em crm/gilberto/ferramentas.json).
+const LIGADAS = ['consultar_disponibilidade'];
+const FERRAMENTAS = (() => {
+  try { return JSON.parse(ler('ferramentas.json', '..', 'gilberto', 'ferramentas.json')).filter(t => LIGADAS.includes(t.name)); } catch (e) { return []; }
+})();
+const MAX_RODADAS = 4;
+
+async function executarFerramenta(nome, entrada) {
+  if (nome === 'consultar_disponibilidade') {
+    try { return await silbeck.cotar(entrada); } catch (e) {
+      console.warn(JSON.stringify({ evento: 'silbeck_falhou', erro: String(e.message || e).slice(0, 200) }));
+      return { ok: false, erro: 'O Silbeck não respondeu agora. Não informe preço nem vaga: diga que vai conferir e avise a equipe nas notas_internas.' };
+    }
+  }
+  return { ok: false, erro: 'Ferramenta não ligada nesta fase: use [[...]] e notas_internas.' };
+}
+
 const ROTULO = { image: 'uma foto', audio: 'um áudio', video: 'um vídeo', document: 'um documento', sticker: 'uma figurinha', location: 'uma localização', contacts: 'um contato', reaction: 'uma reação' };
 function textoParaModelo(m) {
   if (m.tipo === 'text' || m.tipo === 'button' || m.tipo === 'interactive') return m.corpo || '';
@@ -93,7 +111,7 @@ Contato (dados já conhecidos): nome do perfil do WhatsApp: ${c.nome || 'não in
 Pendências (reservas, cobranças, alertas abertos): não disponíveis nesta fase
 Resumo das conversas anteriores: não disponível
 </contexto_crm>
-Nesta fase as ferramentas ainda não estão ligadas ao CRM: não tente chamá-las. Onde precisaria de uma (preço, vaga, reserva, link de pagamento, fotos, alerta), escreva a mensagem com marcadores [[...]] no lugar do dado (ex.: [[valor do Silbeck: Bangalô Especial 14 a 16/11, 2 adultos]]) e diga em notas_internas o que a equipe precisa fazer. Nunca invente preço nem disponibilidade.`;
+Ferramentas nesta fase: só consultar_disponibilidade está ligada (vagas e valores do Silbeck). Use-a sempre que for falar de preço ou vaga e já tiver datas e pessoas (com a idade de cada criança); se faltar algum dado, pergunte ao cliente em vez de chamar. As outras ferramentas ainda não estão ligadas: não tente chamá-las. Onde precisaria delas (orçamento com link, reserva, link de pagamento, fotos, alerta), escreva a mensagem com marcadores [[...]] no lugar do dado (ex.: [[link do orçamento]]) e diga em notas_internas o que a equipe precisa fazer. Nunca invente preço nem disponibilidade: só use os valores que a ferramenta devolveu.${silbeck.MODO() === 'simulador' ? ' Nesta fase de testes a ferramenta usa o SIMULADOR do Silbeck: os valores são fictícios; use-os normalmente na mensagem e lembre isso em notas_internas.' : ''}`;
 }
 
 let cliente = null;
@@ -117,31 +135,53 @@ async function sugerir(historico, conversa) {
     system: [{ type: 'text', text: SISTEMA, cache_control: { type: 'ephemeral' } }],
     messages: [...mensagens, { role: 'system', content: contextoTurno(conversa) }],
     output_config: { effort: ESFORCO, format: FORMATO },
+    ...(FERRAMENTAS.length ? { tools: FERRAMENTAS } : {}),
   };
-  let r;
-  try {
-    // Recusa por segurança: a API refaz no modelo de reserva automaticamente (fallbacks "default").
-    r = await anthropic().beta.messages.create({ ...pedido, betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' });
-  } catch (e) {
-    if (e instanceof Anthropic.BadRequestError) {
-      console.warn(JSON.stringify({ evento: 'gilberto_sem_fallback', erro: String(e.message).slice(0, 200) }));
-      r = await anthropic().messages.create(pedido);
-    } else if (e instanceof Anthropic.AuthenticationError) {
-      throw new ErroSugestao(503, 'A chave da Anthropic foi recusada. Confira o segredo anthropic-api-key.');
-    } else if (e instanceof Anthropic.RateLimitError) {
-      throw new ErroSugestao(429, 'Muitas sugestões ao mesmo tempo. Tente de novo em alguns segundos.');
-    } else if (e instanceof Anthropic.APIError) {
-      throw new ErroSugestao(502, 'A IA não respondeu agora (erro ' + e.status + '). Tente de novo.');
-    } else throw e;
+  let usarFallback = true;
+  async function chamarIA() {
+    try {
+      // Recusa por segurança: a API refaz no modelo de reserva automaticamente (fallbacks "default").
+      if (usarFallback) return await anthropic().beta.messages.create({ ...pedido, betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' });
+      return await anthropic().messages.create(pedido);
+    } catch (e) {
+      if (e instanceof Anthropic.BadRequestError && usarFallback) {
+        console.warn(JSON.stringify({ evento: 'gilberto_sem_fallback', erro: String(e.message).slice(0, 200) }));
+        usarFallback = false;
+        return chamarIA();
+      } else if (e instanceof Anthropic.AuthenticationError) {
+        throw new ErroSugestao(503, 'A chave da Anthropic foi recusada. Confira o segredo anthropic-api-key.');
+      } else if (e instanceof Anthropic.RateLimitError) {
+        throw new ErroSugestao(429, 'Muitas sugestões ao mesmo tempo. Tente de novo em alguns segundos.');
+      } else if (e instanceof Anthropic.APIError) {
+        throw new ErroSugestao(502, 'A IA não respondeu agora (erro ' + e.status + '). Tente de novo.');
+      } else throw e;
+    }
   }
-  const u = r.usage || {};
-  console.log(JSON.stringify({ evento: 'gilberto_sugestao', modelo: r.model, entrada: u.input_tokens, cache_lido: u.cache_read_input_tokens, cache_gravado: u.cache_creation_input_tokens, saida: u.output_tokens, parada: r.stop_reason }));
+
+  // Laço das ferramentas: o Gilberto pede uma cotação, o CRM consulta o Silbeck e devolve o resultado.
+  const cotacoes = [];
+  let r;
+  for (let rodada = 0; ; rodada++) {
+    r = await chamarIA();
+    const u = r.usage || {};
+    console.log(JSON.stringify({ evento: 'gilberto_sugestao', modelo: r.model, rodada, entrada: u.input_tokens, cache_lido: u.cache_read_input_tokens, cache_gravado: u.cache_creation_input_tokens, saida: u.output_tokens, parada: r.stop_reason }));
+    if (r.stop_reason !== 'tool_use') break;
+    if (rodada + 1 >= MAX_RODADAS) throw new ErroSugestao(502, 'O Gilberto fez consultas demais nesta sugestão. Tente de novo.');
+    const resultados = [];
+    for (const b of r.content.filter(b => b.type === 'tool_use')) {
+      const res = await executarFerramenta(b.name, b.input);
+      if (b.name === 'consultar_disponibilidade') cotacoes.push({ pedido: b.input, ok: !!res.ok, fonte: res.fonte || null, opcoes: (res.opcoes || []).length, erro: res.erro || null });
+      resultados.push({ type: 'tool_result', tool_use_id: b.id, content: JSON.stringify(res), ...(res.ok === false ? { is_error: true } : {}) });
+    }
+    pedido.messages = [...pedido.messages, { role: 'assistant', content: r.content }, { role: 'user', content: resultados }];
+  }
   if (r.stop_reason === 'refusal') throw new ErroSugestao(422, 'O Gilberto não conseguiu sugerir para esta conversa. Responda manualmente.');
   if (r.stop_reason === 'max_tokens') throw new ErroSugestao(502, 'A sugestão ficou longa demais. Tente de novo.');
   const txt = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
   let out;
   try { out = JSON.parse(txt); } catch (e) { throw new ErroSugestao(502, 'A sugestão veio num formato inesperado. Tente de novo.'); }
-  return { mensagem: String(out.mensagem || ''), notas_internas: String(out.notas_internas || ''), precisa_equipe: !!out.precisa_equipe, modelo: r.model };
+  return { mensagem: String(out.mensagem || ''), notas_internas: String(out.notas_internas || ''), precisa_equipe: !!out.precisa_equipe, modelo: r.model, cotacoes,
+    simulador: cotacoes.some(c => c.fonte === 'simulador') };
 }
 
-module.exports = { sugerir, montarMensagens, ErroSugestao, sistemaPronto: () => !!SISTEMA, MODELO };
+module.exports = { sugerir, montarMensagens, ErroSugestao, sistemaPronto: () => !!SISTEMA, MODELO, ferramentas: () => FERRAMENTAS.map(t => t.name) };

@@ -421,7 +421,8 @@
       box.textContent = '';
       baloes(j.mensagem).forEach(t => { const d = document.createElement('div'); d.textContent = t; box.append(d); });
       $('sug-notas').textContent = (j.precisa_equipe ? '⚠ Caso para a equipe. ' : '') + (j.notas_internas ? 'Notas: ' + j.notas_internas : '');
-      $('sug-notas').className = 'sug-notas' + (j.precisa_equipe ? ' alerta' : '');
+      if (j.simulador) $('sug-notas').textContent = '⚠ Valores do SIMULADOR do Silbeck (fictícios): não envie a clientes reais. ' + $('sug-notas').textContent;
+      $('sug-notas').className = 'sug-notas' + (j.precisa_equipe || j.simulador ? ' alerta' : '');
       $('sug-modelo').textContent = /[[]{2}/.test(j.mensagem) ? 'complete os [[ ]] antes de enviar' : '';
       $('sugestao').dataset.texto = j.mensagem;
       $('sugestao').hidden = false;

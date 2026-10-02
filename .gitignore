@@ -4,3 +4,5 @@ conhecimento/youtube/
 __pycache__/
 crm/app/node_modules/
 crm/app/conhecimento/*.md
+crm/app/conhecimento/*.json
+crm/app/simulador-silbeck/

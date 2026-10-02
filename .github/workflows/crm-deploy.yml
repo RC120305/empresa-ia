@@ -7,6 +7,8 @@ on:
       - 'crm/app/**'
       - 'crm/gilberto/prompt-sistema.md'
       - 'crm/gilberto/base-conhecimento.md'
+      - 'crm/gilberto/ferramentas.json'
+      - 'crm/simulador-silbeck/**'
       - 'contexto/hotel-operacional.md'
       - '.github/workflows/crm-deploy.yml'
   workflow_dispatch:
@@ -35,6 +37,7 @@ jobs:
           sparse-checkout: |
             crm/app/
             crm/gilberto/
+            crm/simulador-silbeck/
             contexto/hotel-operacional.md
           sparse-checkout-cone-mode: false
           filter: blob:none
@@ -59,7 +62,8 @@ jobs:
 
       - name: Montar e enviar a imagem
         run: |
-          cp crm/gilberto/prompt-sistema.md crm/gilberto/base-conhecimento.md contexto/hotel-operacional.md crm/app/conhecimento/
+          cp crm/gilberto/prompt-sistema.md crm/gilberto/base-conhecimento.md crm/gilberto/ferramentas.json contexto/hotel-operacional.md crm/app/conhecimento/
+          mkdir -p crm/app/simulador-silbeck && cp -r crm/simulador-silbeck/src crm/simulador-silbeck/dados crm/app/simulador-silbeck/
           gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
           docker build -t "${IMAGE}:${GITHUB_SHA}" crm/app
           docker push "${IMAGE}:${GITHUB_SHA}"
@@ -70,7 +74,7 @@ jobs:
             --image "${IMAGE}:${GITHUB_SHA}" \
             --region "${REGION}" \
             --service-account "crm-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
-            --set-env-vars "VERSAO=${GITHUB_SHA::7},SUPABASE_URL=https://gpvhnclniolxxxjkslkf.supabase.co" \
+            --set-env-vars "VERSAO=${GITHUB_SHA::7},SUPABASE_URL=https://gpvhnclniolxxxjkslkf.supabase.co,SILBECK_MODO=simulador" \
             --set-secrets "META_APP_SECRET=meta-app-secret:latest,META_VERIFY_TOKEN=meta-verify-token:latest,SUPABASE_SECRET_KEY=supabase-secret-key:latest,SUPABASE_PUBLISHABLE_KEY=supabase-publishable-key:latest,META_WHATSAPP_TOKEN=meta-whatsapp-token:latest,ANTHROPIC_API_KEY=anthropic-api-key:latest" \
             --network crm-vpc --subnet crm-sp --vpc-egress all-traffic \
             --allow-unauthenticated \

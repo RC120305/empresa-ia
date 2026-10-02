@@ -11,6 +11,7 @@
 - **WhatsApp:** plano definido: número de teste da Meta → 99117 por coexistência (modo observação) → saída da Asksuite → 99110.
 - **No ar (01/10/2026):** Google Cloud `cabanas-crm` com publicação automática pelo GitHub (sem chaves); app "Cabanas CRM" na Meta; **webhook do WhatsApp de teste recebendo mensagens no CRM** (texto e status enviado/entregue/lido, assinatura conferida); **banco Supabase em São Paulo gravando contatos, conversas e mensagens** (migração `crm/banco/001_inicial.sql`).
 - **Caixa de entrada no ar (02/10/2026):** login da equipe por link no e-mail, conversas ao vivo e **resposta pelo WhatsApp** (janela de 24 h). Endereço: https://crm-377803250649.southamerica-east1.run.app/caixa
+- **Gilberto cota pelo Silbeck (02/10/2026):** na sugestão, o Gilberto chama `consultar_disponibilidade` e o CRM consulta o Silbeck (vagas + tarifa por tipo, regras de criança do hotel). Por enquanto no **simulador** (valores fictícios, com aviso na caixa); para o real, trocar `SILBECK_MODO=simulador` por `real` no `crm-deploy.yml` depois que `/saude/silbeck` mostrar "tudo certo".
 - **Na caixa (02/10/2026):** sugestão do Gilberto, balões enviados um por vez com pausa de digitação e **fotos, vídeos, áudios e documentos** (recebidos guardados no Storage; envio pelo 📎; envio de foto testado pelo dono).
 
 ## 1. O que depende do dono

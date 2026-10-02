@@ -8,6 +8,9 @@ const chamadas = [];
 let bancoQuebrado = false;
 let janelaAberta = true;
 let ultimoPedidoIA = null;
+const pedidosIA = [];
+const emDias = n => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
+let iaCota = false;
 const FAKE = {
   '/auth/v1/user': req => req.headers.authorization === 'Bearer token-equipe' ? { email: 'equipe@teste.com' }
     : req.headers.authorization === 'Bearer token-estranho' ? { email: 'estranho@teste.com' } : null,
@@ -60,6 +63,11 @@ const falso = http.createServer((req, res) => {
     if (req.url.split('?')[0] === '/v1/messages') {
       const b = JSON.parse(corpo);
       ultimoPedidoIA = { corpo: b, beta: req.headers['anthropic-beta'] || '' };
+      pedidosIA.push(b);
+      const jaConsultou = b.messages.some(m => Array.isArray(m.content) && m.content.some(c => c.type === 'tool_result'));
+      if (iaCota && !jaConsultou) return responder(200, { id: 'msg_0', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
+        content: [{ type: 'tool_use', id: 'toolu_1', name: 'consultar_disponibilidade', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], finalidade: 'cotacao' } }],
+        usage: { input_tokens: 10, output_tokens: 20 } });
       return responder(200, { id: 'msg_1', type: 'message', role: 'assistant', model: b.model, stop_reason: 'end_turn', stop_sequence: null,
         content: [{ type: 'text', text: JSON.stringify({ mensagem: 'Oi! Tenho sim [[valor do Silbeck]]', notas_internas: 'Consultar Silbeck', precisa_equipe: false }) }],
         usage: { input_tokens: 10, output_tokens: 20, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 } });
@@ -79,6 +87,7 @@ falso.listen(0, () => {
   process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_teste';
   process.env.META_WHATSAPP_TOKEN = 'token-meta-teste';
   process.env.FATOR_DIGITACAO = '0';
+  process.env.SILBECK_MODO = 'simulador';
   process.env.ANTHROPIC_API_KEY = 'chave-ia-teste';
   process.env.ANTHROPIC_BASE_URL = 'http://127.0.0.1:' + falso.address().port;
   process.env.META_GRAPH_URL = 'http://127.0.0.1:' + falso.address().port + '/graph';
@@ -276,6 +285,29 @@ falso.listen(0, () => {
     assert.ok(pi.messages[3].content.includes('Modo: sugestao'));
     assert.equal(pi.output_config.format.type, 'json_schema');
     assert.equal(pi.fallbacks, 'default'); assert.ok(ultimoPedidoIA.beta.includes('server-side-fallback-2026-07-01'));
+    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade']);
+    assert.ok(pi.messages[3].content.includes('SIMULADOR'));
+    // Cotação: o Gilberto pede, o CRM consulta o simulador do Silbeck e devolve o resultado na 2ª rodada
+    iaCota = true; pedidosIA.length = 0;
+    r = await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-equipe' }, body: JSON.stringify({ conversa_id: conv }) });
+    const sug2 = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(sug2));
+    assert.equal(pedidosIA.length, 2);
+    const ultimo = pedidosIA[1].messages;
+    assert.equal(ultimo.at(-2).role, 'assistant'); assert.equal(ultimo.at(-2).content[0].type, 'tool_use');
+    const resCot = JSON.parse(ultimo.at(-1).content[0].content);
+    assert.equal(resCot.ok, true, JSON.stringify(resCot)); assert.equal(resCot.fonte, 'simulador');
+    assert.ok(resCot.opcoes.length > 0 && resCot.opcoes.every(o => o.valor_total > 0));
+    assert.ok(resCot.nao_comportam_o_grupo.includes('Cabana Casal'), 'criança de 3 anos não vai para a Cabana Casal');
+    assert.equal(sug2.simulador, true); assert.equal(sug2.cotacoes.length, 1);
+    iaCota = false;
+    const { cotar } = require('./silbeck');
+    assert.equal((await cotar({ data_entrada: '2020-01-01', data_saida: '2020-01-03', adultos: 2, idades_criancas: [] })).ok, false);
+    assert.equal((await cotar({ data_entrada: '2026-12-10', data_saida: '2026-12-09', adultos: 2, idades_criancas: [] })).ok, false);
+    if (emDias(0) < '2026-12-29') { // o simulador traz o Réveillon 2026 com as Cabanas Casal esgotadas
+      const reveillon = await cotar({ data_entrada: '2026-12-29', data_saida: '2027-01-02', adultos: 2, idades_criancas: [] });
+      assert.ok(reveillon.esgotados_no_periodo.includes('Cabana Casal') && !reveillon.opcoes.some(o => o.codigo === 'CBD'));
+    }
     assert.equal((await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-estranho' }, body: JSON.stringify({ conversa_id: conv }) })).status, 403);
     const { montarMensagens } = require('./gilberto');
     assert.deepEqual(montarMensagens([{ direcao: 'saida', tipo: 'text', corpo: 'oi' }, { direcao: 'entrada', tipo: 'image', corpo: 'essa?' }, { direcao: 'entrada', tipo: 'text', corpo: 'tem vaga?' }]),
