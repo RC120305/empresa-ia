@@ -24,12 +24,13 @@ const MSG_BIB = '88888888-8888-8888-8888-888888888888';
 const fotosBib = [];
 // Produtos, ofertas e vendas falsos (Etapa C2)
 const PRODS = [
-  { codigo: 'COMBO', nome: 'Combo boia cross + arvorismo', descricao: 'Duas aventuras', preco: 'R$ 170 por pessoa', preco_valor: 170, unidade: 'pessoa', perfis: ['Casal', 'Família com filhos'], idade_minima: 5, altura_minima_cm: 115, variacoes: [], adicionais: [], grupo_fotos: 'BOIA', tipo_reserva: 'ativ', regras: '5 anos ou mais', quando_oferecer: 'Na cotação', antecedencia_dias: 0, prioridade: 1, ativo: true },
+  { codigo: 'COMBO', nome: 'Combo boia cross + arvorismo', descricao: 'Duas aventuras', preco: 'R$ 170 por pessoa', preco_valor: 170, unidade: 'pessoa', perfis: ['Casal', 'Família com filhos'], idade_minima: 5, altura_minima_cm: 115, variacoes: [], adicionais: [], grupo_fotos: 'BOIA', vitrine: 'aventuras', tipo_reserva: 'ativ', regras: '5 anos ou mais', quando_oferecer: 'Na cotação', antecedencia_dias: 0, prioridade: 1, ativo: true },
   { codigo: 'PIQ', nome: 'Piquenique no rio', descricao: null, preco: 'R$ 90 por pessoa', regras: null, quando_oferecer: null, antecedencia_dias: 1, prioridade: 6, ativo: true },
-  { codigo: 'DECO', nome: 'Decoração especial', descricao: 'Preparada no quarto', preco: 'Simples R$ 350 ou Completa R$ 600', preco_valor: null, unidade: 'unidade', perfis: ['Casal'], variacoes: [{ nome: 'Simples', preco: 350 }, { nome: 'Completa', preco: 600, descricao: 'Com pétalas e espumante' }], adicionais: [], tipo_reserva: 'simples', antecedencia_dias: 3, prioridade: 4, ativo: true },
-  { codigo: 'MASS', nome: 'Massagem', preco: 'R$ 220 por pessoa', unidade: 'pessoa', variacoes: [{ nome: 'Massagem360', preco: 220 }], adicionais: [{ nome: 'Pedras quentes', preco: 50 }, { nome: 'Cone hindu', preco: 80 }], tipo_reserva: 'terc', antecedencia_dias: 0, prioridade: 5, ativo: true },
+  { codigo: 'DECO', nome: 'Decoração especial', descricao: 'Preparada no quarto', preco: 'Simples R$ 350 ou Completa R$ 600', preco_valor: null, unidade: 'unidade', perfis: ['Casal'], variacoes: [{ nome: 'Simples', preco: 350 }, { nome: 'Completa', preco: 600, descricao: 'Com pétalas e espumante' }], adicionais: [], vitrine: 'momentos', tipo_reserva: 'simples', antecedencia_dias: 3, prioridade: 4, ativo: true },
+  { codigo: 'MASS', nome: 'Massagem', preco: 'R$ 220 por pessoa', unidade: 'pessoa', variacoes: [{ nome: 'Massagem360', preco: 220 }], adicionais: [{ nome: 'Pedras quentes', preco: 50 }, { nome: 'Cone hindu', preco: 80 }], vitrine: 'momentos', grupo_fotos: 'BGE,BOIA', tipo_reserva: 'terc', antecedencia_dias: 0, prioridade: 5, ativo: true },
 ];
-const ofertasF = [], vendasF = [], alertasF = [];
+const ofertasF = [], vendasF = [], alertasF = [], vitrinesF = [];
+let iaVitrines = null;
 let iaOferta = '';
 const RAIZ_DRIVE = '1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5';
 const JPG_DRIVE = require('child_process').execFileSync('ffmpeg', ['-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc=size=1600x900', '-frames:v', '1', '-f', 'mjpeg', '-']);
@@ -65,6 +66,15 @@ const falso = http.createServer((req, res) => {
       if (req.url.includes('conversa_id=eq.')) return responder(200, ofertasF.filter(o => o.conversa_id === req.url.split('conversa_id=eq.')[1].split('&')[0]));
       return responder(200, ofertasF.filter(o => o.id === id));
     }
+    if (req.url.startsWith('/rest/v1/vitrines')) {
+      if (req.method === 'POST') { const v = { id: crypto.randomUUID(), aberturas: 0, pedido: null, pedido_em: null, criado_em: new Date().toISOString(), ...json }; vitrinesF.unshift(v); return responder(201, [v]); }
+      if (req.method === 'PATCH') {
+        const ids = req.url.includes('id=in.(') ? req.url.split('id=in.(')[1].split(')')[0].split(',') : [req.url.split('id=eq.')[1]];
+        vitrinesF.filter(v => ids.includes(v.id)).forEach(v => Object.assign(v, json)); res.writeHead(204); return res.end();
+      }
+      if (req.url.includes('token=eq.')) return responder(200, vitrinesF.filter(v => v.token === req.url.split('token=eq.')[1].split('&')[0]));
+      return responder(200, vitrinesF.filter(v => v.conversa_id === req.url.split('conversa_id=eq.')[1].split('&')[0] && (!req.url.includes('enviada=eq.true') || v.enviada)));
+    }
     if (req.url.startsWith('/rest/v1/alertas')) {
       if (req.method === 'POST') { alertasF.push({ id: crypto.randomUUID(), situacao: 'aberto', ...json }); res.writeHead(201); return res.end(); }
       const id = (req.url.match(/[?&]id=eq\.([0-9a-f-]+)/) || [])[1], venda = (req.url.match(/venda_id=eq\.([0-9a-f-]+)/) || [])[1];
@@ -78,7 +88,7 @@ const falso = http.createServer((req, res) => {
       if (req.method === 'PATCH') { Object.assign(vendasF.find(v => v.id === id), json); res.writeHead(204); return res.end(); }
       return responder(200, vendasF.filter(v => v.id === id));
     }
-    if (req.url.startsWith('/rest/v1/sugestoes?id=eq.') && req.method === 'GET') return responder(200, [{ conversa_id: '11111111-1111-1111-1111-111111111111', ferramentas: { produto_oferecido: iaOferta || null } }]);
+    if (req.url.startsWith('/rest/v1/sugestoes?id=eq.') && req.method === 'GET') return responder(200, [{ conversa_id: '11111111-1111-1111-1111-111111111111', ferramentas: { produto_oferecido: iaOferta || null, vitrines: iaVitrines || [] } }]);
     if (req.url.startsWith('/rest/v1/fotos_biblioteca')) {
       if (req.method === 'GET') return responder(200, fotosBib);
       if (req.method === 'POST') { const i = fotosBib.findIndex(f => f.arquivo === json.arquivo); if (i >= 0) Object.assign(fotosBib[i], json); else fotosBib.push({ ordem: 100, criado_em: new Date().toISOString(), ...json }); res.writeHead(201); return res.end(); }
@@ -615,6 +625,56 @@ falso.listen(0, () => {
     await api('/api/sugestao', { id: 'dddddddd-dddd-dddd-dddd-dddddddddddd', situacao: 'usada' });
     assert.equal(ofertasF.length, 1, 'não duplica');
     iaOferta = ''; ofertasF.length = 0;
+
+    // Oferta por link (páginas de extras): aventuras e momentos
+    r = await api('/api/vitrine', { conversa_id: conv, tema: 'aventuras', enviar: true });
+    const vt = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(vt));
+    const cta = chamadas.findLast(c => c.url === '/graph/111/messages' && c.corpo.type === 'interactive').corpo.interactive;
+    assert.deepEqual([cta.type, cta.action.name, cta.action.parameters.display_text, cta.action.parameters.url], ['cta_url', 'cta_url', 'Ver as aventuras', vt.link]);
+    assert.ok(cta.header.image.link.endsWith('/fotos/BOIA-1.jpg') && cta.footer.text === 'Vai na conta da hospedagem, acertada no check-out');
+    assert.ok(vt.mensagem.corpo.includes(vt.link));
+    assert.equal((await api('/api/vitrine', { conversa_id: conv, tema: 'momentos' })).status, 409, 'o link conta como oferta');
+    assert.equal((await api('/api/vitrine', { conversa_id: conv, tema: 'praia', forcar: true })).status, 400);
+    const vtok = vt.link.split('/e/')[1];
+    r = await fetch(base + '/e/' + vtok);
+    const vh = await r.text();
+    assert.equal(r.status, 200);
+    assert.ok(vh.includes('Aventuras no <em>Rio Formoso</em>') && vh.includes('data-codigo="COMBO"') && !vh.includes('data-codigo="DECO"') && vh.includes('src="/fotos/BOIA-1.jpg"') && vh.includes('noindex'));
+    assert.equal((await fetch(base + '/e/' + 'y'.repeat(22))).status, 404);
+    const pedir = (itens, t = vtok) => fetch(base + '/e/' + t + '/pedido', { method: 'POST', body: JSON.stringify({ itens }) });
+    const nV = vendasF.length;
+    r = await pedir([{ codigo: 'COMBO', quantidade: 2, data: emDias(41), adicionais: [] }]);
+    const pj = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(pj));
+    assert.ok(decodeURIComponent(pj.whatsapp).includes('Escolhi na página de extras: Combo boia cross + arvorismo · 2 pessoas · ' + emDias(41).slice(8, 10) + '/'));
+    assert.deepEqual(vendasF.slice(nV).map(v => [v.produto_codigo, v.quantidade, v.valor_total, v.data_uso]), [['COMBO', 2, 340, emDias(41)]]);
+    assert.ok(alertasF.findLast(a => a.tipo === 'produto_pedido').info.includes('escolheu na página de extras'));
+    assert.ok(vitrinesF[0].pedido_em && vitrinesF[0].pedido[0].codigo === 'COMBO');
+    await pedir([{ codigo: 'COMBO', quantidade: 2, data: emDias(41) }]);
+    assert.equal(vendasF.length, nV + 1, 'mesmo item de novo não duplica');
+    assert.equal((await pedir([{ codigo: 'DECO', variacao: 'Completa', quantidade: 1 }])).status, 400, 'decoração não está no link de aventuras');
+    assert.equal((await pedir([{ codigo: 'COMBO', quantidade: 99 }])).status, 400);
+    assert.equal((await pedir([{ codigo: 'COMBO', quantidade: 1, data: '2020-01-01' }])).status, 400);
+    // Momentos: opção obrigatória, adicionais da massagem somam
+    r = await api('/api/vitrine', { conversa_id: conv, tema: 'momentos', forcar: true });
+    const vt2 = (await r.json()).link.split('/e/')[1];
+    const vh2 = await (await fetch(base + '/e/' + vt2)).text();
+    assert.ok(vh2.includes('value="Completa"') && vh2.includes('class="vt-ad" value="Pedras quentes"'));
+    assert.equal((await pedir([{ codigo: 'DECO', quantidade: 1 }], vt2)).status, 400);
+    r = await pedir([{ codigo: 'MASS', variacao: 'Massagem360', adicionais: ['Pedras quentes'], quantidade: 2, data: emDias(41) }, { codigo: 'DECO', variacao: 'Simples', quantidade: 1, data: emDias(40) }], vt2);
+    assert.equal(r.status, 200);
+    assert.deepEqual(vendasF.slice(-2).map(v => [v.produto_codigo, v.variacao, v.valor_total]), [['MASS', 'Massagem360', 540], ['DECO', 'Simples', 350]]);
+    // O Gilberto vê o link enviado como oferta; o link criado pela sugestão só conta quando a equipe envia
+    pedidosIA.length = 0;
+    await (await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-equipe' }, body: JSON.stringify({ conversa_id: conv }) })).json();
+    assert.ok(JSON.stringify(pedidosIA[0].messages.at(-1)).includes('Link de extras \\"Aventuras no Rio Formoso\\"'));
+    assert.ok(pedidosIA[0].tools.some(t => t.name === 'enviar_link_extras'));
+    vitrinesF.unshift({ id: 'eeeeeeee-0000-0000-0000-000000000009', token: 'z'.repeat(22), tema: 'momentos', conversa_id: conv, por: 'gilberto', enviada: false, criado_em: new Date().toISOString() });
+    iaVitrines = ['eeeeeeee-0000-0000-0000-000000000009'];
+    r = await api('/api/sugestao', { id: 'dddddddd-dddd-dddd-dddd-dddddddddddd', situacao: 'usada' });
+    assert.equal((await r.json()).oferta, 'link de extras'); assert.equal(vitrinesF[0].enviada, true);
+    iaVitrines = null; vitrinesF.length = 0; ofertasF.length = 0;
     const imp = chamadas.findLast(c => c.url === '/rest/v1/respostas' && c.metodo === 'POST').corpo;
     assert.ok(Array.isArray(imp) && imp.every(x => x.origem === 'questionario') && !imp.some(x => x.pergunta === 'Aceita pet?'));
     // Testar o agente: sem conversa nem gravação
@@ -643,7 +703,7 @@ falso.listen(0, () => {
     assert.ok(pi.messages[3].content.includes('Modo: sugestao'));
     assert.equal(pi.output_config.format.type, 'json_schema');
     assert.equal(pi.fallbacks, 'default'); assert.ok(ultimoPedidoIA.beta.includes('server-side-fallback-2026-07-01'));
-    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'enviar_fotos']);
+    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'enviar_fotos', 'enviar_link_extras']);
     assert.ok(pi.messages[3].content.includes('SIMULADOR'));
     // Cotação: o Gilberto pede, o CRM consulta o simulador do Silbeck e devolve o resultado na 2ª rodada
     iaCota = true; pedidosIA.length = 0;

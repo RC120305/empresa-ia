@@ -470,10 +470,6 @@
     try {
       const j = await chamarApi('/api/enviar', { conversa_id: id, baloes: partes });
       mostrar(j.enviadas);
-      if (ofertaPendente && ofertaPendente.conversa === id) {
-        const op = ofertaPendente; ofertaPendente = null;
-        chamarApi('/api/oferta', { conversa_id: id, produto_codigo: op.codigo, forcar: true }).then(() => toast('Oferta registrada: ' + op.nome + '. Quando o cliente responder, marque em 🛍 Produtos.')).catch(e => toast(e.message));
-      }
       if (sugestaoEmUso && sugestaoEmUso.conversa === id) {
         const igual = sugestaoEmUso.texto.trim() === txt;
         chamarApi('/api/sugestao', { id: sugestaoEmUso.id, situacao: 'usada', motivo: igual ? 'Enviada sem mudanças' : 'Enviada com edição da equipe' }).then(r => { contarRevisao(); if (r.oferta) toast('Oferta do Gilberto registrada: ' + r.oferta + '.'); }).catch(() => {});
@@ -927,8 +923,8 @@
     const box = $('prod-grade'); box.textContent = '';
     if (error) { box.append(el('div', { class: 'vazio', text: 'Os produtos ainda não estão no banco: falta rodar a migração 009 no Supabase.' })); return; }
     produtos = data || [];
-    const nomeGrupo = g => ((biblioteca || []).find(x => x.grupo === g) || {}).nome || g;
-    const fotoDe = g => { const x = g && (biblioteca || []).find(b => b.grupo === g); return x && x.fotos[0] ? x.fotos[0].arquivo : null; };
+    const nomeGrupo = gs => String(gs || '').split(',').map(g => ((biblioteca || []).find(x => x.grupo === g) || {}).nome || g).join(' + ');
+    const fotoDe = g => { g = String(g || '').split(',')[0]; const x = g && (biblioteca || []).find(b => b.grupo === g); return x && x.fotos[0] ? x.fotos[0].arquivo : null; };
     if (!biblioteca) carregarBiblioteca().then(() => { if (!document.querySelector('section[data-painel="produtos"]').hidden) carregarProdutos(); }).catch(() => {});
     produtos.forEach(p => {
       const vs = p.variacoes || [], ads = p.adicionais || [], foto = p.foto || fotoDe(p.grupo_fotos);
@@ -940,7 +936,7 @@
         p.descricao ? el('p', { text: p.descricao }) : null,
         vs.length ? el('p', { text: 'Opções: ' + vs.map(v => v.nome + ' ' + reais(v.preco)).join(' · ') }) : null,
         ads.length ? el('p', { text: 'Adicionais: ' + ads.map(a => a.nome + ' +' + reais(a.preco)).join(' · ') }) : null,
-        el('p', { text: 'Para: ' + para }),
+        el('p', { text: 'Para: ' + para + (p.vitrine ? ' · link: ' + (p.vitrine === 'aventuras' ? 'Aventuras no Rio Formoso' : 'Momentos especiais') : '') }),
         p.regras ? el('p', { text: 'Regras: ' + p.regras }) : null,
         el('p', { text: TIPO_RESERVA[p.tipo_reserva] + (p.quando_oferecer ? ' · oferecer: ' + p.quando_oferecer : '') + (p.antecedencia_dias ? ' · ' + p.antecedencia_dias + ' dias de antecedência' : '') + ' · prioridade ' + p.prioridade + (p.grupo_fotos ? ' · fotos: ' + nomeGrupo(p.grupo_fotos) : ' · sem fotos ligadas') }),
         p.preco_valor == null && !vs.length && 'perfis' in p ? el('p', { class: 'aviso-sim', text: '⚠ Falta o preço em número (para registrar vendas). Clique em Editar.' }) : null,
@@ -974,7 +970,8 @@
       { k: 'idade_minima', rotulo: 'Idade mínima (anos)', tipo: 'number', valor: p.idade_minima ?? '', at: { min: '0' } },
       { k: 'altura_minima_cm', rotulo: 'Altura mínima (cm)', tipo: 'number', valor: p.altura_minima_cm ?? '', at: { min: '0' } },
       { k: 'foto', rotulo: 'Foto representativa (vai na oferta do WhatsApp)', tipo: 'select', largo: true, valor: p.foto || '', opcoes: [['', 'Sem foto'], ...(biblioteca || []).flatMap(g => g.fotos.map(f => [f.arquivo, g.nome + ' · ' + (f.descricao || f.arquivo).slice(0, 70)]))] },
-      { k: 'grupo_fotos', rotulo: 'Mais fotos (categoria do Banco de fotos)', tipo: 'select', valor: p.grupo_fotos || '', opcoes: [['', 'Sem fotos'], ...(biblioteca || []).map(g => [g.grupo, g.nome])] },
+      { k: 'grupo_fotos', rotulo: 'Mais fotos (categoria do Banco de fotos; para pôr mais fotos, traga do Drive para a categoria)', tipo: 'select', largo: true, valor: p.grupo_fotos || '', opcoes: [['', 'Sem fotos'], ...(biblioteca || []).map(g => [g.grupo, g.nome]), ...(p.grupo_fotos && p.grupo_fotos.includes(',') ? [[p.grupo_fotos, p.grupo_fotos.split(',').map(g => ((biblioteca || []).find(x => x.grupo === g) || {}).nome || g).join(' + ')]] : [])] },
+      { k: 'vitrine', rotulo: 'Link de extras em que aparece', tipo: 'select', valor: p.vitrine || '', opcoes: [['', 'Nenhum'], ['aventuras', 'Aventuras no Rio Formoso'], ['momentos', 'Momentos especiais']] },
       { k: 'tipo_reserva', rotulo: 'Como se reserva', tipo: 'select', valor: p.tipo_reserva || 'simples', opcoes: Object.entries(TIPO_RESERVA) },
       { k: 'quando_oferecer', rotulo: 'Quando oferecer', tipo: 'select', valor: p.quando_oferecer || 'Na cotação', opcoes: ['Na cotação', '3 dias antes da chegada', 'Durante a estadia', 'Cotação e estadia'].map(x => [x, x]) },
       { k: 'antecedencia_dias', rotulo: 'Antecedência mínima (dias)', tipo: 'number', valor: p.antecedencia_dias ?? 0, at: { min: '0' } },
@@ -982,7 +979,7 @@
     ], async v => {
       const dados = { nome: v.nome, codigo: v.codigo, preco: v.preco, descricao: v.descricao, regras: v.regras, tipo_reserva: v.tipo_reserva, quando_oferecer: v.quando_oferecer, antecedencia_dias: v.antecedencia_dias, prioridade: v.prioridade };
       if (novos) Object.assign(dados, { preco_valor: v.preco_valor, unidade: v.unidade, variacoes: linhasParaLista(v.variacoes), adicionais: linhasParaLista(v.adicionais),
-        perfis: PERFIS.filter((x, i) => v['perfil_' + i]), idade_minima: v.idade_minima, altura_minima_cm: v.altura_minima_cm, grupo_fotos: v.grupo_fotos, foto: v.foto });
+        perfis: PERFIS.filter((x, i) => v['perfil_' + i]), idade_minima: v.idade_minima, altura_minima_cm: v.altura_minima_cm, grupo_fotos: v.grupo_fotos, foto: v.foto, vitrine: v.vitrine });
       if (dados.variacoes && dados.variacoes.length && v.preco === (p.preco || '') && p.id) dados.preco = ''; // opções mudaram: o CRM refaz o preço de leitura
       await chamarApi('/api/produto', { ...(p.id ? { id: p.id } : {}), ...dados });
       toast('Produto salvo. O Gilberto passa a usar em até 1 minuto.' + (novos ? '' : ' (Rode a migração 012 para os campos novos.)'));
@@ -1410,7 +1407,6 @@
       ETAPAS.map(([k, t]) => el('option', { value: k, text: t, selected: k === n.etapa })));
   }
   // ---------- Produtos na conversa: sugeridos para o cliente, oferecer, resposta e venda ----------
-  let ofertaPendente = null; // registrada quando a mensagem com a oferta é enviada
   const SIT_OFERTA = { oferecido: 'oferecido, aguardando resposta', aceito: 'aceito', recusado: 'recusado' };
   const POR_OFERTA = { equipe: 'pela equipe', gilberto: 'pelo Gilberto', pagina: 'pelo cliente na página do orçamento' };
   const SIT_VENDA = { vendido: 'na conta do hóspede · falta lançar', lancado: 'lançado na conta ✓', cancelado: 'cancelado' };
@@ -1429,52 +1425,15 @@
     if (p.antecedencia_dias && ctx.dias != null && ctx.dias < p.antecedencia_dias) m.push('faltam ' + Math.max(0, ctx.dias) + ' dia(s) para a chegada (pedir com ' + p.antecedencia_dias + ')');
     return m.join(' · ');
   }
-  // Texto da oferta (o corpo da mensagem do WhatsApp; a foto, o rodapé e os botões vão junto)
-  function textoOferta(p) {
-    const vs = p.variacoes || [], por = p.unidade === 'pessoa' ? ' por pessoa' : '';
-    const linhas = ['*' + p.nome + '*'];
-    if (p.descricao) linhas.push(p.descricao);
-    if (vs.length > 1) linhas.push(vs.map(v => '• ' + v.nome + ': ' + reais(v.preco) + por + (v.descricao ? ' (' + v.descricao + ')' : '')).join('\n'));
-    else linhas.push('Valor: ' + precoProduto(p) + '.');
-    if (p.idade_minima) linhas.push('A partir de ' + p.idade_minima + ' anos' + (p.altura_minima_cm ? ' e ' + (p.altura_minima_cm / 100).toLocaleString('pt-BR') + ' m' : '') + '.');
-    linhas.push('Quer incluir na sua estadia?');
-    return linhas.join('\n');
-  }
-  const fotoDoProduto = p => p.foto || (((biblioteca || []).find(g => g.grupo === p.grupo_fotos) || {}).fotos || [])[0]?.arquivo || null;
-  // Oferecer: prévia da mensagem (foto + texto + botões) e envio pelo WhatsApp
-  async function oferecer(c, p, ofertas, motivo) {
-    if (ofertas.length && !confirm('Já houve oferta nesta conversa (' + ofertas[0].produto_nome + '). A regra é 1 oferta por conversa. Oferecer mesmo assim?')) return;
-    if (motivo && !confirm('Atenção: ' + motivo + '. Oferecer mesmo assim?')) return;
-    if (!biblioteca) await carregarBiblioteca().catch(() => {});
-    const foto = fotoDoProduto(p), vs = p.variacoes || [];
-    const botoes = (vs.length === 2 ? vs.map(v => 'Quero a ' + v.nome) : ['Eu aceito']).concat('Não, obrigado');
-    abrirForm('Oferecer: ' + p.nome, [
-      ...(foto ? [{ tipo: 'img', src: '/fotos/' + foto, rotulo: p.nome }] : [{ tipo: 'nota', rotulo: 'Sem foto: cadastre a foto do produto na tela Produtos.' }]),
-      { k: 'texto', rotulo: 'Texto da mensagem (dá para editar)', tipo: 'textarea', largo: true, valor: textoOferta(p) },
-      { tipo: 'nota', rotulo: 'Rodapé: "Vai na conta da hospedagem, acertada no check-out" · Botões: ' + botoes.map(b => '[ ' + b + ' ]').join(' ') + '. Quando o cliente tocar num botão, a resposta é marcada sozinha.' },
-    ], async v => {
-      const r = await chamarApi('/api/oferta-enviar', { conversa_id: c.id, produto_codigo: p.codigo, texto: v.texto, forcar: true });
-      const m = r.mensagem;
-      if (m.arquivo && m.id) arquivos.set(m.id, Promise.resolve({ url: '/fotos/' + m.arquivo, nome: m.arquivo, mime: 'image/jpeg' }));
-      if (aberta === c.id && m.id && !$('mensagens').querySelector('[data-id="' + m.id + '"]')) { adicionarMensagem({ id: m.id, direcao: 'saida', autor: eu && eu.id, tipo: m.tipo, corpo: m.corpo, status_entrega: 'sent', enviada_em: m.enviada_em }, ultimoDiaTela()); rolarFim(); }
-      toast('Oferta enviada no WhatsApp com foto e botões.');
-      if (painel === 'pro') pintarPainel();
-    }, fechar => el('button', { class: 'btn btn-editar', type: 'button', text: 'Só copiar para o campo', onclick: () => {
-      const ta = $('resposta'), t = $('f-campos').querySelector('textarea');
-      ta.value = (ta.value.trim() ? ta.value.trim() + '\n---\n' : '') + (t ? t.value : textoOferta(p));
-      ofertaPendente = { conversa: c.id, codigo: p.codigo, nome: p.nome };
-      fechar(); ajustarAltura(); ta.focus();
-      toast('Texto no campo de resposta (sem botões). A oferta é registrada quando você enviar.');
-    } }), 'Enviar no WhatsApp');
-  }
   async function painelProdutos(lat, c) {
     if (!c) return;
     const id = c.id;
     lat.append(el('p', { class: 'lat-txt', text: 'Carregando…' }));
-    const [rp, ro, rv] = await Promise.all([
+    const [rp, ro, rv, rl] = await Promise.all([
       sb.from('produtos').select('*').eq('ativo', true).order('prioridade'),
       sb.from('ofertas').select('*').eq('conversa_id', id).order('criado_em', { ascending: false }),
       sb.from('vendas').select('*').eq('conversa_id', id).order('criado_em', { ascending: false }),
+      sb.from('vitrines').select('*').eq('conversa_id', id).eq('enviada', true).order('criado_em', { ascending: false }),
     ]);
     if (painel !== 'pro' || aberta !== id) return;
     lat.lastChild.remove();
@@ -1486,6 +1445,28 @@
     const ctx = { perfil: n && n.perfil, idades: (orc && orc.criancas_idades) || [], dias: entrada ? Math.round((new Date(entrada + 'T12:00:00') - new Date()) / 864e5) : null };
     const resumoCtx = [ctx.perfil ? 'Perfil: ' + ctx.perfil : 'Perfil não informado (defina na ficha do negócio)', ctx.idades.length ? 'crianças: ' + ctx.idades.join(', ') + ' anos' : '', entrada ? 'chegada em ' + fmtData(entrada) : ''].filter(Boolean).join(' · ');
     lat.append(el('p', { class: 'lat-txt', text: resumoCtx }));
+
+    // Oferta por link: duas páginas temáticas com fotos, opções, adicionais, pessoas e dia
+    const links = rl.error ? [] : rl.data || [];
+    lat.append(el('span', { class: 'rotulo', text: 'Oferecer por link' }));
+    if (rl.error) lat.append(el('div', { class: 'aviso-sim', text: '⚠ Falta rodar a migração 014 no Supabase para os links de extras.' }));
+    Object.entries(TEMAS_VITRINE).forEach(([tema, t]) => {
+      const doTema = prods.filter(p => p.vitrine === tema);
+      const indicadosTema = doTema.filter(p => !motivoNao(p, ctx));
+      lat.append(el('div', { class: 'sug-prod' + (indicadosTema.length ? '' : ' fora') },
+        el('div', { class: 'sug-prod-cab' }, el('b', { text: t.nome }), el('span', { class: 'num', text: doTema.length + (doTema.length === 1 ? ' produto' : ' produtos') })),
+        el('small', { text: doTema.length ? doTema.map(p => p.nome).join(' · ') : 'Nenhum produto ativo neste link (tela Produtos → campo "Link de extras").' }),
+        doTema.length && !indicadosTema.length ? el('small', { class: 'motivo', text: '⚠ Nenhum é indicado para este cliente: ' + motivoNao(doTema[0], ctx) }) : null,
+        doTema.length ? el('div', { class: 'acoes' },
+          el('button', { class: 'btn-mini', type: 'button', text: 'Enviar no WhatsApp', onclick: () => enviarLink(c, tema, ofertas.concat(links)) }),
+          el('button', { class: 'btn-mini', type: 'button', text: 'Copiar link para o campo', onclick: () => copiarLink(c, tema, ofertas.concat(links)) })) : null));
+    });
+    if (links.length) {
+      lat.append(el('span', { class: 'rotulo', text: 'Links enviados' }));
+      links.forEach(v => lat.append(el('div', { class: 'lat-card' }, el('b', { text: (TEMAS_VITRINE[v.tema] || {}).nome || v.tema }),
+        el('small', { text: [new Date(v.criado_em).toLocaleDateString('pt-BR'), v.por === 'gilberto' ? 'pelo Gilberto' : 'pela equipe', v.aberturas ? 'aberto ' + v.aberturas + 'x' : 'ainda não aberto', v.pedido_em ? 'cliente escolheu: ' + (v.pedido || []).map(x => x.nome + (x.variacao ? ' (' + x.variacao + ')' : '')).join(', ') : ''].filter(Boolean).join(' · ') }),
+        el('a', { href: '/e/' + v.token + '?previa=1', target: '_blank', rel: 'noopener', text: 'Ver a página (prévia)' }))));
+    }
 
     // Ofertas desta conversa e a resposta do cliente
     if (ofertas.length) {
@@ -1523,7 +1504,6 @@
       p.descricao ? el('small', { text: p.descricao }) : null,
       motivo ? el('small', { class: 'motivo', text: '⚠ ' + motivo }) : (p.regras ? el('small', { text: p.regras }) : null),
       el('div', { class: 'acoes' },
-        el('button', { class: 'btn-mini', type: 'button', text: 'Oferecer', onclick: () => oferecer(c, p, ofertas, motivo) }),
         p.grupo_fotos ? el('button', { class: 'btn-mini', type: 'button', text: '🖼 Fotos', onclick: () => { gal.cat = p.grupo_fotos; if (!$('galeria').hidden) fecharGaleria(); abrirGaleria(); } }) : null,
         el('button', { class: 'btn-mini', type: 'button', text: 'Registrar venda', onclick: () => formVenda(c, p, null) })));
     indicados.forEach(p => lat.append(cartao(p, '')));
@@ -1533,6 +1513,34 @@
       lat.append(det);
     }
     lat.append(el('p', { class: 'lat-txt', text: 'Regra: 1 oferta por conversa; recusou, não insistir. Tudo vai para a conta do hóspede e é acertado no check-out.' }));
+  }
+  const TEMAS_VITRINE = { aventuras: { nome: 'Aventuras no Rio Formoso', texto: 'Separei as aventuras do hotel para vocês: boia cross, arvorismo ou o combo das duas, com guias. É só escolher na página, com o dia e quantas pessoas 🌿' },
+    momentos: { nome: 'Momentos especiais', texto: 'Para deixar a estadia ainda mais especial: decoração no quarto e massagem para relaxar. É só escolher na página a opção e o dia 🌿' } };
+  const confirmaOferta = lista => !lista.length || confirm('Já houve oferta nesta conversa (' + (lista[0].produto_nome || 'link ' + ((TEMAS_VITRINE[lista[0].tema] || {}).nome || '')) + '). A regra é 1 oferta por conversa. Oferecer mesmo assim?');
+  async function enviarLink(c, tema, ja) {
+    if (!confirmaOferta(ja)) return;
+    abrirForm('Enviar link: ' + TEMAS_VITRINE[tema].nome, [
+      { k: 'texto', rotulo: 'Texto da mensagem (dá para editar)', tipo: 'textarea', largo: true, valor: TEMAS_VITRINE[tema].texto },
+      { tipo: 'nota', rotulo: 'Vai com a foto do primeiro produto, o rodapé "Vai na conta da hospedagem, acertada no check-out" e o botão "' + (tema === 'aventuras' ? 'Ver as aventuras' : 'Ver as opções') + '", que abre a página. Só dentro da janela de 24 h.' },
+    ], async v => {
+      const r = await chamarApi('/api/vitrine', { conversa_id: c.id, tema, enviar: true, texto: v.texto, forcar: true });
+      const m = r.mensagem;
+      if (m.arquivo && m.id) arquivos.set(m.id, Promise.resolve({ url: '/fotos/' + m.arquivo, nome: m.arquivo, mime: 'image/jpeg' }));
+      if (aberta === c.id && m.id && !$('mensagens').querySelector('[data-id="' + m.id + '"]')) { adicionarMensagem({ id: m.id, direcao: 'saida', autor: eu && eu.id, tipo: m.tipo, corpo: m.corpo, status_entrega: 'sent', enviada_em: m.enviada_em }, ultimoDiaTela()); rolarFim(); }
+      toast('Link enviado. Quando o cliente escolher, o alerta toca no sino.');
+      if (painel === 'pro') pintarPainel();
+    }, null, 'Enviar no WhatsApp');
+  }
+  async function copiarLink(c, tema, ja) {
+    if (!confirmaOferta(ja)) return;
+    try {
+      const r = await chamarApi('/api/vitrine', { conversa_id: c.id, tema, forcar: true });
+      const ta = $('resposta');
+      ta.value = (ta.value.trim() ? ta.value.trim() + '\n---\n' : '') + TEMAS_VITRINE[tema].texto + '\n' + r.link;
+      ajustarAltura(); ta.focus();
+      toast('Link no campo de resposta. Revise e envie.');
+      if (painel === 'pro') pintarPainel();
+    } catch (e) { toast(e.message); }
   }
   async function situacaoVenda(v, situacao) {
     try { await chamarApi('/api/venda-situacao', { id: v.id, situacao }); toast(situacao === 'lancado' ? 'Marcado como lançado na conta.' : 'Venda cancelada.'); pintarPainel(); } catch (e) { toast(e.message); }

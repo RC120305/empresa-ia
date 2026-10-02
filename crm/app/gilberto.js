@@ -80,7 +80,7 @@ const FORMATO = {
 };
 
 // Ferramentas ligadas nesta fase: só a cotação no Silbeck (definição em crm/gilberto/ferramentas.json).
-const LIGADAS = ['consultar_disponibilidade', 'gerar_orcamento', 'enviar_fotos'];
+const LIGADAS = ['consultar_disponibilidade', 'gerar_orcamento', 'enviar_fotos', 'enviar_link_extras'];
 const FERRAMENTAS = (() => {
   try { return JSON.parse(ler('ferramentas.json', '..', 'gilberto', 'ferramentas.json')).filter(t => LIGADAS.includes(t.name)); } catch (e) { return []; }
 })();
@@ -144,7 +144,7 @@ Pendências (reservas, cobranças, alertas abertos): não disponíveis nesta fas
 Ofertas de produtos nesta conversa: ${c.ofertas && c.ofertas.length ? c.ofertas.map(o => o.produto_nome + ' (' + ({ oferecido: 'oferecido, sem resposta', aceito: 'aceito', recusado: 'recusado' })[o.situacao] + ', por ' + (o.por === 'gilberto' ? 'você' : 'a equipe') + ')').join('; ') + '. Não ofereça outro produto nesta conversa (no máximo 1 oferta; recusou, não insista), a não ser que o cliente peça.' : 'nenhuma ainda. Se for o momento certo (regra 9), ofereça 1 produto que caiba no grupo e preencha produto_oferecido com o código.'}
 Resumo das conversas anteriores: não disponível
 </contexto_crm>
-Ferramentas ligadas nesta fase: consultar_disponibilidade (vagas e valores do Silbeck), gerar_orcamento (cria a página do orçamento e devolve o link; nesta fase, uma acomodação por opção) e enviar_fotos (escolhe fotos reais da biblioteca; a equipe envia junto com a sua mensagem). Use consultar_disponibilidade sempre que for falar de preço ou vaga e já tiver datas e pessoas (com a idade de cada criança); se faltar algum dado, pergunte ao cliente em vez de chamar. Ao mandar o orçamento, chame gerar_orcamento com as opções escolhidas e coloque o link devolvido na mensagem, exatamente como veio. As outras ferramentas ainda não estão ligadas: não tente chamá-las (quando uma resposta fixa da biblioteca couber, escreva o texto exato dela na mensagem, no lugar de usar_resposta_fixa). Onde precisaria delas (reserva, link de pagamento, alerta), escreva a mensagem com marcadores [[...]] no lugar do dado (ex.: [[link de pagamento]]) e diga em notas_internas o que a equipe precisa fazer. Nunca invente preço nem disponibilidade: só use os valores que a ferramenta devolveu.${silbeck.MODO() === 'simulador' ? ' Nesta fase de testes a ferramenta usa o SIMULADOR do Silbeck: os valores são fictícios; use-os normalmente na mensagem e lembre isso em notas_internas.' : ''}`;
+Ferramentas ligadas nesta fase: consultar_disponibilidade (vagas e valores do Silbeck), gerar_orcamento (cria a página do orçamento e devolve o link; nesta fase, uma acomodação por opção), enviar_fotos (escolhe fotos reais da biblioteca; a equipe envia junto com a sua mensagem) e enviar_link_extras (link da página de extras: 'aventuras' ou 'momentos'; é assim que você oferece os produtos pagos, com o link na mensagem). Use consultar_disponibilidade sempre que for falar de preço ou vaga e já tiver datas e pessoas (com a idade de cada criança); se faltar algum dado, pergunte ao cliente em vez de chamar. Ao mandar o orçamento, chame gerar_orcamento com as opções escolhidas e coloque o link devolvido na mensagem, exatamente como veio. As outras ferramentas ainda não estão ligadas: não tente chamá-las (quando uma resposta fixa da biblioteca couber, escreva o texto exato dela na mensagem, no lugar de usar_resposta_fixa). Onde precisaria delas (reserva, link de pagamento, alerta), escreva a mensagem com marcadores [[...]] no lugar do dado (ex.: [[link de pagamento]]) e diga em notas_internas o que a equipe precisa fazer. Nunca invente preço nem disponibilidade: só use os valores que a ferramenta devolveu.${silbeck.MODO() === 'simulador' ? ' Nesta fase de testes a ferramenta usa o SIMULADOR do Silbeck: os valores são fictícios; use-os normalmente na mensagem e lembre isso em notas_internas.' : ''}`;
 }
 
 let cliente = null;
@@ -192,7 +192,7 @@ async function sugerir(historico, conversa, executores = {}, catalogo = null) {
   }
 
   // Laço das ferramentas: o Gilberto pede uma cotação, o CRM consulta o Silbeck e devolve o resultado.
-  const cotacoes = [], orcamentos = [], fotos = [];
+  const cotacoes = [], orcamentos = [], fotos = [], vitrines = [];
   let r;
   for (let rodada = 0; ; rodada++) {
     r = await chamarIA();
@@ -205,6 +205,7 @@ async function sugerir(historico, conversa, executores = {}, catalogo = null) {
       const res = await executarFerramenta(b.name, b.input, executores);
       if (b.name === 'consultar_disponibilidade') cotacoes.push({ pedido: b.input, ok: !!res.ok, fonte: res.fonte || null, opcoes: (res.opcoes || []).length, erro: res.erro || null });
       if (b.name === 'gerar_orcamento' && res.ok) orcamentos.push({ id: res.orcamento_id, link: res.link, fonte: res.fonte });
+      if (b.name === 'enviar_link_extras' && res.ok && res.vitrine_id) vitrines.push(res.vitrine_id);
       if (b.name === 'enviar_fotos' && res.ok) for (const f of res.fotos) if (!fotos.some(x => x.arquivo === f.arquivo) && fotos.length < 5) fotos.push(f);
       resultados.push({ type: 'tool_result', tool_use_id: b.id, content: JSON.stringify(res), ...(res.ok === false ? { is_error: true } : {}) });
     }
@@ -216,7 +217,7 @@ async function sugerir(historico, conversa, executores = {}, catalogo = null) {
   let out;
   try { out = JSON.parse(txt); } catch (e) { throw new ErroSugestao(502, 'A sugestão veio num formato inesperado. Tente de novo.'); }
   return { mensagem: String(out.mensagem || ''), notas_internas: String(out.notas_internas || ''), precisa_equipe: !!out.precisa_equipe, produto_oferecido: String(out.produto_oferecido || '').toUpperCase().slice(0, 8), modelo: r.model, cotacoes,
-    simulador: cotacoes.some(c => c.fonte === 'simulador') || orcamentos.some(o => o.fonte === 'simulador'), orcamentos, fotos };
+    simulador: cotacoes.some(c => c.fonte === 'simulador') || orcamentos.some(o => o.fonte === 'simulador'), orcamentos, fotos, vitrines };
 }
 
 // Questionário (base de conhecimento) em seções de perguntas e respostas, para a tela Ajustes do agente.

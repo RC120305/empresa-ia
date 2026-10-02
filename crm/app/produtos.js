@@ -43,10 +43,15 @@ function camposExtras(corpo, gruposFotos = []) {
     if (f && !/^[\w.-]+\.jpg$/.test(f)) throw new ErroProduto('Foto inválida.');
     d.foto = f;
   }
-  if (corpo.grupo_fotos !== undefined) {
-    const g = texto(corpo.grupo_fotos, 20) || null;
-    if (g && !gruposFotos.includes(g)) throw new ErroProduto('Categoria de fotos inválida.');
-    d.grupo_fotos = g;
+  if (corpo.grupo_fotos !== undefined) { // uma ou mais categorias do Banco de fotos ("BOIA,ARVO")
+    const gs = [...new Set(String(corpo.grupo_fotos || '').split(',').map(x => x.trim()).filter(Boolean))].slice(0, 4);
+    if (gs.some(g => !gruposFotos.includes(g))) throw new ErroProduto('Categoria de fotos inválida.');
+    d.grupo_fotos = gs.join(',') || null;
+  }
+  if (corpo.vitrine !== undefined) {
+    const v = texto(corpo.vitrine, 20) || null;
+    if (v && !['aventuras', 'momentos'].includes(v)) throw new ErroProduto('Link de extras inválido.');
+    d.vitrine = v;
   }
   return d;
 }

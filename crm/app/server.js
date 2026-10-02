@@ -11,6 +11,7 @@ const transcricao = require('./transcricao');
 const orcamento = require('./orcamento');
 const drive = require('./drive');
 const produtos = require('./produtos');
+const vitrine = require('./vitrine');
 const path = require('path');
 
 const porta = process.env.PORT || 8080;
@@ -142,7 +143,7 @@ async function tarefasEAlertasDaVenda(p, venda, { negocio, responsavel, chegada,
 // Aceite do cliente (botão da oferta ou extra marcado na página do orçamento): o CRM registra a venda na conta do hóspede
 // e cria as tarefas para a equipe reservar (agendar/preparar/pedir horário + lançar na conta), para o responsável da conversa.
 // Se faltar dado para fechar o valor (ex.: qual das 3 massagens), cria a tarefa de confirmar com o cliente.
-async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variacao, origem }, buscar = fetch) {
+async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variacao, origem, quantidade, adicionais, data_uso }, buscar = fetch) {
   const p = await produtoPorCodigo(produto_codigo, buscar).catch(() => null);
   if (!p) return null;
   const nr = await buscar(`${SUPABASE_URL}/rest/v1/negocios?conversa_id=eq.${conversa_id}&select=id,etapa,data_entrada,responsavel_id&order=criado_em.desc&limit=5`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
@@ -157,12 +158,12 @@ async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variaca
   const chegada = (negocio && negocio.data_entrada) || (orc && orc.data_entrada) || null;
   const vs = Array.isArray(p.variacoes) ? p.variacoes : [];
   const nomeVar = variacao || (vs.length === 1 ? vs[0].nome : null);
-  const qtd = p.unidade === 'pessoa' ? pessoas : 1;
-  const origemTxt = origem === 'pagina' ? 'marcou na página do orçamento' : 'aceitou no WhatsApp';
+  const qtd = quantidade || (p.unidade === 'pessoa' ? pessoas : 1);
+  const origemTxt = ({ pagina: 'marcou na página do orçamento', vitrine: 'escolheu na página de extras' })[origem] || 'aceitou no WhatsApp';
   const tarefa = t => buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
     body: JSON.stringify({ negocio_id: negocio.id, responsavel_id: responsavel, criado_por: 'CRM', ...t }) }).catch(() => null);
   let v = null;
-  try { if (qtd) v = produtos.calcularVenda(p, { variacao: nomeVar, adicionais: [], quantidade: qtd }); } catch (e) { v = null; }
+  try { if (qtd) v = produtos.calcularVenda(p, { variacao: nomeVar, adicionais: adicionais || [], quantidade: qtd }); } catch (e) { v = null; }
   if (!v) { // falta a opção, as pessoas ou o preço em número: a equipe confirma
     if (negocio) {
       await tarefa({ tipo: 'Confirmar e registrar venda', descricao: `O cliente ${origemTxt}: ${p.nome}${nomeVar ? ' (' + nomeVar + ')' : ''}. Confirme ${!nomeVar && vs.length > 1 ? 'a opção (' + vs.map(x => x.nome).join(', ') + '), ' : ''}${!qtd ? 'quantas pessoas, ' : ''}a data e registre a venda no 🛍 da conversa.`, quando: new Date().toISOString() });
@@ -173,7 +174,7 @@ async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variaca
     return { venda: null };
   }
   const venda = { conversa_id, negocio_id: negocio ? negocio.id : null, oferta_id: oferta_id || null, produto_codigo: p.codigo, produto_nome: p.nome, ...v,
-    data_uso: p.tipo_reserva === 'ativ' ? null : chegada, horario: null,
+    data_uso: data_uso || (p.tipo_reserva === 'ativ' ? null : chegada), horario: null,
     observacoes: `O cliente ${origemTxt}. Confirmar ${p.tipo_reserva === 'simples' ? 'a data' : 'o dia e o horário'} com ele.`, criado_por: null };
   const r = await buscar(`${SUPABASE_URL}/rest/v1/vendas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify(venda), signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw new Error('venda ' + r.status);
@@ -617,8 +618,51 @@ async function produtoPorCodigo(codigo, buscar = fetch) {
   return p;
 }
 async function ofertasDaConversa(conversa, buscar = fetch) {
-  const r = await buscar(`${SUPABASE_URL}/rest/v1/ofertas?conversa_id=eq.${conversa}&select=id,produto_codigo,produto_nome,por,situacao,criado_em&order=criado_em.desc&limit=10`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
-  return r && r.ok ? await r.json().catch(() => []) : [];
+  const [r, rv] = await Promise.all([
+    buscar(`${SUPABASE_URL}/rest/v1/ofertas?conversa_id=eq.${conversa}&select=id,produto_codigo,produto_nome,por,situacao,criado_em&order=criado_em.desc&limit=10`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
+    buscar(`${SUPABASE_URL}/rest/v1/vitrines?conversa_id=eq.${conversa}&enviada=eq.true&select=id,tema,por,aberturas,pedido_em,criado_em&order=criado_em.desc&limit=10`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
+  ]);
+  const ofs = r && r.ok ? await r.json().catch(() => []) : [];
+  // Os links de extras enviados contam como oferta (regra: 1 oferta por conversa)
+  const vts = rv && rv.ok ? (await rv.json().catch(() => [])).map(v => ({ id: v.id, vitrine: v.tema, produto_nome: 'Link de extras "' + vitrine.TEMAS[v.tema].nome + '"' + (v.pedido_em ? '' : v.aberturas ? ' (aberto ' + v.aberturas + 'x)' : ' (ainda não aberto)'),
+    por: v.por, situacao: v.pedido_em ? 'aceito' : 'oferecido', criado_em: v.criado_em })) : [];
+  return [...ofs, ...vts].sort((a, b) => String(b.criado_em).localeCompare(String(a.criado_em)));
+}
+// Fotos de um produto na página de extras: a representativa + as da(s) categoria(s) do Banco de fotos
+function fotosDoProduto(p) {
+  const bib = orcamento.biblioteca();
+  const grupos = String(p.grupo_fotos || '').split(',').filter(Boolean);
+  const lista = [p.foto && fotoAtiva(p.foto) ? p.foto : null, ...grupos.flatMap(g => ((bib.find(x => x.grupo === g) || {}).fotos || []).map(f => f.arquivo))].filter(Boolean);
+  return [...new Set(lista)];
+}
+// Cria o link de extras de uma conversa (token de 128 bits)
+async function criarVitrine(conversa, tema, { por, criado_por, enviada = true }, buscar = fetch) {
+  if (!vitrine.TEMAS[tema]) throw new ErroEnvio(400, 'Tema inválido.');
+  const negocio = await negocioDaConversa(conversa, 'id', buscar);
+  const token = orcamento.novoToken();
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/vitrines`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
+    body: JSON.stringify({ token, tema, conversa_id: conversa, negocio_id: negocio, por, criado_por: criado_por || null, enviada }) });
+  if (!r.ok) throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para criar o link (o banco precisa da migração 014?).');
+  if (negocio && enviada) await eventoNegocio(negocio, 'Link de extras "' + vitrine.TEMAS[tema].nome + '" enviado', criado_por || 'gilberto', buscar);
+  return { ...(await r.json())[0], link: `${URL_PUBLICA}/e/${token}` };
+}
+async function lerVitrine(token, buscar = fetch) {
+  if (!orcamento.tokenValido(token) || !bancoLigado()) return null;
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/vitrines?token=eq.${token}&select=*`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+  return r.ok ? (await r.json())[0] || null : null;
+}
+// Estadia do cliente (para os dias e as pessoas na página): último orçamento, ou o negócio
+async function estadiaDaConversa(conversa, buscar = fetch) {
+  const [ro, rn, rc] = await Promise.all([
+    buscar(`${SUPABASE_URL}/rest/v1/orcamentos?conversa_id=eq.${conversa}&select=adultos,criancas_idades,data_entrada,data_saida,primeiro_nome,numero_whatsapp&order=criado_em.desc&limit=1`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
+    buscar(`${SUPABASE_URL}/rest/v1/negocios?conversa_id=eq.${conversa}&select=data_entrada,data_saida,etapa&order=criado_em.desc&limit=1`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
+    buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${conversa}&select=numero_id,contato:contatos(nome)`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
+  ]);
+  const o = (ro && ro.ok ? (await ro.json().catch(() => []))[0] : null) || {};
+  const n = (rn && rn.ok ? (await rn.json().catch(() => []))[0] : null) || {};
+  const c = (rc && rc.ok ? (await rc.json().catch(() => []))[0] : null) || {};
+  return { adultos: o.adultos || null, criancas_idades: o.criancas_idades || [], data_entrada: n.data_entrada || o.data_entrada || null, data_saida: n.data_saida || o.data_saida || null,
+    primeiro_nome: (c.contato && c.contato.nome) || o.primeiro_nome || null, numero_whatsapp: o.numero_whatsapp || null, numero_id: c.numero_id || null };
 }
 // Negócio em andamento da conversa (o mais recente). campos = 'id' devolve só o id.
 async function negocioDaConversa(conversa, campos = 'id', buscar = fetch) {
@@ -830,6 +874,41 @@ const API_EQUIPE = {
     if (negocio) await eventoNegocio(negocio, 'Oferecido no WhatsApp: ' + p.nome, eu.id);
     return { ok: true, oferta, mensagem: { id, tipo: foto ? 'image' : 'text', arquivo: foto, corpo: visto, enviada_em: new Date().toISOString() } };
   },
+  // Link de extras (aventuras | momentos): cria e, se pedido, envia no WhatsApp com foto e botão "Ver opções"
+  'POST /api/vitrine': async (corpo, eu) => {
+    const tema = String(corpo.tema || '');
+    if (!vitrine.TEMAS[tema]) throw new ErroEnvio(400, 'Escolha o link (aventuras ou momentos).');
+    let conv, para;
+    if (corpo.enviar) {
+      if (!WA_TOKEN) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
+      ({ conv, para } = await carregarConversaParaEnvio(corpo.conversa_id, fetch));
+    } else {
+      if (!uuidOk(corpo.conversa_id)) throw new ErroEnvio(400, 'Conversa inválida.');
+      conv = { id: corpo.conversa_id };
+    }
+    const ja = await ofertasDaConversa(conv.id);
+    if (ja.length && !corpo.forcar) throw new ErroEnvio(409, 'Já houve oferta nesta conversa (' + ja[0].produto_nome + ').');
+    const v = await criarVitrine(conv.id, tema, { por: 'equipe', criado_por: eu.id });
+    if (!corpo.enviar) return { ok: true, link: v.link };
+    const texto = String(corpo.texto || '').trim().slice(0, 1000) || vitrine.TEMAS[tema].intro;
+    await atualizarFotos().catch(() => {});
+    const prods = (((await catalogo().catch(() => null)) || {}).produtos || []).filter(p => p.vitrine === tema);
+    const foto = prods.map(fotosDoProduto).flat()[0] || null;
+    const interactive = { type: 'cta_url', ...(foto ? { header: { type: 'image', image: { link: `${URL_PUBLICA}/fotos/${foto}` } } } : { header: { type: 'text', text: vitrine.TEMAS[tema].nome } }),
+      body: { text: texto }, footer: { text: produtos.RODAPE_OFERTA }, action: { name: 'cta_url', parameters: { display_text: vitrine.TEMAS[tema].botao, url: v.link } } };
+    const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: para, type: 'interactive', interactive }, fetch);
+    if (!r.ok || !r.json.messages || !r.json.messages[0]) {
+      const e = r.json.error || {};
+      ultimoErroMeta = { quando: new Date().toISOString(), http: r.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
+      throw new ErroEnvio(502, 'A Meta não aceitou a mensagem' + (e.code ? ` (código ${e.code})` : '') + '. O link foi criado: ' + v.link);
+    }
+    const visto = texto + '\n\n[ ' + vitrine.TEMAS[tema].botao + ' ] ' + v.link;
+    const wamid = r.json.messages[0].id;
+    const id = foto
+      ? await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: wamid, p_tipo: 'image', p_legenda: visto, p_caminho: 'biblioteca/' + foto, p_mime: 'image/jpeg', p_nome: null, p_autor: eu.id })
+      : await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: wamid, p_corpo: visto, p_autor: eu.id });
+    return { ok: true, link: v.link, mensagem: { id, tipo: foto ? 'image' : 'text', arquivo: foto, corpo: visto, enviada_em: new Date().toISOString() } };
+  },
   // Resposta do cliente à oferta
   'POST /api/oferta-resposta': async (corpo, eu) => {
     if (!uuidOk(corpo.id)) throw new ErroEnvio(400, 'Oferta inválida.');
@@ -966,6 +1045,13 @@ const API_EQUIPE = {
     if (corpo.situacao === 'usada') {
       const r = await fetch(`${SUPABASE_URL}/rest/v1/sugestoes?id=eq.${corpo.id}&select=conversa_id,ferramentas`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
       const sg = r && r.ok ? (await r.json().catch(() => []))[0] : null;
+      const vts = (sg && sg.ferramentas && Array.isArray(sg.ferramentas.vitrines) ? sg.ferramentas.vitrines : []).filter(uuidOk);
+      if (vts.length) { // o link de extras do Gilberto foi enviado: passa a contar como oferta
+        await fetch(`${SUPABASE_URL}/rest/v1/vitrines?id=in.(${vts.join(',')})`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ enviada: true }), signal: AbortSignal.timeout(5000) }).catch(() => null);
+        const negocio = await negocioDaConversa(sg.conversa_id);
+        if (negocio) await eventoNegocio(negocio, 'Link de extras enviado (sugestão do Gilberto)', eu.id);
+        return { ok: true, oferta: 'link de extras' };
+      }
       const cod = sg && sg.ferramentas && sg.ferramentas.produto_oferecido;
       if (cod && sg.conversa_id && !(await ofertasDaConversa(sg.conversa_id)).length) {
         const p = await produtoPorCodigo(cod).catch(() => null);
@@ -989,6 +1075,7 @@ const API_EQUIPE = {
     const executores = {
       gerar_orcamento: async e => { const c = await silbeck.cotar(e); if (!c.ok) return c; const m = orcamento.montar(e, c); return m.erro ? { ok: false, erro: m.erro } : { ok: true, link: URL_PUBLICA + '/o/TESTE-sem-link-real', fonte: c.fonte, opcoes: m.opcoes, aviso: 'Teste: nenhum orçamento foi gravado.' }; },
       enviar_fotos: async e => { const f = orcamento.escolherFotos(e); return f.length ? { ok: true, modo: 'sugestao', fotos: f.map(x => ({ arquivo: x.arquivo, descricao: x.descricao })) } : { ok: false, erro: 'Sem foto na biblioteca para esse pedido.' }; },
+      enviar_link_extras: async e => vitrine.TEMAS[e.tema] ? { ok: true, link: URL_PUBLICA + '/e/TESTE-sem-link-real', tema: vitrine.TEMAS[e.tema].nome, aviso: 'Teste: nenhum link foi criado.' } : { ok: false, erro: 'Tema inválido.' },
     };
     try { return { ok: true, ...(await gilberto.sugerir(historico, { canal: 'wa', nome: String(corpo.nome || 'Cliente de teste') }, executores, await catalogo())) }; }
     catch (e) { if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message); throw e; }
@@ -1102,6 +1189,14 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
     const nome = conv.contato && conv.contato.nome;
     const executores = {
       gerar_orcamento: entrada => criarOrcamento(entrada, { conversa_id: conv.id, numero_id: conv.numero_id, primeiro_nome: nome, criado_por: 'gilberto' }, buscar),
+      // Link de extras: criado agora, mas só conta como oferta quando a equipe enviar a sugestão
+      enviar_link_extras: async e => {
+        const cat = await catalogo(buscar).catch(() => null);
+        const nomes = ((cat || {}).produtos || []).filter(p => p.vitrine === e.tema).map(p => p.nome);
+        if (!nomes.length) return { ok: false, erro: 'Não há produtos ativos nesse tema. Não ofereça.' };
+        const v = await criarVitrine(conv.id, e.tema, { por: 'gilberto', enviada: false }, buscar);
+        return { ok: true, link: v.link, vitrine_id: v.id, tema: vitrine.TEMAS[e.tema].nome, produtos: nomes };
+      },
       // Modo sugestão: o Gilberto escolhe as fotos; quem envia é a equipe, pelo painel da sugestão.
       enviar_fotos: async entrada => {
         const fotos = orcamento.escolherFotos(entrada);
@@ -1116,7 +1211,7 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
       body: JSON.stringify({ conversa_id: conv.id, pergunta: ultimaDoCliente ? String(ultimaDoCliente.transcricao || ultimaDoCliente.corpo || '[' + ultimaDoCliente.tipo + ']').slice(0, 2000) : null,
         mensagem: r.mensagem, notas_internas: r.notas_internas, precisa_equipe: r.precisa_equipe, modelo: r.modelo,
-        ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo), produto_oferecido: r.produto_oferecido || null }, pedida_por: eu.id }) }).catch(() => null);
+        ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo), produto_oferecido: r.produto_oferecido || null, vitrines: r.vitrines || [] }, pedida_por: eu.id }) }).catch(() => null);
     const sugestaoId = reg && reg.ok ? ((await reg.json().catch(() => []))[0] || {}).id : null;
     return { ok: true, ...r, sugestao_id: sugestaoId || null };
   } catch (e) {
@@ -1157,6 +1252,55 @@ const servidor = http.createServer((req, res) => {
       .then(r => json(res, 200, { ...r, ipSaida }))
       .catch(e => json(res, 200, { etapa: 'erro', erro: String(e.message || e).slice(0, 150), ipSaida }));
     return;
+  }
+
+  // Página pública de extras (/e/<token>) e o pedido do cliente
+  const me = url.pathname.match(/^\/e\/([A-Za-z0-9_-]{22})(\/pedido)?$/);
+  if (me) {
+    if (limiteExcedido(req)) { res.writeHead(429, { 'Content-Type': 'text/plain; charset=utf-8', 'Retry-After': '60' }); return res.end('Muitos acessos. Tente de novo em 1 minuto.'); }
+    const token = me[1];
+    const naoAchou = () => { res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', ...cabecalhosSeguranca() }); res.end('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hotel Cabanas</title><p style="font-family:sans-serif;padding:24px">Página não encontrada. Fale com a gente pelo WhatsApp.</p>'); };
+    if (!me[2] && req.method === 'GET') {
+      const previa = url.searchParams.get('previa') === '1';
+      lerVitrine(token).then(async v => {
+        if (!v) return naoAchou();
+        await atualizarFotos().catch(() => {});
+        const [cat, est] = await Promise.all([catalogo().catch(() => null), estadiaDaConversa(v.conversa_id)]);
+        const prods = ((cat || {}).produtos || []).filter(p => p.vitrine === v.tema);
+        if (!previa) await rpc('registrar_abertura_vitrine', { p_token: token }).catch(() => {});
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow', ...cabecalhosSeguranca() });
+        res.end(vitrine.pagina(v, { produtos: prods, fotosDe: fotosDoProduto, estadia: est, previa, versao: encodeURIComponent(versao.replace(/[^\w.-]/g, '')) }));
+      }).catch(() => { res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Página indisponível agora. Tente de novo em instantes.'); });
+      return;
+    }
+    if (me[2] && req.method === 'POST') {
+      lerCorpo(req, 8000).then(async corpo => {
+        const v = await lerVitrine(token);
+        if (!v) return json(res, 404, { ok: false, erro: 'Página não encontrada.' });
+        const [cat, est] = await Promise.all([catalogo().catch(() => null), estadiaDaConversa(v.conversa_id)]);
+        const prods = ((cat || {}).produtos || []).filter(p => p.vitrine === v.tema);
+        const ped = vitrine.validarPedido(corpo.itens, prods, est);
+        if (ped.erro) return json(res, 400, { ok: false, erro: ped.erro });
+        const linhas = ped.itens.map(it => vitrine.linhaItem(it, prods.find(p => p.codigo === it.codigo)));
+        if (!corpo.previa) {
+          const anteriores = (v.pedido || []).map(x => x.chave);
+          for (const it of ped.itens.filter(x => !anteriores.includes(x.chave))) { // o mesmo item escolhido de novo não duplica
+            const ro = await fetch(`${SUPABASE_URL}/rest/v1/ofertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
+              body: JSON.stringify({ conversa_id: v.conversa_id, negocio_id: v.negocio_id, produto_codigo: it.codigo, produto_nome: it.nome + (it.variacao ? ' (' + it.variacao + ')' : ''), por: 'pagina', situacao: 'aceito', respondido_em: new Date().toISOString() }) }).catch(() => null);
+            const of = ro && ro.ok ? (await ro.json().catch(() => []))[0] : null;
+            await aceiteDoCliente({ conversa_id: v.conversa_id, oferta_id: of && of.id, produto_codigo: it.codigo, variacao: it.variacao, origem: 'vitrine', quantidade: it.quantidade, adicionais: it.adicionais, data_uso: it.data })
+              .catch(err => console.warn(JSON.stringify({ evento: 'aceite_vitrine', erro: String(err.message || err).slice(0, 200) })));
+          }
+          await fetch(`${SUPABASE_URL}/rest/v1/vitrines?id=eq.${v.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+            body: JSON.stringify({ pedido: [...(v.pedido || []), ...ped.itens.filter(x => !(v.pedido || []).some(y => y.chave === x.chave))], pedido_em: new Date().toISOString() }) }).catch(() => {});
+        }
+        const numero = est.numero_whatsapp || (est.numero_id ? await numeroWhatsapp(est.numero_id, fetch).catch(() => null) : null);
+        const texto = 'Oi! Escolhi na página de extras: ' + linhas.join('; ') + '.';
+        json(res, 200, { ok: true, whatsapp: numero ? `https://wa.me/${numero}?text=${encodeURIComponent(texto)}` : null });
+      }).catch(e => json(res, e.http || 400, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Pedido inválido.' }));
+      return;
+    }
+    return naoAchou();
   }
 
   // Página pública do orçamento e o "Quero reservar esta".

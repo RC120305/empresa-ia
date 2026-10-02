@@ -1,0 +1,21 @@
+/* Página de extras (/e/<token>): complementa o orcamento.css */
+.vt-prod .corpo{display:flex;flex-direction:column;gap:10px}
+.vt-regra{margin:0;font-size:13px;color:var(--sec)}
+.vt-preco{margin:0;font-weight:700;font-size:17px}
+.vt-preco small{font-weight:400;color:var(--sec);font-size:13px}
+.vt-op{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.vt-op legend{font-size:13px;font-weight:600;color:var(--sec);margin-bottom:4px;padding:0}
+.vt-esc{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--borda);border-radius:12px;padding:10px 12px;cursor:pointer;font-size:15px}
+.vt-esc input{accent-color:var(--verde);width:18px;height:18px;margin:2px 0 0;flex:none}
+.vt-esc small{display:block;color:var(--sec);font-size:13px;margin-top:2px}
+.vt-esc:has(input:checked){border-color:var(--verde-cl);background:var(--verde-suave)}
+.vt-linha{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:10px}
+.vt-campo{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--sec)}
+.vt-campo small{font-weight:400}
+.vt-campo input,.vt-campo select{font:inherit;font-size:16px;color:var(--texto);background:var(--sup);border:1px solid var(--borda);border-radius:10px;padding:9px 10px;min-height:44px;width:100%}
+.vt-quero{justify-content:center;font-size:16px;padding:12px 14px}
+.vt-sub{font-weight:700}
+.vt-prod.on{border:2px solid var(--verde-cl)}
+.vt-prod.on .vt-quero{border-color:var(--verde-cl);background:var(--verde-suave);color:var(--verde)}
+.vt-resumo{display:flex;flex-direction:column;gap:6px}
+.vt-resumo p{margin:0;font-size:15px;padding:8px 10px;border-radius:10px;background:var(--verde-suave)}
