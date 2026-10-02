@@ -278,6 +278,37 @@ async function chamarMeta(caminho, corpo, buscar) {
   return { ok: m.ok, status: m.status, json: await m.json().catch(() => ({})) };
 }
 
+// ---------- Modelos de mensagem da Meta (para iniciar conversa ou falar fora da janela de 24 h) ----------
+// A conta do WhatsApp (WABA) de cada número é descoberta pelo portfólio do hotel (ou fixada em META_WABA_ID).
+const PORTFOLIO = process.env.META_PORTFOLIO_ID || '531727826009907';
+const wabas = {};
+async function wabaDoNumero(numeroId, buscar = fetch) {
+  if (process.env.META_WABA_ID) return process.env.META_WABA_ID.trim();
+  if (wabas[numeroId]) return wabas[numeroId];
+  for (const borda of ['owned_whatsapp_business_accounts', 'client_whatsapp_business_accounts']) {
+    const r = await buscar(`${GRAPH}/${PORTFOLIO}/${borda}?fields=id,phone_numbers{id}&limit=50`, { headers: { Authorization: 'Bearer ' + WA_TOKEN }, signal: AbortSignal.timeout(8000) }).catch(() => null);
+    const j = r && r.ok ? await r.json().catch(() => ({})) : {};
+    for (const w of j.data || []) for (const n of ((w.phone_numbers || {}).data || [])) wabas[n.id] = w.id;
+    if (wabas[numeroId]) return wabas[numeroId];
+  }
+  throw new ErroEnvio(502, 'Não achei a conta do WhatsApp deste número na Meta (o token do CRM precisa da permissão whatsapp_business_management).');
+}
+const varsDe = t => [...new Set((String(t || '').match(/\{\{(\d+)\}\}/g) || []).map(x => Number(x.slice(2, -2))))].sort((a, b) => a - b);
+const preencher = (t, vs) => String(t || '').replace(/\{\{(\d+)\}\}/g, (m, n) => vs[Number(n) - 1] || m);
+async function modelosDoNumero(numeroId, buscar = fetch) {
+  const waba = await wabaDoNumero(numeroId, buscar);
+  const r = await buscar(`${GRAPH}/${waba}/message_templates?fields=name,language,status,category,components&limit=200`, { headers: { Authorization: 'Bearer ' + WA_TOKEN }, signal: AbortSignal.timeout(8000) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new ErroEnvio(502, 'A Meta não devolveu os modelos (' + ((j.error || {}).message || r.status) + ').');
+  return (j.data || []).map(m => {
+    const comp = m.components || [];
+    const body = comp.find(c => c.type === 'BODY') || {}, head = comp.find(c => c.type === 'HEADER');
+    // Nesta fase: modelos só de texto (cabeçalho com mídia ou botões com variável ficam de fora)
+    const suportado = (!head || (head.format === 'TEXT' && !varsDe(head.text).length)) && !comp.some(c => c.type === 'BUTTONS' && (c.buttons || []).some(b => /\{\{/.test(b.url || '')));
+    return { nome: m.name, idioma: m.language, status: m.status, categoria: m.category, cabecalho: head && head.format === 'TEXT' ? head.text : null, corpo: body.text || '', variaveis: varsDe(body.text).length, rodape: (comp.find(c => c.type === 'FOOTER') || {}).text || null, suportado };
+  });
+}
+
 // Marca a última mensagem do cliente como lida e liga o "digitando…" (dura até 25 s ou até o próximo envio).
 // É só cortesia: se a Meta recusar, o envio segue normalmente.
 async function mostrarDigitando(conv, wamidCliente, buscar) {
@@ -699,6 +730,90 @@ const API_EQUIPE = {
   'GET /api/equipe': async () => {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&select=id,nome,papel&order=nome`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
     return { ok: true, equipe: r.ok ? await r.json() : [] };
+  },
+  // Números de WhatsApp do hotel ligados ao CRM (para escolher por onde enviar)
+  'GET /api/numeros': async () => {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/conversas?canal=eq.wa&select=numero_id&limit=1000`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const ids = [...new Set([...(r.ok ? (await r.json()).map(x => x.numero_id) : []), ...String(process.env.WA_NUMEROS || '').split(',').map(x => x.trim())].filter(x => /^\d{1,25}$/.test(x)))];
+    return { ok: true, numeros: await Promise.all(ids.map(async id => ({ id, numero: await numeroWhatsapp(id, fetch).catch(() => null) }))) };
+  },
+  // Modelos aprovados (e em análise) da conta do número
+  'GET /api/modelos': async (corpo, eu, url) => {
+    const id = String(url.searchParams.get('numero_id') || '');
+    if (!/^\d{1,25}$/.test(id)) throw new ErroEnvio(400, 'Número inválido.');
+    if (!WA_TOKEN) throw new ErroEnvio(503, 'O WhatsApp ainda não está configurado.');
+    return { ok: true, modelos: await modelosDoNumero(id) };
+  },
+  // Cadastrar modelo novo: vai para a análise da Meta (aprovação costuma levar de minutos a 24 h)
+  'POST /api/modelo': async corpo => {
+    const id = String(corpo.numero_id || '');
+    if (!/^\d{1,25}$/.test(id)) throw new ErroEnvio(400, 'Número inválido.');
+    const nome = String(corpo.nome || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 60);
+    if (!nome) throw new ErroEnvio(400, 'Dê um nome ao modelo.');
+    if (!['UTILITY', 'MARKETING'].includes(corpo.categoria)) throw new ErroEnvio(400, 'Categoria inválida.');
+    const texto = String(corpo.texto || '').trim().slice(0, 1024);
+    if (texto.length < 10) throw new ErroEnvio(400, 'Escreva o texto do modelo.');
+    const vs = varsDe(texto);
+    if (vs.some((n, i) => n !== i + 1)) throw new ErroEnvio(400, 'As variáveis precisam ser {{1}}, {{2}}… em ordem.');
+    const exemplos = vs.map((n, i) => String((corpo.exemplos || [])[i] || ['Ana', 'sábado', '14/11'][i] || 'exemplo').slice(0, 60));
+    const waba = await wabaDoNumero(id);
+    const r = await chamarMeta(`${waba}/message_templates`, { name: nome, language: 'pt_BR', category: corpo.categoria,
+      components: [{ type: 'BODY', text: texto, ...(vs.length ? { example: { body_text: [exemplos] } } : {}) }] }, fetch);
+    if (!r.ok) throw new ErroEnvio(r.status === 400 ? 400 : 502, 'A Meta recusou o modelo: ' + String((r.json.error || {}).error_user_msg || (r.json.error || {}).message || r.status).slice(0, 200));
+    return { ok: true, nome, status: r.json.status || 'PENDING' };
+  },
+  // Iniciar conversa (contato novo, ou fora da janela de 24 h) com um modelo aprovado
+  'POST /api/iniciar-conversa': async (corpo, eu) => {
+    if (!WA_TOKEN) throw new ErroEnvio(503, 'O WhatsApp ainda não está configurado.');
+    let conv = null, contatoId = null, tel = null;
+    if (uuidOk(corpo.conversa_id)) {
+      const c = await fetch(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${corpo.conversa_id}&select=id,contato_id,numero_id,canal,contato:contatos(contato_identificadores(tipo,valor))`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+      conv = c.ok ? (await c.json())[0] : null;
+      if (!conv) throw new ErroEnvio(404, 'Conversa não encontrada.');
+      const wa = ((conv.contato || {}).contato_identificadores || []).find(i => i.tipo === 'whatsapp');
+      if (!wa) throw new ErroEnvio(400, 'Este contato não tem WhatsApp.');
+      tel = wa.valor; contatoId = conv.contato_id;
+    } else {
+      tel = whatsE164(corpo.telefone);
+      const numeroId = String(corpo.numero_id || '');
+      if (!/^\d{1,25}$/.test(numeroId)) throw new ErroEnvio(400, 'Escolha por qual número enviar.');
+      const dono = await donoDoWhatsapp(tel);
+      const nome = String(corpo.nome || '').trim().slice(0, 120) || null;
+      if (dono) {
+        contatoId = dono.contato_id;
+        if (nome && !dono.nome) await patchBanco('contatos', `id=eq.${contatoId}`, { nome });
+      } else {
+        const ct = await fetch(`${SUPABASE_URL}/rest/v1/contatos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify({ nome }), signal: AbortSignal.timeout(5000) });
+        if (!ct.ok) throw new ErroEnvio(502, 'Não deu para criar o contato.');
+        contatoId = (await ct.json())[0].id;
+        await fetch(`${SUPABASE_URL}/rest/v1/contato_identificadores`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ contato_id: contatoId, tipo: 'whatsapp', valor: tel }), signal: AbortSignal.timeout(5000) });
+      }
+      const ex = await fetch(`${SUPABASE_URL}/rest/v1/conversas?contato_id=eq.${contatoId}&canal=eq.wa&numero_id=eq.${numeroId}&select=id,contato_id,numero_id,canal`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+      conv = ex.ok ? (await ex.json())[0] : null;
+      if (!conv) {
+        const nc = await fetch(`${SUPABASE_URL}/rest/v1/conversas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify({ contato_id: contatoId, canal: 'wa', numero_id: numeroId, atribuida_a: eu.id, ultima_msg_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) });
+        if (!nc.ok) throw new ErroEnvio(502, 'Não deu para abrir a conversa.');
+        conv = (await nc.json())[0];
+      }
+    }
+    // O modelo precisa existir e estar aprovado na conta deste número
+    const modelos = await modelosDoNumero(conv.numero_id);
+    const m = modelos.find(x => x.nome === corpo.modelo && (!corpo.idioma || x.idioma === corpo.idioma));
+    if (!m) throw new ErroEnvio(400, 'Modelo não encontrado.');
+    if (m.status !== 'APPROVED') throw new ErroEnvio(400, 'Este modelo ainda não foi aprovado pela Meta (situação: ' + m.status + ').');
+    if (!m.suportado) throw new ErroEnvio(400, 'Este modelo tem imagem ou botão com variável: ainda não dá para enviar pelo CRM.');
+    const vs = (Array.isArray(corpo.variaveis) ? corpo.variaveis : []).slice(0, m.variaveis).map(v => String(v || '').trim().slice(0, 200));
+    if (vs.length < m.variaveis || vs.some(v => !v)) throw new ErroEnvio(400, 'Preencha todas as variáveis do modelo.');
+    const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: numeroParaEnvio(tel), type: 'template',
+      template: { name: m.nome, language: { code: m.idioma }, ...(vs.length ? { components: [{ type: 'body', parameters: vs.map(text => ({ type: 'text', text })) }] } : {}) } }, fetch);
+    if (!r.ok || !r.json.messages || !r.json.messages[0]) {
+      const e = r.json.error || {};
+      ultimoErroMeta = { quando: new Date().toISOString(), http: r.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
+      throw new ErroEnvio(502, 'A Meta não aceitou a mensagem' + (e.code ? ` (código ${e.code})` : '') + (e.message ? ': ' + String(e.message).slice(0, 120) : '') + '.');
+    }
+    const texto = [m.cabecalho, preencher(m.corpo, vs), m.rodape].filter(Boolean).join('\n\n');
+    await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: r.json.messages[0].id, p_corpo: texto, p_autor: eu.id });
+    return { ok: true, conversa_id: conv.id };
   },
   // Contato do lead (nome, WhatsApp e e-mail): completar quem chegou pelo Instagram/Facebook, telefone ou balcão
   'POST /api/contato': async (corpo, eu) => {

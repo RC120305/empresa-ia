@@ -426,6 +426,25 @@ section[data-painel="produtos"],section[data-painel="agencias"],section[data-pai
 .t-prod.pendente{background:var(--cor-alerta-suave);color:var(--cor-alerta)}
 .card-lead.urgente{border-color:var(--cor-erro);box-shadow:inset 4px 0 0 var(--cor-erro)}
 
-.cx-busca-linha{display:flex;gap:6px;align-items:center}
-.cx-busca-linha .cx-busca{flex:1;min-width:0}
-.cx-busca-linha .btn-mini{white-space:nowrap}
+
+/* Nova conversa (modelo da Meta) e contato no cabeçalho */
+.cx-nova{width:100%;margin-bottom:8px}
+.cx-contato{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--cor-texto-sec);align-items:center}
+.cx-contato .dado{display:inline-flex;align-items:center;gap:4px}
+.cx-contato .dado b{color:var(--cor-texto);font-weight:600}
+.cx-contato .vazio-dado{color:var(--cor-texto-sec)}
+.cx-contato .nome-edit{font-size:13px;padding:3px 6px;min-width:170px}
+.aviso-modelo{margin:0;padding:10px 12px;border-radius:var(--r-md);background:var(--cor-info-suave);color:var(--cor-texto);font-size:13px;line-height:1.45}
+.largo{grid-column:1/-1}
+.nc-esq,.nc-dir{display:flex;flex-direction:column;gap:10px;min-width:0}
+.nc-tel{display:flex;gap:6px;align-items:center}
+.nc-tel span{border:1px solid var(--cor-borda);border-radius:var(--r-md);padding:8px 10px;font-size:13px;white-space:nowrap}
+.nc-tel input{flex:1;min-width:0}
+.nc-previa{background:var(--cor-fundo);border:1px solid var(--cor-borda);border-radius:var(--r-lg);padding:14px;min-height:180px}
+.nc-balao{background:#DCF8C6;color:#1F2A1A;border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.45;white-space:pre-wrap;max-width:92%;margin-left:auto;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.nc-info{margin:0;font-size:12px;font-weight:600;padding:6px 8px;border-radius:var(--r-sm)}
+.nc-info.ok{background:var(--cor-sucesso-suave);color:var(--cor-sucesso)}
+.nc-info.alerta{background:var(--cor-alerta-suave);color:var(--cor-alerta)}
+.nc-vars{display:flex;flex-direction:column;gap:8px}
+#cx-fechada{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+#cx-fechada[hidden]{display:none}

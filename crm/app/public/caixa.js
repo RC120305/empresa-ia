@@ -171,7 +171,7 @@
 
   // ---------- Lista de conversas ----------
   async function carregarConversas() {
-    const sel = campos => sb.from('conversas').select(`id,status,atribuida_a,nao_lidas,ultima_msg_em,ultima_msg_cliente_em,contato:contatos(${campos},contato_identificadores(tipo,valor))`)
+    const sel = campos => sb.from('conversas').select(`id,numero_id,status,atribuida_a,nao_lidas,ultima_msg_em,ultima_msg_cliente_em,contato:contatos(${campos},contato_identificadores(tipo,valor))`)
       .order('ultima_msg_em', { ascending: false, nullsFirst: false }).limit(300);
     let { data, error } = await sel('nome,email,observacoes');
     if (error) ({ data, error } = await sel('nome,observacoes')); // banco sem a migração 007
@@ -187,7 +187,7 @@
       const wa = idn.find(i => i.tipo === 'whatsapp');
       const tel = wa ? fmtTel(wa.valor) : '';
       const ct = c.contato || {};
-      return { id: c.id, nome: ct.nome || tel || 'Sem nome', nomeSalvo: ct.nome || '', tel, email: ct.email, obs: ct.observacoes || '', status: c.status, atribuida_a: c.atribuida_a,
+      return { id: c.id, numero_id: c.numero_id, nome: ct.nome || tel || 'Sem nome', nomeSalvo: ct.nome || '', tel, email: ct.email, obs: ct.observacoes || '', status: c.status, atribuida_a: c.atribuida_a,
         nao_lidas: c.nao_lidas, ultima_msg_em: c.ultima_msg_em, ultima_msg_cliente_em: c.ultima_msg_cliente_em, previa: previas[c.id] || null };
     });
     pintarLista();
@@ -310,7 +310,7 @@
       opcoes.map(([v, t]) => el('option', { value: v, text: t, selected: (c.atribuida_a || '') === v })));
     cab.append(
       el('button', { class: 'voltar', type: 'button', 'aria-label': 'Voltar para a lista', text: '←', onclick: voltar }),
-      el('div', { class: 'cx-quem' }, nomeBox, el('span', { class: 'canal', text: 'WhatsApp' + (c.tel && c.tel !== c.nome ? ' · ' + c.tel : '') })),
+      el('div', { class: 'cx-quem' }, nomeBox, el('span', { class: 'canal', text: 'WhatsApp' }), linhaContato(c)),
       el('div', { class: 'cx-ctrl' },
         seletorEtapaConversa(c),
         fim ? el('span', { class: 'pilula ' + (aj ? 'p-ok' : 'p-erro'), title: aj ? 'Dá para responder com texto livre até esse horário.' : 'Fora da janela, só modelos aprovados pela Meta.',
@@ -319,6 +319,120 @@
     // Composição: só com a janela aberta
     $('cx-compor').hidden = !aj; $('cx-fechada').hidden = aj;
   }
+
+  // WhatsApp e e-mail do cliente no cabeçalho, com ✎ para inserir ou corrigir
+  function linhaContato(c) {
+    const campo = (rotulo, valor, salvar, tipo, travado) => {
+      const box = el('span', { class: 'dado' });
+      const mostrar = () => box.replaceChildren(rotulo + ': ', valor ? el('b', { text: valor }) : el('em', { class: 'vazio-dado', text: 'inserir' }),
+        travado ? null : el('button', { class: 'lapis', type: 'button', 'aria-label': (valor ? 'Editar ' : 'Inserir ') + rotulo, text: '✎', onclick: editar }));
+      const editar = () => {
+        const inp = el('input', { class: 'nome-edit', type: tipo, value: valor || '', 'aria-label': rotulo, placeholder: tipo === 'email' ? 'nome@exemplo.com' : '67 99999-0000' });
+        let feito = false;
+        const ok = async () => { if (feito) return; feito = true; const v = inp.value.trim(); if (v === (valor || '')) { mostrar(); return; } try { await salvar(v); } catch (e) { toast(e.message); mostrar(); } };
+        inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') ok(); if (ev.key === 'Escape') { feito = true; mostrar(); } });
+        inp.addEventListener('blur', ok);
+        box.replaceChildren(rotulo + ': ', inp); inp.focus();
+      };
+      mostrar();
+      return box;
+    };
+    return el('div', { class: 'cx-contato' },
+      campo('WhatsApp', c.tel, async v => { await chamarApi('/api/contato', { conversa_id: c.id, telefone: v }); toast('WhatsApp salvo.'); await carregarConversas(); pintarCabecalho(); }, 'tel', !!c.tel),
+      c.email === undefined ? null : campo('E-mail', c.email, async v => { await salvarConversa({ email: v }, 'E-mail salvo.'); }, 'email', false));
+  }
+
+  // ---------- Nova conversa (ou fora da janela de 24 h): modelo aprovado pela Meta ----------
+  let numerosWa = null;
+  const modelosCache = {};
+  async function abrirNovaConversa(conv) {
+    $('f-tit').textContent = conv ? 'Enviar modelo pelo WhatsApp' : 'Iniciar conversa pelo WhatsApp';
+    const box = $('f-campos'); box.textContent = '';
+    const fechar = () => { $('f-fundo').hidden = true; $('form-modal').hidden = true; };
+    box.append(el('p', { class: 'aviso-modelo largo', text: conv ? 'Já se passaram mais de 24 h desde a última mensagem do cliente: a Meta só aceita um modelo aprovado. Quando ele responder, a conversa abre e você escreve livremente.' : 'Contato novo (ou que não fala com o hotel há mais de 24 h): a primeira mensagem precisa ser um modelo aprovado pela Meta. Quando o cliente responder, a conversa abre e você escreve livremente.' }));
+    const esq = el('div', { class: 'nc-esq' }), dir = el('div', { class: 'nc-dir' }, el('span', { class: 'rotulo', text: 'Prévia da mensagem' }));
+    const previa = el('div', { class: 'nc-previa' }, el('div', { class: 'nc-balao', text: 'Escolha o modelo.' }));
+    dir.append(previa); box.append(esq, dir);
+    const tel = el('input', { type: 'tel', placeholder: '(67) 99999-9999', value: conv ? conv.tel : '', disabled: !!conv });
+    const nome = el('input', { type: 'text', placeholder: 'Ex.: Ana Souza', value: conv ? conv.nomeSalvo : '', disabled: !!conv });
+    const num = el('select', { disabled: !!conv }, el('option', { value: '', text: 'Carregando…' }));
+    const mod = el('select', {}, el('option', { value: '', text: 'Escolha o número primeiro' }));
+    const info = el('p', { class: 'lat-txt' }), vars = el('div', { class: 'nc-vars' });
+    if (!conv) esq.append(el('label', { class: 'campo' }, 'Celular (WhatsApp) *', el('div', { class: 'nc-tel' }, el('span', { text: '🇧🇷 +55' }), tel)), el('label', { class: 'campo' }, 'Nome do contato', nome), el('label', { class: 'campo' }, 'Enviar pelo número', num));
+    esq.append(el('label', { class: 'campo' }, 'Modelo da mensagem', mod), info, vars,
+      el('button', { class: 'btn-mini', type: 'button', text: '+ Cadastrar novo modelo', onclick: () => cadastrarModelo(num.value || (conv && conv.numero_id)) }));
+    const enviar = el('button', { class: 'btn btn-enviar', type: 'button', text: 'Enviar mensagem', disabled: true });
+    $('f-acoes').replaceChildren(el('button', { class: 'btn btn-editar', type: 'button', text: 'Cancelar', onclick: fechar }), enviar);
+    $('f-fundo').hidden = false; $('form-modal').hidden = false; $('f-fundo').onclick = fechar;
+    let modelos = [];
+    const atual = () => modelos.find(m => m.nome + '|' + m.idioma === mod.value);
+    const pintarPrevia = () => {
+      const m = atual(); vars.textContent = '';
+      if (!m) { previa.firstChild.textContent = 'Escolha o modelo.'; enviar.disabled = true; info.textContent = ''; return; }
+      const ins = [];
+      for (let i = 1; i <= m.variaveis; i++) {
+        const v = el('input', { type: 'text', value: i === 1 ? ((nome.value || '').split(/\s+/)[0] || '') : '', placeholder: i === 1 ? 'Primeiro nome do cliente' : 'Valor de {{' + i + '}}' });
+        v.addEventListener('input', pintarTexto); ins.push(v);
+        vars.append(el('label', { class: 'campo' }, 'Variável {{' + i + '}}' + (i === 1 ? ' (nome)' : ''), v));
+      }
+      vars._ins = ins;
+      info.className = 'nc-info ' + (m.status === 'APPROVED' && m.suportado ? 'ok' : 'alerta');
+      info.textContent = m.status !== 'APPROVED' ? 'Ainda não aprovado pela Meta (situação: ' + m.status + ').' : !m.suportado ? 'Modelo com imagem ou botão com variável: ainda não dá para enviar pelo CRM.' : 'Modelo aprovado pela Meta · categoria ' + ({ UTILITY: 'Utilidade (mais barata)', MARKETING: 'Marketing', AUTHENTICATION: 'Autenticação' }[m.categoria] || m.categoria);
+      pintarTexto();
+    };
+    function pintarTexto() {
+      const m = atual(); if (!m) return;
+      const vs = (vars._ins || []).map(i => i.value.trim());
+      previa.firstChild.textContent = [m.cabecalho, m.corpo.replace(/\{\{(\d+)\}\}/g, (x, n) => vs[n - 1] || x), m.rodape].filter(Boolean).join('\n\n');
+      enviar.disabled = !(m.status === 'APPROVED' && m.suportado && vs.every(Boolean) && (conv || tel.value.replace(/\D/g, '').length >= 10) && (conv || num.value));
+    }
+    nome.addEventListener('input', () => { const i = (vars._ins || [])[0]; if (i && !i.dataset.mexeu) { i.value = (nome.value || '').split(/\s+/)[0]; pintarTexto(); } });
+    tel.addEventListener('input', pintarTexto);
+    vars.addEventListener('input', e => { e.target.dataset.mexeu = '1'; });
+    const carregarModelos = async id => {
+      mod.replaceChildren(el('option', { value: '', text: 'Carregando os modelos…' }));
+      try {
+        modelos = modelosCache[id] || (modelosCache[id] = (await chamarApi('/api/modelos?numero_id=' + encodeURIComponent(id), null, 'GET')).modelos);
+        mod.replaceChildren(el('option', { value: '', text: modelos.length ? 'Escolha o modelo' : 'Nenhum modelo nesta conta: cadastre um' }),
+          ...modelos.map(m => el('option', { value: m.nome + '|' + m.idioma, text: m.nome.replace(/_/g, ' ') + ' · ' + ({ UTILITY: 'Utilidade', MARKETING: 'Marketing' }[m.categoria] || m.categoria) + (m.status === 'APPROVED' ? '' : ' (' + (m.status === 'PENDING' ? 'em análise' : m.status.toLowerCase()) + ')') })));
+        const ap = modelos.find(m => m.status === 'APPROVED' && m.suportado);
+        if (ap) mod.value = ap.nome + '|' + ap.idioma;
+      } catch (e) { mod.replaceChildren(el('option', { value: '', text: 'Erro' })); info.className = 'nc-info alerta'; info.textContent = e.message; }
+      pintarPrevia();
+    };
+    mod.addEventListener('change', pintarPrevia);
+    num.addEventListener('change', () => num.value && carregarModelos(num.value));
+    enviar.onclick = async () => {
+      const m = atual(); if (!m) return;
+      enviar.disabled = true; enviar.textContent = 'Enviando…';
+      try {
+        const j = await chamarApi('/api/iniciar-conversa', conv ? { conversa_id: conv.id, modelo: m.nome, idioma: m.idioma, variaveis: vars._ins.map(i => i.value) }
+          : { telefone: tel.value, nome: nome.value, numero_id: num.value, modelo: m.nome, idioma: m.idioma, variaveis: vars._ins.map(i => i.value) });
+        fechar(); toast('Mensagem enviada. Quando o cliente responder, a conversa abre para texto livre.');
+        await carregarConversas(); irPara('conversas'); abrir(j.conversa_id);
+      } catch (e) { toast(e.message); enviar.textContent = 'Enviar mensagem'; pintarTexto(); }
+    };
+    // Números do hotel
+    if (conv) { if (conv.numero_id) carregarModelos(conv.numero_id); return; }
+    try { numerosWa = numerosWa || (await chamarApi('/api/numeros', null, 'GET')).numeros; } catch (e) { numerosWa = []; }
+    num.replaceChildren(...(numerosWa.length ? numerosWa.map(n => el('option', { value: n.id, text: n.numero ? 'WhatsApp +' + n.numero : 'Número ' + n.id })) : [el('option', { value: '', text: 'Nenhum número ligado ao CRM' })]));
+    if (numerosWa.length) carregarModelos(numerosWa[0].id);
+  }
+  function cadastrarModelo(numeroId) {
+    if (!numeroId) { toast('Escolha o número primeiro.'); return; }
+    abrirForm('Cadastrar modelo na Meta', [
+      { tipo: 'nota', rotulo: 'O modelo vai para a análise da Meta (de minutos a 24 h). Use {{1}} para o nome do cliente, {{2}}, {{3}}… para outros dados. Utilidade (avisos, retorno de contato) é mais barata que Marketing (promoções).' },
+      { k: 'nome', rotulo: 'Nome do modelo', dica: 'retorno_de_contato', largo: true },
+      { k: 'categoria', rotulo: 'Categoria', tipo: 'select', valor: 'UTILITY', opcoes: [['UTILITY', 'Utilidade (mais barata)'], ['MARKETING', 'Marketing']] },
+      { k: 'texto', rotulo: 'Texto', tipo: 'textarea', largo: true, valor: 'Olá, {{1}}! Aqui é a equipe do Hotel Cabanas 🌿 Recebemos seu contato e vamos continuar seu atendimento por aqui. Podemos seguir?' },
+    ], async v => {
+      const j = await chamarApi('/api/modelo', { numero_id: numeroId, nome: v.nome, categoria: v.categoria, texto: v.texto });
+      delete modelosCache[numeroId];
+      toast('Modelo "' + j.nome + '" enviado para a análise da Meta. Quando for aprovado, aparece na lista.');
+    }, null, 'Enviar para análise');
+  }
+  $('cx-nova-conversa').addEventListener('click', () => abrirNovaConversa(null));
+  $('cx-enviar-modelo').addEventListener('click', () => { const c = conversas.find(x => x.id === aberta); if (c) abrirNovaConversa(c); });
 
   function adicionarMensagem(m, ultimoDia) {
     const box = $('mensagens');
@@ -1312,7 +1426,6 @@
       el('div', { class: 'rodape' }, el('span', { class: 'resp', title: resp || 'Sem responsável', text: resp ? iniciais(resp) : '–' }), sel));
   }
   $('bt-novo-lead').addEventListener('click', () => abrirFicha(null));
-  $('cx-novo-lead').addEventListener('click', () => abrirFicha(null));
 
   // Ficha do negócio (gaveta): Dados, Tarefas e Histórico
   let fichaId = null, abaFicha = 'dados', fichaNova = false;

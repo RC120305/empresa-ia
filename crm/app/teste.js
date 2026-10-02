@@ -94,6 +94,12 @@ const falso = http.createServer((req, res) => {
       if (req.method === 'POST') { const i = fotosBib.findIndex(f => f.arquivo === json.arquivo); if (i >= 0) Object.assign(fotosBib[i], json); else fotosBib.push({ ordem: 100, criado_em: new Date().toISOString(), ...json }); res.writeHead(201); return res.end(); }
       if (req.method === 'PATCH') { const a = decodeURIComponent(req.url.split('arquivo=eq.')[1]); Object.assign(fotosBib.find(f => f.arquivo === a), json); res.writeHead(204); return res.end(); }
     }
+    if (req.url.startsWith('/graph/531727826009907/owned_whatsapp_business_accounts')) return responder(200, { data: [{ id: 'WABA1', phone_numbers: { data: [{ id: '111' }] } }] });
+    if (req.url.startsWith('/graph/WABA1/message_templates') && req.method === 'GET') return responder(200, { data: [
+      { name: 'retorno_de_contato', language: 'pt_BR', status: 'APPROVED', category: 'UTILITY', components: [{ type: 'BODY', text: 'Olá, {{1}}! Aqui é a equipe do Hotel Cabanas. Podemos seguir?' }, { type: 'FOOTER', text: 'Hotel Cabanas' }] },
+      { name: 'promo', language: 'pt_BR', status: 'PENDING', category: 'MARKETING', components: [{ type: 'BODY', text: 'Promoção' }] },
+      { name: 'com_foto', language: 'pt_BR', status: 'APPROVED', category: 'MARKETING', components: [{ type: 'HEADER', format: 'IMAGE' }, { type: 'BODY', text: 'Veja' }] }] });
+    if (req.url === '/graph/WABA1/message_templates' && req.method === 'POST') return json.name === 'ruim' ? responder(400, { error: { message: 'Invalid', error_user_msg: 'Nome em uso' } }) : responder(200, { id: 't1', status: 'PENDING', category: json.category });
     if (req.url === '/graph/midia9') return responder(200, { url: process.env.SUPABASE_URL + 'cdn/midia9', mime_type: 'image/jpeg' });
     if (req.url === '/cdn/midia9') { res.writeHead(200, { 'Content-Type': 'image/jpeg' }); return res.end('FOTO-JPEG'); }
     if (req.url.startsWith('/storage/v1/object/midias/') && req.method === 'POST') {
@@ -462,6 +468,32 @@ falso.listen(0, () => {
     assert.equal((await api('/api/negocio', { nome: 'Repetido', telefone: '67 9999-0000' })).status, 409, 'WhatsApp de outro cliente (sem o 9)');
     assert.equal((await api('/api/negocio', { nome: 'X', telefone: '123' })).status, 400);
     assert.equal((await api('/api/negocio', { nome: 'X', email: 'semarroba' })).status, 400);
+    // Nova conversa pelo WhatsApp com modelo aprovado (contato novo ou fora da janela)
+    r = await api('/api/modelos?numero_id=111', null, 'token-equipe', 'GET');
+    const mj = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(mj));
+    assert.deepEqual(mj.modelos.map(m => [m.nome, m.status, m.variaveis, m.suportado]), [['retorno_de_contato', 'APPROVED', 1, true], ['promo', 'PENDING', 0, true], ['com_foto', 'APPROVED', 0, false]]);
+    r = await api('/api/iniciar-conversa', { telefone: '(67) 98123-4567', nome: 'Paula Lima', numero_id: '111', modelo: 'retorno_de_contato', idioma: 'pt_BR', variaveis: ['Paula'] });
+    const ic = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(ic));
+    const tpl = chamadas.findLast(c => c.url === '/graph/111/messages' && c.corpo.type === 'template').corpo;
+    assert.deepEqual([tpl.to, tpl.template.name, tpl.template.language.code, tpl.template.components[0].parameters[0].text], ['5567981234567', 'retorno_de_contato', 'pt_BR', 'Paula']);
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/contato_identificadores' && c.metodo === 'POST').corpo.valor, '+5567981234567');
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/rpc/registrar_saida_whatsapp').corpo.p_corpo, 'Olá, Paula! Aqui é a equipe do Hotel Cabanas. Podemos seguir?\n\nHotel Cabanas');
+    assert.equal((await api('/api/iniciar-conversa', { telefone: '67 98123-4567', numero_id: '111', modelo: 'promo', variaveis: [] })).status, 400, 'modelo em análise');
+    assert.equal((await api('/api/iniciar-conversa', { telefone: '67 98123-4567', numero_id: '111', modelo: 'com_foto', variaveis: [] })).status, 400, 'modelo com imagem');
+    assert.equal((await api('/api/iniciar-conversa', { telefone: '67 98123-4567', numero_id: '111', modelo: 'retorno_de_contato', variaveis: [''] })).status, 400, 'variável vazia');
+    assert.equal((await api('/api/iniciar-conversa', { telefone: '123', numero_id: '111', modelo: 'retorno_de_contato', variaveis: ['A'] })).status, 400);
+    r = await api('/api/iniciar-conversa', { conversa_id: conv, modelo: 'retorno_de_contato', variaveis: ['Cliente'] });
+    assert.equal(r.status, 200, 'fora da janela, na conversa que já existe');
+    r = await api('/api/modelo', { numero_id: '111', nome: 'Aviso de Chegada!', categoria: 'UTILITY', texto: 'Olá, {{1}}! Seu check-in é amanhã a partir das 15h.' });
+    assert.equal(r.status, 200);
+    const nm = chamadas.findLast(c => c.url === '/graph/WABA1/message_templates' && c.metodo === 'POST').corpo;
+    assert.deepEqual([nm.name, nm.language, nm.components[0].example.body_text[0][0]], ['aviso_de_chegada', 'pt_BR', 'Ana']);
+    assert.equal((await api('/api/modelo', { numero_id: '111', nome: 'x', categoria: 'UTILITY', texto: 'Olá {{2}} tudo bem com você?' })).status, 400, 'variáveis fora de ordem');
+    assert.equal((await api('/api/modelo', { numero_id: '111', nome: 'ruim', categoria: 'UTILITY', texto: 'Texto qualquer de teste' })).status, 400);
+    r = await api('/api/numeros', null, 'token-equipe', 'GET');
+    assert.deepEqual((await r.json()).numeros, [{ id: '111', numero: '15551829766' }]);
     // Completar o contato de um lead que chegou sem WhatsApp/e-mail (Instagram, Facebook, balcão)
     r = await api('/api/contato', { negocio_id: 'eeeeeeee-0000-0000-0000-000000000001', telefone: '+55 (67) 98888-7777', email: 'cli@exemplo.com', nome: 'Ana Souza' });
     assert.equal(r.status, 200, await r.clone().text());

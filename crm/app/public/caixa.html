@@ -66,12 +66,13 @@
     <section data-painel="conversas">
       <div class="cx" id="cx">
         <div class="cx-col">
+          <button type="button" class="btn btn-enviar cx-nova" id="cx-nova-conversa">+ Nova conversa</button>
           <div class="cx-abas" role="tablist" aria-label="Situação das conversas">
             <button role="tab" aria-selected="true" data-st="aberta">Abertas</button>
             <button role="tab" aria-selected="false" data-st="resolvida">Resolvidas</button>
             <button role="tab" aria-selected="false" data-st="arquivada">Arquivadas</button>
           </div>
-          <div class="cx-busca-linha"><input type="search" id="cx-busca" class="cx-busca" placeholder="Buscar por nome ou telefone" aria-label="Buscar conversa"><button type="button" class="btn-mini" id="cx-novo-lead" title="Cadastrar um lead que chegou por Instagram, Facebook, telefone ou balcão">+ Novo lead</button></div>
+          <input type="search" id="cx-busca" class="cx-busca" placeholder="Buscar por nome ou telefone" aria-label="Buscar conversa">
           <div class="filtros" id="cx-filtros">
             <button class="chip" type="button" aria-pressed="true" data-f="todas">Todas</button>
             <button class="chip" type="button" aria-pressed="false" data-f="naolidas">Não lidas</button>
@@ -87,7 +88,7 @@
           <div class="orcs" id="orcs" hidden></div>
           <div class="mensagens" id="mensagens" aria-live="polite"></div>
           <button class="ir-fim" id="ir-fim" type="button" aria-label="Ir para a última mensagem" hidden>↓</button>
-          <div class="cx-rodape" id="cx-fechada" hidden><span>A janela de 24 h expirou: fora dela só dá para enviar um modelo aprovado pela Meta (chega numa próxima etapa).</span></div>
+          <div class="cx-rodape" id="cx-fechada" hidden><span>A janela de 24 h expirou: fora dela só dá para enviar um modelo aprovado pela Meta. Quando o cliente responder, a conversa abre de novo.</span><button type="button" class="btn btn-enviar" id="cx-enviar-modelo">Enviar modelo</button></div>
           <div class="cx-compor" id="cx-compor">
             <div class="sugestao" id="sugestao" hidden>
               <div class="sug-topo"><b>Sugestão do Gilberto</b><span id="sug-modelo"></span></div>
