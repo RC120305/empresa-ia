@@ -10,6 +10,7 @@
 - **Gilberto:** contratado (v1.1, nota 4,42), com base de conhecimento do questionário e formação em vendas (Tevah e Thaize).
 - **WhatsApp:** plano definido: número de teste da Meta → 99117 por coexistência (modo observação) → saída da Asksuite → 99110.
 - **No ar (01/10/2026):** Google Cloud `cabanas-crm` com publicação automática pelo GitHub (sem chaves); app "Cabanas CRM" na Meta; **webhook do WhatsApp de teste recebendo mensagens no CRM** (texto e status enviado/entregue/lido, assinatura conferida); **banco Supabase em São Paulo gravando contatos, conversas e mensagens** (migração `crm/banco/001_inicial.sql`).
+- **Caixa de entrada no ar (02/10/2026):** login da equipe por link no e-mail, conversas ao vivo e **resposta pelo WhatsApp** (janela de 24 h). Endereço: https://crm-377803250649.southamerica-east1.run.app/caixa
 
 ## 1. O que depende do dono
 | # | O quê | Por quê |
