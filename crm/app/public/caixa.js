@@ -10,7 +10,8 @@
     return;
   }
   const sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseKey, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+    // implicit: o link do e-mail funciona mesmo se abrir em outro navegador do celular
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'implicit' },
   });
 
   const telas = ['tela-entrar', 'tela-bloqueado', 'tela-caixa'];
@@ -65,6 +66,8 @@
   $('sair').addEventListener('click', async () => { await sb.auth.signOut(); location.replace('/caixa'); });
 
   async function iniciar(session) {
+    // Tira do endereço os dados do link de login, para que recarregar a página não tente usá-los de novo.
+    if (location.hash || location.search) history.replaceState(null, '', '/caixa');
     if (!session) { $('quem').hidden = true; mostrar('tela-entrar'); return; }
     const { data: eu } = await sb.from('usuarios').select('nome,papel').maybeSingle();
     $('quem').hidden = false;
@@ -73,6 +76,30 @@
     mostrar('tela-caixa');
     await carregarConversas();
     assinar();
+    vigiar();
+  }
+
+  // Rede de segurança: se o tempo real cair, atualiza sozinho a cada 15 s e sempre que a aba volta.
+  let aoVivo = false;
+  async function atualizarTudo() {
+    await carregarConversas();
+    if (aberta) await recarregarAberta();
+  }
+  function vigiar() {
+    setInterval(() => { if (!aoVivo && !document.hidden) atualizarTudo(); }, 15000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) atualizarTudo(); });
+  }
+  async function recarregarAberta() {
+    const id = aberta;
+    const { data } = await sb.from('mensagens').select('id,direcao,tipo,corpo,status_entrega,enviada_em')
+      .eq('conversa_id', id).order('enviada_em', { ascending: true }).limit(500);
+    if (aberta !== id || !data) return;
+    const box = $('mensagens');
+    const perto = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+    box.textContent = '';
+    let ultimoDia = '';
+    data.forEach(m => { ultimoDia = adicionarMensagem(m, ultimoDia); });
+    if (perto) rolarFim();
   }
 
   // ---------- Lista ----------
@@ -214,7 +241,13 @@
         const el = document.querySelector('.balao[data-id="' + m.id + '"] small');
         if (el && m.direcao === 'saida') el.textContent = hora(m.enviada_em) + (m.status_entrega ? ' · ' + (STATUS[m.status_entrega] || m.status_entrega) : '');
       })
-      .subscribe(status => { $('ao-vivo').className = 'ao-vivo' + (status === 'SUBSCRIBED' ? '' : ' off'); $('ao-vivo').textContent = status === 'SUBSCRIBED' ? '● ao vivo' : '○ reconectando'; });
+      .subscribe((status, err) => {
+        aoVivo = status === 'SUBSCRIBED';
+        $('ao-vivo').className = 'ao-vivo' + (aoVivo ? '' : ' off');
+        $('ao-vivo').textContent = aoVivo ? '● ao vivo' : '○ atualiza a cada 15 s';
+        $('ao-vivo').title = aoVivo ? 'Mensagens novas aparecem na hora.' : 'Tempo real indisponível (' + status + (err ? ': ' + err.message : '') + ').';
+        if (!aoVivo) console.warn('tempo real:', status, err);
+      });
   }
 
   // ---------- Início ----------
