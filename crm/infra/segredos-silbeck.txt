@@ -15,18 +15,27 @@ guardar() { # nome valor
   echo "  ✓ $1 guardado"
 }
 
-echo "Endereço do Silbeck visto de fora do hotel (IP público ou nome do hotel e a porta 8366)."
-read -r -p "IP ou nome público do hotel (ex.: 200.100.50.25): " HOST </dev/tty
-HOST="$(echo "$HOST" | tr -d '[:space:]' | sed -e 's#^https\?://##' -e 's#/.*$##' -e 's#:.*$##')"
-read -r -p "Porta da API [8366]: " PORTA </dev/tty
-PORTA="${PORTA:-8366}"
-read -r -p "client_id do Silbeck: " CID </dev/tty
-read -r -s -p "client_secret do Silbeck (não aparece ao digitar): " CSEC </dev/tty; echo
+existe() { gcloud secrets describe "$1" >/dev/null 2>&1; }
+echo "Endereço do Silbeck visto de fora do hotel. Deixe em branco (só Enter) o que já estiver certo no cofre."
+while :; do
+  read -r -p "IP público do hotel (ex.: 200.100.50.25): " HOST </dev/tty
+  HOST="$(echo "$HOST" | tr -d '[:space:]')"
+  if [ -z "$HOST" ] && existe silbeck-url; then break; fi
+  echo "$HOST" | grep -Eq '^[A-Za-z0-9.-]+$' && break
+  echo "  Isso não parece um IP (ex.: 200.100.50.25). Tente de novo."
+done
+while :; do
+  read -r -p "Porta da API [8366]: " PORTA </dev/tty
+  PORTA="${PORTA:-8366}"
+  echo "$PORTA" | grep -Eq '^[0-9]{2,5}$' && break
+  echo "  A porta é só número (ex.: 8366). Tente de novo."
+done
+read -r -p "client_id do Silbeck (Enter = manter o que já está no cofre): " CID </dev/tty
+read -r -s -p "client_secret do Silbeck (não aparece ao digitar; Enter = manter): " CSEC </dev/tty; echo
 
-[ -n "$HOST" ] && [ -n "$CID" ] && [ -n "$CSEC" ] || { echo "Faltou algum valor. Nada foi guardado."; exit 1; }
-guardar silbeck-url "http://${HOST}:${PORTA}/datasnap/rest"
-guardar silbeck-client-id "$CID"
-guardar silbeck-client-secret "$CSEC"
+[ -n "$HOST" ] && guardar silbeck-url "http://${HOST}:${PORTA}/datasnap/rest"
+if [ -n "$CID" ]; then guardar silbeck-client-id "$CID"; elif ! existe silbeck-client-id; then echo "Faltou o client_id."; exit 1; fi
+if [ -n "$CSEC" ]; then guardar silbeck-client-secret "$CSEC"; elif ! existe silbeck-client-secret; then echo "Faltou o client_secret."; exit 1; fi
 unset CSEC CID
 
 echo "----------------------------------------------------------------"
