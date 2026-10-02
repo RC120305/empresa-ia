@@ -1,0 +1,46 @@
+bash <<'FIM'
+# CRM Cabanas: IP FIXO de saída do CRM (plano B do Silbeck, decisão A5). Rodar UMA vez no Cloud Shell.
+# Para que serve: o roteador do hotel só deixa entrar nas portas 8365-8367 quem vier deste IP.
+# Cria: rede própria do CRM em São Paulo, um IP fixo reservado e a saída (Cloud NAT) por esse IP.
+# Não cria nem mostra nenhuma senha ou chave.
+set -euo pipefail
+
+PROJECT_ID="cabanas-crm"
+REGION="southamerica-east1"          # São Paulo
+
+gcloud config set project "$PROJECT_ID"
+PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+
+echo "1/5 Ligando o serviço de rede (leva 1 a 2 minutos)..."
+gcloud services enable compute.googleapis.com
+
+echo "2/5 Rede do CRM..."
+gcloud compute networks describe crm-vpc >/dev/null 2>&1 || \
+  gcloud compute networks create crm-vpc --subnet-mode=custom
+gcloud compute networks subnets describe crm-sp --region="$REGION" >/dev/null 2>&1 || \
+  gcloud compute networks subnets create crm-sp --network=crm-vpc --region="$REGION" --range=10.20.0.0/24
+
+echo "3/5 IP fixo reservado..."
+gcloud compute addresses describe crm-saida --region="$REGION" >/dev/null 2>&1 || \
+  gcloud compute addresses create crm-saida --region="$REGION"
+
+echo "4/5 Saída da internet pelo IP fixo (Cloud NAT)..."
+gcloud compute routers describe crm-router --region="$REGION" >/dev/null 2>&1 || \
+  gcloud compute routers create crm-router --network=crm-vpc --region="$REGION"
+gcloud compute routers nats describe crm-nat --router=crm-router --region="$REGION" >/dev/null 2>&1 || \
+  gcloud compute routers nats create crm-nat --router=crm-router --region="$REGION" \
+    --nat-external-ip-pool=crm-saida --nat-all-subnet-ip-ranges
+
+echo "5/5 Permissão para o CRM usar a rede..."
+for MEMBRO in "serviceAccount:github-deploy@${PROJECT_ID}.iam.gserviceaccount.com" \
+              "serviceAccount:service-${PROJECT_NUMBER}@serverless-robot-prod.iam.gserviceaccount.com"; do
+  gcloud compute networks subnets add-iam-policy-binding crm-sp --region="$REGION" \
+    --member="$MEMBRO" --role="roles/compute.networkUser" >/dev/null
+done
+
+IP="$(gcloud compute addresses describe crm-saida --region="$REGION" --format='value(address)')"
+echo "----------------------------------------------------------------"
+echo "Pronto! IP FIXO DO CRM: $IP"
+echo "Passe este IP ao Márcio (não é segredo) e mande 'IP criado' no chat."
+echo "----------------------------------------------------------------"
+FIM
