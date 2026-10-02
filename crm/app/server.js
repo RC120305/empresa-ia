@@ -5,6 +5,7 @@
 const http = require('http');
 const crypto = require('crypto');
 const fs = require('fs');
+const gilberto = require('./gilberto');
 const path = require('path');
 
 const porta = process.env.PORT || 8080;
@@ -141,17 +142,22 @@ function numeroParaEnvio(valor) {
   return m ? `55${m[1]}9${m[2]}` : d;
 }
 class ErroEnvio extends Error { constructor(http, msg) { super(msg); this.http = http; } }
+// Quem está chamando? Confere o login no Supabase e se o e-mail está na equipe ativa.
+async function autenticarEquipe(tokenUsuario, buscar = fetch) {
+  const u = await buscar(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + tokenUsuario }, signal: AbortSignal.timeout(5000) });
+  if (!u.ok) throw new ErroEnvio(401, 'Sua sessão expirou. Entre de novo.');
+  const email = (await u.json()).email;
+  const equipe = await rpc('equipe_por_email', { p_email: email || '' }, buscar);
+  if (!Array.isArray(equipe) || !equipe.length) throw new ErroEnvio(403, 'Seu e-mail não está liberado.');
+  return equipe[0];
+}
+
 async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
   const texto = typeof corpo.texto === 'string' ? corpo.texto.trim() : '';
   if (!texto || texto.length > 4096) throw new ErroEnvio(400, 'A mensagem precisa ter de 1 a 4.096 caracteres.');
   if (!/^[0-9a-f-]{36}$/i.test(String(corpo.conversa_id || ''))) throw new ErroEnvio(400, 'Conversa inválida.');
-
-  const u = await buscar(`${SUPABASE_URL}/auth/v1/user`, { headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + tokenUsuario }, signal: AbortSignal.timeout(5000) });
-  if (!u.ok) throw new ErroEnvio(401, 'Sua sessão expirou. Entre de novo.');
-  const email = (await u.json()).email;
-  const equipe = await rpc('equipe_por_email', { p_email: email || '' }, buscar);
-  if (!Array.isArray(equipe) || !equipe.length) throw new ErroEnvio(403, 'Seu e-mail não está liberado para enviar.');
+  const equipe = [await autenticarEquipe(tokenUsuario, buscar)];
 
   const c = await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${corpo.conversa_id}&select=id,canal,numero_id,ultima_msg_cliente_em,contato:contatos(contato_identificadores(tipo,valor))`,
     { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
@@ -181,6 +187,28 @@ async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   return { ok: true, id, wamid, enviada_em: new Date().toISOString() };
 }
 
+// Sugestão do Gilberto para a última mensagem do cliente (não envia nada).
+const sugerindo = new Set();
+async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
+  if (!bancoLigado()) throw new ErroEnvio(503, 'O banco ainda não está configurado.');
+  const id = String(corpo.conversa_id || '');
+  if (!/^[0-9a-f-]{36}$/i.test(id)) throw new ErroEnvio(400, 'Conversa inválida.');
+  await autenticarEquipe(tokenUsuario, buscar);
+  if (sugerindo.has(id)) throw new ErroEnvio(429, 'Já estou preparando uma sugestão para esta conversa.');
+  sugerindo.add(id);
+  try {
+    const c = await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${id}&select=id,canal,contato:contatos(nome)`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const conv = c.ok ? (await c.json())[0] : null;
+    if (!conv) throw new ErroEnvio(404, 'Conversa não encontrada.');
+    const h = await buscar(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${id}&select=direcao,tipo,corpo,enviada_em&order=enviada_em.desc&limit=40`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const historico = h.ok ? (await h.json()).reverse() : [];
+    return { ok: true, ...(await gilberto.sugerir(historico, { canal: conv.canal, nome: conv.contato && conv.contato.nome })) };
+  } catch (e) {
+    if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message);
+    throw e;
+  } finally { sugerindo.delete(id); }
+}
+
 function json(res, cod, obj) {
   res.writeHead(cod, { 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(obj));
@@ -190,7 +218,7 @@ const servidor = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
   if (url.pathname === '/saude') {
-    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado(), supabasePublica: chavePublicaOk(), whatsappToken: !!WA_TOKEN }, chaveSupabase: tipoChave(SUPABASE_KEY) };
+    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado(), supabasePublica: chavePublicaOk(), whatsappToken: !!WA_TOKEN, anthropic: !!process.env.ANTHROPIC_API_KEY }, gilberto: { instrucoes: gilberto.sistemaPronto(), modelo: gilberto.MODELO }, chaveSupabase: tipoChave(SUPABASE_KEY) };
     if (!bancoLigado()) return json(res, 200, base);
     // Confere se o banco responde e se a chave tem permissão de servidor: chama a função de status com um
     // ID que não existe (não altera nada). Chave sem permissão de servidor recebe 401/403.
@@ -228,7 +256,7 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
-  if (url.pathname === '/api/enviar' && req.method === 'POST') {
+  if ((url.pathname === '/api/enviar' || url.pathname === '/api/sugerir') && req.method === 'POST') {
     const auth = req.headers.authorization || '';
     if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
     const partes = [];
@@ -237,7 +265,7 @@ const servidor = http.createServer((req, res) => {
     req.on('end', () => {
       let corpo;
       try { corpo = JSON.parse(Buffer.concat(partes).toString('utf8')); } catch (e) { return json(res, 400, { ok: false, erro: 'Pedido inválido.' }); }
-      enviarPelaEquipe(auth.slice(7), corpo)
+      (url.pathname === '/api/enviar' ? enviarPelaEquipe : sugerirParaEquipe)(auth.slice(7), corpo)
         .then(r => json(res, 200, r))
         .catch(e => {
           if (!(e instanceof ErroEnvio)) console.error(JSON.stringify({ evento: 'falha_envio', erro: String(e.message || e).slice(0, 200) }));

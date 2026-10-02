@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - 'crm/app/**'
+      - 'crm/gilberto/prompt-sistema.md'
+      - 'crm/gilberto/base-conhecimento.md'
+      - 'contexto/hotel-operacional.md'
       - '.github/workflows/crm-deploy.yml'
   workflow_dispatch:
 
@@ -28,8 +31,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: crm/app   # o repositório é grande (fotos e artes); baixa só o CRM
+          # o repositório é grande (fotos e artes); baixa só o CRM e o conhecimento do Gilberto
+          sparse-checkout: |
+            crm/app/
+            crm/gilberto/
+            contexto/hotel-operacional.md
+          sparse-checkout-cone-mode: false
           filter: blob:none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Dependências
+        run: npm ci --prefix crm/app
 
       - name: Testes do CRM
         run: node crm/app/teste.js
@@ -44,6 +59,7 @@ jobs:
 
       - name: Montar e enviar a imagem
         run: |
+          cp crm/gilberto/prompt-sistema.md crm/gilberto/base-conhecimento.md contexto/hotel-operacional.md crm/app/conhecimento/
           gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
           docker build -t "${IMAGE}:${GITHUB_SHA}" crm/app
           docker push "${IMAGE}:${GITHUB_SHA}"

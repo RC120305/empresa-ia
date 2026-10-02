@@ -7,6 +7,7 @@ const assert = require('assert');
 const chamadas = [];
 let bancoQuebrado = false;
 let janelaAberta = true;
+let ultimoPedidoIA = null;
 const FAKE = {
   '/auth/v1/user': req => req.headers.authorization === 'Bearer token-equipe' ? { email: 'equipe@teste.com' }
     : req.headers.authorization === 'Bearer token-estranho' ? { email: 'estranho@teste.com' } : null,
@@ -24,6 +25,17 @@ const falso = http.createServer((req, res) => {
     if (req.url.startsWith('/rest/v1/conversas?')) return responder(200, [{ id: '11111111-1111-1111-1111-111111111111', canal: 'wa', numero_id: '111',
       ultima_msg_cliente_em: new Date(Date.now() - (janelaAberta ? 3600e3 : 30 * 3600e3)).toISOString(),
       contato: { contato_identificadores: [{ tipo: 'whatsapp', valor: '+5567999990000' }] } }]);
+    if (req.url.startsWith('/rest/v1/mensagens?')) return responder(200, [
+      { direcao: 'entrada', tipo: 'text', corpo: 'Tem vaga de 14 a 16/11 para 2 adultos?', enviada_em: '2026-10-02T10:01:00Z' },
+      { direcao: 'saida', tipo: 'text', corpo: 'Oi! Vou ver para você.', enviada_em: '2026-10-02T10:00:30Z' },
+      { direcao: 'entrada', tipo: 'text', corpo: 'Oi', enviada_em: '2026-10-02T10:00:00Z' }]);
+    if (req.url.split('?')[0] === '/v1/messages') {
+      const b = JSON.parse(corpo);
+      ultimoPedidoIA = { corpo: b, beta: req.headers['anthropic-beta'] || '' };
+      return responder(200, { id: 'msg_1', type: 'message', role: 'assistant', model: b.model, stop_reason: 'end_turn', stop_sequence: null,
+        content: [{ type: 'text', text: JSON.stringify({ mensagem: 'Oi! Tenho sim [[valor do Silbeck]]', notas_internas: 'Consultar Silbeck', precisa_equipe: false }) }],
+        usage: { input_tokens: 10, output_tokens: 20, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 } });
+    }
     if (req.url === '/graph/111/messages') return responder(200, { messages: [{ id: 'wamid.SAIDA' }] });
     if (req.url === '/rest/v1/rpc/registrar_saida_whatsapp') return responder(200, '22222222-2222-2222-2222-222222222222');
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -38,6 +50,8 @@ falso.listen(0, () => {
   process.env.SUPABASE_SECRET_KEY = 'chave-de-teste';
   process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_teste';
   process.env.META_WHATSAPP_TOKEN = 'token-meta-teste';
+  process.env.ANTHROPIC_API_KEY = 'chave-ia-teste';
+  process.env.ANTHROPIC_BASE_URL = 'http://127.0.0.1:' + falso.address().port;
   process.env.META_GRAPH_URL = 'http://127.0.0.1:' + falso.address().port + '/graph';
   const { servidor } = require('./server');
 
@@ -89,7 +103,8 @@ falso.listen(0, () => {
 
     // Saúde mostra os segredos e o banco
     const saude = await (await fetch(base + '/saude')).json();
-    assert.deepEqual(saude.segredos, { verify: true, appSecret: true, supabase: true, supabasePublica: true, whatsappToken: true });
+    assert.deepEqual(saude.segredos, { verify: true, appSecret: true, supabase: true, supabasePublica: true, whatsappToken: true, anthropic: true });
+    assert.equal(saude.gilberto.instrucoes, true);
     assert.equal(saude.banco, 'ok');
 
     // Página de status: número mascarado, sem conteúdo
@@ -137,6 +152,24 @@ falso.listen(0, () => {
     assert.equal(numeroParaEnvio('5567998070981'), '5567998070981');
     assert.equal(numeroParaEnvio('556733334444'), '556733334444'); // fixo não ganha 9
     assert.equal(numeroParaEnvio('595981299369'), '595981299369'); // Paraguai fica igual
+
+    // Sugestão do Gilberto
+    r = await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-equipe' }, body: JSON.stringify({ conversa_id: conv }) });
+    const sug = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(sug));
+    assert.ok(sug.mensagem.includes('[[valor do Silbeck]]'));
+    const pi = ultimoPedidoIA.corpo;
+    assert.equal(pi.model, 'claude-sonnet-5-5');
+    assert.deepEqual(pi.system[0].cache_control, { type: 'ephemeral' });
+    assert.ok(pi.system[0].text.includes('<base_conhecimento>') && !pi.system[0].text.includes('{{base_conhecimento}}'));
+    assert.deepEqual(pi.messages.map(m => m.role), ['user', 'assistant', 'user', 'system']);
+    assert.ok(pi.messages[3].content.includes('Modo: sugestao'));
+    assert.equal(pi.output_config.format.type, 'json_schema');
+    assert.equal(pi.fallbacks, 'default'); assert.ok(ultimoPedidoIA.beta.includes('server-side-fallback-2026-07-01'));
+    assert.equal((await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-estranho' }, body: JSON.stringify({ conversa_id: conv }) })).status, 403);
+    const { montarMensagens } = require('./gilberto');
+    assert.deepEqual(montarMensagens([{ direcao: 'saida', tipo: 'text', corpo: 'oi' }, { direcao: 'entrada', tipo: 'image', corpo: 'essa?' }, { direcao: 'entrada', tipo: 'text', corpo: 'tem vaga?' }]),
+      [{ role: 'user', content: '[enviou uma foto: essa?]\ntem vaga?' }]);
 
     console.log('TODOS OS TESTES PASSARAM');
     servidor.close(); falso.close();

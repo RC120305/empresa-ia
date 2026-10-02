@@ -1,0 +1,147 @@
+// Gilberto em modo "sugestão" (fase 2): lê a conversa, escreve a resposta que mandaria e devolve para a
+// equipe aprovar, editar ou descartar. Nada é enviado ao cliente por aqui.
+// Instruções: crm/gilberto/prompt-sistema.md (blocos A e B no "system", com cache; bloco C como mensagem
+// de sistema no fim da conversa, sem cache). Fatos: base-conhecimento.md + contexto/hotel-operacional.md.
+const fs = require('fs');
+const path = require('path');
+const Anthropic = require('@anthropic-ai/sdk');
+
+// Modelo escolhido pelo dono (A6): Sonnet 5.5 no dia a dia; troca por configuração, sem mexer no código.
+const MODELO = process.env.GILBERTO_MODELO || 'claude-sonnet-5-5';
+const ESFORCO = process.env.GILBERTO_ESFORCO || 'medium';
+
+// Na imagem publicada os arquivos ficam em ./conhecimento (copiados na publicação); no repositório, nas pastas de origem.
+function ler(nome, ...origem) {
+  for (const p of [path.join(__dirname, 'conhecimento', nome), path.join(__dirname, ...origem)]) {
+    try { return fs.readFileSync(p, 'utf8'); } catch (e) { /* tenta o próximo */ }
+  }
+  return null;
+}
+
+const PRODUTOS = [
+  'COMBO · Combo boia cross + arvorismo · R$ 170 por pessoa · 5 anos ou mais e 1,15 m · prioridade 1',
+  'BOIA · Boia cross (1 h, 1.200 m no Rio Formoso) · R$ 100 por pessoa · 5 anos ou mais e 1,15 m · prioridade 2',
+  'ARVO · Arvorismo (18 obstáculos e 2 tirolesas, a última aquática) · R$ 120 por pessoa · 5 anos ou mais e 1,15 m · prioridade 3',
+  'DECO · Decoração especial · Simples R$ 350 ou Completa R$ 600 · pedir com 3 dias de antecedência',
+  'MASS · Massagem (Massagem360, relaxante ou linfática, parceira Natália) · R$ 220 · lançada na conta do hóspede',
+].join('\n');
+
+function montarSistema() {
+  const prompt = ler('prompt-sistema.md', '..', 'gilberto', 'prompt-sistema.md');
+  const base = ler('base-conhecimento.md', '..', 'gilberto', 'base-conhecimento.md');
+  const operacional = ler('hotel-operacional.md', '..', '..', 'contexto', 'hotel-operacional.md');
+  if (!prompt || !base) return null;
+  const corte = prompt.indexOf('=== BLOCO C');
+  const ab = (corte > 0 ? prompt.slice(0, corte) : prompt)
+    .replace('{{base_conhecimento}}', base + (operacional ? '\n\n<fatos_operacionais>\n' + operacional + '\n</fatos_operacionais>' : ''))
+    .replace('{{biblioteca_respostas_fixas}}', '(vazia nesta fase)')
+    .replace('{{produtos_ativos}}', PRODUTOS);
+  return ab;
+}
+const SISTEMA = montarSistema();
+
+const FORMATO = {
+  type: 'json_schema',
+  schema: {
+    type: 'object',
+    properties: {
+      mensagem: { type: 'string', description: 'O texto exato para o cliente, em 1 a 3 balões separados por uma linha contendo só ---' },
+      notas_internas: { type: 'string', description: 'Para a equipe (não vai ao cliente): o que conferir ou fazer antes de enviar, ferramentas que seriam chamadas, dúvidas.' },
+      precisa_equipe: { type: 'boolean', description: 'true se o caso deve ir para uma pessoa (reclamação, cancelamento, alteração, pedido especial, fora da base).' },
+    },
+    required: ['mensagem', 'notas_internas', 'precisa_equipe'],
+    additionalProperties: false,
+  },
+};
+
+const ROTULO = { image: 'uma foto', audio: 'um áudio', video: 'um vídeo', document: 'um documento', sticker: 'uma figurinha', location: 'uma localização', contacts: 'um contato', reaction: 'uma reação' };
+function textoParaModelo(m) {
+  if (m.tipo === 'text' || m.tipo === 'button' || m.tipo === 'interactive') return m.corpo || '';
+  const r = ROTULO[m.tipo] || m.tipo;
+  return `[enviou ${r}${m.corpo ? ': ' + m.corpo : ''}]`;
+}
+
+// Converte o histórico do banco em turnos user/assistant (cliente = user; equipe/Gilberto = assistant).
+function montarMensagens(historico) {
+  const msgs = [];
+  for (const m of historico) {
+    const role = m.direcao === 'entrada' ? 'user' : 'assistant';
+    const t = textoParaModelo(m).trim();
+    if (!t) continue;
+    const ult = msgs[msgs.length - 1];
+    if (ult && ult.role === role) ult.content += '\n' + t;
+    else msgs.push({ role, content: t });
+  }
+  while (msgs.length && msgs[0].role !== 'user') msgs.shift();
+  return msgs;
+}
+
+function contextoTurno(c) {
+  const agora = new Date();
+  const fmt = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Campo_Grande', weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const [h, mi] = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Campo_Grande', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(agora).split(':').map(Number);
+  const minutos = h * 60 + mi;
+  const aberto = minutos >= 7 * 60 + 30 && minutos < 17 * 60;
+  return `<contexto_crm>
+Agora: ${fmt.format(agora)} (horário de Bonito/MS)
+Canal: ${c.canal === 'wa' ? 'WhatsApp' : c.canal}
+Expediente da equipe aberto agora: ${aberto ? 'sim' : 'não'}
+De plantão: não informado
+Modo: sugestao
+Gatilho deste turno: a equipe pediu uma sugestão de resposta para a última mensagem do cliente
+Contato (dados já conhecidos): nome do perfil do WhatsApp: ${c.nome || 'não informado'}
+Pendências (reservas, cobranças, alertas abertos): não disponíveis nesta fase
+Resumo das conversas anteriores: não disponível
+</contexto_crm>
+Nesta fase as ferramentas ainda não estão ligadas ao CRM: não tente chamá-las. Onde precisaria de uma (preço, vaga, reserva, link de pagamento, fotos, alerta), escreva a mensagem com marcadores [[...]] no lugar do dado (ex.: [[valor do Silbeck: Bangalô Especial 14 a 16/11, 2 adultos]]) e diga em notas_internas o que a equipe precisa fazer. Nunca invente preço nem disponibilidade.`;
+}
+
+let cliente = null;
+function anthropic() {
+  if (!cliente) cliente = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, baseURL: process.env.ANTHROPIC_BASE_URL || undefined, maxRetries: 2, timeout: 90_000 });
+  return cliente;
+}
+
+class ErroSugestao extends Error { constructor(http, msg) { super(msg); this.http = http; } }
+
+async function sugerir(historico, conversa) {
+  if (!process.env.ANTHROPIC_API_KEY) throw new ErroSugestao(503, 'A IA do Gilberto ainda não está ligada (falta a chave da Anthropic no cofre).');
+  if (!SISTEMA) throw new ErroSugestao(503, 'As instruções do Gilberto não foram encontradas no servidor.');
+  const mensagens = montarMensagens(historico);
+  if (!mensagens.length) throw new ErroSugestao(409, 'Ainda não há mensagem do cliente para responder.');
+  if (mensagens[mensagens.length - 1].role !== 'user') throw new ErroSugestao(409, 'A última mensagem já é da equipe. A sugestão aparece quando o cliente escrever de novo.');
+
+  const pedido = {
+    model: MODELO,
+    max_tokens: 16000,
+    system: [{ type: 'text', text: SISTEMA, cache_control: { type: 'ephemeral' } }],
+    messages: [...mensagens, { role: 'system', content: contextoTurno(conversa) }],
+    output_config: { effort: ESFORCO, format: FORMATO },
+  };
+  let r;
+  try {
+    // Recusa por segurança: a API refaz no modelo de reserva automaticamente (fallbacks "default").
+    r = await anthropic().beta.messages.create({ ...pedido, betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' });
+  } catch (e) {
+    if (e instanceof Anthropic.BadRequestError) {
+      console.warn(JSON.stringify({ evento: 'gilberto_sem_fallback', erro: String(e.message).slice(0, 200) }));
+      r = await anthropic().messages.create(pedido);
+    } else if (e instanceof Anthropic.AuthenticationError) {
+      throw new ErroSugestao(503, 'A chave da Anthropic foi recusada. Confira o segredo anthropic-api-key.');
+    } else if (e instanceof Anthropic.RateLimitError) {
+      throw new ErroSugestao(429, 'Muitas sugestões ao mesmo tempo. Tente de novo em alguns segundos.');
+    } else if (e instanceof Anthropic.APIError) {
+      throw new ErroSugestao(502, 'A IA não respondeu agora (erro ' + e.status + '). Tente de novo.');
+    } else throw e;
+  }
+  const u = r.usage || {};
+  console.log(JSON.stringify({ evento: 'gilberto_sugestao', modelo: r.model, entrada: u.input_tokens, cache_lido: u.cache_read_input_tokens, cache_gravado: u.cache_creation_input_tokens, saida: u.output_tokens, parada: r.stop_reason }));
+  if (r.stop_reason === 'refusal') throw new ErroSugestao(422, 'O Gilberto não conseguiu sugerir para esta conversa. Responda manualmente.');
+  if (r.stop_reason === 'max_tokens') throw new ErroSugestao(502, 'A sugestão ficou longa demais. Tente de novo.');
+  const txt = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  let out;
+  try { out = JSON.parse(txt); } catch (e) { throw new ErroSugestao(502, 'A sugestão veio num formato inesperado. Tente de novo.'); }
+  return { mensagem: String(out.mensagem || ''), notas_internas: String(out.notas_internas || ''), precisa_equipe: !!out.precisa_equipe, modelo: r.model };
+}
+
+module.exports = { sugerir, montarMensagens, ErroSugestao, sistemaPronto: () => !!SISTEMA, MODELO };

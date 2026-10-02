@@ -1,0 +1,14 @@
+{
+  "name": "crm-cabanas",
+  "private": true,
+  "version": "1.0.0",
+  "description": "CRM do Hotel Cabanas",
+  "main": "server.js",
+  "scripts": {
+    "test": "node teste.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.131.0"
+  }
+}

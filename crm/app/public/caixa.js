@@ -158,6 +158,7 @@
   // ---------- Conversa ----------
   async function abrir(id) {
     aberta = id;
+    $('sugestao').hidden = true;
     const c = conversas.find(x => x.id === id);
     $('sem-conversa').hidden = true;
     $('conv').hidden = false;
@@ -183,7 +184,8 @@
     const abertaJ = !!fim && fim > new Date();
     $('resposta').disabled = !abertaJ;
     $('enviar').toggleAttribute('disabled', !abertaJ);
-    $('resposta').placeholder = abertaJ ? 'Escreva a resposta… (Enter envia; Shift+Enter quebra a linha)' : 'Janela de 24 h fechada: fora dela só modelos aprovados (próxima etapa).';
+    $('resposta').placeholder = abertaJ ? 'Escreva a resposta…' : 'Janela de 24 h fechada';
+    $('resposta').title = abertaJ ? 'No computador, Enter envia e Shift+Enter quebra a linha. Uma linha só com --- separa os balões.' : 'Fora da janela de 24 h, só modelos aprovados pela Meta (próxima etapa).';
     if (!fim) { j.textContent = ''; j.className = 'janela'; return; }
     j.className = 'janela ' + (abertaJ ? 'aberta' : 'fechada');
     j.textContent = abertaJ ? 'Responder até ' + hora(fim.toISOString()) : 'Janela fechada';
@@ -211,28 +213,46 @@
 
   // ---------- Enviar ----------
   let enviando = false;
+  async function chamarApi(rota, corpo) {
+    const { data: { session } } = await sb.auth.getSession();
+    const r = await fetch(rota, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (session ? session.access_token : '') },
+      body: JSON.stringify(corpo),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.ok) throw new Error(j.erro || 'Não deu agora. Tente de novo.');
+    return j;
+  }
+
+  // Balões: o texto pode ter várias mensagens separadas por uma linha só com ---
+  const baloes = txt => txt.split(/^\s*---\s*$/m).map(t => t.trim()).filter(Boolean);
+
   async function enviar() {
     const txt = $('resposta').value.trim();
     if (!txt || enviando || !aberta) return;
+    if (/\[\[[^\]]*\]\]/.test(txt)) {
+      $('aviso-envio').textContent = 'Complete os trechos entre [[ ]] (preço, link, vaga) antes de enviar.';
+      $('aviso-envio').hidden = false;
+      return;
+    }
     enviando = true;
     $('enviar').setAttribute('disabled', '');
     $('aviso-envio').hidden = true;
     const id = aberta;
     try {
-      const { data: { session } } = await sb.auth.getSession();
-      const r = await fetch('/api/enviar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (session ? session.access_token : '') },
-        body: JSON.stringify({ conversa_id: id, texto: txt }),
-      });
-      const j = await r.json().catch(() => ({}));
-      if (!r.ok || !j.ok) throw new Error(j.erro || 'Não deu para enviar agora.');
-      $('resposta').value = '';
-      if (aberta === id && j.id && !$('mensagens').querySelector('[data-id="' + j.id + '"]')) {
-        const dias = $('mensagens').querySelectorAll('.dia');
-        adicionarMensagem({ id: j.id, direcao: 'saida', tipo: 'text', corpo: txt, status_entrega: 'sent', enviada_em: j.enviada_em }, dias.length ? dias[dias.length - 1].textContent : '');
-        rolarFim();
+      const partes = baloes(txt);
+      for (let i = 0; i < partes.length; i++) {
+        const j = await chamarApi('/api/enviar', { conversa_id: id, texto: partes[i] });
+        $('resposta').value = partes.slice(i + 1).join('\n---\n'); // se falhar no meio, sobra só o que não foi
+        if (aberta === id && j.id && !$('mensagens').querySelector('[data-id="' + j.id + '"]')) {
+          const dias = $('mensagens').querySelectorAll('.dia');
+          adicionarMensagem({ id: j.id, direcao: 'saida', tipo: 'text', corpo: partes[i], status_entrega: 'sent', enviada_em: j.enviada_em }, dias.length ? dias[dias.length - 1].textContent : '');
+          rolarFim();
+        }
+        if (i < partes.length - 1) await new Promise(ok => setTimeout(ok, 1200)); // ritmo de gente digitando
       }
+      $('sugestao').hidden = true;
     } catch (e) {
       $('aviso-envio').textContent = e.message;
       $('aviso-envio').hidden = false;
@@ -244,6 +264,40 @@
     }
   }
   $('enviar').addEventListener('click', enviar);
+
+  // ---------- Sugestão do Gilberto ----------
+  async function sugerir() {
+    if (!aberta) return;
+    const id = aberta;
+    $('sugerir').setAttribute('disabled', '');
+    $('sugerir').textContent = 'Pensando…';
+    $('aviso-envio').hidden = true;
+    try {
+      const j = await chamarApi('/api/sugerir', { conversa_id: id });
+      if (aberta !== id) return;
+      const box = $('sug-texto');
+      box.textContent = '';
+      baloes(j.mensagem).forEach(t => { const d = document.createElement('div'); d.textContent = t; box.append(d); });
+      $('sug-notas').textContent = (j.precisa_equipe ? '⚠ Caso para a equipe. ' : '') + (j.notas_internas ? 'Notas: ' + j.notas_internas : '');
+      $('sug-notas').className = 'sug-notas' + (j.precisa_equipe ? ' alerta' : '');
+      $('sug-modelo').textContent = /[[]{2}/.test(j.mensagem) ? 'complete os [[ ]] antes de enviar' : '';
+      $('sugestao').dataset.texto = j.mensagem;
+      $('sugestao').hidden = false;
+    } catch (e) {
+      $('aviso-envio').textContent = e.message;
+      $('aviso-envio').hidden = false;
+    } finally {
+      $('sugerir').removeAttribute('disabled');
+      $('sugerir').textContent = '✨ Sugerir';
+    }
+  }
+  $('sugerir').addEventListener('click', sugerir);
+  $('sug-usar').addEventListener('click', () => {
+    $('resposta').value = $('sugestao').dataset.texto || '';
+    $('sugestao').hidden = true;
+    $('resposta').focus();
+  });
+  $('sug-descartar').addEventListener('click', () => { $('sugestao').hidden = true; });
   $('resposta').addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && matchMedia('(pointer:fine)').matches) { e.preventDefault(); enviar(); }
   });

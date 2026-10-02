@@ -48,7 +48,17 @@
         <span class="janela" id="conv-janela"></span>
       </div>
       <div class="mensagens" id="mensagens" aria-live="polite"></div>
+      <div class="sugestao" id="sugestao" hidden>
+        <div class="sug-topo"><b>Sugestão do Gilberto</b><span id="sug-modelo"></span></div>
+        <div class="sug-texto" id="sug-texto"></div>
+        <p class="sug-notas" id="sug-notas"></p>
+        <div class="sug-acoes">
+          <button type="button" class="btn" id="sug-usar">Usar (revisar e enviar)</button>
+          <button type="button" class="link" id="sug-descartar">Descartar</button>
+        </div>
+      </div>
       <div class="responder">
+        <button type="button" class="btn-sug" id="sugerir" title="O Gilberto escreve uma resposta para você revisar">✨ Sugerir</button>
         <textarea id="resposta" rows="2" placeholder="Escreva a resposta…" aria-label="Resposta"></textarea>
         <button type="button" class="btn" id="enviar">Enviar</button>
       </div>
