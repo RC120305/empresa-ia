@@ -757,6 +757,10 @@ falso.listen(0, () => {
     assert.deepEqual(montarMensagens([{ direcao: 'saida', tipo: 'text', corpo: 'oi' }, { direcao: 'entrada', tipo: 'image', corpo: 'essa?' }, { direcao: 'entrada', tipo: 'text', corpo: 'tem vaga?' }]),
       [{ role: 'user', content: '[enviou uma foto: essa?]\ntem vaga?' }]);
 
+    // Todo módulo local usado pelo servidor precisa estar no Dockerfile (senão o Cloud Run não sobe)
+    const fsD = require('fs'), docker = fsD.readFileSync(require('path').join(__dirname, 'Dockerfile'), 'utf8');
+    const locais = new Set(fsD.readdirSync(__dirname).filter(f => f.endsWith('.js') && f !== 'teste.js').flatMap(f => [...fsD.readFileSync(require('path').join(__dirname, f), 'utf8').matchAll(/require\('\.\/([\w-]+)'\)/g)].map(m => m[1] + '.js')));
+    for (const f of [...locais, 'server.js']) assert.ok(new RegExp('^COPY .*\\b' + f.replace('.', '\\.') + '\\b', 'm').test(docker), 'falta no Dockerfile: ' + f);
     console.log('TODOS OS TESTES PASSARAM');
     servidor.close(); falso.close();
   });
