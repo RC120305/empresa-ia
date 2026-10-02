@@ -109,6 +109,7 @@ const falso = http.createServer((req, res) => {
     if (req.url === '/rest/v1/rpc/registrar_entrada_whatsapp') return responder(200, { nova: true, mensagem_id: MSG_MIDIA, conversa_id: '11111111-1111-1111-1111-111111111111' });
     if (req.url === '/graph/111?fields=display_phone_number') return responder(200, { display_phone_number: '+1 555-182-9766', id: '111' });
     if (req.url === '/rest/v1/orcamentos' && req.method === 'POST') { const o = { id: '77777777-7777-7777-7777-777777777777', aberturas: 0, ...json }; orcs.push(o); return responder(201, [o]); }
+    if (req.url.startsWith('/rest/v1/orcamentos?conversa_id=eq.')) return responder(200, orcs.filter(o => o.conversa_id === req.url.split('conversa_id=eq.')[1].split('&')[0]).slice(-1));
     if (req.url.startsWith('/rest/v1/orcamentos?token=eq.')) return responder(200, orcs.filter(o => o.token === req.url.split('token=eq.')[1].split('&')[0]));
     if (req.url.startsWith('/rest/v1/orcamentos?id=eq.') || req.url === '/rest/v1/orcamento_eventos') { res.writeHead(204); return res.end(); }
     if (req.url === '/graph/111/media') return responder(200, { id: 'midia-subida' });
@@ -562,11 +563,25 @@ falso.listen(0, () => {
     assert.equal(r.status, 200);
     assert.equal(chamadas.findLast(c => c.url === '/rest/v1/rpc/registrar_entrada_whatsapp').corpo.p_corpo, 'Quero a Completa');
     assert.equal(ofertasF.find(o => o.id === oe.oferta.id).situacao, 'aceito');
-    const tb = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo;
-    assert.equal(tb.tipo, 'Registrar venda'); assert.ok(tb.descricao.includes('Quero a Completa'));
-    assert.ok(chamadas.findLast(c => c.url === '/rest/v1/negocio_eventos').corpo.texto.startsWith('Cliente aceitou pelo botão (Quero a Completa)'));
+    // Aceite → venda registrada sozinha (opção do botão, valor, conta do hóspede) e tarefas para a equipe reservar
+    const vb = vendasF.at(-1);
+    assert.deepEqual([vb.produto_codigo, vb.variacao, vb.valor_total, vb.oferta_id, vb.data_uso, vb.criado_por], ['DECO', 'Completa', 600, oe.oferta.id, '2026-11-20', null]);
+    const tbs = chamadas.filter(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').slice(-2).map(c => c.corpo);
+    assert.deepEqual(tbs.map(t => t.tipo), ['Preparar Decoração especial', 'Lançar na conta do hóspede']);
+    assert.ok(chamadas.findLast(c => c.url === '/rest/v1/negocio_eventos').corpo.texto.startsWith('Cliente aceitou no WhatsApp: Decoração especial (Completa) · venda registrada R$ 600'));
+    // "Eu aceito" sem dado suficiente (massagem com várias opções): tarefa de confirmar
+    PRODS[3].variacoes = [{ nome: 'Massagem360', preco: 220 }, { nome: 'Relaxante', preco: 220 }, { nome: 'Linfática', preco: 220 }];
+    r = await api('/api/oferta-enviar', { conversa_id: conv, produto_codigo: 'MASS', texto: 'Massagem com a Natália', forcar: true });
+    const om = (await r.json()).oferta;
+    const nVendas = vendasF.length;
+    await postar(JSON.stringify({ entry: [{ changes: [{ value: { metadata: { phone_number_id: '111' }, messages: [{ from: '5567999990000', id: 'wamid.BOT2', timestamp: '1700000200', type: 'interactive', interactive: { type: 'button_reply', button_reply: { id: 'of:' + om.id + ':s', title: 'Eu aceito' } } }] } }] }] }));
+    assert.equal(vendasF.length, nVendas, 'sem venda: falta a opção');
+    const tc = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo;
+    assert.equal(tc.tipo, 'Confirmar e registrar venda'); assert.ok(tc.descricao.includes('Massagem360, Relaxante, Linfática'));
+    PRODS[3].variacoes = [{ nome: 'Massagem360', preco: 220 }];
     const P2 = require('./produtos');
-    assert.deepEqual(P2.lerBotao('of:' + oe.oferta.id + ':n'), { oferta: oe.oferta.id, aceito: false });
+    assert.deepEqual(P2.lerBotao('of:' + oe.oferta.id + ':n'), { oferta: oe.oferta.id, aceito: false, opcao: null });
+    assert.equal(P2.lerBotao('of:' + oe.oferta.id + ':v1').opcao, 1);
     assert.equal(P2.lerBotao('of:x:s'), null);
     delete PRODS[2].foto;
     // Sugestão do Gilberto com oferta, enviada pela equipe: vira oferta "pelo Gilberto" (se a conversa ainda não teve)
@@ -658,6 +673,13 @@ falso.listen(0, () => {
     const qx = decodeURIComponent((await r.json()).whatsapp);
     assert.ok(qx.includes('Também quero incluir: Decoração especial (Completa), Combo boia cross + arvorismo.'), qx);
     assert.deepEqual(ofertasF.map(o => [o.produto_nome, o.por, o.situacao]).reverse(), [['Decoração especial (Completa)', 'pagina', 'aceito'], ['Combo boia cross + arvorismo', 'pagina', 'aceito']]);
+    // Os extras marcados viram vendas (pessoas do orçamento) com as tarefas da equipe
+    const vp = vendasF.slice(-2).map(v => [v.produto_codigo, v.variacao, v.quantidade, v.valor_total]);
+    assert.deepEqual(vp, [['DECO', 'Completa', 1, 600], ['COMBO', null, salvo.adultos + salvo.criancas_idades.filter(i => i >= 5).length, 170 * (salvo.adultos + salvo.criancas_idades.filter(i => i >= 5).length)]]);
+    assert.ok(chamadas.some(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST' && c.corpo.tipo === 'Agendar Combo boia cross + arvorismo'));
+    const n2 = vendasF.length;
+    await fetch(base + '/o/' + tok + '/quero', { method: 'POST', body: JSON.stringify({ codigo: 'BGE', extras: [{ codigo: 'DECO', variacao: 'Completa' }] }) });
+    assert.equal(vendasF.length, n2, 'clicar de novo não duplica a venda');
     ofertasF.length = 0;
     assert.equal((await fetch(base + '/o/' + 'x'.repeat(22))).status, 404);
     assert.equal((await fetch(base + '/o/curto')).status, 404);

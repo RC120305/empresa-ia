@@ -112,16 +112,58 @@ function corpoDe(m) {
   return midia && midia.caption || null;
 }
 
-async function respostaDoBotao({ oferta, aceito }, titulo, buscar) {
-  const r = await buscar(`${SUPABASE_URL}/rest/v1/ofertas?id=eq.${oferta}&select=id,negocio_id,produto_nome,situacao`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+// Aceite do cliente (botão da oferta ou extra marcado na página do orçamento): o CRM registra a venda na conta do hóspede
+// e cria as tarefas para a equipe reservar (agendar/preparar/pedir horário + lançar na conta), para o responsável da conversa.
+// Se faltar dado para fechar o valor (ex.: qual das 3 massagens), cria a tarefa de confirmar com o cliente.
+async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variacao, origem }, buscar = fetch) {
+  const p = await produtoPorCodigo(produto_codigo, buscar).catch(() => null);
+  if (!p) return null;
+  const nr = await buscar(`${SUPABASE_URL}/rest/v1/negocios?conversa_id=eq.${conversa_id}&select=id,etapa,data_entrada,responsavel_id&order=criado_em.desc&limit=5`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const ns = nr && nr.ok ? await nr.json().catch(() => []) : [];
+  const negocio = ns.find(x => !['res', 'perd'].includes(x.etapa)) || ns[0] || null;
+  const cr = await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${conversa_id}&select=atribuida_a`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const responsavel = ((cr && cr.ok ? (await cr.json().catch(() => []))[0] : null) || {}).atribuida_a || (negocio && negocio.responsavel_id) || null;
+  // Pessoas e data: do último orçamento da conversa (ou do negócio)
+  const or = await buscar(`${SUPABASE_URL}/rest/v1/orcamentos?conversa_id=eq.${conversa_id}&select=adultos,criancas_idades,data_entrada&order=criado_em.desc&limit=1`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const orc = (or && or.ok ? (await or.json().catch(() => []))[0] : null) || null;
+  const pessoas = orc ? orc.adultos + (orc.criancas_idades || []).filter(i => !p.idade_minima || i >= p.idade_minima).length : null;
+  const chegada = (negocio && negocio.data_entrada) || (orc && orc.data_entrada) || null;
+  const vs = Array.isArray(p.variacoes) ? p.variacoes : [];
+  const nomeVar = variacao || (vs.length === 1 ? vs[0].nome : null);
+  const qtd = p.unidade === 'pessoa' ? pessoas : 1;
+  const origemTxt = origem === 'pagina' ? 'marcou na página do orçamento' : 'aceitou no WhatsApp';
+  const tarefa = t => buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+    body: JSON.stringify({ negocio_id: negocio.id, responsavel_id: responsavel, criado_por: 'CRM', ...t }) }).catch(() => null);
+  let v = null;
+  try { if (qtd) v = produtos.calcularVenda(p, { variacao: nomeVar, adicionais: [], quantidade: qtd }); } catch (e) { v = null; }
+  if (!v) { // falta a opção, as pessoas ou o preço em número: a equipe confirma
+    if (negocio) {
+      await tarefa({ tipo: 'Confirmar e registrar venda', descricao: `O cliente ${origemTxt}: ${p.nome}${nomeVar ? ' (' + nomeVar + ')' : ''}. Confirme ${!nomeVar && vs.length > 1 ? 'a opção (' + vs.map(x => x.nome).join(', ') + '), ' : ''}${!qtd ? 'quantas pessoas, ' : ''}a data e registre a venda no 🛍 da conversa.`, quando: new Date().toISOString() });
+      await eventoNegocio(negocio.id, `Cliente ${origemTxt}: ${p.nome}${nomeVar ? ' (' + nomeVar + ')' : ''} · falta confirmar para registrar a venda`, 'cliente', buscar);
+    }
+    return { venda: null };
+  }
+  const venda = { conversa_id, negocio_id: negocio ? negocio.id : null, oferta_id: oferta_id || null, produto_codigo: p.codigo, produto_nome: p.nome, ...v,
+    data_uso: p.tipo_reserva === 'ativ' ? null : chegada, horario: null,
+    observacoes: `O cliente ${origemTxt}. Confirmar ${p.tipo_reserva === 'simples' ? 'a data' : 'o dia e o horário'} com ele.`, criado_por: null };
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/vendas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify(venda), signal: AbortSignal.timeout(5000) });
+  if (!r.ok) throw new Error('venda ' + r.status);
+  if (negocio) {
+    for (const t of produtos.tarefasDaVenda(p, venda, { data_entrada: chegada })) await tarefa(t);
+    await eventoNegocio(negocio.id, `Cliente ${origemTxt}: ${p.nome}${v.variacao ? ' (' + v.variacao + ')' : ''} · venda registrada ${produtos.brl(v.valor_total)} na conta do hóspede`, 'cliente', buscar);
+  }
+  return { venda: (await r.json().catch(() => []))[0] || venda };
+}
+async function respostaDoBotao({ oferta, aceito, opcao }, titulo, buscar) {
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/ofertas?id=eq.${oferta}&select=id,conversa_id,negocio_id,produto_codigo,produto_nome,situacao`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
   const o = r.ok ? (await r.json())[0] : null;
   if (!o || o.situacao !== 'oferecido') return;
   await buscar(`${SUPABASE_URL}/rest/v1/ofertas?id=eq.${o.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
     body: JSON.stringify({ situacao: aceito ? 'aceito' : 'recusado', respondido_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) });
-  if (!o.negocio_id) return;
-  await eventoNegocio(o.negocio_id, (aceito ? 'Cliente aceitou pelo botão (' + titulo + '): ' : 'Cliente recusou pelo botão: ') + o.produto_nome, 'cliente', buscar);
-  if (aceito) await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
-    body: JSON.stringify({ negocio_id: o.negocio_id, tipo: 'Registrar venda', descricao: 'O cliente tocou em "' + titulo + '" na oferta de ' + o.produto_nome + '. Combine a data e registre a venda no 🛍 da conversa.', quando: new Date().toISOString(), criado_por: 'CRM' }) });
+  if (!aceito) { if (o.negocio_id) await eventoNegocio(o.negocio_id, 'Cliente recusou pelo botão: ' + o.produto_nome, 'cliente', buscar); return; }
+  const p = await produtoPorCodigo(o.produto_codigo, buscar).catch(() => null);
+  const vs = p && Array.isArray(p.variacoes) ? p.variacoes : [];
+  await aceiteDoCliente({ conversa_id: o.conversa_id, oferta_id: o.id, produto_codigo: o.produto_codigo, variacao: opcao != null && vs[opcao] ? vs[opcao].nome : null, origem: 'whatsapp' }, buscar);
 }
 
 async function registrar(evento, buscar = fetch) {
@@ -1104,10 +1146,12 @@ const servidor = http.createServer((req, res) => {
               const ja = await ofertasDaConversa(o.conversa_id);
               for (const e of extras) {
                 if (ja.some(x => x.produto_codigo === e.codigo && x.situacao === 'aceito')) continue;
-                await fetch(`${SUPABASE_URL}/rest/v1/ofertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
-                  body: JSON.stringify({ conversa_id: o.conversa_id, negocio_id: negocio, produto_codigo: e.codigo, produto_nome: e.nome + (e.variacao ? ' (' + e.variacao + ')' : ''), por: 'pagina', situacao: 'aceito', respondido_em: new Date().toISOString() }) }).catch(() => {});
+                const ro = await fetch(`${SUPABASE_URL}/rest/v1/ofertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
+                  body: JSON.stringify({ conversa_id: o.conversa_id, negocio_id: negocio, produto_codigo: e.codigo, produto_nome: e.nome + (e.variacao ? ' (' + e.variacao + ')' : ''), por: 'pagina', situacao: 'aceito', respondido_em: new Date().toISOString() }) }).catch(() => null);
+                const of = ro && ro.ok ? (await ro.json().catch(() => []))[0] : null;
+                await aceiteDoCliente({ conversa_id: o.conversa_id, oferta_id: of && of.id, produto_codigo: e.codigo, variacao: e.variacao, origem: 'pagina' })
+                  .catch(err => console.warn(JSON.stringify({ evento: 'aceite_pagina', erro: String(err.message || err).slice(0, 200) })));
               }
-              if (negocio) await eventoNegocio(negocio, 'Marcou na página do orçamento: ' + extras.map(e => e.nome + (e.variacao ? ' (' + e.variacao + ')' : '')).join(', '), 'cliente');
             }
           }
           const cat = orcamento.CATALOGO[op.codigo];

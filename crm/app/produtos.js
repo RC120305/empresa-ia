@@ -123,7 +123,7 @@ function mensagemOferta(p, texto, ofertaId, linkFoto) {
 // Resposta do cliente ao botão: "of:<oferta>:s|n|v0|v1"
 function lerBotao(id) {
   const m = /^of:([0-9a-f-]{36}):(s|n|v\d)$/.exec(String(id || ''));
-  return m ? { oferta: m[1], aceito: m[2] !== 'n' } : null;
+  return m ? { oferta: m[1], aceito: m[2] !== 'n', opcao: m[2][0] === 'v' ? Number(m[2].slice(1)) : null } : null;
 }
 
 module.exports = { mensagemOferta, botoesOferta, lerBotao, RODAPE_OFERTA, PERFIS, camposExtras, precoTexto, calcularVenda, tarefasDaVenda, ErroProduto, brl };
