@@ -38,6 +38,11 @@ function camposExtras(corpo, gruposFotos = []) {
   if (corpo.unidade !== undefined) { if (!['pessoa', 'unidade'].includes(corpo.unidade)) throw new ErroProduto('Unidade inválida.'); d.unidade = corpo.unidade; }
   const v = listaPrecos(corpo.variacoes, 'Variações', true); if (v !== undefined) d.variacoes = v;
   const a = listaPrecos(corpo.adicionais, 'Adicionais', false); if (a !== undefined) d.adicionais = a;
+  if (corpo.foto !== undefined) {
+    const f = texto(corpo.foto, 80) || null;
+    if (f && !/^[\w.-]+\.jpg$/.test(f)) throw new ErroProduto('Foto inválida.');
+    d.foto = f;
+  }
   if (corpo.grupo_fotos !== undefined) {
     const g = texto(corpo.grupo_fotos, 20) || null;
     if (g && !gruposFotos.includes(g)) throw new ErroProduto('Categoria de fotos inválida.');
@@ -98,4 +103,27 @@ function tarefasDaVenda(p, venda, { data_entrada } = {}, agora = new Date()) {
   return out;
 }
 
-module.exports = { PERFIS, camposExtras, precoTexto, calcularVenda, tarefasDaVenda, ErroProduto, brl };
+// Mensagem do WhatsApp com foto, texto e botões de resposta (só dentro da janela de 24 h).
+// Até 2 opções: um botão por opção ("Quero a Completa"); mais que isso: "Eu aceito" e a equipe pergunta qual.
+const RODAPE_OFERTA = 'Vai na conta da hospedagem, acertada no check-out';
+function botoesOferta(p, ofertaId) {
+  const vs = p.variacoes || [];
+  const sim = vs.length === 2 ? vs.map((v, i) => ({ id: 'of:' + ofertaId + ':v' + i, title: ('Quero a ' + v.nome).slice(0, 20) })) : [{ id: 'of:' + ofertaId + ':s', title: 'Eu aceito' }];
+  return [...sim, { id: 'of:' + ofertaId + ':n', title: 'Não, obrigado' }];
+}
+function mensagemOferta(p, texto, ofertaId, linkFoto) {
+  return {
+    type: 'button',
+    header: linkFoto ? { type: 'image', image: { link: linkFoto } } : { type: 'text', text: p.nome.slice(0, 60) },
+    body: { text: texto.slice(0, 1024) },
+    footer: { text: RODAPE_OFERTA },
+    action: { buttons: botoesOferta(p, ofertaId).map(b => ({ type: 'reply', reply: b })) },
+  };
+}
+// Resposta do cliente ao botão: "of:<oferta>:s|n|v0|v1"
+function lerBotao(id) {
+  const m = /^of:([0-9a-f-]{36}):(s|n|v\d)$/.exec(String(id || ''));
+  return m ? { oferta: m[1], aceito: m[2] !== 'n' } : null;
+}
+
+module.exports = { mensagemOferta, botoesOferta, lerBotao, RODAPE_OFERTA, PERFIS, camposExtras, precoTexto, calcularVenda, tarefasDaVenda, ErroProduto, brl };

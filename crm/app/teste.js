@@ -540,6 +540,35 @@ falso.listen(0, () => {
     assert.equal((await api('/api/venda', { conversa_id: conv, produto_codigo: 'PIQ', quantidade: 1 })).status, 400, 'sem preço em número');
     r = await api('/api/venda-situacao', { id: vj1.venda.id, situacao: 'lancado' });
     assert.equal(r.status, 200); assert.equal(vendasF[0].situacao, 'lancado'); assert.equal(vendasF[0].lancado_por, 'u-1');
+    // Oferta pelo WhatsApp: foto do produto, texto, rodapé e botões; o toque do cliente marca a resposta
+    ofertasF.length = 0; PRODS[2].foto = 'BOIA-1.jpg';
+    r = await api('/api/oferta-enviar', { conversa_id: conv, produto_codigo: 'DECO', texto: '*Decoração especial*\nPreparada no quarto.' });
+    const oe = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(oe));
+    const im = chamadas.findLast(c => c.url === '/graph/111/messages' && c.corpo.type === 'interactive').corpo.interactive;
+    assert.ok(im.header.image.link.endsWith('/fotos/BOIA-1.jpg'));
+    assert.equal(im.body.text, '*Decoração especial*\nPreparada no quarto.'); assert.equal(im.footer.text, 'Vai na conta da hospedagem, acertada no check-out');
+    assert.deepEqual(im.action.buttons.map(b => b.reply.title), ['Quero a Simples', 'Quero a Completa', 'Não, obrigado']);
+    assert.ok(im.action.buttons.every(b => b.reply.id.startsWith('of:' + oe.oferta.id + ':') && b.reply.title.length <= 20));
+    assert.ok(oe.mensagem.corpo.endsWith('[ Quero a Simples ] [ Quero a Completa ] [ Não, obrigado ]') && oe.mensagem.arquivo === 'BOIA-1.jpg');
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/rpc/registrar_saida_midia').corpo.p_caminho, 'biblioteca/BOIA-1.jpg');
+    assert.equal((await api('/api/oferta-enviar', { conversa_id: conv, produto_codigo: 'COMBO', texto: 'Combo das aventuras' })).status, 409, '1 oferta por conversa');
+    r = await api('/api/oferta-enviar', { conversa_id: conv, produto_codigo: 'COMBO', texto: 'Combo das aventuras', forcar: true });
+    assert.deepEqual(chamadas.findLast(c => c.url === '/graph/111/messages' && c.corpo.type === 'interactive').corpo.interactive.action.buttons.map(b => b.reply.title), ['Eu aceito', 'Não, obrigado']);
+    assert.equal((await api('/api/oferta-enviar', { conversa_id: conv, produto_codigo: 'COMBO', texto: 'curto', forcar: true })).status, 400);
+    // O cliente toca em "Quero a Completa"
+    r = await postar(JSON.stringify({ entry: [{ changes: [{ value: { metadata: { phone_number_id: '111' }, contacts: [{ wa_id: '5567999990000', profile: { name: 'Cliente Teste' } }],
+      messages: [{ from: '5567999990000', id: 'wamid.BOT', timestamp: '1700000100', type: 'interactive', interactive: { type: 'button_reply', button_reply: { id: 'of:' + oe.oferta.id + ':v1', title: 'Quero a Completa' } } }] } }] }] }));
+    assert.equal(r.status, 200);
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/rpc/registrar_entrada_whatsapp').corpo.p_corpo, 'Quero a Completa');
+    assert.equal(ofertasF.find(o => o.id === oe.oferta.id).situacao, 'aceito');
+    const tb = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo;
+    assert.equal(tb.tipo, 'Registrar venda'); assert.ok(tb.descricao.includes('Quero a Completa'));
+    assert.ok(chamadas.findLast(c => c.url === '/rest/v1/negocio_eventos').corpo.texto.startsWith('Cliente aceitou pelo botão (Quero a Completa)'));
+    const P2 = require('./produtos');
+    assert.deepEqual(P2.lerBotao('of:' + oe.oferta.id + ':n'), { oferta: oe.oferta.id, aceito: false });
+    assert.equal(P2.lerBotao('of:x:s'), null);
+    delete PRODS[2].foto;
     // Sugestão do Gilberto com oferta, enviada pela equipe: vira oferta "pelo Gilberto" (se a conversa ainda não teve)
     ofertasF.length = 0; iaOferta = 'COMBO';
     const sgo = await (await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-equipe' }, body: JSON.stringify({ conversa_id: conv }) })).json();

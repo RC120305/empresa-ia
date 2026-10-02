@@ -112,6 +112,18 @@ function corpoDe(m) {
   return midia && midia.caption || null;
 }
 
+async function respostaDoBotao({ oferta, aceito }, titulo, buscar) {
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/ofertas?id=eq.${oferta}&select=id,negocio_id,produto_nome,situacao`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+  const o = r.ok ? (await r.json())[0] : null;
+  if (!o || o.situacao !== 'oferecido') return;
+  await buscar(`${SUPABASE_URL}/rest/v1/ofertas?id=eq.${o.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
+    body: JSON.stringify({ situacao: aceito ? 'aceito' : 'recusado', respondido_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) });
+  if (!o.negocio_id) return;
+  await eventoNegocio(o.negocio_id, (aceito ? 'Cliente aceitou pelo botão (' + titulo + '): ' : 'Cliente recusou pelo botão: ') + o.produto_nome, 'cliente', buscar);
+  if (aceito) await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+    body: JSON.stringify({ negocio_id: o.negocio_id, tipo: 'Registrar venda', descricao: 'O cliente tocou em "' + titulo + '" na oferta de ' + o.produto_nome + '. Combine a data e registre a venda no 🛍 da conversa.', quando: new Date().toISOString(), criado_por: 'CRM' }) });
+}
+
 async function registrar(evento, buscar = fetch) {
   let gravadas = 0;
   for (const entrada of evento.entry || []) {
@@ -131,6 +143,9 @@ async function registrar(evento, buscar = fetch) {
             p_quando: m.timestamp ? new Date(Number(m.timestamp) * 1000).toISOString() : null,
           }, buscar);
           item.gravado = true; gravadas++;
+          // Toque num botão de oferta ("Eu aceito" / "Não, obrigado"): marca a resposta sozinho
+          const botao = m.type === 'interactive' && produtos.lerBotao(((m.interactive || {}).button_reply || {}).id);
+          if (botao) await respostaDoBotao(botao, corpoDe(m), buscar).catch(e => console.warn(JSON.stringify({ evento: 'botao_oferta', erro: String(e.message || e).slice(0, 200) })));
           // Foto, áudio, vídeo, documento: guarda já uma cópia (a Meta apaga em 30 dias). Se falhar, a tela busca depois.
           if (midia && midia.id && res && res.nova && WA_TOKEN) {
             await guardarMidia({ id: res.mensagem_id, conversa_id: res.conversa_id, midia_id: midia.id, midia_nome: midia.filename || null }, buscar)
@@ -668,6 +683,7 @@ const API_EQUIPE = {
     for (const k of ['antecedencia_dias', 'prioridade']) if (corpo[k] !== undefined) { const v = parseInt(corpo[k], 10); if (!(v >= 0 && v < 400)) throw new ErroEnvio(400, 'Número inválido.'); dados[k] = v; }
     if (corpo.ativo !== undefined) dados.ativo = !!corpo.ativo;
     try { Object.assign(dados, produtos.camposExtras(corpo, orcamento.GRUPOS)); } catch (e) { throw new ErroEnvio(400, e.message); }
+    if (dados.foto) { await atualizarFotos(); if (!fotoAtiva(dados.foto)) throw new ErroEnvio(400, 'Essa foto não está no Banco de fotos.'); }
     // Preço como o cliente lê: se ficar vazio, o CRM monta pelo preço em número ou pelas variações
     if (!dados.preco && (dados.preco_valor != null || (dados.variacoes && dados.variacoes.length))) dados.preco = produtos.precoTexto({ ...dados, unidade: dados.unidade || 'unidade' });
     if (corpo.id) {
@@ -696,6 +712,40 @@ const API_EQUIPE = {
     const o = (await r.json())[0];
     if (o.negocio_id) await eventoNegocio(o.negocio_id, 'Oferecido: ' + p.nome, eu.id);
     return { ok: true, oferta: o };
+  },
+  // Oferta enviada no WhatsApp: foto do produto, texto e botões "Eu aceito" / "Não, obrigado"
+  'POST /api/oferta-enviar': async (corpo, eu) => {
+    if (!WA_TOKEN) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
+    const p = await produtoPorCodigo(corpo.produto_codigo);
+    const texto = String(corpo.texto || '').trim();
+    if (texto.length < 10 || texto.length > 1000) throw new ErroEnvio(400, 'O texto da oferta precisa ter de 10 a 1.000 caracteres.');
+    const { conv, para } = await carregarConversaParaEnvio(corpo.conversa_id, fetch);
+    const ja = await ofertasDaConversa(conv.id);
+    if (ja.length && !corpo.forcar) throw new ErroEnvio(409, 'Já houve oferta nesta conversa (' + ja[0].produto_nome + ').');
+    await atualizarFotos().catch(() => {});
+    const bib = orcamento.biblioteca();
+    const foto = p.foto && fotoAtiva(p.foto) ? p.foto : (((bib.find(g => g.grupo === p.grupo_fotos) || {}).fotos || [])[0] || {}).arquivo || null;
+    const negocio = await negocioDaConversa(conv.id);
+    const ro = await fetch(`${SUPABASE_URL}/rest/v1/ofertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ conversa_id: conv.id, negocio_id: negocio, produto_codigo: p.codigo, produto_nome: p.nome, por: 'equipe', autor_id: eu.id }) });
+    if (!ro.ok) throw new ErroEnvio(ro.status === 404 ? 503 : 502, 'Não deu para registrar a oferta (o banco precisa da migração 012?).');
+    const oferta = (await ro.json())[0];
+    const interactive = produtos.mensagemOferta(p, texto, oferta.id, foto ? `${URL_PUBLICA}/fotos/${foto}` : null);
+    const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: para, type: 'interactive', interactive }, fetch);
+    if (!r.ok || !r.json.messages || !r.json.messages[0]) {
+      const e = r.json.error || {};
+      ultimoErroMeta = { quando: new Date().toISOString(), http: r.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
+      await fetch(`${SUPABASE_URL}/rest/v1/ofertas?id=eq.${oferta.id}`, { method: 'DELETE', headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => {});
+      throw new ErroEnvio(502, 'A Meta não aceitou a oferta' + (e.code ? ` (código ${e.code})` : '') + '.');
+    }
+    // Na caixa a oferta aparece como a foto com o texto e os botões que o cliente vê
+    const visto = texto + '\n\n' + interactive.action.buttons.map(b => '[ ' + b.reply.title + ' ]').join(' ');
+    const wamid = r.json.messages[0].id;
+    const id = foto
+      ? await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: wamid, p_tipo: 'image', p_legenda: visto, p_caminho: 'biblioteca/' + foto, p_mime: 'image/jpeg', p_nome: null, p_autor: eu.id })
+      : await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: wamid, p_corpo: visto, p_autor: eu.id });
+    if (negocio) await eventoNegocio(negocio, 'Oferecido no WhatsApp: ' + p.nome, eu.id);
+    return { ok: true, oferta, mensagem: { id, tipo: foto ? 'image' : 'text', arquivo: foto, corpo: visto, enviada_em: new Date().toISOString() } };
   },
   // Resposta do cliente à oferta
   'POST /api/oferta-resposta': async (corpo, eu) => {

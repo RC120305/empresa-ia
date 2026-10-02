@@ -881,12 +881,14 @@
   $('resposta').addEventListener('blur', () => setTimeout(() => { if (!atalhoTodos) $('atalhos').hidden = true; }, 150));
 
   // ================= Formulário genérico (produto, agência, resposta) =================
-  function abrirForm(titulo, campos, salvar, extra) {
+  function abrirForm(titulo, campos, salvar, extra, rotuloSalvar) {
     $('f-tit').textContent = titulo;
     const box = $('f-campos'); box.textContent = '';
     const ref = {};
     campos.forEach(c => {
       let inp;
+      if (c.tipo === 'img') { box.append(el('img', { class: 'form-img', src: c.src, alt: c.rotulo || '' })); return; }
+      if (c.tipo === 'nota') { box.append(el('p', { class: 'lat-txt largo', text: c.rotulo })); return; }
       if (c.tipo === 'select') inp = el('select', {}, c.opcoes.map(([v, t]) => el('option', { value: v, text: t, selected: String(c.valor ?? '') === String(v) })));
       else if (c.tipo === 'textarea') { inp = el('textarea', { placeholder: c.dica || '' }); inp.value = c.valor || ''; }
       else if (c.tipo === 'check') { inp = el('input', { type: 'checkbox', checked: !!c.valor }); box.append(el('label', { class: 'campo-check' }, inp, c.rotulo)); ref[c.k] = inp; return; }
@@ -895,7 +897,7 @@
       box.append(el('label', { class: 'campo' + (c.largo ? ' largo' : '') }, c.rotulo, inp));
     });
     const fechar = () => { $('f-fundo').hidden = true; $('form-modal').hidden = true; };
-    const ok = el('button', { class: 'btn btn-enviar', type: 'button', text: 'Salvar', onclick: async () => {
+    const ok = el('button', { class: 'btn btn-enviar', type: 'button', text: rotuloSalvar || 'Salvar', onclick: async () => {
       const v = Object.fromEntries(Object.entries(ref).map(([k, i]) => [k, i.type === 'checkbox' ? i.checked : i.value]));
       ok.setAttribute('disabled', '');
       try { await salvar(v); fechar(); } catch (e) { toast(e.message); } finally { ok.removeAttribute('disabled'); }
@@ -918,7 +920,7 @@
     const fotoDe = g => { const x = g && (biblioteca || []).find(b => b.grupo === g); return x && x.fotos[0] ? x.fotos[0].arquivo : null; };
     if (!biblioteca) carregarBiblioteca().then(() => { if (!document.querySelector('section[data-painel="produtos"]').hidden) carregarProdutos(); }).catch(() => {});
     produtos.forEach(p => {
-      const vs = p.variacoes || [], ads = p.adicionais || [], foto = fotoDe(p.grupo_fotos);
+      const vs = p.variacoes || [], ads = p.adicionais || [], foto = p.foto || fotoDe(p.grupo_fotos);
       const para = [p.perfis && p.perfis.length ? p.perfis.join(', ') : 'Todos os perfis', p.idade_minima ? 'a partir de ' + p.idade_minima + ' anos' : '', p.altura_minima_cm ? 'mínimo ' + (p.altura_minima_cm / 100).toLocaleString('pt-BR') + ' m' : ''].filter(Boolean).join(' · ');
       box.append(el('div', { class: 'cartao item-cartao' + (p.ativo ? '' : ' inativo') },
         foto ? el('img', { class: 'prod-foto', src: '/fotos/' + foto, alt: p.nome, loading: 'lazy' }) : null,
@@ -960,7 +962,8 @@
       ...PERFIS.map((x, i) => ({ k: 'perfil_' + i, rotulo: 'Para: ' + x, tipo: 'check', valor: (p.perfis || []).includes(x) })),
       { k: 'idade_minima', rotulo: 'Idade mínima (anos)', tipo: 'number', valor: p.idade_minima ?? '', at: { min: '0' } },
       { k: 'altura_minima_cm', rotulo: 'Altura mínima (cm)', tipo: 'number', valor: p.altura_minima_cm ?? '', at: { min: '0' } },
-      { k: 'grupo_fotos', rotulo: 'Fotos (categoria do Banco de fotos)', tipo: 'select', valor: p.grupo_fotos || '', opcoes: [['', 'Sem fotos'], ...(biblioteca || []).map(g => [g.grupo, g.nome])] },
+      { k: 'foto', rotulo: 'Foto representativa (vai na oferta do WhatsApp)', tipo: 'select', largo: true, valor: p.foto || '', opcoes: [['', 'Sem foto'], ...(biblioteca || []).flatMap(g => g.fotos.map(f => [f.arquivo, g.nome + ' · ' + (f.descricao || f.arquivo).slice(0, 70)]))] },
+      { k: 'grupo_fotos', rotulo: 'Mais fotos (categoria do Banco de fotos)', tipo: 'select', valor: p.grupo_fotos || '', opcoes: [['', 'Sem fotos'], ...(biblioteca || []).map(g => [g.grupo, g.nome])] },
       { k: 'tipo_reserva', rotulo: 'Como se reserva', tipo: 'select', valor: p.tipo_reserva || 'simples', opcoes: Object.entries(TIPO_RESERVA) },
       { k: 'quando_oferecer', rotulo: 'Quando oferecer', tipo: 'select', valor: p.quando_oferecer || 'Na cotação', opcoes: ['Na cotação', '3 dias antes da chegada', 'Durante a estadia', 'Cotação e estadia'].map(x => [x, x]) },
       { k: 'antecedencia_dias', rotulo: 'Antecedência mínima (dias)', tipo: 'number', valor: p.antecedencia_dias ?? 0, at: { min: '0' } },
@@ -968,7 +971,7 @@
     ], async v => {
       const dados = { nome: v.nome, codigo: v.codigo, preco: v.preco, descricao: v.descricao, regras: v.regras, tipo_reserva: v.tipo_reserva, quando_oferecer: v.quando_oferecer, antecedencia_dias: v.antecedencia_dias, prioridade: v.prioridade };
       if (novos) Object.assign(dados, { preco_valor: v.preco_valor, unidade: v.unidade, variacoes: linhasParaLista(v.variacoes), adicionais: linhasParaLista(v.adicionais),
-        perfis: PERFIS.filter((x, i) => v['perfil_' + i]), idade_minima: v.idade_minima, altura_minima_cm: v.altura_minima_cm, grupo_fotos: v.grupo_fotos });
+        perfis: PERFIS.filter((x, i) => v['perfil_' + i]), idade_minima: v.idade_minima, altura_minima_cm: v.altura_minima_cm, grupo_fotos: v.grupo_fotos, foto: v.foto });
       if (dados.variacoes && dados.variacoes.length && v.preco === (p.preco || '') && p.id) dados.preco = ''; // opções mudaram: o CRM refaz o preço de leitura
       await chamarApi('/api/produto', { ...(p.id ? { id: p.id } : {}), ...dados });
       toast('Produto salvo. O Gilberto passa a usar em até 1 minuto.' + (novos ? '' : ' (Rode a migração 012 para os campos novos.)'));
@@ -1412,13 +1415,43 @@
     if (p.antecedencia_dias && ctx.dias != null && ctx.dias < p.antecedencia_dias) m.push('faltam ' + Math.max(0, ctx.dias) + ' dia(s) para a chegada (pedir com ' + p.antecedencia_dias + ')');
     return m.join(' · ');
   }
+  // Texto da oferta (o corpo da mensagem do WhatsApp; a foto, o rodapé e os botões vão junto)
   function textoOferta(p) {
     const vs = p.variacoes || [], por = p.unidade === 'pessoa' ? ' por pessoa' : '';
-    const linhas = ['Para deixar a viagem ainda melhor: ' + p.nome + (p.descricao ? '. ' + p.descricao.replace(/\.$/, '') : '') + '.'];
+    const linhas = ['*' + p.nome + '*'];
+    if (p.descricao) linhas.push(p.descricao);
     if (vs.length > 1) linhas.push(vs.map(v => '• ' + v.nome + ': ' + reais(v.preco) + por + (v.descricao ? ' (' + v.descricao + ')' : '')).join('\n'));
-    else linhas.push(precoProduto(p) + (p.idade_minima ? ', a partir de ' + p.idade_minima + ' anos' + (p.altura_minima_cm ? ' e ' + (p.altura_minima_cm / 100).toLocaleString('pt-BR') + ' m' : '') : '') + '.');
-    linhas.push('Vai para a conta da hospedagem e é acertado no check-out. Se quiserem, já deixo reservado 🌿');
+    else linhas.push('Valor: ' + precoProduto(p) + '.');
+    if (p.idade_minima) linhas.push('A partir de ' + p.idade_minima + ' anos' + (p.altura_minima_cm ? ' e ' + (p.altura_minima_cm / 100).toLocaleString('pt-BR') + ' m' : '') + '.');
+    linhas.push('Quer incluir na sua estadia?');
     return linhas.join('\n');
+  }
+  const fotoDoProduto = p => p.foto || (((biblioteca || []).find(g => g.grupo === p.grupo_fotos) || {}).fotos || [])[0]?.arquivo || null;
+  // Oferecer: prévia da mensagem (foto + texto + botões) e envio pelo WhatsApp
+  async function oferecer(c, p, ofertas, motivo) {
+    if (ofertas.length && !confirm('Já houve oferta nesta conversa (' + ofertas[0].produto_nome + '). A regra é 1 oferta por conversa. Oferecer mesmo assim?')) return;
+    if (motivo && !confirm('Atenção: ' + motivo + '. Oferecer mesmo assim?')) return;
+    if (!biblioteca) await carregarBiblioteca().catch(() => {});
+    const foto = fotoDoProduto(p), vs = p.variacoes || [];
+    const botoes = (vs.length === 2 ? vs.map(v => 'Quero a ' + v.nome) : ['Eu aceito']).concat('Não, obrigado');
+    abrirForm('Oferecer: ' + p.nome, [
+      ...(foto ? [{ tipo: 'img', src: '/fotos/' + foto, rotulo: p.nome }] : [{ tipo: 'nota', rotulo: 'Sem foto: cadastre a foto do produto na tela Produtos.' }]),
+      { k: 'texto', rotulo: 'Texto da mensagem (dá para editar)', tipo: 'textarea', largo: true, valor: textoOferta(p) },
+      { tipo: 'nota', rotulo: 'Rodapé: "Vai na conta da hospedagem, acertada no check-out" · Botões: ' + botoes.map(b => '[ ' + b + ' ]').join(' ') + '. Quando o cliente tocar num botão, a resposta é marcada sozinha.' },
+    ], async v => {
+      const r = await chamarApi('/api/oferta-enviar', { conversa_id: c.id, produto_codigo: p.codigo, texto: v.texto, forcar: true });
+      const m = r.mensagem;
+      if (m.arquivo && m.id) arquivos.set(m.id, Promise.resolve({ url: '/fotos/' + m.arquivo, nome: m.arquivo, mime: 'image/jpeg' }));
+      if (aberta === c.id && m.id && !$('mensagens').querySelector('[data-id="' + m.id + '"]')) { adicionarMensagem({ id: m.id, direcao: 'saida', autor: eu && eu.id, tipo: m.tipo, corpo: m.corpo, status_entrega: 'sent', enviada_em: m.enviada_em }, ultimoDiaTela()); rolarFim(); }
+      toast('Oferta enviada no WhatsApp com foto e botões.');
+      if (painel === 'pro') pintarPainel();
+    }, fechar => el('button', { class: 'btn btn-editar', type: 'button', text: 'Só copiar para o campo', onclick: () => {
+      const ta = $('resposta'), t = $('f-campos').querySelector('textarea');
+      ta.value = (ta.value.trim() ? ta.value.trim() + '\n---\n' : '') + (t ? t.value : textoOferta(p));
+      ofertaPendente = { conversa: c.id, codigo: p.codigo, nome: p.nome };
+      fechar(); ajustarAltura(); ta.focus();
+      toast('Texto no campo de resposta (sem botões). A oferta é registrada quando você enviar.');
+    } }), 'Enviar no WhatsApp');
   }
   async function painelProdutos(lat, c) {
     if (!c) return;
@@ -1476,15 +1509,7 @@
       p.descricao ? el('small', { text: p.descricao }) : null,
       motivo ? el('small', { class: 'motivo', text: '⚠ ' + motivo }) : (p.regras ? el('small', { text: p.regras }) : null),
       el('div', { class: 'acoes' },
-        el('button', { class: 'btn-mini', type: 'button', text: 'Oferecer', onclick: () => {
-          if (ofertas.length && !confirm('Já houve oferta nesta conversa (' + ofertas[0].produto_nome + '). A regra é 1 oferta por conversa. Oferecer mesmo assim?')) return;
-          if (motivo && !confirm('Atenção: ' + motivo + '. Oferecer mesmo assim?')) return;
-          const ta = $('resposta');
-          ta.value = (ta.value.trim() ? ta.value.trim() + '\n---\n' : '') + textoOferta(p);
-          ofertaPendente = { conversa: id, codigo: p.codigo, nome: p.nome };
-          ajustarAltura(); ta.focus();
-          toast('Texto da oferta no campo de resposta. A oferta é registrada quando você enviar.');
-        } }),
+        el('button', { class: 'btn-mini', type: 'button', text: 'Oferecer', onclick: () => oferecer(c, p, ofertas, motivo) }),
         p.grupo_fotos ? el('button', { class: 'btn-mini', type: 'button', text: '🖼 Fotos', onclick: () => { gal.cat = p.grupo_fotos; if (!$('galeria').hidden) fecharGaleria(); abrirGaleria(); } }) : null,
         el('button', { class: 'btn-mini', type: 'button', text: 'Registrar venda', onclick: () => formVenda(c, p, null) })));
     indicados.forEach(p => lat.append(cartao(p, '')));

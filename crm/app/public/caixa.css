@@ -396,3 +396,5 @@ section[data-painel="produtos"],section[data-painel="agencias"],section[data-pai
 .fora-lista[open]{gap:6px}
 .fora-lista > .sug-prod{margin-top:6px}
 .prod-foto{width:100%;max-width:200px;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r-sm)}
+.form-img{grid-column:1/-1;width:100%;max-width:320px;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r-md)}
+.lat-txt.largo{grid-column:1/-1}
