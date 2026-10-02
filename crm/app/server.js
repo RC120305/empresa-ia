@@ -1214,7 +1214,13 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
         mensagem: r.mensagem, notas_internas: r.notas_internas, precisa_equipe: r.precisa_equipe, modelo: r.modelo,
         ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo), produto_oferecido: r.produto_oferecido || null, vitrines: r.vitrines || [] }, pedida_por: eu.id }) }).catch(() => null);
     const sugestaoId = reg && reg.ok ? ((await reg.json().catch(() => []))[0] || {}).id : null;
-    return { ok: true, ...r, sugestao_id: sugestaoId || null };
+    let avisoRevisao = null;
+    if (!sugestaoId) { // a sugestão vale, mas não entrou na Revisão: mostra o motivo para a equipe
+      const det = reg ? (await reg.text().catch(() => '')).slice(0, 200) : 'sem resposta do banco';
+      console.warn(JSON.stringify({ evento: 'sugestao_nao_registrada', http: reg && reg.status, erro: det }));
+      avisoRevisao = 'A sugestão não entrou na Revisão (' + (reg ? 'erro ' + reg.status : 'banco fora') + (reg && reg.status === 404 ? ': falta a migração 009' : '') + ').';
+    }
+    return { ok: true, ...r, sugestao_id: sugestaoId || null, aviso_revisao: avisoRevisao };
   } catch (e) {
     if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message);
     throw e;

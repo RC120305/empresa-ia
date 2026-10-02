@@ -683,6 +683,8 @@
     aviso('');
     try {
       const j = await chamarApi('/api/sugerir', { conversa_id: id });
+      if (j.aviso_revisao) toast(j.aviso_revisao);
+      else contarRevisao();
       if (aberta !== id) return;
       const box = $('sug-texto'); box.textContent = '';
       baloes(j.mensagem).forEach(t => box.append(el('div', {}, linkar(t))));
