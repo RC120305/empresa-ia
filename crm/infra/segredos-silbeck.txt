@@ -1,0 +1,36 @@
+bash <<'FIM'
+# CRM Cabanas: guarda no cofre do Google (Secret Manager) o endereço e as credenciais do Silbeck.
+# Rodar no Cloud Shell. O script PERGUNTA cada valor: digite ali, nunca no chat.
+# O client secret não aparece na tela enquanto você digita (é normal).
+# Pode rodar de novo para trocar um valor (ex.: quando a Silbeck trocar o client secret).
+set -euo pipefail
+gcloud config set project cabanas-crm >/dev/null
+
+guardar() { # nome valor
+  if gcloud secrets describe "$1" >/dev/null 2>&1; then
+    printf '%s' "$2" | gcloud secrets versions add "$1" --data-file=- >/dev/null
+  else
+    printf '%s' "$2" | gcloud secrets create "$1" --replication-policy=user-managed --locations=southamerica-east1 --data-file=- >/dev/null
+  fi
+  echo "  ✓ $1 guardado"
+}
+
+echo "Endereço do Silbeck visto de fora do hotel (IP público ou nome do hotel e a porta 8366)."
+read -r -p "IP ou nome público do hotel (ex.: 200.100.50.25): " HOST </dev/tty
+HOST="$(echo "$HOST" | tr -d '[:space:]' | sed -e 's#^https\?://##' -e 's#/.*$##' -e 's#:.*$##')"
+read -r -p "Porta da API [8366]: " PORTA </dev/tty
+PORTA="${PORTA:-8366}"
+read -r -p "client_id do Silbeck: " CID </dev/tty
+read -r -s -p "client_secret do Silbeck (não aparece ao digitar): " CSEC </dev/tty; echo
+
+[ -n "$HOST" ] && [ -n "$CID" ] && [ -n "$CSEC" ] || { echo "Faltou algum valor. Nada foi guardado."; exit 1; }
+guardar silbeck-url "http://${HOST}:${PORTA}/datasnap/rest"
+guardar silbeck-client-id "$CID"
+guardar silbeck-client-secret "$CSEC"
+unset CSEC CID
+
+echo "----------------------------------------------------------------"
+echo "Pronto! Agora abra: https://crm-377803250649.southamerica-east1.run.app/saude/silbeck"
+echo "(o teste é refeito no máximo a cada 1 minuto)"
+echo "----------------------------------------------------------------"
+FIM

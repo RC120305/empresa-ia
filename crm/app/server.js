@@ -6,6 +6,7 @@ const http = require('http');
 const crypto = require('crypto');
 const fs = require('fs');
 const gilberto = require('./gilberto');
+const silbeck = require('./silbeck');
 const path = require('path');
 
 const porta = process.env.PORT || 8080;
@@ -386,6 +387,14 @@ const servidor = http.createServer((req, res) => {
       .then(() => json(res, 200, { ...base, banco: 'ok' }))
       .catch(() => json(res, 200, { ...base, banco: 'erro', erro: ultimoErroBanco }))
       .catch(() => json(res, 200, { ...base, banco: 'sem conexão' }));
+    return;
+  }
+
+  // Teste da ponte com o Silbeck (porta, login, uma leitura). Sem dados sensíveis; resultado guardado por 60 s.
+  if (url.pathname === '/saude/silbeck') {
+    silbeck.diagnosticoCache()
+      .then(r => json(res, 200, { ...r, ipSaida }))
+      .catch(e => json(res, 200, { etapa: 'erro', erro: String(e.message || e).slice(0, 150), ipSaida }));
     return;
   }
 

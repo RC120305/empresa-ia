@@ -46,6 +46,8 @@ const falso = http.createServer((req, res) => {
     if (req.url === '/rest/v1/rpc/registrar_entrada_whatsapp') return responder(200, { nova: true, mensagem_id: MSG_MIDIA, conversa_id: '11111111-1111-1111-1111-111111111111' });
     if (req.url === '/graph/111/media') return responder(200, { id: 'midia-subida' });
     if (req.url === '/rest/v1/rpc/registrar_saida_midia') return responder(200, '44444444-4444-4444-4444-444444444444');
+    if (req.url.startsWith('/silbeck/v1/Liberar?')) return req.url.includes('client_secret=sec-ok') ? responder(200, { access_token: 'tok-silbeck', token_type: 'Bearer', expires_in: 30 }) : responder(400, { erro: 'invalido' });
+    if (req.url === '/silbeck/v1/TipoApartamento') return req.headers.authorization === 'Bearer tok-silbeck' ? responder(200, { listaTipoApartamento: [{ id: 1 }, { id: 2 }, { id: 3 }] }) : responder(401, {});
     if (req.url === '/auth/v1/user') { const u = FAKE['/auth/v1/user'](req); return u ? responder(200, u) : responder(401, { msg: 'invalid' }); }
     if (req.url === '/rest/v1/rpc/equipe_por_email') { const b = JSON.parse(corpo); return responder(200, b.p_email === 'equipe@teste.com' ? [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }] : []); }
     if (req.url.startsWith('/rest/v1/conversas?')) return responder(200, [{ id: '11111111-1111-1111-1111-111111111111', canal: 'wa', numero_id: '111',
@@ -233,6 +235,27 @@ falso.listen(0, () => {
     janelaAberta = false;
     assert.equal((await enviarArq('token-equipe', { conversa_id: conv }, 'x', 'image/jpeg')).status, 409);
     janelaAberta = true;
+
+    // Silbeck: diagnóstico da ponte (porta, login, leitura), sem devolver token nem segredo
+    process.env.SILBECK_URL = process.env.SUPABASE_URL + 'silbeck';
+    process.env.SILBECK_CLIENT_ID = 'cliente';
+    process.env.SILBECK_CLIENT_SECRET = 'sec-ok';
+    const { diagnostico } = require('./silbeck');
+    let dg = await diagnostico();
+    assert.equal(dg.etapa, 'tudo certo', JSON.stringify(dg));
+    assert.equal(dg.porta, 'aberta'); assert.equal(dg.login.expires_in, 30); assert.equal(dg.leitura.tiposDeApartamento, 3);
+    assert.ok(!JSON.stringify(dg).includes('tok-silbeck') && !JSON.stringify(dg).includes('sec-ok') && !JSON.stringify(dg).includes('127.0.0.1'));
+    process.env.SILBECK_CLIENT_SECRET = 'errado';
+    dg = await diagnostico();
+    assert.equal(dg.etapa, 'login'); assert.equal(dg.login.http, 400);
+    process.env.SILBECK_URL = 'http://127.0.0.1:1/datasnap/rest';
+    dg = await diagnostico();
+    assert.equal(dg.etapa, 'porta'); assert.ok(dg.porta.startsWith('recusada'));
+    process.env.SILBECK_URL = '';
+    dg = await diagnostico();
+    assert.equal(dg.etapa, 'segredos'); assert.equal(dg.configurado.endereco, false);
+    r = await fetch(base + '/saude/silbeck');
+    assert.equal(r.status, 200); assert.equal((await r.json()).etapa, 'segredos');
 
     const { numeroParaEnvio } = require('./server');
     assert.equal(numeroParaEnvio('+556798070981'), '5567998070981');
