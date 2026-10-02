@@ -133,6 +133,13 @@ async function registrar(evento, buscar = fetch) {
 
 // Envio pela caixa de entrada: confere quem é a pessoa (login do Supabase), se ela é da equipe,
 // se a janela de 24 h está aberta, manda pela Meta e grava a mensagem de saída.
+// Celular brasileiro: a Meta entrega o wa_id sem o 9 (55 67 9807-0981). Para enviar, usamos o número
+// completo com o 9, que é como ele está cadastrado (e como a lista de teste da Meta exige).
+function numeroParaEnvio(valor) {
+  const d = String(valor || '').replace(/\D/g, '');
+  const m = d.match(/^55(\d{2})([6-9]\d{7})$/);
+  return m ? `55${m[1]}9${m[2]}` : d;
+}
 class ErroEnvio extends Error { constructor(http, msg) { super(msg); this.http = http; } }
 async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
@@ -159,7 +166,7 @@ async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   const m = await buscar(`${GRAPH}/${encodeURIComponent(conv.numero_id)}/messages`, {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + WA_TOKEN, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: wa.valor.replace(/\D/g, ''), type: 'text', text: { body: texto, preview_url: true } }),
+    body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: numeroParaEnvio(wa.valor), type: 'text', text: { body: texto, preview_url: true } }),
     signal: AbortSignal.timeout(10000),
   });
   const mr = await m.json().catch(() => ({}));
@@ -259,4 +266,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => console.log('CRM Cabanas ouvindo na porta ' + porta));
-module.exports = { servidor, assinaturaValida, registrar, corpoDe };
+module.exports = { servidor, assinaturaValida, registrar, corpoDe, numeroParaEnvio };

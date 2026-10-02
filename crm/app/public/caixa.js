@@ -25,7 +25,9 @@
   const fmtTel = v => {
     const d = String(v || '').replace(/\D/g, '');
     if (d.startsWith('55') && (d.length === 12 || d.length === 13)) {
-      const ddd = d.slice(2, 4), n = d.slice(4);
+      const ddd = d.slice(2, 4);
+      let n = d.slice(4);
+      if (n.length === 8 && /^[6-9]/.test(n)) n = '9' + n; // celular: a Meta manda sem o 9
       return `+55 ${ddd} ${n.slice(0, n.length - 4)}-${n.slice(-4)}`;
     }
     return d ? '+' + d : '';

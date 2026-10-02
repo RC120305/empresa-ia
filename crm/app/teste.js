@@ -132,6 +132,12 @@ falso.listen(0, () => {
     assert.equal(r.status, 409); assert.ok((await r.json()).erro.includes('24 h'));
     janelaAberta = true;
 
+    const { numeroParaEnvio } = require('./server');
+    assert.equal(numeroParaEnvio('+556798070981'), '5567998070981');
+    assert.equal(numeroParaEnvio('5567998070981'), '5567998070981');
+    assert.equal(numeroParaEnvio('556733334444'), '556733334444'); // fixo não ganha 9
+    assert.equal(numeroParaEnvio('595981299369'), '595981299369'); // Paraguai fica igual
+
     console.log('TODOS OS TESTES PASSARAM');
     servidor.close(); falso.close();
   });
