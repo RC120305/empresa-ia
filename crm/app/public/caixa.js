@@ -57,11 +57,12 @@
       options: { shouldCreateUser: false, emailRedirectTo: location.origin + '/caixa' },
     });
     $('btn-entrar').removeAttribute('disabled');
-    msg.textContent = error
-      ? (/signups not allowed|not found|invalid/i.test(error.message)
+    msg.textContent = !error ? 'Pronto! Abra o link que chegou no seu e-mail (veja também o spam). Só o link mais recente funciona.'
+      : (error.status === 429 || /rate limit|security purposes|seconds/i.test(error.message))
+        ? 'Muitos links pedidos em pouco tempo. O envio de e-mail gratuito do Supabase tem limite por hora: use o último link que chegou ou tente de novo mais tarde.'
+        : /signups not allowed|not found|invalid/i.test(error.message)
           ? 'Este e-mail não tem acesso. Peça ao Ricardo para cadastrar.'
-          : 'Não deu para enviar agora. Espere um minuto e tente de novo.')
-      : 'Pronto! Abra o link que chegou no seu e-mail (veja também o spam).';
+          : 'Não deu para enviar agora (' + error.message + '). Tente de novo em alguns minutos.';
   });
   $('sair').addEventListener('click', async () => { await sb.auth.signOut(); location.replace('/caixa'); });
 
