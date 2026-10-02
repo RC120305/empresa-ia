@@ -17,7 +17,7 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 | `008_funil_tarefas.sql` | `negocios` (funil), `tarefas` e `negocio_eventos` (histórico); gatilhos que movem o card sozinho (conversa nova → Novo, 1ª resposta → Em atendimento, orçamento → Orçamento enviado); cria os negócios das conversas que já existem | 02/10/2026 (dono) |
 | `009_produtos_agencias_ajustes.sql` | `produtos` (já com combo, boia cross, arvorismo, decoração e massagem), `agencias`, `respostas` (biblioteca) e `sugestoes` (revisão das sugestões do Gilberto) | 02/10/2026 (dono) |
 | `010_biblioteca_origem.sql` | coluna `origem` em `respostas` (equipe, questionário ou revisão) | 02/10/2026 (dono) |
-| `011_fotos_biblioteca.sql` | `fotos_biblioteca`: fotos que a equipe trouxe do Drive e fotos da curadoria tiradas/devolvidas no Banco de fotos | (pendente: rodar no SQL Editor) |
+| `011_fotos_biblioteca.sql` | `fotos_biblioteca`: fotos que a equipe trouxe do Drive e fotos da curadoria tiradas/devolvidas no Banco de fotos | 02/10/2026 (dono) |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.
