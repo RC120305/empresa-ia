@@ -227,7 +227,8 @@
   }
 
   // Balões: o texto pode ter várias mensagens separadas por uma linha só com ---
-  const baloes = txt => txt.split(/^\s*---\s*$/m).map(t => t.trim()).filter(Boolean);
+  // Aceita também o travessão que o corretor do celular cria a partir de --- (—, –, — —).
+  const baloes = txt => txt.split(/^\s*[-–—]{2,}[-–—\s]*$/m).map(t => t.trim()).filter(t => t && !/^[-–—\s]+$/.test(t));
 
   async function enviar() {
     const txt = $('resposta').value.trim();

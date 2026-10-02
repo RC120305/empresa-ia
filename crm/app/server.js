@@ -201,7 +201,7 @@ async function enviarTexto(conv, para, texto, autor, buscar) {
 async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
   const bruto = Array.isArray(corpo.baloes) ? corpo.baloes : [typeof corpo.texto === 'string' ? corpo.texto : ''];
-  const baloes = bruto.map(b => String(b || '').trim()).filter(Boolean);
+  const baloes = bruto.map(b => String(b || '').trim()).filter(b => b && !/^[-–—\s]+$/.test(b)); // ignora balão só de traços
   if (!baloes.length || baloes.length > 6 || baloes.some(b => b.length > 4096)) throw new ErroEnvio(400, 'Envie de 1 a 6 balões, cada um com até 4.096 caracteres.');
   if (!/^[0-9a-f-]{36}$/i.test(String(corpo.conversa_id || ''))) throw new ErroEnvio(400, 'Conversa inválida.');
   const equipe = await autenticarEquipe(tokenUsuario, buscar);
