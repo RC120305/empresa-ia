@@ -547,7 +547,7 @@ const API_EQUIPE = {
     if (!conv) throw new ErroEnvio(404, 'Conversa não encontrada.');
     const r = await criarOrcamento({ persona: 'indefinida', pessoas_aptas_combo: corpo.adultos || 0, ...corpo }, { conversa_id: conv.id, numero_id: conv.numero_id, primeiro_nome: conv.contato && conv.contato.nome, criado_por: eu.id });
     if (!r.ok) throw new ErroEnvio(400, r.erro);
-    return r;
+    return { ...r, resumo: orcamento.resumo({ data_entrada: corpo.data_entrada, data_saida: corpo.data_saida, adultos: Number(corpo.adultos) || 1, criancas_idades: corpo.idades_criancas || [] }) };
   },
   // Funil: cria ou atualiza um negócio (etapa, responsável, dados da estadia); registra no histórico
   'POST /api/negocio': async (corpo, eu) => {

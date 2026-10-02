@@ -760,7 +760,7 @@
     lat.append(el('span', { class: 'rotulo', text: 'Estadias e reservas' }), el('p', { class: 'lat-txt', text: 'As reservas do Silbeck aparecem aqui quando a ponte com o hotel estiver ligada.' }));
   }
 
-  // Montar orçamento: datas e pessoas → cotação no Silbeck → até 3 opções → link da página no campo de resposta
+  // Montar orçamento: datas e pessoas → cotação no Silbeck → opções marcadas → link da página no campo de resposta
   const orcForm = { entrada: '', saida: '', adultos: 2, idades: '' };
   function painelOrcamento(lat, c) {
     const hoje = new Date().toISOString().slice(0, 10);
@@ -783,21 +783,21 @@
         const marcadas = [];
         r.opcoes.forEach(o => {
           const cb = el('input', { type: 'checkbox', onchange: ev => {
-            if (ev.target.checked) { if (marcadas.length >= 3) { ev.target.checked = false; toast('No máximo 3 opções.'); return; } marcadas.push(o.codigo); } else marcadas.splice(marcadas.indexOf(o.codigo), 1);
+            if (ev.target.checked) marcadas.push(o.codigo); else marcadas.splice(marcadas.indexOf(o.codigo), 1);
             criar.toggleAttribute('disabled', !marcadas.length);
-            criar.textContent = marcadas.length ? 'Criar orçamento com ' + marcadas.length + (marcadas.length > 1 ? ' opções' : ' opção') : 'Marque de 1 a 3 opções';
+            criar.textContent = marcadas.length ? 'Criar orçamento com ' + marcadas.length + (marcadas.length > 1 ? ' opções' : ' opção') : 'Marque as opções do orçamento';
           } });
           res.append(el('label', { class: 'op-cot' }, cb, el('span', {}, el('b', { text: o.nome }), el('small', { text: o.vagas_no_periodo + ' vaga(s) · até ' + o.capacidade + ' pessoas' })), el('span', { class: 'pr' }, brl(o.valor_total), el('small', { text: brl(o.media_por_noite) + '/noite' }))));
         });
         if (r.esgotados_no_periodo.length) res.append(el('p', { class: 'lat-txt', text: 'Esgotados: ' + r.esgotados_no_periodo.join(', ') + '.' }));
         if (r.nao_comportam_o_grupo.length) res.append(el('p', { class: 'lat-txt', text: 'Não comportam o grupo: ' + r.nao_comportam_o_grupo.join(', ') + '.' }));
-        const criar = el('button', { class: 'btn btn-destaque', type: 'button', disabled: true, text: 'Marque de 1 a 3 opções', onclick: async () => {
+        const criar = el('button', { class: 'btn btn-destaque', type: 'button', disabled: true, text: 'Marque as opções do orçamento', onclick: async () => {
           criar.setAttribute('disabled', ''); criar.textContent = 'Criando…';
           try {
             const o = await chamarApi('/api/orcamento', { conversa_id: c.id, ...p, opcoes: marcadas.map(k => ({ acomodacoes: [k] })) });
             const ta = $('resposta');
             const primeiro = (c.nomeSalvo || '').split(/\s+/)[0];
-            ta.value = (ta.value ? ta.value.trim() + '\n---\n' : '') + (primeiro ? primeiro + ', s' : 'S') + 'eparei as opções com vaga para vocês, com fotos e valores:\n' + o.link;
+            ta.value = (ta.value ? ta.value.trim() + '\n---\n' : '') + (primeiro ? primeiro + ', s' : 'S') + 'eparei ' + (marcadas.length > 1 ? 'as opções' : 'a opção') + ' com vaga para vocês' + (o.resumo ? ': ' + o.resumo + '.\nNo link estão as fotos e os valores:\n' : ', com fotos e valores:\n') + o.link;
             ajustarAltura(); ta.focus();
             toast('Orçamento criado. O link já está no campo de resposta.');
             pintarOrcamentos(c.id);

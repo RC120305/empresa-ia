@@ -76,6 +76,10 @@ function periodo(ini, fim) {
   if (a1 === a2 && m1 === m2) return `${d1} a ${d2} de ${MESES[m1 - 1]}`;
   return `${d1} de ${MESES[m1 - 1]}${a1 !== a2 ? ' de ' + a1 : ''} a ${d2} de ${MESES[m2 - 1]}${a1 !== a2 ? ' de ' + a2 : ''}`;
 }
+// Sem limite prático: cabem todas as acomodações do hotel (a página mostra uma abaixo da outra).
+const MAX_OPCOES = Object.keys(CATALOGO).length;
+// Resumo para a mensagem da equipe: "14 a 17 de novembro (3 noites), 2 adultos e 1 criança (3 anos)"
+const resumo = o => { const n = noites(o.data_entrada, o.data_saida); return `${periodo(o.data_entrada, o.data_saida)} (${n} ${n > 1 ? 'noites' : 'noite'}), ${grupo(o)}`; };
 const noites = (ini, fim) => Math.round((new Date(fim) - new Date(ini)) / 864e5);
 function grupo(o) {
   const p = [`${o.adultos} ${o.adultos > 1 ? 'adultos' : 'adulto'}`];
@@ -89,8 +93,8 @@ const tokenValido = t => /^[A-Za-z0-9_-]{22}$/.test(t || '');
 // Monta o registro do orçamento a partir da cotação (já feita no Silbeck, na hora).
 // Nesta fase: uma acomodação por opção (combinações para grupos grandes ficam com a equipe).
 function montar(entrada, cotacao) {
-  const pedidas = (entrada.opcoes || []).slice(0, 3);
-  if (!pedidas.length) return { erro: 'Informe de 1 a 3 opções.' };
+  const pedidas = (entrada.opcoes || []).slice(0, MAX_OPCOES);
+  if (!pedidas.length) return { erro: 'Informe ao menos uma opção.' };
   if (pedidas.some(o => !o.acomodacoes || o.acomodacoes.length !== 1)) return { erro: 'Nesta fase o orçamento tem uma acomodação por opção. Combinações (grupo em mais de uma acomodação): passe para a equipe montar.' };
   const opcoes = [];
   for (const o of pedidas) {
@@ -156,4 +160,4 @@ ${cards}
 <script src="/o/orcamento.js"></script></body></html>`;
 }
 
-module.exports = { montar, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };
+module.exports = { resumo, MAX_OPCOES, montar, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };

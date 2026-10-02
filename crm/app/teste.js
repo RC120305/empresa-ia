@@ -382,6 +382,14 @@ falso.listen(0, () => {
     const oj = await r.json();
     assert.equal(r.status, 200, JSON.stringify(oj)); assert.ok(oj.link.includes('/o/'));
     assert.equal(orcs.at(-1).criado_por, 'u-1');
+    assert.match(oj.resumo, /^\d+ (de \w+ )?a \d+ de [a-zç]+.* \(2 noites\), 2 adultos$/);
+    // Sem limite de 3 opções: todas as que têm vaga entram
+    r = await api('/api/cotar', { data_entrada: emDias(30), data_saida: emDias(32), adultos: 1, idades_criancas: [7] });
+    const todas = (await r.json()).opcoes.map(o => o.codigo);
+    r = await api('/api/orcamento', { conversa_id: conv, data_entrada: emDias(30), data_saida: emDias(32), adultos: 1, idades_criancas: [7], opcoes: todas.map(k => ({ acomodacoes: [k] })) });
+    const oj2 = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(oj2)); assert.ok(todas.length > 3, 'simulador tem mais de 3 com vaga'); assert.equal(orcs.at(-1).opcoes.length, todas.length);
+    assert.ok(oj2.resumo.endsWith('1 adulto e 1 criança (7 anos)'), oj2.resumo);
     r = await api('/api/vagas?inicio=' + emDias(10) + '&dias=14', null, 'token-equipe', 'GET');
     const vj = await r.json();
     assert.equal(r.status, 200); assert.equal(vj.dias.length, 14); assert.ok(vj.tipos.some(t => t.codigo === 'CBM' && t.vagas.every(v => Number.isInteger(v))));
