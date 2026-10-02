@@ -491,6 +491,90 @@ const API_EQUIPE = {
     if (!r.ok) throw new ErroEnvio(400, r.erro);
     return r;
   },
+  // Funil: cria ou atualiza um negócio (etapa, responsável, dados da estadia); registra no histórico
+  'POST /api/negocio': async (corpo, eu) => {
+    const ETAPAS = { novo: 'Novo', atend: 'Em atendimento', orc: 'Orçamento enviado', pag: 'Aguardando pagamento', res: 'Reservado', perd: 'Perdido' };
+    const ORIGENS = ['whatsapp', 'meta', 'insta', 'google', 'site', 'ret', 'ind', 'ag', 'ota', 'ativo'];
+    const uuid = v => /^[0-9a-f-]{36}$/i.test(String(v || ''));
+    const dados = {}, eventos = [];
+    let atual = null;
+    if (corpo.id) {
+      if (!uuid(corpo.id)) throw new ErroEnvio(400, 'Negócio inválido.');
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/negocios?id=eq.${corpo.id}&select=id,etapa,responsavel_id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+      if (!r.ok) throw new ErroEnvio(503, 'O funil ainda não está no banco (falta a migração 008).');
+      atual = (await r.json())[0];
+      if (!atual) throw new ErroEnvio(404, 'Negócio não encontrado.');
+    }
+    if (corpo.etapa !== undefined && (!atual || corpo.etapa !== atual.etapa)) {
+      if (!ETAPAS[corpo.etapa]) throw new ErroEnvio(400, 'Etapa inválida.');
+      if (corpo.etapa === 'perd' && !String(corpo.motivo_perda || '').trim()) throw new ErroEnvio(400, 'Diga o motivo da perda.');
+      Object.assign(dados, { etapa: corpo.etapa, etapa_desde: new Date().toISOString(), motivo_perda: corpo.etapa === 'perd' ? String(corpo.motivo_perda).slice(0, 200) : null,
+        fechado_em: ['res', 'perd'].includes(corpo.etapa) ? new Date().toISOString() : null });
+      eventos.push('Movido para ' + ETAPAS[corpo.etapa] + (corpo.etapa === 'perd' ? ': ' + String(corpo.motivo_perda).toLowerCase() : ''));
+    }
+    if (corpo.responsavel_id !== undefined && (!atual || corpo.responsavel_id !== atual.responsavel_id)) {
+      if (corpo.responsavel_id !== null && !uuid(corpo.responsavel_id)) throw new ErroEnvio(400, 'Responsável inválido.');
+      dados.responsavel_id = corpo.responsavel_id;
+      eventos.push('Responsável trocado');
+    }
+    if (corpo.origem !== undefined) { if (!ORIGENS.includes(corpo.origem)) throw new ErroEnvio(400, 'Origem inválida.'); dados.origem = corpo.origem; }
+    for (const k of ['perfil', 'hospedes', 'acomodacao', 'notas']) if (corpo[k] !== undefined) dados[k] = String(corpo[k] || '').slice(0, k === 'notas' ? 4000 : 200) || null;
+    for (const k of ['data_entrada', 'data_saida']) if (corpo[k] !== undefined) { if (corpo[k] && !/^\d{4}-\d{2}-\d{2}$/.test(corpo[k])) throw new ErroEnvio(400, 'Data inválida.'); dados[k] = corpo[k] || null; }
+    if (corpo.valor_previsto !== undefined) { const v = corpo.valor_previsto === '' || corpo.valor_previsto === null ? null : Number(corpo.valor_previsto); if (v !== null && !(v >= 0)) throw new ErroEnvio(400, 'Valor inválido.'); dados.valor_previsto = v; }
+    if (corpo.etiquetas !== undefined) dados.etiquetas = (Array.isArray(corpo.etiquetas) ? corpo.etiquetas : []).map(t => String(t).trim().slice(0, 40)).filter(Boolean).slice(0, 20);
+    let id = atual && atual.id;
+    if (!atual) {
+      // Novo lead manual: contato (nome e, se houver, WhatsApp) + negócio
+      const nome = String(corpo.nome || '').trim().slice(0, 120);
+      if (!nome) throw new ErroEnvio(400, 'Diga o nome do lead.');
+      const c = await fetch(`${SUPABASE_URL}/rest/v1/contatos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify({ nome }), signal: AbortSignal.timeout(5000) });
+      if (!c.ok) throw new ErroEnvio(502, 'Não deu para criar o contato.');
+      const contato = (await c.json())[0];
+      const tel = String(corpo.telefone || '').replace(/\D/g, '');
+      if (tel) await fetch(`${SUPABASE_URL}/rest/v1/contato_identificadores`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ contato_id: contato.id, tipo: 'whatsapp', valor: tel }), signal: AbortSignal.timeout(5000) }).catch(() => {});
+      const n = await fetch(`${SUPABASE_URL}/rest/v1/negocios`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' },
+        body: JSON.stringify({ contato_id: contato.id, origem: 'ativo', responsavel_id: eu.id, ...dados }), signal: AbortSignal.timeout(5000) });
+      if (!n.ok) throw new ErroEnvio(n.status === 404 ? 503 : 502, 'Não deu para criar o negócio (o banco precisa da migração 008?).');
+      id = (await n.json())[0].id;
+      eventos.unshift('Lead criado');
+    } else if (Object.keys(dados).length) {
+      await patchBanco('negocios', `id=eq.${id}`, { ...dados, atualizado_em: new Date().toISOString() });
+      if (!eventos.length) eventos.push('Dados editados');
+    }
+    if (eventos.length) await fetch(`${SUPABASE_URL}/rest/v1/negocio_eventos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
+      body: JSON.stringify(eventos.map(t => ({ negocio_id: id, texto: t, por: eu.nome }))), signal: AbortSignal.timeout(5000) }).catch(() => {});
+    return { ok: true, id };
+  },
+  // Tarefas: cria, edita ou conclui
+  'POST /api/tarefa': async (corpo, eu) => {
+    const uuid = v => /^[0-9a-f-]{36}$/i.test(String(v || ''));
+    const dados = {};
+    if (corpo.tipo !== undefined) dados.tipo = String(corpo.tipo || '').trim().slice(0, 60);
+    if (corpo.descricao !== undefined) dados.descricao = String(corpo.descricao || '').slice(0, 500) || null;
+    if (corpo.quando !== undefined) { const q = new Date(corpo.quando); if (isNaN(q)) throw new ErroEnvio(400, 'Data da tarefa inválida.'); dados.quando = q.toISOString(); }
+    if (corpo.responsavel_id !== undefined) { if (corpo.responsavel_id !== null && !uuid(corpo.responsavel_id)) throw new ErroEnvio(400, 'Responsável inválido.'); dados.responsavel_id = corpo.responsavel_id; }
+    if (corpo.feita !== undefined) { dados.feita = !!corpo.feita; dados.feita_em = corpo.feita ? new Date().toISOString() : null; }
+    let negocio = corpo.negocio_id, evento;
+    if (corpo.id) {
+      if (!uuid(corpo.id)) throw new ErroEnvio(400, 'Tarefa inválida.');
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/tarefas?id=eq.${corpo.id}&select=negocio_id,tipo`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+      const t = r.ok ? (await r.json())[0] : null;
+      if (!t) throw new ErroEnvio(404, 'Tarefa não encontrada.');
+      negocio = t.negocio_id;
+      await patchBanco('tarefas', `id=eq.${corpo.id}`, dados);
+      if (corpo.feita !== undefined) evento = (corpo.feita ? 'Concluída: ' : 'Reaberta: ') + (dados.tipo || t.tipo);
+    } else {
+      if (!uuid(negocio)) throw new ErroEnvio(400, 'Negócio inválido.');
+      if (!dados.tipo || !dados.quando) throw new ErroEnvio(400, 'Diga o tipo e quando.');
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
+        body: JSON.stringify({ negocio_id: negocio, responsavel_id: eu.id, criado_por: eu.id, ...dados }), signal: AbortSignal.timeout(5000) });
+      if (!r.ok) throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para criar a tarefa (o banco precisa da migração 008?).');
+      evento = 'Tarefa agendada: ' + dados.tipo;
+    }
+    if (evento) await fetch(`${SUPABASE_URL}/rest/v1/negocio_eventos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
+      body: JSON.stringify({ negocio_id: negocio, texto: evento, por: eu.nome }), signal: AbortSignal.timeout(5000) }).catch(() => {});
+    return { ok: true };
+  },
   // Vagas por tipo e dia (painel "Vagas")
   'GET /api/vagas': async (corpo, eu, url) => silbeck.vagas(url.searchParams.get('inicio'), url.searchParams.get('dias')),
 };

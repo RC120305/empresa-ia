@@ -114,8 +114,9 @@
     eu = meu;
     $('quem-nome').textContent = meu.nome;
     mostrarTela('tela-caixa');
-    chamarApi('/api/equipe', null, 'GET').then(j => { equipe = Object.fromEntries(j.equipe.map(u => [u.id, u.nome])); if (aberta) pintarCabecalho(); }).catch(() => { equipe = { [meu.id]: meu.nome }; });
+    chamarApi('/api/equipe', null, 'GET').then(j => { equipe = Object.fromEntries(j.equipe.map(u => [u.id, u.nome])); preencherFiltrosEquipe(); if (aberta) pintarCabecalho(); }).catch(() => { equipe = { [meu.id]: meu.nome }; preencherFiltrosEquipe(); });
     await carregarConversas();
+    await carregarFunil();
     assinar();
     vigiar();
   }
@@ -123,8 +124,8 @@
   // ---------- Casca: seções, menu recolhido e tema ----------
   const SECOES = {
     conversas: ['Conversas'],
-    funil: ['Funil', 'Os cards do funil (Novo → Em atendimento → Orçamento enviado → Aguardando pagamento → Reservado / Perdido), com responsável e arrastar entre etapas. Chega na etapa B.'],
-    tarefas: ['Tarefas', 'Tarefas com prazo e responsável, ligadas a cada cliente, e o alerta com sino para a equipe. Chega na etapa B.'],
+    funil: ['Funil'],
+    tarefas: ['Tarefas'],
     produtos: ['Produtos', 'Cadastro das atividades e extras (combo, boia cross, arvorismo, decoração, massagem) com preço e regras. Chega na etapa C.'],
     agencias: ['Agências', 'Cadastro das agências e operadoras parceiras. Chega na etapa C.'],
     vagas: ['Vagas', 'O mapa de vagas completo depende do Silbeck real (ponte com o hotel). Por enquanto, as vagas aparecem no painel 🛏 de cada conversa.'],
@@ -133,15 +134,17 @@
     regua: ['Régua de mensagens', 'Mensagens automáticas antes e depois da estadia, com modelos aprovados pela Meta. Chega na etapa F, com o 99117.'],
     ajustes: ['Ajustes do agente', 'Biblioteca de respostas, regras e revisão das respostas do Gilberto. Chega na etapa C.'],
   };
-  document.querySelector('.nav').addEventListener('click', e => {
-    const b = e.target.closest('[data-vista]'); if (!b) return;
-    document.querySelectorAll('.nav [data-vista]').forEach(x => x.setAttribute('aria-selected', String(x === b)));
-    const v = b.dataset.vista, [titulo, texto] = SECOES[v];
+  const PRONTAS = ['conversas', 'funil', 'tarefas'];
+  function irPara(v) {
+    document.querySelectorAll('.nav [data-vista]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.vista === v)));
+    const [titulo, texto] = SECOES[v];
     $('titulo').textContent = titulo;
-    document.querySelector('[data-painel="conversas"]').hidden = v !== 'conversas';
-    document.querySelector('[data-painel="em-breve"]').hidden = v === 'conversas';
+    document.querySelectorAll('section[data-painel]').forEach(sec => { sec.hidden = sec.dataset.painel !== (PRONTAS.includes(v) ? v : 'em-breve'); });
     $('eb-titulo').textContent = titulo; $('eb-texto').textContent = texto || '';
-  });
+    if (v === 'funil') pintarFunil();
+    if (v === 'tarefas') pintarTarefas();
+  }
+  document.querySelector('.nav').addEventListener('click', e => { const b = e.target.closest('[data-vista]'); if (b) irPara(b.dataset.vista); });
   const recolher = r => { $('tela-caixa').classList.toggle('recolhido', r); $('bt-recolher').setAttribute('aria-expanded', String(!r)); guardar('crm-recolhido', r ? '1' : ''); };
   $('bt-recolher').addEventListener('click', () => recolher(!$('tela-caixa').classList.contains('recolhido')));
   if (lido('crm-recolhido') === '1') recolher(true);
@@ -152,7 +155,7 @@
 
   // ---------- Atualização (tempo real + rede de segurança) ----------
   let aoVivo = false;
-  async function atualizarTudo() { await carregarConversas(); if (aberta) await recarregarAberta(); }
+  async function atualizarTudo() { await carregarConversas(); await carregarFunil(); if (aberta) await recarregarAberta(); }
   function vigiar() {
     setInterval(() => { if (!aoVivo && !document.hidden) atualizarTudo(); }, 15000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) atualizarTudo(); });
@@ -294,6 +297,7 @@
       el('button', { class: 'voltar', type: 'button', 'aria-label': 'Voltar para a lista', text: '←', onclick: voltar }),
       el('div', { class: 'cx-quem' }, nomeBox, el('span', { class: 'canal', text: 'WhatsApp' + (c.tel && c.tel !== c.nome ? ' · ' + c.tel : '') })),
       el('div', { class: 'cx-ctrl' },
+        seletorEtapaConversa(c),
         fim ? el('span', { class: 'pilula ' + (aj ? 'p-ok' : 'p-erro'), title: aj ? 'Dá para responder com texto livre até esse horário.' : 'Fora da janela, só modelos aprovados pela Meta.',
           text: aj ? 'Responder até ' + (fim.toDateString() !== new Date().toDateString() ? 'amanhã ' : '') + hora(fim.toISOString()) : 'Janela 24 h fechada' }) : null,
         stSel, rSel));
@@ -607,7 +611,7 @@
   $('sug-descartar').addEventListener('click', () => { $('sugestao').hidden = true; });
 
   // ---------- Painéis da conversa (trilho à direita) ----------
-  const TITULOS = { his: 'Ficha e histórico', orc: 'Montar orçamento', vag: 'Vagas por acomodação', res: 'Reservas e pagamentos', tar: 'Tarefas' };
+  const TITULOS = { his: 'Ficha e histórico', orc: 'Montar orçamento', vag: 'Vagas por acomodação', res: 'Reservas e pagamentos', tar: 'Tarefas do cliente' };
   $('cx-trilho').addEventListener('click', e => {
     const b = e.target.closest('[data-p]'); if (!b) return;
     painel = painel === b.dataset.p ? '' : b.dataset.p;
@@ -628,7 +632,7 @@
     if (painel === 'orc') painelOrcamento(lat, c);
     if (painel === 'vag') painelVagas(lat);
     if (painel === 'res') lat.append(el('p', { class: 'lat-txt', text: 'As reservas criadas no Silbeck, a cobrança do sinal (Pix ou cartão) e a baixa automática aparecem aqui. Chega na etapa E, depois que o Silbeck real e os bancos estiverem ligados.' }));
-    if (painel === 'tar') lat.append(el('p', { class: 'lat-txt', text: 'Tarefas deste cliente (ligar, cobrar, conferir no Silbeck), com prazo e responsável. Chega na etapa B, junto com o Funil.' }));
+    if (painel === 'tar') painelTarefas(lat, c);
   }
 
   function painelFicha(lat, c) {
@@ -724,6 +728,249 @@
     carregar();
   }
 
+  // ================= Funil, ficha do negócio e tarefas (etapa B) =================
+  const ETAPAS = [['novo', 'Novo', 'p-novo', '--cat-novo'], ['atend', 'Em atendimento', 'p-atend', '--cat-atend'], ['orc', 'Orçamento enviado', 'p-orc', '--cat-orc'],
+    ['pag', 'Aguardando pagamento', 'p-pag', '--cor-alerta'], ['res', 'Reservado', 'p-res', '--cat-res'], ['perd', 'Perdido', 'p-perd', '--cat-perd']];
+  const ETAPA = Object.fromEntries(ETAPAS.map(e => [e[0], e]));
+  const ORIGENS = { whatsapp: 'WhatsApp', meta: 'Anúncio Meta', insta: 'Instagram', google: 'Google', site: 'Site', ret: 'Hóspede que volta', ind: 'Indicação', ag: 'Agência', ota: 'Booking', ativo: 'Contato ativo' };
+  const PERFIS = ['Casal', 'Família com filhos', 'Grupo de amigos', '55+', 'Observador de aves', 'Ciclista', 'Agência'];
+  const MOTIVOS = ['Sem vaga na data', 'Preço', 'Parou de responder', 'Mudou de planos', 'Escolheu outro hotel', 'Outro'];
+  const TIPOS_TAREFA = ['Ligar', 'Follow-up', 'Enviar proposta', 'Confirmar pagamento', 'Conferir no Silbeck', 'Agendar massagem', 'Lançar na comanda', 'Encomendar decoração', 'Outro'];
+  let negocios = [], tarefas = [], funilOk = true;
+  const fmtData = d => d ? d.slice(8, 10) + '/' + d.slice(5, 7) : '';
+  const negocioDaConversa = id => negocios.filter(n => n.conversa_id === id).sort((a, b) => (a.etapa === 'res' || a.etapa === 'perd') - (b.etapa === 'res' || b.etapa === 'perd') || b.criado_em.localeCompare(a.criado_em))[0];
+
+  async function carregarFunil() {
+    const [n, t] = await Promise.all([
+      sb.from('negocios').select('*,contato:contatos(nome,contato_identificadores(tipo,valor))').order('atualizado_em', { ascending: false }).limit(500),
+      sb.from('tarefas').select('*').order('quando', { ascending: true }).limit(1000),
+    ]);
+    funilOk = !n.error;
+    negocios = (n.data || []).map(x => {
+      const idn = (x.contato && x.contato.contato_identificadores) || [];
+      const wa = idn.find(i => i.tipo === 'whatsapp');
+      return { ...x, nome: (x.contato && x.contato.nome) || (wa ? fmtTel(wa.valor) : 'Sem nome'), tel: wa ? fmtTel(wa.valor) : '' };
+    });
+    tarefas = t.data || [];
+    const hojeFim = new Date(); hojeFim.setHours(23, 59, 59, 999);
+    const urgentes = tarefas.filter(x => !x.feita && new Date(x.quando) <= hojeFim && (!x.responsavel_id || !eu || x.responsavel_id === eu.id)).length;
+    $('qtd-tarefas').hidden = !urgentes; $('qtd-tarefas').textContent = urgentes;
+    if (!$('gaveta').hidden) pintarFicha();
+    const v = document.querySelector('.nav [aria-selected="true"]');
+    if (v && v.dataset.vista === 'funil') pintarFunil();
+    if (v && v.dataset.vista === 'tarefas') pintarTarefas();
+    if (aberta) { pintarCabecalho(); if (painel === 'tar') pintarPainel(); }
+  }
+  let recarregarT = null;
+  const recarregarFunilLogo = () => { clearTimeout(recarregarT); recarregarT = setTimeout(carregarFunil, 400); };
+
+  function preencherFiltrosEquipe() {
+    for (const id of ['f-resp', 't-resp']) {
+      const sel = $(id), v = sel.value;
+      sel.replaceChildren(el('option', { value: '', text: id === 'f-resp' ? 'Todos os responsáveis' : 'De todos' }), ...Object.entries(equipe).map(([k, n]) => el('option', { value: k, text: n })));
+      sel.value = v;
+    }
+    if (!$('f-origem').options.length || $('f-origem').options.length === 1) Object.entries(ORIGENS).forEach(([k, n]) => $('f-origem').append(el('option', { value: k, text: n })));
+    if ($('f-perfil').options.length === 1) PERFIS.forEach(p => $('f-perfil').append(el('option', { value: p, text: p })));
+  }
+  ['f-busca', 'f-resp', 'f-origem', 'f-perfil'].forEach(id => $(id).addEventListener('input', pintarFunil));
+
+  async function salvarNegocio(campos, msgOk) {
+    try { const j = await chamarApi('/api/negocio', campos); if (msgOk) toast(msgOk); await carregarFunil(); return j; }
+    catch (e) { toast(e.message); await carregarFunil(); return null; }
+  }
+  // Mover de etapa (Perdido pede o motivo)
+  let perdaPendente = null;
+  function mover(n, etapa) {
+    if (!n || n.etapa === etapa) { pintarFunil(); return; }
+    if (etapa === 'perd') { perdaPendente = n; abrirMotivo(); return; }
+    salvarNegocio({ id: n.id, etapa }, n.nome + ' em ' + ETAPA[etapa][1] + '.');
+  }
+  function abrirMotivo() {
+    $('m-opcoes').replaceChildren(...MOTIVOS.map((m, i) => el('label', {}, el('input', { type: 'radio', name: 'motivo', value: m, checked: i === 0 }), m)));
+    $('m-fundo').hidden = false; $('modal').hidden = false; $('m-ok').focus();
+  }
+  function fecharMotivo() { $('m-fundo').hidden = true; $('modal').hidden = true; perdaPendente = null; pintarFunil(); }
+  $('m-cancelar').addEventListener('click', fecharMotivo);
+  $('m-fundo').addEventListener('click', fecharMotivo);
+  $('m-ok').addEventListener('click', () => {
+    const n = perdaPendente; if (!n) return;
+    const m = document.querySelector('input[name=motivo]:checked').value;
+    $('m-fundo').hidden = true; $('modal').hidden = true; perdaPendente = null;
+    salvarNegocio({ id: n.id, etapa: 'perd', motivo_perda: m }, n.nome + ' em Perdido.');
+  });
+
+  function passaFiltro(n) {
+    const q = $('f-busca').value.trim().toLowerCase();
+    if (q && !n.nome.toLowerCase().includes(q) && !(q.replace(/\D/g, '') && n.tel.replace(/\D/g, '').includes(q.replace(/\D/g, '')))) return false;
+    if ($('f-resp').value && n.responsavel_id !== $('f-resp').value) return false;
+    if ($('f-origem').value && n.origem !== $('f-origem').value) return false;
+    if ($('f-perfil').value && n.perfil !== $('f-perfil').value) return false;
+    return true;
+  }
+  function pintarFunil() {
+    const board = $('board'); board.textContent = '';
+    if (!funilOk) { board.append(el('div', { class: 'vazio', text: 'O funil ainda não está no banco: falta rodar a migração 008 no Supabase.' })); return; }
+    ETAPAS.forEach(([k, nome, cls, cor]) => {
+      const ls = negocios.filter(n => n.etapa === k && passaFiltro(n));
+      const soma = ls.reduce((a, n) => a + Number(n.valor_previsto || 0), 0);
+      board.append(el('div', { class: 'coluna', style: '--c:var(' + cor + ')', 'data-etapa': k,
+        ondragover: e => { e.preventDefault(); e.currentTarget.classList.add('alvo'); },
+        ondragleave: e => e.currentTarget.classList.remove('alvo'),
+        ondrop: e => { e.preventDefault(); e.currentTarget.classList.remove('alvo'); const id = e.dataTransfer.getData('text/plain'); mover(negocios.find(n => n.id === id), k); } },
+        el('header', {}, el('span', { class: 'pilula ' + cls, text: nome }), el('span', { class: 'soma num', text: ls.length + (soma && k !== 'perd' ? ' · ' + brl(soma) : '') })),
+        ls.length ? ls.map(cardNegocio) : el('div', { class: 'vazio', text: 'Solte um card aqui' })));
+    });
+  }
+  function cardNegocio(n) {
+    const pend = tarefas.filter(t => t.negocio_id === n.id && !t.feita).length;
+    const horas = (Date.now() - new Date(n.etapa_desde || n.atualizado_em).getTime()) / 3600e3;
+    const parado = !['res', 'perd'].includes(n.etapa) && horas >= 24 ? el('span', { class: 'alerta-txt', text: 'Parado há ' + (horas >= 48 ? Math.round(horas / 24) + ' dias' : Math.round(horas) + ' h') }) : null;
+    const resp = n.responsavel_id ? (equipe[n.responsavel_id] || 'Equipe') : null;
+    const sel = el('select', { 'aria-label': 'Etapa de ' + n.nome, onclick: e => e.stopPropagation(), onchange: e => mover(n, e.target.value) }, ETAPAS.map(([k, t]) => el('option', { value: k, text: t, selected: k === n.etapa })));
+    return el('article', { class: 'card-lead', draggable: 'true', tabindex: '0',
+      ondragstart: e => { e.dataTransfer.setData('text/plain', n.id); e.dataTransfer.effectAllowed = 'move'; e.currentTarget.classList.add('arrastando'); },
+      ondragend: e => e.currentTarget.classList.remove('arrastando'),
+      onclick: () => abrirFicha(n.id), onkeydown: e => { if (e.key === 'Enter') abrirFicha(n.id); } },
+      el('strong', { text: n.nome }),
+      el('div', { class: 'linha' }, el('span', { class: 'pilula o-' + n.origem, text: ORIGENS[n.origem] || n.origem }), n.perfil ? el('span', { class: 'pilula', text: n.perfil }) : null),
+      n.data_entrada || n.hospedes ? el('div', { class: 'linha num', text: (n.data_entrada ? fmtData(n.data_entrada) + ' a ' + fmtData(n.data_saida) : '') + (n.hospedes ? (n.data_entrada ? ' · ' : '') + n.hospedes : '') }) : null,
+      n.valor_previsto || pend ? el('div', { class: 'linha num' }, n.valor_previsto ? el('span', { text: brl(n.valor_previsto) }) : null, pend ? el('span', { text: (n.valor_previsto ? '· ' : '') + pend + (pend > 1 ? ' tarefas' : ' tarefa') }) : null) : null,
+      n.motivo_perda ? el('div', { class: 'linha', text: 'Motivo: ' + n.motivo_perda }) : null,
+      parado,
+      el('div', { class: 'rodape' }, el('span', { class: 'resp', title: resp || 'Sem responsável', text: resp ? iniciais(resp) : '–' }), sel));
+  }
+  $('bt-novo-lead').addEventListener('click', () => abrirFicha(null));
+
+  // Ficha do negócio (gaveta): Dados, Tarefas e Histórico
+  let fichaId = null, abaFicha = 'dados', fichaNova = false;
+  function abrirFicha(id, aba) { fichaId = id; fichaNova = !id; abaFicha = aba || 'dados'; $('fundo').hidden = false; $('gaveta').hidden = false; pintarFicha(); $('g-fechar').focus(); }
+  function fecharFicha() { $('fundo').hidden = true; $('gaveta').hidden = true; fichaId = null; fichaNova = false; }
+  $('g-fechar').addEventListener('click', fecharFicha);
+  $('fundo').addEventListener('click', fecharFicha);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('modal').hidden) fecharMotivo(); else if (!$('gaveta').hidden) fecharFicha(); } });
+  document.querySelectorAll('.gaveta .abas button').forEach(b => b.addEventListener('click', () => { if (fichaNova) return; abaFicha = b.dataset.g; pintarFicha(); }));
+  const campoF = (rotulo, input, largo) => el('label', { class: 'campo' + (largo ? ' largo' : '') }, rotulo, input);
+  async function pintarFicha() {
+    const n = fichaNova ? { etapa: 'novo', origem: 'ativo', responsavel_id: eu && eu.id, nome: '', tel: '' } : negocios.find(x => x.id === fichaId);
+    if (!n) { fecharFicha(); return; }
+    $('g-nome').textContent = fichaNova ? 'Novo lead' : n.nome; $('g-avatar').textContent = iniciais(n.nome || '?');
+    document.querySelectorAll('.gaveta .abas button').forEach(b => { b.setAttribute('aria-selected', String(b.dataset.g === abaFicha)); b.hidden = fichaNova && b.dataset.g !== 'dados'; });
+    const corpo = $('g-corpo'), rod = $('g-rodape'); corpo.textContent = ''; rod.textContent = '';
+    if (!fichaNova) corpo.append(el('div', { class: 'resumo-lead' }, el('span', { class: 'pilula ' + ETAPA[n.etapa][2], text: ETAPA[n.etapa][1] }), el('span', { class: 'pilula o-' + n.origem, text: ORIGENS[n.origem] }), n.perfil ? el('span', { class: 'pilula', text: n.perfil }) : null,
+      el('span', { text: 'Responsável: ' + (n.responsavel_id ? equipe[n.responsavel_id] || 'Equipe' : 'ninguém') })));
+    if (abaFicha === 'dados') {
+      const f = {};
+      const inp = (k, tipo, at) => (f[k] = el('input', { type: tipo || 'text', value: n[k] == null ? '' : n[k], ...(at || {}) }));
+      const sel = (k, opts) => (f[k] = el('select', {}, opts.map(([v, t]) => el('option', { value: v, text: t, selected: String(n[k] || '') === String(v) }))));
+      if (fichaNova) corpo.append(el('div', { class: 'rotulo', text: 'Contato' }), el('div', { class: 'grade-campos' }, campoF('Nome', inp('nome'), true), campoF('WhatsApp (com DDD)', inp('tel', 'tel', { placeholder: '67 99999-0000' }), true)));
+      else corpo.append(el('div', { class: 'rotulo', text: 'Contato' }), el('p', { class: 'lat-txt', text: (n.tel || 'Sem WhatsApp') + (n.conversa_id ? '' : ' · sem conversa no CRM') }));
+      corpo.append(el('div', { class: 'rotulo', text: 'Atendimento' }), el('div', { class: 'grade-campos' },
+        campoF('Responsável', sel('responsavel_id', [['', 'Sem responsável'], ...Object.entries(equipe)])),
+        campoF('Etapa', sel('etapa', ETAPAS.map(e => [e[0], e[1]]))),
+        campoF('Origem', sel('origem', Object.entries(ORIGENS))),
+        campoF('Perfil', sel('perfil', [['', '—'], ...PERFIS.map(p => [p, p])]))));
+      corpo.append(el('div', { class: 'rotulo', text: 'Estadia' }), el('div', { class: 'grade-campos' },
+        campoF('Entrada', inp('data_entrada', 'date')), campoF('Saída', inp('data_saida', 'date')), campoF('Hóspedes', inp('hospedes', 'text', { placeholder: '2 adultos + 1 criança (7)' }), true),
+        campoF('Acomodação', inp('acomodacao')), campoF('Valor previsto (R$)', inp('valor_previsto', 'number', { min: '0', step: '0.01' }))));
+      f.etiquetas = el('input', { type: 'text', value: (n.etiquetas || []).join(', '), placeholder: 'Separe por vírgula' });
+      f.notas = el('textarea', { placeholder: 'Só a equipe vê' }); f.notas.value = n.notas || '';
+      corpo.append(el('div', { class: 'rotulo', text: 'Outros' }), el('div', { class: 'grade-campos' }, campoF('Etiquetas', f.etiquetas, true), campoF('Anotações internas', f.notas, true)));
+      rod.append(el('button', { class: 'btn btn-enviar', type: 'button', text: fichaNova ? 'Criar lead' : 'Salvar dados', onclick: async () => {
+        const dados = { responsavel_id: f.responsavel_id.value || null, origem: f.origem.value, perfil: f.perfil.value, data_entrada: f.data_entrada.value, data_saida: f.data_saida.value,
+          hospedes: f.hospedes.value, acomodacao: f.acomodacao.value, valor_previsto: f.valor_previsto.value, etiquetas: f.etiquetas.value.split(','), notas: f.notas.value };
+        if (fichaNova) {
+          const j = await salvarNegocio({ ...dados, etapa: f.etapa.value, nome: f.nome.value, telefone: f.tel.value }, 'Lead criado.');
+          if (j) { fichaNova = false; fichaId = j.id; pintarFicha(); }
+          return;
+        }
+        if (f.etapa.value !== n.etapa) { await salvarNegocio({ id: n.id, ...dados }); mover(n, f.etapa.value); }
+        else await salvarNegocio({ id: n.id, ...dados }, 'Dados salvos.');
+      } }));
+      if (n.conversa_id) rod.append(el('button', { class: 'btn btn-editar', type: 'button', text: 'Abrir conversa', onclick: () => { fecharFicha(); irPara('conversas'); const c = conversas.find(x => x.id === n.conversa_id); if (c && c.status !== stAba) { stAba = c.status; document.querySelectorAll('.cx-abas [data-st]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.st === stAba))); } abrir(n.conversa_id); } }));
+    }
+    if (abaFicha === 'atividades') formTarefas(corpo, n);
+    if (abaFicha === 'historico') {
+      const box = el('div', { class: 'hist' }, 'Carregando…'); corpo.append(box);
+      const { data } = await sb.from('negocio_eventos').select('texto,por,quando').eq('negocio_id', n.id).order('quando', { ascending: false }).limit(100);
+      box.textContent = '';
+      (data || []).forEach(e => box.append(el('div', {}, e.texto, el('small', { text: dia(e.quando) + ' ' + hora(e.quando) + (e.por ? ' · ' + e.por : '') }))));
+      if (!box.children.length) box.append(el('p', { class: 'lat-txt', text: 'Sem registros ainda.' }));
+    }
+  }
+
+  // Tarefas: linha, formulário (ficha e painel da conversa) e a seção Tarefas
+  function quandoTxt(q) {
+    const d = new Date(q), h = hora(q), hoje = new Date();
+    const diff = Math.round((new Date(d.toDateString()) - new Date(hoje.toDateString())) / 864e5);
+    return diff === 0 ? 'Hoje, ' + h : diff === 1 ? 'Amanhã, ' + h : diff === -1 ? 'Ontem, ' + h : d.toLocaleDateString('pt-BR') + ', ' + h;
+  }
+  function linhaTarefa(t, comLead) {
+    const n = negocios.find(x => x.id === t.negocio_id);
+    const atras = !t.feita && new Date(t.quando) < new Date();
+    return el('div', { class: 'tarefa' + (t.feita ? ' feita' : '') },
+      el('input', { type: 'checkbox', checked: t.feita, 'aria-label': 'Concluir ' + t.tipo, onchange: async e => {
+        try { await chamarApi('/api/tarefa', { id: t.id, feita: e.target.checked }); toast(e.target.checked ? 'Tarefa concluída.' : 'Tarefa reaberta.'); } catch (er) { toast(er.message); }
+        carregarFunil();
+      } }),
+      el('div', {}, el('div', { class: 'tt' }, el('b', { text: t.tipo }), t.descricao && t.descricao !== t.tipo ? ' · ' + t.descricao : ''),
+        el('div', { class: 'qd' + (atras ? ' atrasada' : ''), text: (atras ? 'Atrasada · ' : '') + quandoTxt(t.quando) + ' · ' + (t.responsavel_id ? equipe[t.responsavel_id] || 'Equipe' : 'Sem responsável') })),
+      comLead && n ? el('button', { class: 'lead-link', type: 'button', text: n.nome, onclick: () => abrirFicha(n.id) }) : el('span'));
+  }
+  function amanha10() { const d = new Date(Date.now() + 864e5); d.setHours(10, 0, 0, 0); const z = x => String(x).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}T10:00`; }
+  function formTarefas(box, n) {
+    const lista = tarefas.filter(t => t.negocio_id === n.id).sort((a, b) => (a.feita - b.feita) || a.quando.localeCompare(b.quando));
+    const tipo = el('select', {}, TIPOS_TAREFA.map(t => el('option', { value: t, text: t })));
+    const desc = el('input', { type: 'text', placeholder: 'Ex.: ligar para confirmar as datas' });
+    const quando = el('input', { type: 'datetime-local', value: amanha10() });
+    const quem = el('select', {}, [['', 'Sem responsável'], ...Object.entries(equipe)].map(([k, v]) => el('option', { value: k, text: v, selected: k === (n.responsavel_id || (eu && eu.id)) })));
+    box.append(el('div', { class: 'rotulo', text: 'Agendar tarefa' }), el('div', { class: 'grade-campos' }, campoF('Tipo', tipo), campoF('Para quem', quem), campoF('Quando', quando, true), campoF('Descrição', desc, true)),
+      el('button', { class: 'btn btn-enviar', type: 'button', style: 'align-self:flex-start', text: 'Agendar', onclick: async ev => {
+        ev.currentTarget.setAttribute('disabled', '');
+        try { await chamarApi('/api/tarefa', { negocio_id: n.id, tipo: tipo.value, descricao: desc.value || tipo.value, quando: new Date(quando.value).toISOString(), responsavel_id: quem.value || null }); toast('Tarefa agendada.'); }
+        catch (e) { toast(e.message); }
+        carregarFunil();
+      } }),
+      el('div', { class: 'rotulo', text: 'Tarefas' }));
+    if (!lista.length) box.append(el('div', { class: 'vazio', text: 'Nenhuma tarefa ainda.' }));
+    lista.forEach(t => box.append(linhaTarefa(t, false)));
+  }
+  let tModo = 'abertas';
+  document.querySelector('[data-painel="tarefas"] .chips').addEventListener('click', e => {
+    const c = e.target.closest('[data-t]'); if (!c) return;
+    tModo = c.dataset.t;
+    document.querySelectorAll('[data-painel="tarefas"] [data-t]').forEach(x => x.setAttribute('aria-pressed', String(x === c)));
+    pintarTarefas();
+  });
+  $('t-resp').addEventListener('input', pintarTarefas);
+  function pintarTarefas() {
+    const box = $('lista-tarefas'); box.textContent = '';
+    if (!funilOk) { box.append(el('div', { class: 'vazio', text: 'As tarefas ainda não estão no banco: falta rodar a migração 008 no Supabase.' })); return; }
+    let ls = tarefas.filter(t => tModo === 'abertas' ? !t.feita : t.feita);
+    if ($('t-resp').value) ls = ls.filter(t => t.responsavel_id === $('t-resp').value);
+    const agora = new Date(), fimHoje = new Date(); fimHoje.setHours(23, 59, 59, 999);
+    const grupos = tModo === 'feitas' ? [['Concluídas', ls.slice().reverse()]] : [
+      ['Atrasadas', ls.filter(t => new Date(t.quando) < agora)],
+      ['Hoje', ls.filter(t => new Date(t.quando) >= agora && new Date(t.quando) <= fimHoje)],
+      ['Próximas', ls.filter(t => new Date(t.quando) > fimHoje)]];
+    grupos.forEach(([nome, g]) => { if (g.length) box.append(el('div', { class: 'grupo-tarefas' }, el('h3', {}, nome, el('small', { text: String(g.length) })), g.map(t => linhaTarefa(t, true)))); });
+    if (!box.children.length) box.append(el('div', { class: 'vazio', text: 'Nenhuma tarefa aqui.' }));
+  }
+
+  // Na conversa: etapa do negócio no cabeçalho e as tarefas no painel ☑
+  function seletorEtapaConversa(c) {
+    const n = negocioDaConversa(c.id);
+    if (!n) return null;
+    return el('select', { class: 'etapa-sel', 'aria-label': 'Etapa no funil', title: 'Etapa no funil', onchange: e => mover(n, e.target.value) },
+      ETAPAS.map(([k, t]) => el('option', { value: k, text: t, selected: k === n.etapa })));
+  }
+  function painelTarefas(lat, c) {
+    const n = c && negocioDaConversa(c.id);
+    if (!n) { lat.append(el('p', { class: 'lat-txt', text: funilOk ? 'Esta conversa ainda não tem negócio no funil.' : 'Falta rodar a migração 008 no Supabase.' })); return; }
+    lat.append(el('button', { class: 'btn btn-editar', type: 'button', text: 'Abrir a ficha do negócio', onclick: () => abrirFicha(n.id) }));
+    formTarefas(lat, n);
+  }
+
   // ---------- Tempo real ----------
   function assinar() {
     if (canal) return;
@@ -747,6 +994,8 @@
         if (aberta === c.id) pintarCabecalho();
         pintarLista();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'negocios' }, () => recarregarFunilLogo())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tarefas' }, () => recarregarFunilLogo())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orcamentos' }, ({ new: o }) => {
         if (o && o.conversa_id && o.conversa_id === aberta) pintarOrcamentos(aberta);
       })

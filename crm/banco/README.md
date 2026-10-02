@@ -14,6 +14,7 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 | `005_transcricao.sql` | colunas `transcricao` e `transcricao_status` em `mensagens` (texto dos áudios) | 02/10/2026 (dono) |
 | `006_orcamentos.sql` | `orcamentos` e `orcamento_eventos` (página pública `/o/<token>`, aberturas e "Quero reservar"), `registrar_abertura_orcamento` (só o servidor) | 02/10/2026 (dono) |
 | `007_ficha.sql` | coluna `email` em `contatos` (ficha do cliente na caixa) | **pendente** (dono) |
+| `008_funil_tarefas.sql` | `negocios` (funil), `tarefas` e `negocio_eventos` (histórico); gatilhos que movem o card sozinho (conversa nova → Novo, 1ª resposta → Em atendimento, orçamento → Orçamento enviado); cria os negócios das conversas que já existem | **pendente** (dono) |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.

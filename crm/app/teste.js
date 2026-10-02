@@ -73,6 +73,13 @@ const falso = http.createServer((req, res) => {
     if (req.url === '/auth/v1/user') { const u = FAKE['/auth/v1/user'](req); return u ? responder(200, u) : responder(401, { msg: 'invalid' }); }
     if (req.url === '/rest/v1/rpc/equipe_por_email') { const b = JSON.parse(corpo); return responder(200, b.p_email === 'equipe@teste.com' ? [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }] : []); }
     if (req.method === 'PATCH' && (req.url.startsWith('/rest/v1/conversas?') || req.url.startsWith('/rest/v1/contatos?'))) { res.writeHead(204); return res.end(); }
+    if (req.url.startsWith('/rest/v1/negocios?id=eq.') && req.method === 'GET') return responder(200, req.url.includes('NEG-NAO') ? [] : [{ id: req.url.split('id=eq.')[1].split('&')[0], etapa: 'novo', responsavel_id: null }]);
+    if (req.url.startsWith('/rest/v1/negocios?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
+    if (req.url === '/rest/v1/negocios' && req.method === 'POST') return responder(201, [{ id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', ...json }]);
+    if (req.url === '/rest/v1/contatos' && req.method === 'POST') return responder(201, [{ id: 'k-novo', ...json }]);
+    if (req.url === '/rest/v1/contato_identificadores' || req.url === '/rest/v1/negocio_eventos' || (req.url === '/rest/v1/tarefas' && req.method === 'POST')) { res.writeHead(201); return res.end(); }
+    if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'GET') return responder(200, [{ negocio_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', tipo: 'Ligar' }]);
+    if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/rest/v1/usuarios?')) return responder(200, [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }]);
     if (req.url.startsWith('/rest/v1/conversas?') && req.url.includes('select=contato_id')) return responder(200, [{ contato_id: 'k-1' }]);
     if (req.url.startsWith('/rest/v1/conversas?')) return responder(200, [{ id: '11111111-1111-1111-1111-111111111111', canal: 'wa', numero_id: '111',
@@ -351,6 +358,35 @@ falso.listen(0, () => {
     const vj = await r.json();
     assert.equal(r.status, 200); assert.equal(vj.dias.length, 14); assert.ok(vj.tipos.some(t => t.codigo === 'CBM' && t.vagas.every(v => Number.isInteger(v))));
     assert.equal((await api('/api/vagas?inicio=ontem', null, 'token-equipe', 'GET')).status, 400);
+
+    // Funil: mover de etapa, perdido exige motivo, novo lead; tarefas: criar e concluir (com histórico)
+    const NEG = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
+    r = await api('/api/negocio', { id: NEG, etapa: 'orc', valor_previsto: '1500.50', perfil: 'Casal', data_entrada: '2026-11-20' });
+    assert.equal(r.status, 200, await r.clone().text());
+    const pn = chamadas.findLast(c => c.metodo === 'PATCH' && c.url === '/rest/v1/negocios?id=eq.' + NEG);
+    assert.equal(pn.corpo.etapa, 'orc'); assert.equal(pn.corpo.valor_previsto, 1500.5); assert.equal(pn.corpo.fechado_em, null);
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/negocio_eventos').corpo[0].texto, 'Movido para Orçamento enviado');
+    assert.equal((await api('/api/negocio', { id: NEG, etapa: 'perd' })).status, 400, 'perdido sem motivo');
+    r = await api('/api/negocio', { id: NEG, etapa: 'perd', motivo_perda: 'Preço' });
+    assert.equal(r.status, 200);
+    assert.ok(chamadas.findLast(c => c.metodo === 'PATCH' && c.url === '/rest/v1/negocios?id=eq.' + NEG).corpo.fechado_em);
+    assert.equal((await api('/api/negocio', { id: NEG, etapa: 'voando' })).status, 400);
+    assert.equal((await api('/api/negocio', { id: NEG, data_entrada: '20/11' })).status, 400);
+    r = await api('/api/negocio', { nome: 'Lead do balcão', telefone: '(67) 99999-1111', etapa: 'novo' });
+    const nl = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(nl));
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/contato_identificadores').corpo.valor, '67999991111');
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/negocios' && c.metodo === 'POST').corpo.origem, 'ativo');
+    assert.equal((await api('/api/negocio', { nome: '' })).status, 400);
+    assert.equal((await api('/api/negocio', { id: NEG, etapa: 'res' }, 'token-estranho')).status, 403);
+    r = await api('/api/tarefa', { negocio_id: NEG, tipo: 'Ligar', descricao: 'confirmar datas', quando: '2026-11-01T13:00:00Z' });
+    assert.equal(r.status, 200, await r.clone().text());
+    const tt = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo;
+    assert.deepEqual([tt.tipo, tt.responsavel_id, tt.quando], ['Ligar', 'u-1', '2026-11-01T13:00:00.000Z']);
+    assert.equal((await api('/api/tarefa', { negocio_id: NEG, tipo: 'Ligar', quando: 'amanhã' })).status, 400);
+    r = await api('/api/tarefa', { id: 'cccccccc-cccc-cccc-cccc-cccccccccccc', feita: true });
+    assert.equal(r.status, 200);
+    assert.equal(chamadas.findLast(c => c.url === '/rest/v1/negocio_eventos').corpo.texto, 'Concluída: Ligar');
 
     const { numeroParaEnvio } = require('./server');
     assert.equal(numeroParaEnvio('+556798070981'), '5567998070981');

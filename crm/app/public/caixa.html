@@ -37,7 +37,7 @@
     <nav class="nav" role="tablist" aria-label="Seções">
       <button role="tab" aria-selected="true" data-vista="conversas"><span class="ic" aria-hidden="true">💬</span><span class="tx">Conversas</span><span class="qtd num" id="qtd-conv" hidden>0</span></button>
       <button role="tab" aria-selected="false" data-vista="funil"><span class="ic" aria-hidden="true">▤</span><span class="tx">Funil</span></button>
-      <button role="tab" aria-selected="false" data-vista="tarefas"><span class="ic" aria-hidden="true">☑</span><span class="tx">Tarefas</span></button>
+      <button role="tab" aria-selected="false" data-vista="tarefas"><span class="ic" aria-hidden="true">☑</span><span class="tx">Tarefas</span><span class="qtd num" id="qtd-tarefas" hidden>0</span></button>
       <button role="tab" aria-selected="false" data-vista="produtos"><span class="ic" aria-hidden="true">🛶</span><span class="tx">Produtos</span></button>
       <button role="tab" aria-selected="false" data-vista="agencias"><span class="ic" aria-hidden="true">🤝</span><span class="tx">Agências</span></button>
       <button role="tab" aria-selected="false" data-vista="vagas"><span class="ic" aria-hidden="true">🛏</span><span class="tx">Vagas</span></button>
@@ -128,6 +128,28 @@
       </div>
     </section>
 
+    <!-- FUNIL -->
+    <section data-painel="funil" hidden>
+      <div class="barra-ferr">
+        <input type="search" id="f-busca" placeholder="Buscar por nome ou telefone" aria-label="Buscar lead">
+        <select id="f-resp" aria-label="Filtrar por responsável"><option value="">Todos os responsáveis</option></select>
+        <select id="f-origem" aria-label="Filtrar por origem"><option value="">Todas as origens</option></select>
+        <select id="f-perfil" aria-label="Filtrar por perfil"><option value="">Todos os perfis</option></select>
+        <button class="btn btn-enviar" type="button" id="bt-novo-lead">+ Novo lead</button>
+      </div>
+      <p class="dica">Arraste os cards entre as colunas ou mude a etapa no próprio card. Clique no card para abrir a ficha.</p>
+      <div class="funil" id="board"></div>
+    </section>
+
+    <!-- TAREFAS -->
+    <section data-painel="tarefas" hidden>
+      <div class="barra-ferr">
+        <select id="t-resp" aria-label="Tarefas de quem"><option value="">De todos</option></select>
+        <div class="chips" role="group" aria-label="Mostrar"><button class="chip" type="button" aria-pressed="true" data-t="abertas">Abertas</button><button class="chip" type="button" aria-pressed="false" data-t="feitas">Concluídas</button></div>
+      </div>
+      <div id="lista-tarefas" class="lista-tarefas"></div>
+    </section>
+
     <section data-painel="em-breve" hidden>
       <div class="cartao em-breve">
         <h2 id="eb-titulo"></h2>
@@ -135,6 +157,23 @@
       </div>
     </section>
   </main>
+</div>
+
+<!-- Ficha do negócio (gaveta) -->
+<div class="fundo-escuro" id="fundo" hidden></div>
+<aside class="gaveta" id="gaveta" role="dialog" aria-modal="true" aria-labelledby="g-nome" hidden>
+  <header><span class="resp" id="g-avatar"></span><h2 id="g-nome"></h2><button class="fechar" type="button" id="g-fechar" aria-label="Fechar ficha">✕</button></header>
+  <div class="abas" role="tablist"><button role="tab" type="button" data-g="dados" aria-selected="true">Dados</button><button role="tab" type="button" data-g="atividades" aria-selected="false">Tarefas</button><button role="tab" type="button" data-g="historico" aria-selected="false">Histórico</button></div>
+  <div class="corpo" id="g-corpo"></div>
+  <div class="rodape-gaveta" id="g-rodape"></div>
+</aside>
+
+<!-- Motivo da perda -->
+<div class="modal-fundo" id="m-fundo" hidden></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="m-tit" hidden>
+  <h3 id="m-tit">Por que este negócio foi perdido?</h3>
+  <div class="opcoes" id="m-opcoes"></div>
+  <div class="acoes"><button class="btn btn-enviar" type="button" id="m-ok">Mover para Perdido</button><button class="btn btn-editar" type="button" id="m-cancelar">Cancelar</button></div>
 </div>
 
 <div class="aviso-toast" id="toast" role="status" hidden></div>
