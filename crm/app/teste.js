@@ -72,6 +72,9 @@ const falso = http.createServer((req, res) => {
     if (req.url === '/silbeck/v1/TipoApartamento') return req.headers.authorization === 'Bearer tok-silbeck' ? responder(200, { listaTipoApartamento: [{ id: 1 }, { id: 2 }, { id: 3 }] }) : responder(401, {});
     if (req.url === '/auth/v1/user') { const u = FAKE['/auth/v1/user'](req); return u ? responder(200, u) : responder(401, { msg: 'invalid' }); }
     if (req.url === '/rest/v1/rpc/equipe_por_email') { const b = JSON.parse(corpo); return responder(200, b.p_email === 'equipe@teste.com' ? [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }] : []); }
+    if (req.method === 'PATCH' && (req.url.startsWith('/rest/v1/conversas?') || req.url.startsWith('/rest/v1/contatos?'))) { res.writeHead(204); return res.end(); }
+    if (req.url.startsWith('/rest/v1/usuarios?')) return responder(200, [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }]);
+    if (req.url.startsWith('/rest/v1/conversas?') && req.url.includes('select=contato_id')) return responder(200, [{ contato_id: 'k-1' }]);
     if (req.url.startsWith('/rest/v1/conversas?')) return responder(200, [{ id: '11111111-1111-1111-1111-111111111111', canal: 'wa', numero_id: '111',
       ultima_msg_cliente_em: new Date(Date.now() - (janelaAberta ? 3600e3 : 30 * 3600e3)).toISOString(),
       contato: { contato_identificadores: [{ tipo: 'whatsapp', valor: '+5567999990000' }] } }]);
@@ -189,7 +192,7 @@ falso.listen(0, () => {
     // Caixa de entrada: página, cabeçalhos de segurança e configuração só com a chave pública
     r = await fetch(base + '/caixa');
     assert.equal(r.status, 200);
-    assert.ok((await r.text()).includes('Caixa de Entrada'));
+    assert.ok((await r.text()).includes('CRM Cabanas'));
     const csp = r.headers.get('content-security-policy');
     assert.ok(csp.includes("script-src 'self'") && csp.includes("frame-ancestors 'none'"));
     assert.equal(r.headers.get('cache-control'), 'no-store');
@@ -320,6 +323,34 @@ falso.listen(0, () => {
     assert.equal((await transcrever('token-estranho', MSG_AUDIO)).status, 403);
     assert.equal((await transcrever('token-equipe', MSG_MIDIA)).status, 404); // é foto, não áudio
     assert.equal((await transcrever('token-equipe', 'x')).status, 400);
+
+    // APIs da equipe: lista da equipe, ficha/status/responsável, cotação, orçamento pela equipe e vagas
+    const api = (rota, corpo, tok = 'token-equipe', metodo = 'POST') => fetch(base + rota, { method: metodo, headers: { Authorization: 'Bearer ' + tok }, body: metodo === 'GET' ? undefined : JSON.stringify(corpo || {}) });
+    r = await api('/api/equipe', null, 'token-equipe', 'GET');
+    assert.equal(r.status, 200); assert.ok(Array.isArray((await r.json()).equipe));
+    assert.equal((await api('/api/equipe', null, 'token-estranho', 'GET')).status, 403);
+    r = await api('/api/conversa', { conversa_id: conv, status: 'resolvida', atribuida_a: '99999999-9999-9999-9999-999999999999' });
+    assert.equal(r.status, 200, await r.clone().text());
+    const pc = chamadas.findLast(c => c.metodo === 'PATCH' && c.url === '/rest/v1/conversas?id=eq.' + conv);
+    assert.equal(pc.corpo.status, 'resolvida'); assert.equal(pc.corpo.atribuida_a, '99999999-9999-9999-9999-999999999999');
+    assert.equal((await api('/api/conversa', { conversa_id: conv, status: 'apagada' })).status, 400);
+    assert.equal((await api('/api/conversa', { conversa_id: conv, email: 'sem-arroba' })).status, 400);
+    r = await api('/api/conversa', { conversa_id: conv, nome: ' Ana Souza ', email: 'ana@exemplo.com', observacoes: 'Lua de mel' });
+    assert.equal(r.status, 200, await r.clone().text());
+    const pf = chamadas.findLast(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/contatos?id=eq.'));
+    assert.deepEqual([pf.corpo.nome, pf.corpo.email, pf.corpo.observacoes], ['Ana Souza', 'ana@exemplo.com', 'Lua de mel']);
+    r = await api('/api/cotar', { data_entrada: emDias(30), data_saida: emDias(32), adultos: 2, idades_criancas: [] });
+    const cj = await r.json();
+    assert.equal(r.status, 200); assert.ok(cj.opcoes.length > 0);
+    assert.equal((await api('/api/cotar', { data_entrada: '2020-01-01', data_saida: '2020-01-02', adultos: 2, idades_criancas: [] })).status, 400);
+    r = await api('/api/orcamento', { conversa_id: conv, data_entrada: emDias(30), data_saida: emDias(32), adultos: 2, idades_criancas: [], opcoes: [{ acomodacoes: [cj.opcoes[0].codigo] }] });
+    const oj = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(oj)); assert.ok(oj.link.includes('/o/'));
+    assert.equal(orcs.at(-1).criado_por, 'u-1');
+    r = await api('/api/vagas?inicio=' + emDias(10) + '&dias=14', null, 'token-equipe', 'GET');
+    const vj = await r.json();
+    assert.equal(r.status, 200); assert.equal(vj.dias.length, 14); assert.ok(vj.tipos.some(t => t.codigo === 'CBM' && t.vagas.every(v => Number.isInteger(v))));
+    assert.equal((await api('/api/vagas?inicio=ontem', null, 'token-equipe', 'GET')).status, 400);
 
     const { numeroParaEnvio } = require('./server');
     assert.equal(numeroParaEnvio('+556798070981'), '5567998070981');

@@ -4,77 +4,140 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<title>Caixa de Entrada · CRM Cabanas</title>
+<title>CRM Cabanas</title>
 <link rel="stylesheet" href="/caixa.css">
 </head>
 <body>
-<header class="topo">
-  <div class="marca">CRM <b>Cabanas</b></div>
-  <div class="quem" id="quem" hidden><span id="quem-nome"></span><button type="button" class="link" id="sair">Sair</button></div>
-</header>
-
 <section class="entrar" id="tela-entrar" hidden>
-  <h1>Entrar na caixa de entrada</h1>
-  <p>Digite o seu e-mail da equipe. Enviamos um link de acesso; abra no mesmo aparelho.</p>
-  <form id="form-entrar">
-    <label for="email">E-mail</label>
-    <input id="email" type="email" autocomplete="email" required placeholder="voce@exemplo.com">
-    <button type="submit" class="btn" id="btn-entrar">Enviar link de acesso</button>
-  </form>
-  <p class="msg" id="msg-entrar" role="status"></p>
+  <img src="/o/logo-branco.png" alt="Hotel Cabanas" class="entrar-logo" width="120" height="95">
+  <div class="entrar-cartao">
+    <h1>Entrar no CRM Cabanas</h1>
+    <p>Digite o seu e-mail da equipe. Enviamos um link de acesso; abra no mesmo aparelho.</p>
+    <form id="form-entrar">
+      <label for="email">E-mail</label>
+      <input id="email" type="email" autocomplete="email" required placeholder="voce@exemplo.com">
+      <button type="submit" class="btn btn-enviar" id="btn-entrar">Enviar link de acesso</button>
+    </form>
+    <p class="msg" id="msg-entrar" role="status"></p>
+  </div>
 </section>
 
-<section class="aviso-tela" id="tela-bloqueado" hidden>
-  <h1>E-mail ainda não liberado</h1>
-  <p>O login funcionou, mas este e-mail não está na lista da equipe. Peça ao Ricardo para liberar e entre de novo.</p>
+<section class="entrar" id="tela-bloqueado" hidden>
+  <div class="entrar-cartao">
+    <h1>E-mail ainda não liberado</h1>
+    <p>O login funcionou, mas este e-mail não está na lista da equipe. Peça ao Ricardo para liberar e entre de novo.</p>
+    <button type="button" class="btn btn-editar" id="sair-bloqueado">Sair</button>
+  </div>
 </section>
 
-<main class="caixa" id="tela-caixa" hidden>
-  <aside class="lista" id="painel-lista" aria-label="Conversas">
-    <div class="lista-topo">
-      <h1>Conversas</h1>
+<div class="app" id="tela-caixa" hidden>
+  <aside class="lateral">
+    <button class="recolher" id="bt-recolher" type="button" aria-label="Recolher menu" aria-expanded="true" title="Recolher menu">«</button>
+    <div class="logo"><img src="/o/logo-branco.png" alt="Hotel Cabanas" width="56" height="44"><span>CRM<br>Reservas</span></div>
+    <nav class="nav" role="tablist" aria-label="Seções">
+      <button role="tab" aria-selected="true" data-vista="conversas"><span class="ic" aria-hidden="true">💬</span><span class="tx">Conversas</span><span class="qtd num" id="qtd-conv" hidden>0</span></button>
+      <button role="tab" aria-selected="false" data-vista="funil"><span class="ic" aria-hidden="true">▤</span><span class="tx">Funil</span></button>
+      <button role="tab" aria-selected="false" data-vista="tarefas"><span class="ic" aria-hidden="true">☑</span><span class="tx">Tarefas</span></button>
+      <button role="tab" aria-selected="false" data-vista="produtos"><span class="ic" aria-hidden="true">🛶</span><span class="tx">Produtos</span></button>
+      <button role="tab" aria-selected="false" data-vista="agencias"><span class="ic" aria-hidden="true">🤝</span><span class="tx">Agências</span></button>
+      <button role="tab" aria-selected="false" data-vista="vagas"><span class="ic" aria-hidden="true">🛏</span><span class="tx">Vagas</span></button>
+      <button role="tab" aria-selected="false" data-vista="pagamentos"><span class="ic" aria-hidden="true">💳</span><span class="tx">Pagamentos</span></button>
+      <button role="tab" aria-selected="false" data-vista="painel"><span class="ic" aria-hidden="true">📈</span><span class="tx">Painel</span></button>
+      <button role="tab" aria-selected="false" data-vista="regua"><span class="ic" aria-hidden="true">✉</span><span class="tx">Régua de mensagens</span></button>
+      <button role="tab" aria-selected="false" data-vista="ajustes"><span class="ic" aria-hidden="true">⚙</span><span class="tx">Ajustes do agente</span></button>
+    </nav>
+    <div class="agente-status">
+      <strong>Gilberto</strong>
+      <span>Modo sugestão: escreve as respostas e a equipe revisa antes de enviar.</span>
       <span class="ao-vivo" id="ao-vivo" title="Atualiza sozinho">● ao vivo</span>
     </div>
-    <ul id="conversas"></ul>
-    <p class="vazio" id="lista-vazia" hidden>Nenhuma conversa ainda. Quando alguém mandar mensagem para o número do hotel, ela aparece aqui na hora.</p>
+    <div class="quem"><span id="quem-nome"></span><button type="button" class="lnk-claro" id="sair">Sair</button></div>
   </aside>
 
-  <section class="conversa" id="painel-conversa" aria-label="Conversa aberta">
-    <div class="sem-conversa" id="sem-conversa"><p>Escolha uma conversa à esquerda.</p></div>
-    <div class="conv" id="conv" hidden>
-      <div class="conv-topo">
-        <button type="button" class="voltar" id="voltar" aria-label="Voltar para a lista">←</button>
-        <div class="conv-quem"><b id="conv-nome"></b><span id="conv-tel"></span></div>
-        <span class="janela" id="conv-janela"></span>
-      </div>
-      <div class="orcs" id="orcs" hidden></div>
-      <div class="mensagens" id="mensagens" aria-live="polite"></div>
-      <div class="sugestao" id="sugestao" hidden>
-        <div class="sug-topo"><b>Sugestão do Gilberto</b><span id="sug-modelo"></span></div>
-        <div class="sug-texto" id="sug-texto"></div>
-        <p class="sug-notas" id="sug-notas"></p>
-        <div class="sug-fotos" id="sug-fotos" hidden><div class="sug-fotos-lista" id="sug-fotos-lista"></div><button type="button" class="btn" id="sug-fotos-enviar">Enviar estas fotos</button></div>
-        <div class="sug-acoes">
-          <button type="button" class="btn" id="sug-usar">Usar (revisar e enviar)</button>
-          <button type="button" class="link" id="sug-descartar">Descartar</button>
-        </div>
-      </div>
-      <div class="galeria" id="galeria" hidden>
-        <div class="gal-topo"><b>Fotos do hotel</b><span id="gal-cont"></span><button type="button" class="btn" id="gal-enviar" disabled>Enviar</button><button type="button" class="link" id="gal-fechar">Fechar</button></div>
-        <div class="gal-grupos" id="gal-grupos"></div>
-      </div>
-      <div class="responder">
-        <button type="button" class="btn-sug" id="sugerir" title="O Gilberto escreve uma resposta para você revisar">✨ Sugerir</button>
-        <button type="button" class="btn-sug btn-anexo" id="anexar" title="Enviar foto, vídeo, áudio ou PDF (o texto do campo vira a legenda)" aria-label="Anexar arquivo">📎</button>
-        <button type="button" class="btn-sug btn-anexo" id="abrir-fotos" title="Fotos reais do hotel (biblioteca)" aria-label="Fotos do hotel" aria-expanded="false">🖼</button>
-        <input type="file" id="arquivo" accept="image/jpeg,image/png,image/*,video/mp4,video/3gpp,audio/*,application/pdf" hidden>
-        <textarea id="resposta" rows="2" placeholder="Escreva a resposta…" aria-label="Resposta"></textarea>
-        <button type="button" class="btn" id="enviar">Enviar</button>
-      </div>
-      <p class="aviso-envio" id="aviso-envio" role="status" hidden></p>
+  <main class="principal">
+    <div class="topo">
+      <h1 id="titulo">Conversas</h1>
+      <button class="tema" id="bt-tema" type="button">Tema: automático</button>
     </div>
-  </section>
-</main>
+
+    <!-- CONVERSAS -->
+    <section data-painel="conversas">
+      <div class="cx" id="cx">
+        <div class="cx-col">
+          <div class="cx-abas" role="tablist" aria-label="Situação das conversas">
+            <button role="tab" aria-selected="true" data-st="aberta">Abertas</button>
+            <button role="tab" aria-selected="false" data-st="resolvida">Resolvidas</button>
+            <button role="tab" aria-selected="false" data-st="arquivada">Arquivadas</button>
+          </div>
+          <input type="search" id="cx-busca" class="cx-busca" placeholder="Buscar por nome ou telefone" aria-label="Buscar conversa">
+          <div class="filtros" id="cx-filtros">
+            <button class="chip" type="button" aria-pressed="true" data-f="todas">Todas</button>
+            <button class="chip" type="button" aria-pressed="false" data-f="naolidas">Não lidas</button>
+            <button class="chip" type="button" aria-pressed="false" data-f="minhas">Minhas</button>
+            <button class="chip" type="button" aria-pressed="false" data-f="janela">Janela 24 h expirada</button>
+          </div>
+          <div class="cx-lista" id="cx-lista"></div>
+        </div>
+
+        <div class="cartao cx-cab" id="cx-cab"><div class="sem-conversa">Escolha uma conversa à esquerda.</div></div>
+
+        <div class="cartao cx-chat" id="cx-chat" hidden>
+          <div class="orcs" id="orcs" hidden></div>
+          <div class="mensagens" id="mensagens" aria-live="polite"></div>
+          <button class="ir-fim" id="ir-fim" type="button" aria-label="Ir para a última mensagem" hidden>↓</button>
+          <div class="cx-rodape" id="cx-fechada" hidden><span>A janela de 24 h expirou: fora dela só dá para enviar um modelo aprovado pela Meta (chega numa próxima etapa).</span></div>
+          <div class="cx-compor" id="cx-compor">
+            <div class="sugestao" id="sugestao" hidden>
+              <div class="sug-topo"><b>Sugestão do Gilberto</b><span id="sug-modelo"></span></div>
+              <div class="sug-texto" id="sug-texto"></div>
+              <p class="sug-notas" id="sug-notas"></p>
+              <div class="sug-fotos" id="sug-fotos" hidden><div class="sug-fotos-lista" id="sug-fotos-lista"></div><button type="button" class="btn btn-editar" id="sug-fotos-enviar">Enviar estas fotos</button></div>
+              <div class="acoes">
+                <button type="button" class="btn btn-enviar" id="sug-usar">Usar (revisar e enviar)</button>
+                <button type="button" class="btn btn-descartar" id="sug-descartar">Descartar</button>
+              </div>
+            </div>
+            <div class="cx-galeria" id="galeria" hidden>
+              <div class="gal-cab"><b>Banco de imagens</b><small id="gal-cont">Fotos reais do hotel. Toque para escolher (até 5).</small><button type="button" class="fechar" id="gal-fechar" aria-label="Fechar banco de imagens">✕</button></div>
+              <div class="gal-cats" id="gal-cats"></div>
+              <div class="gal-grade" id="gal-grade"></div>
+              <div class="gal-rodape"><span class="lat-txt" id="gal-sel">Nenhuma selecionada</span><button type="button" class="btn btn-enviar" id="gal-enviar" disabled>Enviar</button></div>
+            </div>
+            <div class="cx-ferr">
+              <button type="button" class="btn-mini ia" id="sugerir" title="O Gilberto escreve uma resposta para você revisar">✨ Sugerir resposta</button>
+              <button type="button" class="btn-mini" id="abrir-fotos" aria-expanded="false">🖼 Banco de fotos</button>
+              <button type="button" class="btn-mini" id="anexar" title="Foto, vídeo, áudio ou PDF do aparelho (o texto do campo vira a legenda)">📎 Arquivo</button>
+              <input type="file" id="arquivo" accept="image/jpeg,image/png,image/*,video/mp4,video/3gpp,audio/*,application/pdf" hidden>
+            </div>
+            <div class="cx-envio">
+              <textarea id="resposta" rows="1" placeholder="Escreva a resposta…" aria-label="Resposta"></textarea>
+              <button type="button" class="btn btn-enviar" id="enviar">Enviar</button>
+            </div>
+            <p class="aviso-envio" id="aviso-envio" role="status" hidden></p>
+          </div>
+        </div>
+
+        <div class="cartao cx-lateral" id="cx-lateral" hidden></div>
+        <nav class="cx-trilho" id="cx-trilho" aria-label="Painéis da conversa" hidden>
+          <button type="button" data-p="his" aria-pressed="false" title="Ficha e histórico do cliente" aria-label="Ficha e histórico do cliente">👤</button>
+          <button type="button" data-p="orc" aria-pressed="false" title="Montar orçamento" aria-label="Montar orçamento">🧾</button>
+          <button type="button" data-p="vag" aria-pressed="false" title="Vagas por tipo de acomodação" aria-label="Vagas por tipo de acomodação">🛏</button>
+          <button type="button" data-p="res" aria-pressed="false" title="Reservas e pagamentos" aria-label="Reservas e pagamentos">💳</button>
+          <button type="button" data-p="tar" aria-pressed="false" title="Tarefas" aria-label="Tarefas">☑</button>
+        </nav>
+      </div>
+    </section>
+
+    <section data-painel="em-breve" hidden>
+      <div class="cartao em-breve">
+        <h2 id="eb-titulo"></h2>
+        <p id="eb-texto"></p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="aviso-toast" id="toast" role="status" hidden></div>
 
 <script src="/vendor/supabase-2.117.2.js"></script>
 <script src="/config.js"></script>

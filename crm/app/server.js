@@ -437,6 +437,64 @@ async function enviarFotosPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   return { ok: true, enviadas };
 }
 
+// ---------- Ficha, equipe, cotação e orçamento pela caixa (equipe logada) ----------
+async function lerCorpo(req, limite = 64e3) {
+  const partes = []; let t = 0;
+  for await (const p of req) { t += p.length; if (t > limite) throw new ErroEnvio(413, 'Pedido grande demais.'); partes.push(p); }
+  try { return JSON.parse(Buffer.concat(partes).toString('utf8') || '{}'); } catch (e) { throw new ErroEnvio(400, 'Pedido inválido.'); }
+}
+async function patchBanco(tabela, filtro, dados, buscar = fetch) {
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/${tabela}?${filtro}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(dados), signal: AbortSignal.timeout(5000) });
+  if (!r.ok) throw new ErroEnvio(r.status === 400 ? 400 : 502, 'Não deu para salvar' + (r.status === 400 ? ' (o banco precisa da migração 007?)' : '') + '.');
+}
+const API_EQUIPE = {
+  // Lista da equipe (para o "responsável" da conversa)
+  'GET /api/equipe': async () => {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&select=id,nome,papel&order=nome`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    return { ok: true, equipe: r.ok ? await r.json() : [] };
+  },
+  // Status, responsável e ficha do contato
+  'POST /api/conversa': async (corpo, eu) => {
+    const id = String(corpo.conversa_id || '');
+    if (!/^[0-9a-f-]{36}$/i.test(id)) throw new ErroEnvio(400, 'Conversa inválida.');
+    const conv = {};
+    if (corpo.status !== undefined) { if (!['aberta', 'resolvida', 'arquivada'].includes(corpo.status)) throw new ErroEnvio(400, 'Status inválido.'); conv.status = corpo.status; }
+    if (corpo.atribuida_a !== undefined) { if (corpo.atribuida_a !== null && !/^[0-9a-f-]{36}$/i.test(corpo.atribuida_a)) throw new ErroEnvio(400, 'Responsável inválido.'); conv.atribuida_a = corpo.atribuida_a; }
+    if (Object.keys(conv).length) await patchBanco('conversas', `id=eq.${id}`, { ...conv, atualizado_em: new Date().toISOString() });
+    const ficha = {};
+    if (corpo.nome !== undefined) ficha.nome = String(corpo.nome || '').trim().slice(0, 120) || null;
+    if (corpo.email !== undefined) { const e = String(corpo.email || '').trim().slice(0, 160); if (e && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) throw new ErroEnvio(400, 'E-mail inválido.'); ficha.email = e || null; }
+    if (corpo.observacoes !== undefined) ficha.observacoes = String(corpo.observacoes || '').slice(0, 2000) || null;
+    if (Object.keys(ficha).length) {
+      const c = await fetch(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${id}&select=contato_id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+      const contato = c.ok ? ((await c.json())[0] || {}).contato_id : null;
+      if (!contato) throw new ErroEnvio(404, 'Conversa não encontrada.');
+      await patchBanco('contatos', `id=eq.${contato}`, { ...ficha, atualizado_em: new Date().toISOString() });
+    }
+    console.log(JSON.stringify({ evento: 'conversa_atualizada', por: eu.id, campos: [...Object.keys(conv), ...Object.keys(ficha)] }));
+    return { ok: true };
+  },
+  // Cotação manual (painel "Montar orçamento")
+  'POST /api/cotar': async corpo => {
+    const r = await silbeck.cotar(corpo);
+    if (!r.ok) throw new ErroEnvio(400, r.erro);
+    return r;
+  },
+  // Orçamento criado pela equipe
+  'POST /api/orcamento': async (corpo, eu) => {
+    const id = String(corpo.conversa_id || '');
+    if (!/^[0-9a-f-]{36}$/i.test(id)) throw new ErroEnvio(400, 'Conversa inválida.');
+    const c = await fetch(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${id}&select=id,numero_id,contato:contatos(nome)`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const conv = c.ok ? (await c.json())[0] : null;
+    if (!conv) throw new ErroEnvio(404, 'Conversa não encontrada.');
+    const r = await criarOrcamento({ persona: 'indefinida', pessoas_aptas_combo: corpo.adultos || 0, ...corpo }, { conversa_id: conv.id, numero_id: conv.numero_id, primeiro_nome: conv.contato && conv.contato.nome, criado_por: eu.id });
+    if (!r.ok) throw new ErroEnvio(400, r.erro);
+    return r;
+  },
+  // Vagas por tipo e dia (painel "Vagas")
+  'GET /api/vagas': async (corpo, eu, url) => silbeck.vagas(url.searchParams.get('inicio'), url.searchParams.get('dias')),
+};
+
 // ---------- Transcrição de áudio ----------
 // Pedida pela tela (ao mostrar um áudio) ou antes da sugestão do Gilberto. Uma por vez por mensagem.
 const transcrevendo = new Map();
@@ -611,6 +669,23 @@ const servidor = http.createServer((req, res) => {
       registrar(evento)
         .then(() => json(res, 200, { ok: true }))
         .catch(e => { console.error(JSON.stringify({ evento: 'falha_banco', erro: String(e.message || e) })); json(res, 500, { ok: false }); });
+    });
+    return;
+  }
+
+  const rotaEquipe = API_EQUIPE[req.method + ' ' + url.pathname];
+  if (rotaEquipe) {
+    const auth = req.headers.authorization || '';
+    if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
+    (async () => {
+      if (!bancoLigado()) throw new ErroEnvio(503, 'O banco ainda não está configurado.');
+      const eu = await autenticarEquipe(auth.slice(7));
+      const corpo = req.method === 'POST' ? await lerCorpo(req) : {};
+      return rotaEquipe(corpo, eu, url);
+    })().then(r => json(res, 200, r)).catch(e => {
+      if (e instanceof silbeck.ErroSilbeck) e = e.http === 400 ? new ErroEnvio(400, 'Pedido inválido: ' + e.message + '.') : new ErroEnvio(502, 'O Silbeck não respondeu agora (' + e.message + ').');
+      if (!(e instanceof ErroEnvio)) console.error(JSON.stringify({ evento: 'falha_api', rota: url.pathname, erro: String(e.message || e).slice(0, 200) }));
+      json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Não deu agora. Tente de novo.' });
     });
     return;
   }

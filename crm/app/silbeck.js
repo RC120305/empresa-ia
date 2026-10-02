@@ -219,4 +219,16 @@ async function cotar(entrada, buscar = fetch) {
   return r;
 }
 
-module.exports = { diagnostico, diagnosticoCache, segredo, cotar, MODO, ErroSilbeck };
+// Vagas por tipo e por dia (painel "Vagas" da conversa). Só leitura.
+async function vagas(inicio, dias, buscar = fetch) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(inicio || '')) throw new ErroSilbeck('data inicial inválida', 400);
+  const n = Math.min(31, Math.max(1, Number(dias) || 14));
+  const [tipos, disp] = await Promise.all([cadastro('/v1/TipoApartamento', 'listaTipoApartamento', buscar),
+    chamar('GET', `/v1/Disponibilidade?dataInicial=${inicio}&DataFinal=${somarDias(inicio, n - 1)}&DetalharDiaADia=true`, null, buscar)]);
+  const porCod = Object.fromEntries(((disp.dados && disp.dados.listaTipoApto) || []).map(t => [t.codigo, t]));
+  return { ok: true, fonte: disp.fonte, inicio, dias: Array.from({ length: n }, (_, i) => somarDias(inicio, i)),
+    tipos: tipos.map(t => ({ codigo: t.codigo, nome: t.nome, total: t.quantidade, capacidade: t.maximoOcupantes,
+      vagas: Array.from({ length: n }, (_, i) => { const d = somarDias(inicio, i); const x = ((porCod[t.codigo] || {}).listaSituacaoTipoApto || []).find(y => y.data === d); return x ? x.qtdeDisponivel : null; }) })) };
+}
+
+module.exports = { diagnostico, diagnosticoCache, segredo, cotar, vagas, MODO, ErroSilbeck };
