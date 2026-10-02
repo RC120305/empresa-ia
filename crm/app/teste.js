@@ -583,6 +583,13 @@ falso.listen(0, () => {
     const pd = chamadas.findLast(c => c.url === '/rest/v1/produtos' && c.metodo === 'POST').corpo;
     assert.deepEqual([pd.preco, pd.variacoes[1].descricao, pd.perfis, pd.idade_minima, pd.grupo_fotos], ['Simples R$ 350 ou Completa R$ 600', 'Com pétalas', ['Casal'], null, 'BOIA']);
     assert.equal((await api('/api/produto', { codigo: 'X', nome: 'x', preco: 'y', perfis: ['Marciano'] })).status, 400);
+    // Fotos escolhidas para o produto (do Drive ou do Banco de fotos): ordem, capa e só fotos do Banco
+    r = await api('/api/produto', { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', fotos: ['BOIA-1.jpg', 'BGE-2.jpg', 'BOIA-1.jpg'] });
+    assert.equal(r.status, 200, await r.clone().text());
+    const pfo = chamadas.findLast(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/produtos?id=eq.')).corpo;
+    assert.deepEqual([pfo.fotos, pfo.foto], [['BOIA-1.jpg', 'BGE-2.jpg'], 'BOIA-1.jpg']);
+    assert.equal((await api('/api/produto', { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', fotos: ['naoexiste.jpg'] })).status, 400);
+    assert.equal((await api('/api/produto', { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', fotos: ['../x'] })).status, 400);
     assert.equal((await api('/api/produto', { codigo: 'X', nome: 'x', preco: 'y', variacoes: [{ nome: 'A' }] })).status, 400);
     assert.equal((await api('/api/produto', { codigo: 'X', nome: 'x', preco: 'y', grupo_fotos: '../x' })).status, 400);
     r = await api('/api/oferta', { conversa_id: conv, produto_codigo: 'COMBO' });
@@ -695,6 +702,9 @@ falso.listen(0, () => {
     r = await fetch(base + '/e/' + vtok);
     const vh = await r.text();
     assert.equal(r.status, 200);
+    const { fotosDoProduto } = require('./server');
+    assert.deepEqual(fotosDoProduto({ fotos: ['BGE-2.jpg', 'sumiu.jpg'], foto: 'BOIA-1.jpg', grupo_fotos: 'BOIA' }), ['BGE-2.jpg'], 'fotos escolhidas valem (só as que estão no Banco)');
+    assert.deepEqual(fotosDoProduto({ fotos: [], foto: 'BOIA-1.jpg', grupo_fotos: 'BGE' }), ['BOIA-1.jpg', 'BGE-1.jpg', 'BGE-2.jpg']);
     assert.ok(vh.includes('Aventuras no <em>Rio Formoso</em>') && vh.includes('data-codigo="COMBO"') && !vh.includes('data-codigo="DECO"') && vh.includes('src="/fotos/BOIA-1.jpg"') && vh.includes('noindex'));
     assert.equal((await fetch(base + '/e/' + 'y'.repeat(22))).status, 404);
     const pedir = (itens, t = vtok) => fetch(base + '/e/' + t + '/pedido', { method: 'POST', body: JSON.stringify({ itens }) });

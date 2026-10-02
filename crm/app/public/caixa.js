@@ -1043,7 +1043,7 @@
     const fotoDe = g => { g = String(g || '').split(',')[0]; const x = g && (biblioteca || []).find(b => b.grupo === g); return x && x.fotos[0] ? x.fotos[0].arquivo : null; };
     if (!biblioteca) carregarBiblioteca().then(() => { if (!document.querySelector('section[data-painel="produtos"]').hidden) carregarProdutos(); }).catch(() => {});
     produtos.forEach(p => {
-      const vs = p.variacoes || [], ads = p.adicionais || [], foto = p.foto || fotoDe(p.grupo_fotos);
+      const vs = p.variacoes || [], ads = p.adicionais || [], foto = (p.fotos && p.fotos[0]) || p.foto || fotoDe(p.grupo_fotos);
       const para = [p.perfis && p.perfis.length ? p.perfis.join(', ') : 'Todos os perfis', p.idade_minima ? 'a partir de ' + p.idade_minima + ' anos' : '', p.altura_minima_cm ? 'mínimo ' + (p.altura_minima_cm / 100).toLocaleString('pt-BR') + ' m' : ''].filter(Boolean).join(' · ');
       box.append(el('div', { class: 'cartao item-cartao' + (p.ativo ? '' : ' inativo') },
         foto ? el('img', { class: 'prod-foto', src: '/fotos/' + foto, alt: p.nome, loading: 'lazy' }) : null,
@@ -1057,6 +1057,7 @@
         el('p', { text: TIPO_RESERVA[p.tipo_reserva] + (p.quando_oferecer ? ' · oferecer: ' + p.quando_oferecer : '') + (p.antecedencia_dias ? ' · ' + p.antecedencia_dias + ' dias de antecedência' : '') + ' · prioridade ' + p.prioridade + (p.grupo_fotos ? ' · fotos: ' + nomeGrupo(p.grupo_fotos) : ' · sem fotos ligadas') }),
         p.preco_valor == null && !vs.length && 'perfis' in p ? el('p', { class: 'aviso-sim', text: '⚠ Falta o preço em número (para registrar vendas). Clique em Editar.' }) : null,
         el('div', { class: 'acoes' }, el('button', { class: 'btn-mini', type: 'button', text: 'Editar', onclick: () => formProduto(p) }),
+          el('button', { class: 'btn-mini', type: 'button', text: '🖼 Fotos' + (p.fotos && p.fotos.length ? ' (' + p.fotos.length + ')' : ''), onclick: () => fotosProduto(p) }),
           el('button', { class: 'btn-mini', type: 'button', text: p.ativo ? 'Pausar (o Gilberto deixa de oferecer)' : 'Reativar', onclick: async () => { try { await chamarApi('/api/produto', { id: p.id, ativo: !p.ativo }); toast(p.ativo ? 'Produto pausado.' : 'Produto reativado.'); carregarProdutos(); } catch (e) { toast(e.message); } } }))));
     });
   }
@@ -1101,6 +1102,71 @@
       toast('Produto salvo. O Gilberto passa a usar em até 1 minuto.' + (novos ? '' : ' (Rode a migração 012 para os campos novos.)'));
       carregarProdutos();
     });
+  }
+  // Fotos do produto: escolhidas do Drive (qualquer pasta) ou do Banco de fotos; a primeira é a capa
+  async function fotosProduto(p) {
+    if (!('fotos' in p)) { toast('Falta rodar a migração 016 no Supabase para escolher as fotos do produto.'); return; }
+    if (!biblioteca) await carregarBiblioteca().catch(() => {});
+    const grupos = String(p.grupo_fotos || '').split(',').filter(Boolean);
+    let lista = p.fotos && p.fotos.length ? p.fotos.slice() : [...new Set([p.foto, ...grupos.flatMap(g => (((biblioteca || []).find(x => x.grupo === g) || {}).fotos || []).map(f => f.arquivo))].filter(Boolean))].slice(0, 8);
+    $('f-tit').textContent = 'Fotos: ' + p.nome;
+    const box = $('f-campos'); box.textContent = '';
+    const fechar = () => { $('f-fundo').hidden = true; $('form-modal').hidden = true; };
+    const atuais = el('div', { class: 'pf-grade' }), area = el('div', { class: 'pf-area largo' });
+    box.append(el('p', { class: 'lat-txt largo', text: 'Estas fotos aparecem na página de extras, na página do orçamento e na oferta do WhatsApp. A primeira é a capa. Até 12.' }), el('div', { class: 'largo' }, atuais),
+      el('div', { class: 'pf-botoes largo' }, el('button', { class: 'btn-mini', type: 'button', text: '+ Do Drive', onclick: () => drive(null) }), el('button', { class: 'btn-mini', type: 'button', text: '+ Do Banco de fotos', onclick: () => banco(grupos[0] || '') })), area);
+    const pintar = () => {
+      atuais.textContent = '';
+      if (!lista.length) atuais.append(el('p', { class: 'lat-txt', text: 'Nenhuma foto escolhida. Use os botões abaixo.' }));
+      lista.forEach((f, i) => atuais.append(el('div', { class: 'pf-item' }, el('img', { src: '/fotos/' + f, alt: '' }), i === 0 ? el('span', { class: 'pf-capa', text: 'Capa' }) : null,
+        el('div', { class: 'pf-acoes' },
+          i ? el('button', { type: 'button', 'aria-label': 'Mover para a esquerda', text: '◀', onclick: () => { [lista[i - 1], lista[i]] = [lista[i], lista[i - 1]]; pintar(); } }) : null,
+          i < lista.length - 1 ? el('button', { type: 'button', 'aria-label': 'Mover para a direita', text: '▶', onclick: () => { [lista[i + 1], lista[i]] = [lista[i], lista[i + 1]]; pintar(); } }) : null,
+          el('button', { type: 'button', 'aria-label': 'Tirar do produto', text: '✕', onclick: () => { lista.splice(i, 1); pintar(); } })))));
+    };
+    const somar = f => { if (lista.includes(f)) { toast('Essa foto já está no produto.'); return; } if (lista.length >= 12) { toast('Máximo de 12 fotos.'); return; } lista.push(f); pintar(); toast('Foto adicionada. Clique em Salvar fotos.'); };
+    // Banco de fotos (o que já está no CRM)
+    function banco(cat) {
+      const gs = (biblioteca || []).filter(g => g.fotos.length);
+      cat = gs.some(g => g.grupo === cat) ? cat : (gs[0] || {}).grupo;
+      area.replaceChildren(el('div', { class: 'gal-cats' }, gs.map(g => el('button', { class: 'chip', type: 'button', 'aria-pressed': String(g.grupo === cat), text: g.nome, onclick: () => banco(g.grupo) }))),
+        el('div', { class: 'gal-grade' }, ((gs.find(g => g.grupo === cat) || {}).fotos || []).map(f => el('button', { class: 'gal-item', type: 'button', 'aria-pressed': String(lista.includes(f.arquivo)), title: f.descricao, onclick: () => somar(f.arquivo) },
+          el('img', { src: '/fotos/' + f.arquivo, alt: f.descricao || '', loading: 'lazy' }), el('span', { class: 'gal-nome', text: f.descricao || f.arquivo })))));
+    }
+    // Drive: qualquer pasta do banco de imagens; a foto é trazida (recortada) para o Banco de fotos e entra no produto
+    async function drive(pasta) {
+      area.replaceChildren(el('p', { class: 'lat-txt', text: 'Abrindo o Drive…' }));
+      let d;
+      try { d = await chamarApi('/api/drive' + (pasta ? '?pasta=' + encodeURIComponent(pasta) : ''), null, 'GET'); } catch (e) { area.replaceChildren(el('p', { class: 'lat-txt', text: e.message })); return; }
+      const grade = el('div', { class: 'gal-grade' });
+      d.pastas.forEach(x => grade.append(el('button', { class: 'gal-item gal-novo', type: 'button', onclick: () => drive(x.id) }, el('span', { class: 'gal-mais', text: '📁' }), el('span', { class: 'gal-nome', text: x.nome }))));
+      d.fotos.forEach(x => {
+        const img = el('img', { alt: x.nome, loading: 'lazy' });
+        miniatura(x.id).then(u => { img.src = u; }).catch(() => { img.alt = 'Sem miniatura'; });
+        const b = el('button', { class: 'gal-item', type: 'button', title: x.nome, onclick: async () => {
+          b.disabled = true; toast('Trazendo a foto do Drive…');
+          const grupo = (biblioteca || []).some(g => g.grupo === grupos[0]) ? grupos[0] : 'EXTRAS';
+          try {
+            const j = await chamarApi('/api/foto', { drive_id: x.id, grupo, descricao: p.nome + ' (foto do produto)', etiquetas: [p.nome] });
+            await carregarBiblioteca(); somar(j.foto.arquivo);
+          } catch (e) {
+            const ja = (biblioteca || []).flatMap(g => g.fotos).find(f => f.drive_id === x.id);
+            if (ja) somar(ja.arquivo); else toast(e.message);
+          } finally { b.disabled = false; }
+        } }, img, el('span', { class: 'gal-nome', text: x.na_biblioteca.length ? 'Já no Banco de fotos' : x.nome }));
+        grade.append(b);
+      });
+      if (!d.pastas.length && !d.fotos.length) grade.append(el('p', { class: 'lat-txt', text: 'Pasta vazia.' }));
+      area.replaceChildren(el('div', { class: 'gal-cats' }, !d.pasta.raiz ? el('button', { class: 'chip', type: 'button', text: '↑ ' + (d.pasta.pai ? 'Pasta de cima' : 'Início'), onclick: () => drive(d.pasta.pai) }) : null, el('span', { class: 'gal-pasta', text: '📁 ' + d.pasta.nome })), grade);
+    }
+    $('f-acoes').replaceChildren(el('button', { class: 'btn btn-editar', type: 'button', text: 'Cancelar', onclick: fechar }),
+      el('button', { class: 'btn btn-enviar', type: 'button', text: 'Salvar fotos', onclick: async e => {
+        e.currentTarget.disabled = true;
+        try { await chamarApi('/api/produto', { id: p.id, fotos: lista }); fechar(); toast('Fotos do produto salvas.'); carregarProdutos(); }
+        catch (err) { toast(err.message); e.currentTarget.disabled = false; }
+      } }));
+    $('f-fundo').hidden = false; $('form-modal').hidden = false; $('f-fundo').onclick = fechar;
+    pintar();
   }
   $('prod-novo').addEventListener('click', () => formProduto(null));
 

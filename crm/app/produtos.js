@@ -38,6 +38,13 @@ function camposExtras(corpo, gruposFotos = []) {
   if (corpo.unidade !== undefined) { if (!['pessoa', 'unidade'].includes(corpo.unidade)) throw new ErroProduto('Unidade inválida.'); d.unidade = corpo.unidade; }
   const v = listaPrecos(corpo.variacoes, 'Variações', true); if (v !== undefined) d.variacoes = v;
   const a = listaPrecos(corpo.adicionais, 'Adicionais', false); if (a !== undefined) d.adicionais = a;
+  if (corpo.fotos !== undefined) { // fotos escolhidas para o produto, em ordem (a primeira é a capa)
+    if (!Array.isArray(corpo.fotos) || corpo.fotos.length > 12) throw new ErroProduto('Escolha no máximo 12 fotos.');
+    const fs = [...new Set(corpo.fotos.map(f => texto(f, 80)))];
+    if (fs.some(f => !/^[\w.-]+\.jpg$/.test(f))) throw new ErroProduto('Foto inválida.');
+    d.fotos = fs;
+    d.foto = fs[0] || null;
+  }
   if (corpo.foto !== undefined) {
     const f = texto(corpo.foto, 80) || null;
     if (f && !/^[\w.-]+\.jpg$/.test(f)) throw new ErroProduto('Foto inválida.');

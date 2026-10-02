@@ -682,6 +682,7 @@ async function ofertasDaConversa(conversa, buscar = fetch) {
 }
 // Fotos de um produto na página de extras: a representativa + as da(s) categoria(s) do Banco de fotos
 function fotosDoProduto(p) {
+  if (Array.isArray(p.fotos) && p.fotos.some(fotoAtiva)) return p.fotos.filter(fotoAtiva); // escolhidas na tela Produtos
   const bib = orcamento.biblioteca();
   const grupos = String(p.grupo_fotos || '').split(',').filter(Boolean);
   const lista = [p.foto && fotoAtiva(p.foto) ? p.foto : null, ...grupos.flatMap(g => ((bib.find(x => x.grupo === g) || {}).fotos || []).map(f => f.arquivo))].filter(Boolean);
@@ -983,7 +984,7 @@ const API_EQUIPE = {
     for (const k of ['antecedencia_dias', 'prioridade']) if (corpo[k] !== undefined) { const v = parseInt(corpo[k], 10); if (!(v >= 0 && v < 400)) throw new ErroEnvio(400, 'Número inválido.'); dados[k] = v; }
     if (corpo.ativo !== undefined) dados.ativo = !!corpo.ativo;
     try { Object.assign(dados, produtos.camposExtras(corpo, orcamento.GRUPOS)); } catch (e) { throw new ErroEnvio(400, e.message); }
-    if (dados.foto) { await atualizarFotos(); if (!fotoAtiva(dados.foto)) throw new ErroEnvio(400, 'Essa foto não está no Banco de fotos.'); }
+    if (dados.foto || (dados.fotos && dados.fotos.length)) { await atualizarFotos(fetch, true); if ([dados.foto, ...(dados.fotos || [])].filter(Boolean).some(f => !fotoAtiva(f))) throw new ErroEnvio(400, 'Essa foto não está no Banco de fotos.'); }
     // Preço como o cliente lê: se ficar vazio, o CRM monta pelo preço em número ou pelas variações
     if (!dados.preco && (dados.preco_valor != null || (dados.variacoes && dados.variacoes.length))) dados.preco = produtos.precoTexto({ ...dados, unidade: dados.unidade || 'unidade' });
     if (corpo.id) {
@@ -1690,4 +1691,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => { console.log('CRM Cabanas ouvindo na porta ' + porta); conferirIpSaida(); });
-module.exports = { servidor, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe };
+module.exports = { servidor, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto };

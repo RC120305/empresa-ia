@@ -448,3 +448,14 @@ section[data-painel="produtos"],section[data-painel="agencias"],section[data-pai
 .nc-vars{display:flex;flex-direction:column;gap:8px}
 #cx-fechada{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 #cx-fechada[hidden]{display:none}
+
+/* Fotos do produto (tela Produtos → 🖼 Fotos) */
+.pf-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.pf-item{position:relative;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--cor-borda)}
+.pf-item img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.pf-capa{position:absolute;top:6px;left:6px;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--cor-destaque);color:var(--cor-sobre-destaque)}
+.pf-acoes{position:absolute;right:4px;bottom:4px;display:flex;gap:4px}
+.pf-acoes button{all:unset;cursor:pointer;width:26px;height:26px;border-radius:999px;background:rgba(255,255,255,.92);color:#2b2b2b;display:grid;place-items:center;font-size:12px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.pf-acoes button:focus-visible{outline:2px solid var(--cor-primaria)}
+.pf-botoes{display:flex;gap:8px;flex-wrap:wrap}
+.pf-area{display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto}

@@ -33,7 +33,7 @@ const PASTA_FOTOS = process.env.FOTOS_DIR || path.join(__dirname, 'public', 'fot
 let FOTOS = {}, DESCRICOES = {};
 try { FOTOS = JSON.parse(fs.readFileSync(path.join(PASTA_FOTOS, 'fotos.json'), 'utf8')); } catch (e) { /* sem fotos ainda */ }
 try { DESCRICOES = JSON.parse(fs.readFileSync(path.join(PASTA_FOTOS, 'descricoes.json'), 'utf8')); } catch (e) { /* sem descrições */ }
-const ROTULOS = { BOIA: 'Boia cross', ARVO: 'Arvorismo', RIO: 'Rios e decks', PISCINA: 'Piscina e hidromassagem', CAFE: 'Café da manhã', DECO: 'Decoração especial (opcional)', MASS: 'Massagem' };
+const ROTULOS = { BOIA: 'Boia cross', ARVO: 'Arvorismo', RIO: 'Rios e decks', PISCINA: 'Piscina e hidromassagem', CAFE: 'Café da manhã', DECO: 'Decoração especial (opcional)', MASS: 'Massagem', EXTRAS: 'Outros extras' };
 // Categorias em que a equipe pode pôr fotos (as dos quádruplos usam as do duplo/triplo).
 const GRUPOS = [...new Set([...Object.keys(FOTOS), 'CBD', 'CBT', 'CBM', 'BG', 'BGE', 'CJ', 'SUP', 'STD', ...Object.keys(ROTULOS)])];
 const nomeGrupo = g => (CATALOGO[g] && CATALOGO[g].nome) || ROTULOS[g] || g;
@@ -128,7 +128,7 @@ ${i === 0 ? '<span class="selo">Nossa sugestão para vocês</span>' : ''}<h2>${e
   // O cliente marca o que quer incluir (e a opção, quando há variações); vai junto no "Quero reservar esta".
   const fotoDe = g => { g = String(g || '').split(',')[0]; const x = g && bib.find(b => b.grupo === g); return x && x.fotos[0] ? x.fotos[0].arquivo : null; };
   const lista = produtos && produtos.length
-    ? produtos.map(p => ({ codigo: p.codigo, nome: p.nome, txt: [p.descricao, p.regras].filter(Boolean).join(' '), preco: p.preco, foto: fotoDe(p.grupo_fotos),
+    ? produtos.map(p => ({ codigo: p.codigo, nome: p.nome, txt: [p.descricao, p.regras].filter(Boolean).join(' '), preco: p.preco, foto: (Array.isArray(p.fotos) && p.fotos[0]) || fotoDe(p.grupo_fotos),
       variacoes: Array.isArray(p.variacoes) ? p.variacoes : [], por: p.unidade === 'pessoa' ? ' por pessoa' : '',
       combo: ['COMBO', 'BOIA', 'ARVO'].includes(p.codigo) }))
     : EXTRAS;
