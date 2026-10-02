@@ -57,7 +57,8 @@ const cabecalhosBanco = () => Object.assign({ apikey: SUPABASE_KEY, 'Content-Typ
 
 const recentes = []; // últimos eventos (sem conteúdo), só para a página de status
 let ultimoErroBanco = null;
-let ultimoErroMeta = null; // último erro de envio da Meta (código e mensagem, sem dados de cliente) // código e mensagem do banco (sem dados de cliente), para diagnóstico
+let ultimoErroMeta = null;
+let ultimoDigitando = null; // resultado do último pedido de "digitando…" à Meta (diagnóstico, sem dados de cliente) // último erro de envio da Meta (código e mensagem, sem dados de cliente) // código e mensagem do banco (sem dados de cliente), para diagnóstico
 const mascarar = n => (n ? String(n).replace(/^(\d{4})\d+(\d{3})$/, '$1•••••$2') : '?');
 
 function assinaturaValida(corpo, cabecalho) {
@@ -172,12 +173,14 @@ async function chamarMeta(caminho, corpo, buscar) {
 // Marca a última mensagem do cliente como lida e liga o "digitando…" (dura até 25 s ou até o próximo envio).
 // É só cortesia: se a Meta recusar, o envio segue normalmente.
 async function mostrarDigitando(conv, wamidCliente, buscar) {
-  if (!wamidCliente) return;
+  if (!wamidCliente) { ultimoDigitando = { quando: new Date().toISOString(), ok: false, motivo: 'sem id da última mensagem do cliente' }; return; }
   try {
     const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`,
       { messaging_product: 'whatsapp', status: 'read', message_id: wamidCliente, typing_indicator: { type: 'text' } }, buscar);
-    if (!r.ok) console.warn(JSON.stringify({ evento: 'digitando_recusado', http: r.status, codigo: r.json.error && r.json.error.code }));
-  } catch (e) { /* segue sem o indicador */ }
+    const e = r.json.error || {};
+    ultimoDigitando = { quando: new Date().toISOString(), ok: r.ok, http: r.status, resposta: r.ok ? r.json : null, codigo: e.code || null, sub: e.error_subcode || null, mensagem: String(e.message || '').slice(0, 300) };
+    if (!r.ok) console.warn(JSON.stringify({ evento: 'digitando_recusado', ...ultimoDigitando }));
+  } catch (e) { ultimoDigitando = { quando: new Date().toISOString(), ok: false, motivo: String(e.message || e).slice(0, 200) }; }
 }
 
 async function enviarTexto(conv, para, texto, autor, buscar) {
@@ -331,7 +334,7 @@ const servidor = http.createServer((req, res) => {
     return res.end('window.CRM_CONFIG = ' + JSON.stringify(cfg) + ';');
   }
 
-  if (url.pathname === '/webhook/status') return json(res, 200, { recebidos: recentes.length, ultimoErroBanco, ultimoErroMeta, ultimos: recentes });
+  if (url.pathname === '/webhook/status') return json(res, 200, { recebidos: recentes.length, ultimoErroBanco, ultimoErroMeta, ultimoDigitando, ultimos: recentes });
 
   if (url.pathname === '/') { res.writeHead(302, { Location: '/caixa' }); return res.end(); }
   res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
