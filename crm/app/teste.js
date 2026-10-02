@@ -430,6 +430,16 @@ falso.listen(0, () => {
     const sis = pedidosIA[0].system[0].text;
     assert.ok(sis.includes('Piquenique no rio') && sis.includes('R$ 90 por pessoa') && !sis.includes('{{produtos_ativos}}'), 'produtos do banco no Gilberto');
     assert.ok(sis.includes('texto exato: Não aceitamos pets, {nome}.') && sis.includes('São 6 km de asfalto.'), 'respostas fixas e de referência');
+    // Questionário: o que o Gilberto sabe, e a importação para a biblioteca (sem repetir o que já existe)
+    r = await api('/api/conhecimento', null, 'token-equipe', 'GET');
+    const qj = await r.json();
+    assert.equal(r.status, 200); assert.ok(qj.secoes.length >= 10 && qj.secoes.some(x => x.itens.some(i => /check-in/i.test(i.p))));
+    assert.ok(!JSON.stringify(qj).includes('**') && !/\(P6\d/.test(JSON.stringify(qj)), 'sem marcação nem notas internas');
+    r = await api('/api/importar-questionario', {});
+    const ij = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(ij)); assert.ok(ij.importadas > 40);
+    const imp = chamadas.findLast(c => c.url === '/rest/v1/respostas' && c.metodo === 'POST').corpo;
+    assert.ok(Array.isArray(imp) && imp.every(x => x.origem === 'questionario') && !imp.some(x => x.pergunta === 'Aceita pet?'));
     // Testar o agente: sem conversa nem gravação
     r = await api('/api/testar', { mensagens: [{ de: 'cliente', texto: 'Oi, tem vaga?' }] });
     const tj2 = await r.json();

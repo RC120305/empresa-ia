@@ -171,6 +171,7 @@
     <section data-painel="ajustes" hidden>
       <div class="segmento" role="tablist" aria-label="Ajustes do agente">
         <button role="tab" type="button" aria-selected="true" data-sub="rev">Revisão das sugestões</button>
+        <button role="tab" type="button" aria-selected="false" data-sub="con">Questionário</button>
         <button role="tab" type="button" aria-selected="false" data-sub="bib">Biblioteca de respostas</button>
         <button role="tab" type="button" aria-selected="false" data-sub="tes">✦ Testar o agente</button>
         <button role="tab" type="button" aria-selected="false" data-sub="reg">Regras</button>
@@ -180,8 +181,17 @@
         <div class="filtros" id="rev-filtros"><button class="chip" type="button" aria-pressed="true" data-rf="pendente">Para revisar</button><button class="chip" type="button" aria-pressed="false" data-rf="revisadas">Revisadas</button><button class="chip" type="button" aria-pressed="false" data-rf="todas">Todas</button></div>
         <div class="rev-lista" id="rev-lista"></div>
       </div>
+      <div class="sub" data-sub="con" hidden>
+        <div class="cartao bloco">
+          <strong>Tudo o que o Gilberto sabe responder</strong>
+          <p>Veio do seu questionário (Questionario.txt, no Drive), corrigido com as regras que você confirmou. O Gilberto já usa tudo isto em todas as respostas. Para a equipe usar com <b>/</b> na conversa, traga para a Biblioteca.</p>
+          <div class="acoes"><button class="btn btn-enviar" type="button" id="con-importar">Trazer todas para a Biblioteca</button><input type="search" id="con-busca" class="cx-busca" placeholder="Buscar no questionário" aria-label="Buscar no questionário" style="flex:1;min-width:200px"></div>
+          <p class="dica">Para mudar uma resposta do Gilberto, edite aqui pela Biblioteca (vira resposta fixa) ou peça à equipe de IA a correção na base, sempre com o seu OK.</p>
+        </div>
+        <div id="con-lista" class="con-lista"></div>
+      </div>
       <div class="sub" data-sub="bib" hidden>
-        <div class="barra-ferr"><button class="btn btn-enviar" type="button" id="bib-novo">+ Nova resposta</button><span class="dica">Com atalho, a equipe usa digitando / na conversa. Fixa: o Gilberto manda o texto exato. As outras servem de referência para ele.</span></div>
+        <div class="barra-ferr"><button class="btn btn-enviar" type="button" id="bib-novo">+ Nova resposta</button><input type="search" id="bib-busca" placeholder="Buscar na biblioteca" aria-label="Buscar na biblioteca"><span class="dica">Com atalho, a equipe usa digitando / na conversa. Fixa: o Gilberto manda o texto exato. As outras servem de referência para ele.</span></div>
         <div class="lista-cartoes" id="bib-lista"></div>
       </div>
       <div class="sub" data-sub="tes" hidden>

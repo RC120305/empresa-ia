@@ -899,6 +899,7 @@
     document.querySelectorAll('[data-painel="ajustes"] .sub').forEach(x => { x.hidden = x.dataset.sub !== sub; });
     if (sub === 'rev') carregarRevisao();
     if (sub === 'bib') carregarRespostas().then(pintarBiblioteca);
+    if (sub === 'con') carregarQuestionario();
   }
   document.querySelector('[data-painel="ajustes"] .segmento').addEventListener('click', e => { const b = e.target.closest('[data-sub]'); if (b) abrirSub(b.dataset.sub); });
 
@@ -922,7 +923,7 @@
       el('span', {}, el('b', { class: 'num', text: String(sem.filter(x => x.situacao === 'pendente').length) }), 'para revisar na semana'),
       el('span', {}, el('b', { class: 'num', text: boas + ruins ? Math.round(100 * boas / (boas + ruins)) + '%' : '–' }), 'de acerto na semana (meta 90%)'),
       el('span', {}, el('b', { class: 'num', text: String(sem.length) }), 'sugestões em 7 dias'));
-    if (!(data || []).length) box.append(el('div', { class: 'vazio', text: revFiltro === 'pendente' ? 'Nada para revisar agora. 🌿' : 'Nenhuma sugestão aqui.' }));
+    if (!(data || []).length) box.append(el('div', { class: 'vazio', text: revFiltro === 'pendente' ? 'Nada para revisar agora. As sugestões entram aqui sempre que alguém toca em ✨ Sugerir resposta numa conversa (por enquanto o Gilberto só sugere; não responde sozinho). Para treinar sem cliente real, use ✦ Testar o agente. 🌿' : 'Nenhuma sugestão aqui.' }));
     (data || []).forEach(sg => {
       const nome = sg.conversa && sg.conversa.contato && sg.conversa.contato.nome || 'Cliente';
       const f = sg.ferramentas || {};
@@ -937,7 +938,7 @@
         el('div', { class: 'acoes' },
           el('button', { class: 'btn btn-enviar', type: 'button', text: '✓ Aprovar', onclick: () => revisar(sg, 'aprovada') }),
           el('button', { class: 'btn btn-descartar', type: 'button', text: '✕ Reprovar', onclick: () => { motivos.hidden = !motivos.hidden; } }),
-          el('button', { class: 'btn btn-editar', type: 'button', text: 'Virar resposta de referência', onclick: () => formResposta({ pergunta: sg.pergunta || '', resposta: sg.mensagem }) })),
+          el('button', { class: 'btn btn-editar', type: 'button', text: 'Virar resposta de referência', onclick: () => formResposta({ pergunta: sg.pergunta || '', resposta: baloes(sg.mensagem).join('\n\n'), origem: 'revisao' }) })),
         motivos));
     });
   }
@@ -951,12 +952,47 @@
     carregarRevisao();
   });
 
+  // Questionário: o que o Gilberto sabe (base de conhecimento), com atalho para a Biblioteca
+  let questionario = null;
+  async function carregarQuestionario() {
+    if (!questionario) {
+      $('con-lista').textContent = 'Carregando…';
+      try { questionario = (await chamarApi('/api/conhecimento', null, 'GET')).secoes; } catch (e) { $('con-lista').textContent = e.message; return; }
+    }
+    pintarQuestionario();
+  }
+  function pintarQuestionario() {
+    const q = semAcento($('con-busca').value.trim());
+    const naBib = new Set(respostas.map(r => semAcento(r.pergunta)));
+    const box = $('con-lista'); box.textContent = '';
+    questionario.forEach(sec => {
+      const itens = sec.itens.filter(i => !q || semAcento(i.p + ' ' + i.r).includes(q));
+      if (!itens.length) return;
+      box.append(el('div', { class: 'cartao con-sec' }, el('h3', {}, sec.titulo, ' ', el('small', { class: 'dica', text: itens.length + (itens.length > 1 ? ' itens' : ' item') })),
+        itens.map(i => el('div', { class: 'con-item' }, i.p ? el('b', { text: i.p }) : null, el('span', { text: i.r }),
+          i.p ? (naBib.has(semAcento(i.p)) ? el('span', { class: 'origem', text: 'Na biblioteca' }) : el('button', { class: 'btn-mini', type: 'button', text: '+ Biblioteca', onclick: () => formResposta({ pergunta: i.p, resposta: i.r, origem: 'questionario' }) })) : null))));
+    });
+    if (!box.children.length) box.append(el('div', { class: 'vazio', text: 'Nada encontrado no questionário.' }));
+  }
+  $('con-busca').addEventListener('input', () => questionario && pintarQuestionario());
+  $('con-importar').addEventListener('click', async () => {
+    const b = $('con-importar'); b.setAttribute('disabled', ''); b.textContent = 'Trazendo…';
+    try { const j = await chamarApi('/api/importar-questionario', {}); toast(j.importadas ? j.importadas + ' respostas entraram na Biblioteca. Use / na conversa.' : 'Todas já estavam na Biblioteca.'); await carregarRespostas(); pintarQuestionario(); }
+    catch (e) { toast(e.message); }
+    finally { b.removeAttribute('disabled'); b.textContent = 'Trazer todas para a Biblioteca'; }
+  });
+
   // Biblioteca de respostas
+  $('bib-busca').addEventListener('input', () => pintarBiblioteca());
   function pintarBiblioteca() {
     const box = $('bib-lista'); box.textContent = '';
+    const qb = semAcento($('bib-busca').value.trim());
+    const lista = respostas.filter(r => !qb || semAcento(r.pergunta + ' ' + r.resposta + ' ' + (r.atalho || '')).includes(qb));
+    if (respostas.length && !lista.length) box.append(el('div', { class: 'vazio', text: 'Nada encontrado na biblioteca.' }));
     if (!respostas.length) box.append(el('div', { class: 'vazio', text: 'Nenhuma resposta ainda. Cadastre as perguntas mais comuns (como chegar, horários, pet…) ou transforme uma sugestão boa do Gilberto em referência, na Revisão.' }));
-    respostas.forEach(r => box.append(el('div', { class: 'cartao item-cartao' },
+    lista.forEach(r => box.append(el('div', { class: 'cartao item-cartao' },
       el('h3', {}, r.pergunta, r.atalho ? el('small', { text: '/' + r.atalho }) : null),
+      r.origem === 'questionario' ? el('span', { class: 'origem', style: 'align-self:flex-start', text: 'Do questionário' }) : r.origem === 'revisao' ? el('span', { class: 'origem', style: 'align-self:flex-start', text: 'Da revisão' }) : null,
       el('p', { style: 'white-space:pre-wrap;color:var(--cor-texto)', text: r.resposta }),
       el('p', { text: [r.fixa ? 'Fixa: o Gilberto envia exatamente este texto' : 'Referência para o Gilberto', r.valida_ate ? 'válida até ' + fmtData(r.valida_ate) + '/' + r.valida_ate.slice(0, 4) : '', r.usos + (r.usos === 1 ? ' uso' : ' usos')].filter(Boolean).join(' · ') }),
       el('div', { class: 'acoes' }, el('button', { class: 'btn-mini', type: 'button', text: 'Editar', onclick: () => formResposta(r) }),
@@ -970,7 +1006,7 @@
       { k: 'atalho', rotulo: 'Atalho para a equipe (opcional)', valor: r.atalho, dica: 'local' },
       { k: 'valida_ate', rotulo: 'Válida até (opcional)', tipo: 'date', valor: r.valida_ate },
       { k: 'fixa', rotulo: 'Resposta fixa: o Gilberto envia exatamente este texto, sem reescrever', tipo: 'check', valor: r.fixa },
-    ], async v => { await chamarApi('/api/resposta', { ...(r.id ? { id: r.id } : {}), ...v }); toast('Resposta salva.'); carregarRespostas(); });
+    ], async v => { await chamarApi('/api/resposta', { ...(r.id ? { id: r.id } : {}), ...(r.origem && !r.id ? { origem: r.origem } : {}), ...v }); toast('Resposta salva.'); await carregarRespostas(); if (questionario && subAtual === 'con') pintarQuestionario(); });
   }
   $('bib-novo').addEventListener('click', () => formResposta(null));
 

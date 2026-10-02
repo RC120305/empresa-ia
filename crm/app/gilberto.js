@@ -204,4 +204,25 @@ async function sugerir(historico, conversa, executores = {}, catalogo = null) {
     simulador: cotacoes.some(c => c.fonte === 'simulador') || orcamentos.some(o => o.fonte === 'simulador'), orcamentos, fotos };
 }
 
-module.exports = { sugerir, montarMensagens, ErroSugestao, sistemaPronto: () => !!SISTEMA, MODELO, ferramentas: () => FERRAMENTAS.map(t => t.name) };
+// Questionário (base de conhecimento) em seções de perguntas e respostas, para a tela Ajustes do agente.
+function questionario() {
+  const base = ler('base-conhecimento.md', '..', 'gilberto', 'base-conhecimento.md') || '';
+  const secoes = [];
+  let atual = null, item = null;
+  for (const linha of base.split('\n')) {
+    const h = linha.match(/^## (?:\d+\.\s*)?(.+)/);
+    if (h) { atual = { titulo: h[1].replace(/\s*\(.*\)\s*$/, '').trim(), itens: [] }; secoes.push(atual); item = null; continue; }
+    if (!atual) continue;
+    const p = linha.match(/^- \*\*P:\*\*\s*(.+)/);
+    if (p) { item = { p: p[1].trim(), r: '' }; atual.itens.push(item); continue; }
+    const r = linha.match(/^\s+R:\s*(.+)/);
+    if (r && item) { item.r = r[1].trim(); continue; }
+    const b = linha.match(/^- (.+)/);
+    if (b && !/^\*\*P:/.test(b[1])) { atual.itens.push({ p: '', r: b[1].trim() }); item = null; }
+  }
+  const limpar = t => t.replace(/\s*\*\([^)]*\)\*/g, '').replace(/\s*\(P\d+[a-z]?(?:\/[a-z])?\)/g, '').replace(/\*\*/g, '').trim();
+  return secoes.filter(x => x.itens.length && !/^Dúvidas/.test(x.titulo))
+    .map(x => ({ titulo: x.titulo, itens: x.itens.map(i => ({ p: limpar(i.p), r: limpar(i.r) })).filter(i => i.r) }));
+}
+
+module.exports = { questionario, sugerir, montarMensagens, ErroSugestao, sistemaPronto: () => !!SISTEMA, MODELO, ferramentas: () => FERRAMENTAS.map(t => t.name) };

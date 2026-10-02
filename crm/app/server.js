@@ -445,9 +445,16 @@ async function catalogo(buscar = fetch) {
   const hoje = new Date().toISOString().slice(0, 10);
   const [p, r] = await Promise.all([
     buscar(`${SUPABASE_URL}/rest/v1/produtos?ativo=eq.true&select=codigo,nome,descricao,preco,tipo_reserva,regras,quando_oferecer,antecedencia_dias,prioridade&order=prioridade`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
-    buscar(`${SUPABASE_URL}/rest/v1/respostas?ativo=eq.true&or=(valida_ate.is.null,valida_ate.gte.${hoje})&select=id,pergunta,resposta,fixa&order=usos.desc&limit=80`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
+    buscar(`${SUPABASE_URL}/rest/v1/respostas?ativo=eq.true&or=(valida_ate.is.null,valida_ate.gte.${hoje})&select=id,pergunta,resposta,fixa,origem&order=usos.desc&limit=200`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null),
   ]);
-  const v = { produtos: p && p.ok ? await p.json().catch(() => []) : [], respostas: r && r.ok ? await r.json().catch(() => []) : [] };
+  let resp = r && r.ok ? await r.json().catch(() => []) : [];
+  if (r && !r.ok) { // banco sem a migração 010 (coluna origem): busca sem ela
+    const r2 = await buscar(`${SUPABASE_URL}/rest/v1/respostas?ativo=eq.true&select=id,pergunta,resposta,fixa&order=usos.desc&limit=80`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+    resp = r2 && r2.ok ? await r2.json().catch(() => []) : [];
+  }
+  // As do questionário já estão na base do Gilberto: só as fixas entram de novo
+  resp = resp.filter(x => x.origem !== 'questionario' || x.fixa).slice(0, 80);
+  const v = { produtos: p && p.ok ? await p.json().catch(() => []) : [], respostas: resp };
   catalogoCache = { v, ate: Date.now() + 60000 };
   return v;
 }
@@ -653,6 +660,20 @@ const API_EQUIPE = {
     }
     limparCatalogo();
     return { ok: true };
+  },
+  // Questionário (o que o Gilberto sabe) e a importação para a biblioteca
+  'GET /api/conhecimento': async () => ({ ok: true, secoes: gilberto.questionario() }),
+  'POST /api/importar-questionario': async (corpo, eu) => {
+    const ex = await fetch(`${SUPABASE_URL}/rest/v1/respostas?ativo=eq.true&select=pergunta`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    if (!ex.ok) throw new ErroEnvio(503, 'A biblioteca ainda não está no banco (falta a migração 009).');
+    const ja = new Set((await ex.json()).map(x => x.pergunta.trim().toLowerCase()));
+    const novas = gilberto.questionario().flatMap(sec => sec.itens.filter(i => i.p && !ja.has(i.p.toLowerCase())).map(i => ({ pergunta: i.p.slice(0, 300), resposta: i.r.slice(0, 4000), origem: 'questionario', criado_por: eu.id })));
+    if (novas.length) {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/respostas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(novas), signal: AbortSignal.timeout(10000) });
+      if (!r.ok) throw new ErroEnvio(502, 'Não deu para importar' + (r.status === 400 ? ' (o banco precisa da migração 010)' : '') + '.');
+    }
+    limparCatalogo();
+    return { ok: true, importadas: novas.length };
   },
   'POST /api/resposta-uso': async corpo => {
     if (!/^[0-9a-f-]{36}$/i.test(String(corpo.id || ''))) throw new ErroEnvio(400, 'Resposta inválida.');
