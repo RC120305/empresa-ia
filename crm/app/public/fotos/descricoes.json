@@ -1,0 +1,393 @@
+{
+ "CBD-1.jpg": {
+  "descricao": "Cabana Casal de madeira, elevada sobre pilares, com varanda e escada, entre árvores.",
+  "etiquetas": [
+   "cabana casal",
+   "fachada",
+   "madeira",
+   "elevada"
+  ],
+  "drive_id": "1bZCN7zpETQSSIMJnMRSuUF4NJCttPyCr"
+ },
+ "CBD-2.jpg": {
+  "descricao": "Quarto da Cabana Casal, cama king. As pétalas sobre a cama são da decoração especial (opcional, cobrada à parte).",
+  "etiquetas": [
+   "cabana casal",
+   "quarto",
+   "cama de casal",
+   "decoração especial"
+  ],
+  "drive_id": "1BotXc2nvSMjbA_OjfQNZZ1t_IQyoklsn",
+  "decoracao": true
+ },
+ "CBD-3.jpg": {
+  "descricao": "Banheiro da Cabana Casal com box de vidro, azulejo estampado e janela para as árvores.",
+  "etiquetas": [
+   "cabana casal",
+   "banheiro"
+  ],
+  "drive_id": "1DXpQpeSfUU3v9xGS4jNJu0jTeUjS1SEn"
+ },
+ "CBD-4.jpg": {
+  "descricao": "Varanda de madeira da Cabana Casal com cadeiras e vista para a mata.",
+  "etiquetas": [
+   "cabana casal",
+   "varanda",
+   "natureza"
+  ],
+  "drive_id": "1ieD_LAu4KSVceevEr_26AuCLv_pDc-cR"
+ },
+ "CBT-1.jpg": {
+  "descricao": "Cabana Tripla de madeira, elevada, vista de fora entre a vegetação.",
+  "etiquetas": [
+   "cabana tripla",
+   "fachada",
+   "madeira",
+   "elevada"
+  ],
+  "drive_id": "1Z2qWT26drb3G_IgzySDQBjws-7422w5u"
+ },
+ "CBT-2.jpg": {
+  "descricao": "Interior da Cabana Tripla com as camas arrumadas.",
+  "etiquetas": [
+   "cabana tripla",
+   "quarto",
+   "camas"
+  ],
+  "drive_id": "1zK8dsGhuxEWd3j2SKcmrIbNXZ3OADQcI"
+ },
+ "CBT-3.jpg": {
+  "descricao": "Varanda da Cabana Tripla com rede.",
+  "etiquetas": [
+   "cabana tripla",
+   "varanda",
+   "rede"
+  ],
+  "drive_id": "1TiqigxaUYFppSDzrmKd6JXJz4MPUOQkX"
+ },
+ "CBT-4.jpg": {
+  "descricao": "Banheiro da Cabana Tripla.",
+  "etiquetas": [
+   "cabana tripla",
+   "banheiro"
+  ],
+  "drive_id": "15cYP-dqxOgeh-j4UhcUwTI6fs5P-T77i"
+ },
+ "CBM-1.jpg": {
+  "descricao": "Cabana Master vista de fora, em meio à mata.",
+  "etiquetas": [
+   "cabana master",
+   "fachada",
+   "madeira"
+  ],
+  "drive_id": "1GEFSq-_uYF-mhU0IbOtGde-eqlZma27T"
+ },
+ "CBM-2.jpg": {
+  "descricao": "Ambiente de casal da Cabana Master com cama arrumada.",
+  "etiquetas": [
+   "cabana master",
+   "quarto",
+   "cama de casal"
+  ],
+  "drive_id": "1EdQA55Mdae0KHt7GUtyzPkS87ec4Z93F"
+ },
+ "CBM-3.jpg": {
+  "descricao": "Banheira de hidromassagem da Cabana Master. As pétalas na água são da decoração especial (opcional, cobrada à parte).",
+  "etiquetas": [
+   "cabana master",
+   "banheira",
+   "hidromassagem"
+  ],
+  "drive_id": "1yyTKuWbqlYcmqFYcZWKIe6eKqjeJVp-o",
+  "decoracao": true
+ },
+ "CBM-4.jpg": {
+  "descricao": "Varanda da Cabana Master com balanço.",
+  "etiquetas": [
+   "cabana master",
+   "varanda",
+   "balanço"
+  ],
+  "drive_id": "1hx24ERlLbonffBZZfdO2EiCEm4o2VSnv"
+ },
+ "BG-1.jpg": {
+  "descricao": "Interior do Bangalô com camas arrumadas.",
+  "etiquetas": [
+   "bangalô",
+   "quarto",
+   "camas"
+  ],
+  "drive_id": "1Kemg6bwut4HQxIhggCuPojeH1s5X9yi2"
+ },
+ "BG-2.jpg": {
+  "descricao": "Bangalô visto de fora, entre a vegetação.",
+  "etiquetas": [
+   "bangalô",
+   "fachada"
+  ],
+  "drive_id": "1Ys2258SPxaO5ah1XvSLWK8IqAGOCrx3C"
+ },
+ "BG-3.jpg": {
+  "descricao": "Varanda do Bangalô com rede.",
+  "etiquetas": [
+   "bangalô",
+   "varanda",
+   "rede"
+  ],
+  "drive_id": "1c3Ru5u7qpjR6EHGunAdOTJbL0F4egvdJ"
+ },
+ "BG-4.jpg": {
+  "descricao": "Banheiro do Bangalô.",
+  "etiquetas": [
+   "bangalô",
+   "banheiro"
+  ],
+  "drive_id": "1L53TAEEQGM0w_8_HvueIWjjcgsYfZhmV"
+ },
+ "BGE-1.jpg": {
+  "descricao": "Interior do Bangalô Especial com as camas king arrumadas.",
+  "etiquetas": [
+   "bangalô especial",
+   "quarto",
+   "cama king",
+   "família"
+  ],
+  "drive_id": "1Ro_o5YpOp3EI48q3pvM8lWrdX29Io8eE"
+ },
+ "BGE-2.jpg": {
+  "descricao": "Bangalô Especial visto de fora, entre a vegetação.",
+  "etiquetas": [
+   "bangalô especial",
+   "fachada"
+  ],
+  "drive_id": "1j99sc98V2vyJKRTo_Sno47ipnv_3AkxR"
+ },
+ "BGE-3.jpg": {
+  "descricao": "Área externa do Bangalô Especial com rede.",
+  "etiquetas": [
+   "bangalô especial",
+   "varanda",
+   "rede"
+  ],
+  "drive_id": "1xXd9JqBVxvPxGZ4t84K_iH-DRgOQyIiD"
+ },
+ "BGE-4.jpg": {
+  "descricao": "Banheiro do Bangalô Especial com box de vidro e janela alta.",
+  "etiquetas": [
+   "bangalô especial",
+   "banheiro"
+  ],
+  "drive_id": "1Yl9jjASQzakspjZ4L6ipPsGhkKBo6uKn"
+ },
+ "CJ-1.jpg": {
+  "descricao": "Apartamento Conjugado visto de fora: casa amarela de dois pisos entre árvores.",
+  "etiquetas": [
+   "conjugado",
+   "fachada",
+   "dois pisos"
+  ],
+  "drive_id": "1jPdT5s346Ewt3WzDtXkVQ_s74kZfxqY-"
+ },
+ "CJ-2.jpg": {
+  "descricao": "Suíte do piso superior do Conjugado, com cama de casal, armário aberto e banheiro.",
+  "etiquetas": [
+   "conjugado",
+   "quarto",
+   "cama de casal",
+   "piso superior"
+  ],
+  "drive_id": "10HiepDp62RfxHNmbWIJSZ6Y8zwVg3rIi"
+ },
+ "CJ-3.jpg": {
+  "descricao": "Piso inferior do Conjugado com três camas de solteiro, visto da escada.",
+  "etiquetas": [
+   "conjugado",
+   "quarto",
+   "camas de solteiro",
+   "piso inferior"
+  ],
+  "drive_id": "1K7sJzmX1GrGjvdAShmlrAh0qBuikFtjv"
+ },
+ "CJ-4.jpg": {
+  "descricao": "Varanda da suíte superior do Conjugado, com vista para a vegetação.",
+  "etiquetas": [
+   "conjugado",
+   "varanda",
+   "natureza"
+  ],
+  "drive_id": "11qZ8J2oPPzsbOs_VtuvpiF-ZddXsQUek"
+ },
+ "SUP-1.jpg": {
+  "descricao": "Apartamento Superior com cama de casal e duas de solteiro, janela aberta para o jardim.",
+  "etiquetas": [
+   "apartamento superior",
+   "quarto",
+   "cama de casal",
+   "camas de solteiro"
+  ],
+  "drive_id": "1JLl30DEYdpyvAVU866vaF3EgGuwCkvqg"
+ },
+ "SUP-2.jpg": {
+  "descricao": "Outro ângulo do Apartamento Superior: TV, frigobar, mesa e porta para a varanda.",
+  "etiquetas": [
+   "apartamento superior",
+   "quarto",
+   "frigobar",
+   "tv"
+  ],
+  "drive_id": "1SVjgDENlDfazXI8iuzoYxjqWd7zuqeWu"
+ },
+ "SUP-3.jpg": {
+  "descricao": "Varanda do Apartamento Superior com rede e duas cadeiras.",
+  "etiquetas": [
+   "apartamento superior",
+   "varanda",
+   "rede"
+  ],
+  "drive_id": "18ltCjxz3kiF72IyDKKrfDjn8ipZTjZ52"
+ },
+ "SUP-4.jpg": {
+  "descricao": "Fachada amarela do Apartamento Superior entre palmeiras.",
+  "etiquetas": [
+   "apartamento superior",
+   "fachada"
+  ],
+  "drive_id": "17EUb0e2rYBveZSn14bCKtO0uRilHhXCk"
+ },
+ "STD-1.jpg": {
+  "descricao": "Apartamento Standard com cama de casal, cama de solteiro, TV e ar-condicionado.",
+  "etiquetas": [
+   "apartamento standard",
+   "quarto",
+   "cama de casal",
+   "cama de solteiro"
+  ],
+  "drive_id": "1y8TxbmfBI-6GJZOf6VblGdh7MmeTXWUE"
+ },
+ "STD-2.jpg": {
+  "descricao": "Camas do Apartamento Standard com toalhas dobradas e janela para a vegetação.",
+  "etiquetas": [
+   "apartamento standard",
+   "quarto",
+   "detalhe"
+  ],
+  "drive_id": "1xph4BP6PdcsjczuhMKL410UcLkU1_A5j"
+ },
+ "STD-3.jpg": {
+  "descricao": "Banheiro do Apartamento Standard com box de vidro, pia de granito e secador.",
+  "etiquetas": [
+   "apartamento standard",
+   "banheiro"
+  ],
+  "drive_id": "14bfk10567e_VJ37UXHwqnJTR6cqMq__5"
+ },
+ "STD-4.jpg": {
+  "descricao": "Área externa de convivência dos apartamentos, com poltronas e vista para o jardim.",
+  "etiquetas": [
+   "apartamento standard",
+   "área externa",
+   "convivência"
+  ],
+  "drive_id": "1UY_BfMMtZINOXFqe-fBcHxp4Jh04r-47"
+ },
+ "BOIA-1.jpg": {
+  "descricao": "Grupo descendo o rio em boias, com capacete e colete.",
+  "etiquetas": [
+   "boia cross",
+   "rio",
+   "grupo",
+   "segurança"
+  ],
+  "drive_id": "1RW2SEhJ3BaCtcMGf_mVGaeUGU_BRNdQn"
+ },
+ "BOIA-2.jpg": {
+  "descricao": "Hóspede descendo uma pequena cachoeira na boia, com condutor na água logo abaixo.",
+  "etiquetas": [
+   "boia cross",
+   "cachoeira",
+   "condutor",
+   "segurança"
+  ],
+  "drive_id": "1wDyWdc7O0fO65X1UNP2y_IzXPl9Jem0s"
+ },
+ "ARVO-1.jpg": {
+  "descricao": "Grupo no circuito de arvorismo entre as árvores, com capacete e cadeirinha.",
+  "etiquetas": [
+   "arvorismo",
+   "grupo",
+   "segurança"
+  ],
+  "drive_id": "1bljQkaokHUaMp2d79CeAVfHsaMAZ8FSG"
+ },
+ "ARVO-2.jpg": {
+  "descricao": "Hóspede na tirolesa do arvorismo, com capacete, luvas e cadeirinha.",
+  "etiquetas": [
+   "arvorismo",
+   "tirolesa",
+   "segurança"
+  ],
+  "drive_id": "1BlOvjT-cexq5_PT3oJ0W7ngqfmIEXlV-"
+ },
+ "RIO-1.jpg": {
+  "descricao": "Deck de madeira com rede suspensa sobre o Rio Formosinho, de águas verdes e corredeira.",
+  "etiquetas": [
+   "rio formosinho",
+   "deck",
+   "balneário"
+  ],
+  "drive_id": "1riWSEmSOXvc8bK_k-ABmJNwTaEdpcgnk"
+ },
+ "RIO-2.jpg": {
+  "descricao": "Deck do Rio Formosinho com boia salva-vidas e água cristalina sob as palmeiras.",
+  "etiquetas": [
+   "rio formosinho",
+   "deck",
+   "balneário"
+  ],
+  "drive_id": "1LzEkMkTaGHHdcH8sZ8zr5brRrig-OxNn"
+ },
+ "PISCINA-1.jpg": {
+  "descricao": "Piscina do hotel cercada de vegetação.",
+  "etiquetas": [
+   "piscina",
+   "lazer"
+  ],
+  "drive_id": "1VxqQZTb6HMvbSLB8PQ-vUfIcXVsiFb2s"
+ },
+ "PISCINA-2.jpg": {
+  "descricao": "Espaço de relaxamento com hidromassagem externa.",
+  "etiquetas": [
+   "hidromassagem",
+   "espaço de relaxamento",
+   "lazer"
+  ],
+  "drive_id": "1iL6CVghZahbPNX0omGuZ9dik8oCmATKI"
+ },
+ "CAFE-1.jpg": {
+  "descricao": "Casal no café da manhã, com frutas, suco e pães na mesa.",
+  "etiquetas": [
+   "café da manhã",
+   "casal"
+  ],
+  "drive_id": "1BHhSNRkHiRwyp5Qr4att-pYOFCbURTH2"
+ },
+ "CAFE-2.jpg": {
+  "descricao": "Cesta de frutas do café da manhã junto à janela.",
+  "etiquetas": [
+   "café da manhã",
+   "frutas",
+   "detalhe"
+  ],
+  "drive_id": "1VVhs7lTpzJWgeyq0rpbCa5jVeSxAQTiz"
+ },
+ "DECO-1.jpg": {
+  "descricao": "Cama com toalhas em forma de cisnes e coração com pétalas: decoração especial, serviço opcional contratado à parte.",
+  "etiquetas": [
+   "decoração especial",
+   "opcional",
+   "casal"
+  ],
+  "drive_id": "1K_b4XyeQ8ospdcYKE4wv0foDiKl_z5Zh",
+  "decoracao": true
+ }
+}

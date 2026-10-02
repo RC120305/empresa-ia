@@ -95,7 +95,9 @@ function pagina(o, { previa = false, produtos = null } = {}) {
     const cat = CATALOGO[op.codigo] || { nome: op.nome, cap: '', dest: [] };
     const fotos = fotosDe(op.codigo);
     const galeria = fotos.length ? `<div class="fotos" tabindex="0" aria-label="Fotos: ${esc(cat.nome)}">${fotos.map((f, k) => `<img src="/fotos/${esc(f)}" alt="${esc(cat.nome)} · foto ${k + 1}" loading="${k ? 'lazy' : 'eager'}" width="800" height="600">`).join('')}</div>${fotos.length > 1 ? `<div class="pontos" aria-hidden="true">${fotos.map((_, k) => `<i${k ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}` : '';
-    return `<article class="op${i === 0 ? ' rec' : ''}">${galeria}<div class="corpo">
+    const comDeco = fotos.some(f => DESCRICOES[f] && DESCRICOES[f].decoracao);
+    const nota = comDeco ? '<p class="nota-foto">Algumas fotos mostram a decoração especial (pétalas), opcional e cobrada à parte.</p>' : '';
+    return `<article class="op${i === 0 ? ' rec' : ''}">${galeria}${nota}<div class="corpo">
 ${i === 0 ? '<span class="selo">Nossa sugestão para vocês</span>' : ''}<h2>${esc(cat.nome)}</h2><p class="cap">${esc(cat.cap)}</p>
 <ul class="dest">${cat.dest.map(d => `<li>${esc(d)}</li>`).join('')}</ul>
 <div class="preco"><div><small>Total ${n > 1 ? `das ${n} noites` : 'da noite'}</small><b>${brl(op.valor_total)}</b><small>${n > 1 ? `média de ${brl(op.media_por_noite)} por noite · ` : ''}ou 6x de ${brl(op.parcela_6x)} sem juros</small></div></div>

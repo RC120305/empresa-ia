@@ -1,0 +1,16 @@
+{
+  "CBD": ["CBD-1.jpg", "CBD-2.jpg", "CBD-3.jpg", "CBD-4.jpg"],
+  "CBT": ["CBT-1.jpg", "CBT-2.jpg", "CBT-3.jpg", "CBT-4.jpg"],
+  "CBM": ["CBM-1.jpg", "CBM-2.jpg", "CBM-3.jpg", "CBM-4.jpg"],
+  "BG": ["BG-1.jpg", "BG-2.jpg", "BG-3.jpg", "BG-4.jpg"],
+  "BGE": ["BGE-1.jpg", "BGE-2.jpg", "BGE-3.jpg", "BGE-4.jpg"],
+  "CJ": ["CJ-1.jpg", "CJ-2.jpg", "CJ-3.jpg", "CJ-4.jpg"],
+  "SUP": ["SUP-1.jpg", "SUP-2.jpg", "SUP-3.jpg", "SUP-4.jpg"],
+  "STD": ["STD-1.jpg", "STD-2.jpg", "STD-3.jpg", "STD-4.jpg"],
+  "BOIA": ["BOIA-1.jpg", "BOIA-2.jpg"],
+  "ARVO": ["ARVO-1.jpg", "ARVO-2.jpg"],
+  "RIO": ["RIO-1.jpg", "RIO-2.jpg"],
+  "PISCINA": ["PISCINA-1.jpg", "PISCINA-2.jpg"],
+  "CAFE": ["CAFE-1.jpg", "CAFE-2.jpg"],
+  "DECO": ["DECO-1.jpg"]
+}
