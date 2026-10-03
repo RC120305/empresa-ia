@@ -14,6 +14,7 @@ roteiro.json (caminhos relativos à pasta do roteiro):
   "musica": {"arquivo": "musica.mp3", "volume": 0.8, "inicio": 0}   # opcional: só faixa com licença
 }
 Texto da tela: Josefin Sans 600, caixa alta, 38 px, como o "BONITO - MS" do modelo "Pause a tela".
+A fusão mistura só as fotos; o texto entra depois dela (nunca há dois textos sobrepostos).
 Gera as telas em <pasta>/reels-telas/ (não vão para o git) e o MP4. Depois de gerar, confira com
 design/ferramentas/quadros-video.py.
 """
@@ -64,17 +65,21 @@ def render(nome, foto, pos, miolo):
 
 moldura = R.get("moldura", True)
 cab = (f'<div class="moldura"></div><div class="selo"><img src="{LOGO}" alt=""></div>' if moldura else "")
+# Cada cena tem a versão com texto e a versão "limpa" (só foto e moldura): a fusão mistura as limpas,
+# e o texto entra quando a fusão termina, para nunca sobrepor o texto de duas telas.
 cenas = []
 if R.get("capa"):
-    cenas.append((os.path.join(PASTA, R["capa"]["png"]), R["capa"].get("tempo", 2.5)))
+    capa = os.path.join(PASTA, R["capa"]["png"])
+    cenas.append((capa, capa, R["capa"].get("tempo", 2.5)))
 for i, t in enumerate(R["telas"], 1):
-    miolo = f'<div class="veu"></div>{cab}<div class="texto">{html.escape(t.get("texto", ""))}</div>'
-    cenas.append((render(f"tela-{i:02d}", t["foto"], t.get("pos", "center"), miolo), t.get("tempo", R.get("tempo_tela", 1.1))))
+    pos, base = t.get("pos", "center"), f'<div class="veu"></div>{cab}'
+    cenas.append((render(f"tela-{i:02d}", t["foto"], pos, base + f'<div class="texto">{html.escape(t.get("texto", ""))}</div>'),
+                  render(f"tela-{i:02d}-limpa", t["foto"], pos, base), t.get("tempo", R.get("tempo_tela", 1.1))))
 if R.get("fim"):
-    f = R["fim"]
+    f = R["fim"]; pos = f.get("pos", "50% center")
     miolo = (f'<div class="fim"></div><div class="fim-box"><img src="{LOGO}" alt="Hotel Cabanas">'
              f'<div class="l1">{html.escape(f.get("linha1", "BONITO - MS"))}</div><div class="l2">{html.escape(f.get("linha2", "Reserve pelo link da bio"))}</div></div>')
-    cenas.append((render("fim", f["foto"], f.get("pos", "50% center"), miolo), f.get("tempo", 2.0)))
+    cenas.append((render("fim", f["foto"], pos, miolo), render("fim-limpa", f["foto"], pos, '<div class="fim"></div>'), f.get("tempo", 2.0)))
 
 exe = imageio_ffmpeg.get_ffmpeg_exe()
 saida = os.path.join(PASTA, R.get("saida", "REELS.mp4"))
@@ -82,18 +87,25 @@ mudo = saida + ".mudo.mp4"
 ff = subprocess.Popen([exe, "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
                        "-c:v", "libx264", "-pix_fmt", "yuv420p", "-preset", "medium", "-crf", "20", "-movflags", "+faststart", mudo], stdin=subprocess.PIPE)
 FUSAO, ZOOM, ultimo = round(R.get("fusao", 0.2) * FPS), R.get("zoom", 0.05), None
-for png, dur in cenas:
-    im = Image.open(png).convert("RGB"); n = round(dur * FPS)
+
+
+def quadro(im, k, n):
+    z = 1 + ZOOM * k / max(n - 1, 1)
+    cw, ch = W / z, H / z; x, y = (W - cw) / 2, (H - ch) / 2
+    return im.crop((round(x), round(y), round(x + cw), round(y + ch))).resize((W, H), Image.LANCZOS)
+
+
+for png, limpa, dur in cenas:
+    im, iml = Image.open(png).convert("RGB"), Image.open(limpa).convert("RGB"); n = round(dur * FPS)
     for k in range(n):
-        z = 1 + ZOOM * k / max(n - 1, 1)
-        cw, ch = W / z, H / z; x, y = (W - cw) / 2, (H - ch) / 2
-        q = im.crop((round(x), round(y), round(x + cw), round(y + ch))).resize((W, H), Image.LANCZOS)
         if ultimo is not None and k < FUSAO:
-            q = Image.blend(ultimo, q, (k + 1) / (FUSAO + 1))
+            q = Image.blend(ultimo, quadro(iml, k, n), (k + 1) / (FUSAO + 1))
+        else:
+            q = quadro(im, k, n)
         ff.stdin.write(q.tobytes())
-    ultimo = q
+    ultimo = quadro(iml, n - 1, n)
 ff.stdin.close(); ff.wait()
-total = sum(d for _, d in cenas)
+total = sum(d for *_, d in cenas)
 if R.get("musica"):
     m = R["musica"]; arq = os.path.join(PASTA, m["arquivo"])
     subprocess.run([exe, "-y", "-loglevel", "error", "-i", mudo, "-ss", str(m.get("inicio", 0)), "-i", arq, "-map", "0:v", "-map", "1:a",

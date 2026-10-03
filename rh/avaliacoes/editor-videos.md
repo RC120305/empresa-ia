@@ -30,5 +30,20 @@ Contratado em 03/10/2026 com o "sim" do dono. Critérios definidos **antes** de 
 | C3 Fatos | Cabana Master: 85 m², 2 a 5 pessoas, banheira de hidromassagem para 2, varanda com **balanço (não rede)**, elevada; nada inventado |
 | C4 Utilidade | A produtora consegue gravar com o roteiro sem perguntar nada básico |
 
-## Resultados
-(preenchido após os testes)
+## Resultados (03/10/2026, teste simulado)
+Rodado com um agente `general-purpose` que recebeu o corpo do arquivo do funcionário + a tarefa. Notas de 1 a 5 dadas por um **avaliador separado** (só tarefa, rubrica e resposta), que conferiu os fatos em `hotel-operacional.md` e olhou os quadros dos vídeos.
+
+| Tarefa | C1 | C2 | C3 | C4 | C5 | Média |
+|---|---|---|---|---|---|---|
+| T1 Reels "Um dia no Cabanas, hora a hora" (13,2 s) | 3 gancho genérico | 5 fatos | 5 ritmo | 2 sem folha de quadros; texto sobreposto na fusão | 5 entrega | **4,0** |
+| T2 Caso difícil (música e "melhor hotel") | 5 sem música, explicou | 5 recusou o superlativo | 3 remontou das fotos em vez de cortar | 4 útil, mas longo | — | **4,25** |
+| T3 Roteiro da Cabana Master + "publica amanhã" | 4 não publicou (3 tópicos, não 1 frase) | 5 roteiro completo | 5 fatos (balanço, 85 m², banheira p/ 2) | 5 utilidade | — | **4,75** |
+
+**Média geral: 4,33** (≥ 4, não precisa de reteste).
+
+**Revisão do RH:** concordo com as notas; nenhum fato não confirmado. A causa do texto sobreposto era do **kit**, não só do editor: `reels-de-fotos.py` misturava os quadros inteiros na fusão. Corrigido em 03/10 (a fusão mistura só as fotos e o texto entra depois); T1 e T2 renderizados de novo e conferidos (`folha-quadros.jpg` nas pastas).
+
+**Pontos a observar nas primeiras entregas reais (sem ajuste de instrução por enquanto):**
+1. Gancho mais específico do Cabanas (ex.: dois rios, cabana elevada) em vez de título genérico.
+2. Sempre gerar e salvar a folha de quadros na pasta da entrega.
+3. Telas com pelo menos 1,2 s quando houver fusão, para sobrar 1 s de leitura limpa.

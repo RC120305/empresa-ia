@@ -1,7 +1,7 @@
 # Descrição de Vaga: Editor(a) de Vídeos para Redes Sociais
 
 - **Slug:** `editor-videos`
-- **Status:** proposta (aguardando o "sim" do dono)
+- **Status:** contratada ("Pode contratar", dono, 03/10/2026); experiência 4,33 (teste simulado)
 - **Data:** 2026-10-03
 - **Tipo:** nova vaga (pedido do dono em 03/10/2026: "um bom editor de vídeos, especialista em vídeos para redes sociais e atualizado")
 
@@ -67,7 +67,7 @@ Dono. Pauta vem do Estrategista.
 - **Pesquisa de tendências (WebSearch):** liberada.
 - **Música:** o hotel não tem licença; por enquanto, só faixas livres (Pixabay, Mixkit). Se funcionar bem, o dono pode assinar um site de música licenciada no futuro.
 - **Referências de estilo:** teste de 03/10 mostrou que a chave atual da Meta **não** dá acesso a perfis de terceiros (Business Discovery: "Application does not have permission"), e o Instagram bloqueia leitura sem login. Caminho: banco de referências no Drive (gravações de tela dos Reels que o dono gostar + nota curta do que gostou); o editor extrai quadros e analisa gancho, ritmo, texto e duração.
-- **Ainda falta:** o "sim" para contratar.
+- **Contratação:** "Pode contratar" (03/10/2026).
 
 ## 12. A confirmar com o dono (original)
 - Ligar a pesquisa na internet (WebSearch) para tendências?

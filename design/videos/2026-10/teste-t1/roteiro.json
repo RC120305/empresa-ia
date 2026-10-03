@@ -1,0 +1,17 @@
+{
+  "saida": "REELS-UM-DIA-NO-CABANAS.mp4",
+  "telas": [
+    {"foto": "fotos/dois-rios.jpg", "pos": "45% center", "texto": "Um dia no Cabanas, hora a hora", "tempo": 1.6},
+    {"foto": "fotos/cafe-frutas.jpg", "pos": "55% center", "texto": "6h30 · Café da manhã incluso"},
+    {"foto": "fotos/arco-flecha.jpg", "pos": "22% center", "texto": "8h30 · Arco e flecha incluso"},
+    {"foto": "fotos/rio-mulher-recorte.jpg", "pos": "48% center", "texto": "14h · Trilha e banho de rio"},
+    {"foto": "fotos/standup-casal.jpg", "pos": "55% center", "texto": "14h · Stand up incluso"},
+    {"foto": "fotos/caiaque-mulher.jpg", "pos": "42% center", "texto": "15h30 · Caiaque incluso"},
+    {"foto": "fotos/piscina.jpg", "pos": "50% center", "texto": "Fim de tarde · piscina climatizada"},
+    {"foto": "fotos/redario-casal.jpg", "pos": "75% center", "texto": "Redário perto do rio"},
+    {"foto": "fotos/hidromassagem.jpg", "pos": "50% center", "texto": "Até 22h · hidromassagem aquecida"}
+  ],
+  "tempo_tela": 1.2, "fusao": 0.2, "zoom": 0.05,
+  "moldura": true,
+  "fim": {"foto": "fotos/cabana-casal.jpg", "pos": "35% center", "linha1": "BONITO - MS", "linha2": "Reserve pelo link da bio", "tempo": 2.0}
+}

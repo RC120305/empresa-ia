@@ -5,7 +5,8 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
    └── RH (Diretora de Pessoas)
          ├── Estrategista de Social Media e Tráfego (social-media-trafego)   ← planeja: o que, quando, para quem, com quanto
          ├── Especialista em Marketing e Anúncios (marketing-anuncios)   ← escreve
-         └── Designer de Criativos (designer-criativos)   ← monta as artes
+         ├── Designer de Criativos (designer-criativos)   ← monta as artes
+         └── Editor(a) de Vídeos (editor-videos)   ← monta Reels e roteiros de vídeo
 ```
 
 ## Equipe ativa
@@ -15,6 +16,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Especialista em Marketing e Anúncios | `.claude/agents/marketing-anuncios.md` | **Ativo, v2.8 (aprovado)** | 2026-09-26 | Reduzir o marketing genérico e tornar visível o valor dos 4 diferenciais | 4,0 → 4,33 → **4,5** (R3 final); ver `rh/avaliacoes/marketing-anuncios.md` |
 | Estrategista de Social Media e Tráfego | `.claude/agents/social-media-trafego.md` | **Ativo, v1.6 (aprovado)** | 2026-09-26 | Transformar Instagram e tráfego em reservas diretas | **4,81** (teste simulado); ver `rh/avaliacoes/social-media-trafego.md` |
 | Designer de Criativos | `.claude/agents/designer-criativos.md` | **Efetivado, v1.6 (aprovado pelo dono)** | 2026-09-26 | Transformar a direção de arte em peças prontas (PNG) com fotos reais | **4,53** (teste simulado); ver `rh/avaliacoes/designer-criativos.md` |
+| Editor(a) de Vídeos para Redes Sociais | `.claude/agents/editor-videos.md` | **Em experiência, v1.0** | 2026-10-03 | Transformar fotos e vídeos reais em Reels e stories prontos (MP4 9:16) | **4,33** (teste simulado); ver `rh/avaliacoes/editor-videos.md` |
 
 ## Matriz RACI (decisões da empresa)
 | Decisão | R (executa) | A (aprova) | C (consultado) | I (informado) |
@@ -24,6 +26,8 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | Preparar conteúdo externo (rascunho) | Funcionário responsável | Dono | RH (se envolver tom e valores) | — |
 | Publicar conteúdo externo | Dono (funcionários de IA nunca publicam) | Dono | Funcionário responsável | — |
 | Arte final das peças (PNG) | designer-criativos | Dono | marketing-anuncios | — |
+| Reels e stories em vídeo (MP4) | editor-videos | Dono | social-media-trafego, marketing-anuncios | designer-criativos |
+| Roteiro e lista de takes para a produtora | editor-videos | Dono | social-media-trafego | — |
 | Calendário, pauta e plano de tráfego (verba em cenários) | social-media-trafego | Dono | marketing-anuncios, designer-criativos | — |
 | Executar campanhas e publicar | Dono | Dono | social-media-trafego | Equipe |
 | Atualizar o contexto do hotel | Dono | Dono | RH | Equipe |
@@ -43,6 +47,7 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | marketing-anuncios | Reduzir o marketing genérico; comunicar os 4 diferenciais e o custo-benefício | Nota do dono ≥ 4; ≥ 80% sem retrabalho; zero fatos inventados *(meta proposta, a validar)*; reservas e engajamento a medir |
 | social-media-trafego | Reservas diretas via Instagram e tráfego | Nota do dono ≥ 4; zero fatos ou resultados inventados *(meta proposta, a validar)*; reservas diretas, custo por reserva direta e envios por alcance a medir |
 | designer-criativos | Peças prontas, bonitas e verdadeiras, sem etapa manual | Nota do dono ≥ 4; ≥ 80% sem retrabalho; zero fatos não confirmados e zero imagens de IA *(meta proposta, a validar)*; engajamento por pilar a medir |
+| editor-videos | Reels prontos todo mês, com ou sem a produtora | Nota do dono ≥ 4; ≥ 80% sem retrabalho; zero imagens de IA e zero fatos não confirmados *(meta proposta, a validar)*; retenção, envios e alcance de não seguidores por Reels a medir |
 
 ## Histórico
 | Data | Evento | Motivo |
@@ -100,3 +105,5 @@ Dono(a) do Hotel  (aprova tudo que é público, financeiro ou de contratação)
 | 2026-09-27 | Criada a **Central de Aprovação** (página privada com banco de dados e upload): o dono aprova posts, pede correções e envia fotos novas; a equipe lê os pedidos e devolve a versão corrigida na mesma página. Skills conteudo-mensal, alterar-conteudo e publicar-instagram atualizadas; gerador em `ferramentas/central-aprovacao/`. | Pedido do dono |
 | 2026-09-27 | Correções factuais do dono aplicadas em contexto, agentes e rascunhos: boia cross e arvorismo **a partir de 5 anos** (e 1,15 m); programação inclusa **sem idade mínima**; Campo Grande e Dourados a ~260 km. Marketing v2.8, Estrategista v1.6, Designer v1.6 (só o fato). | Resposta do dono |
 | 2026-10-03 | **Vaga proposta:** Editor(a) de Vídeos para Redes Sociais (`rh/vagas/editor-videos.md`), aguardando o "sim" do dono. | Pedido do dono: vídeos para redes sociais, atualizado; Reels dependem da produtora e o acervo de vídeos está parado |
+| 2026-10-03 | **Contratado o Editor(a) de Vídeos** (`editor-videos` v1.0) com o "Pode contratar" do dono. Ferramentas: Bash restrito ao kit de vídeo (`design/ferramentas/reels-de-fotos.py`, `quadros-video.py`, `ffmpeg.py`, `video-do-drive.py`), WebSearch para tendências (liberado pelo dono) e Drive só leitura. Grava só em `design/videos/`. Música só com licença ou sem música. | Reels dependiam da produtora; acervo de vídeos parado |
+| 2026-10-03 | Experiência do Editor de Vídeos: média **4,33** (T1 4,0; T2 4,25; T3 4,75), teste simulado com avaliador separado. Kit corrigido (texto não se sobrepõe mais na fusão). Sem ajuste de instrução; 3 pontos a observar nas entregas reais. | Avaliação independente |
