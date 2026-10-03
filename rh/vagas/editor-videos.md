@@ -63,7 +63,13 @@ MP4 9:16 (e versão de capa), roteiro/decupagem para a produtora, sugestão de e
 ## 10. A quem responde
 Dono. Pauta vem do Estrategista.
 
-## 11. A confirmar com o dono
+## 11. Respostas do dono (03/10/2026)
+- **Pesquisa de tendências (WebSearch):** liberada.
+- **Música:** o hotel não tem licença; por enquanto, só faixas livres (Pixabay, Mixkit). Se funcionar bem, o dono pode assinar um site de música licenciada no futuro.
+- **Referências de estilo:** teste de 03/10 mostrou que a chave atual da Meta **não** dá acesso a perfis de terceiros (Business Discovery: "Application does not have permission"), e o Instagram bloqueia leitura sem login. Caminho: banco de referências no Drive (gravações de tela dos Reels que o dono gostar + nota curta do que gostou); o editor extrai quadros e analisa gancho, ritmo, texto e duração.
+- **Ainda falta:** o "sim" para contratar.
+
+## 12. A confirmar com o dono (original)
 - Ligar a pesquisa na internet (WebSearch) para tendências?
 - Vídeos do acervo grandes podem não baixar pela ferramenta do Drive: testar no período de experiência.
 - Música: o hotel tem alguma licença ou vamos sempre de faixas livres (Pixabay, Mixkit)?
