@@ -47,3 +47,8 @@ Rodado com um agente `general-purpose` que recebeu o corpo do arquivo do funcion
 1. Gancho mais específico do Cabanas (ex.: dois rios, cabana elevada) em vez de título genérico.
 2. Sempre gerar e salvar a folha de quadros na pasta da entrega.
 3. Telas com pelo menos 1,2 s quando houver fusão, para sobrar 1 s de leitura limpa.
+
+## Ajuste v1.1 (03/10/2026, aprovado pelo dono)
+- **Antes → depois:** o editor escolhia vídeos abrindo cada bruto → passa a **consultar o catálogo** (`design/videos/catalogo/catalogo.json`) e a **catalogar todo vídeo novo** (descrição por trecho, vocabulário fechado, "a confirmar" para o que a imagem não prova, nome padronizado proposto).
+- **Reteste (simulado):** "Reels de 10 s do Cânion do Salobra" → usou 4 trechos do catálogo (01-T1 gancho, 02-T3, 01-T4, 02-T5 fecho), citou a fonte, excluiu 01-T6/T7 ("não usar"), manteve o passeio como externo e listou direitos da Ecotrip e autorização de imagem. **Aprovado.**
+- Versão anterior: `rh/avaliacoes/versoes/editor-videos-v1.0.md`.
