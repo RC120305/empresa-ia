@@ -320,6 +320,10 @@ falso.listen(0, () => {
     assert.equal(r.status, 200);
     const env = await r.json();
     assert.equal(env.wamid, 'wamid.SAIDA');
+    // Link do CRM alterado pelo corretor ("east1" → "education"): não sai para o cliente
+    r = await enviar('token-equipe', { conversa_id: conv, baloes: ['Seu orçamento:', 'https://crm-377803250649.southamerica-education.run.app/o/abc'] });
+    assert.equal(r.status, 400); assert.ok((await r.json()).erro.includes('southamerica-education.run.app'));
+    assert.equal((await enviar('token-equipe', { conversa_id: conv, texto: 'Veja: https://crm-377803250649.southamerica-east1.run.app/o/abc' })).status, 200, 'link certo passa');
     const g = chamadas.find(c => c.url === '/graph/111/messages' && c.corpo.type === 'text');
     const dig = chamadas.find(c => c.url === '/graph/111/messages' && c.corpo.typing_indicator);
     assert.deepEqual(dig.corpo, { messaging_product: 'whatsapp', status: 'read', message_id: 'wamid.CLIENTE', typing_indicator: { type: 'text' } });

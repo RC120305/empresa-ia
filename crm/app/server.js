@@ -457,12 +457,20 @@ async function enviarMidiaPelaEquipe(tokenUsuario, params, dados, mimeEnviado, b
 }
 
 // Envia 1 ou mais balões (texto separado por uma linha só com ---), um por vez, com "digitando…" antes de cada um.
+// Link do CRM alterado no texto (ex.: o corretor trocou "east1" por "education"): o cliente cairia num endereço errado
+function linkAlterado(texto) {
+  const certo = new URL(URL_PUBLICA).host;
+  const hosts = String(texto).match(/[\w.-]+\.run\.app/gi) || [];
+  return hosts.find(h => h.toLowerCase() !== certo.toLowerCase()) || null;
+}
 async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
   const bruto = Array.isArray(corpo.baloes) ? corpo.baloes : [typeof corpo.texto === 'string' ? corpo.texto : ''];
   const baloes = bruto.map(b => String(b || '').trim()).filter(b => b && !/^[-–—\s]+$/.test(b)); // ignora balão só de traços
   if (!baloes.length || baloes.length > 6 || baloes.some(b => b.length > 4096)) throw new ErroEnvio(400, 'Envie de 1 a 6 balões, cada um com até 4.096 caracteres.');
   if (!/^[0-9a-f-]{36}$/i.test(String(corpo.conversa_id || ''))) throw new ErroEnvio(400, 'Conversa inválida.');
+  const alterado = linkAlterado(baloes.join('\n'));
+  if (alterado) throw new ErroEnvio(400, 'O link ' + alterado + ' parece alterado (corretor automático?). O certo começa com ' + URL_PUBLICA + '. Corrija ou gere o link de novo antes de enviar.');
   const equipe = await autenticarEquipe(tokenUsuario, buscar);
   const { conv, para, wamidCliente } = await carregarConversaParaEnvio(corpo.conversa_id, buscar);
 
