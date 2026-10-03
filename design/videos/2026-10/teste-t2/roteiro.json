@@ -1,0 +1,13 @@
+{
+  "saida": "REELS-ATIVIDADES-8S.mp4",
+  "capa": {"png": "abertura.png", "tempo": 1.6},
+  "telas": [
+    {"foto": "fotos/caiaque-mulher.jpg", "pos": "45% center", "texto": "Caiaque incluso", "tempo": 1.0},
+    {"foto": "fotos/standup-casal.jpg", "pos": "50% center", "texto": "Stand up paddle incluso", "tempo": 1.0},
+    {"foto": "fotos/arco-flecha.jpg", "pos": "22% center", "texto": "Arco e flecha incluso", "tempo": 1.0},
+    {"foto": "fotos/arvorismo-estacao.jpg", "pos": "55% center", "texto": "Arvorismo (opcional)", "tempo": 1.0},
+    {"foto": "fotos/boia-cross.jpg", "pos": "69% center", "texto": "Boia cross (opcional)", "tempo": 1.0}
+  ],
+  "tempo_tela": 1.0, "fusao": 0.2, "zoom": 0.05, "moldura": true,
+  "fim": {"foto": "fotos/aerea-hotel.jpg", "linha1": "BONITO - MS", "linha2": "Reserve pelo link da bio", "tempo": 1.4}
+}
