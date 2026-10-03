@@ -43,8 +43,9 @@ Planilha para o dono: **"Catálogo de vídeos"** (ID `1Tu3XLD71IlG0w1CChR8Mm51l_
 - Descreve o que se vê, nunca quem as pessoas são.
 
 ## Músicas novas (na mesma rodada)
-1. Drive `search_files` com `parentId = '1Rdg2OufStjaFQs0UDSujcvl3lPsu9mUH'` (pasta "Trilhas sonoras free"). Compare com `ferramentas/central-aprovacao/videos/musicas.json` (campo `id` = nome do arquivo sem `.mp3`). Nada novo → siga em silêncio.
-2. Para cada MP3 novo (até 10 MB): `download_file_content` (o resultado grande fica salvo em arquivo; decodifique o base64 para `design/videos/musicas/<nome>.mp3`, fora do git).
-3. Prévia de 30 s em MP4 de áudio (o asset não aceita MP3): `ffmpeg -i <mp3> -t 30 -vn -af "afade=t=out:st=27:d=3" -c:a aac -b:a 96k -movflags +faststart ferramentas/central-aprovacao/videos/subir/musica-<nome>.mp4`.
-4. Suba como asset da Central (`Artifact`, `url` da Central, `asset: true`) e acrescente em `musicas.json`: `{id, nome (legível, do nome do arquivo), estilo (2 a 3 palavras: ouça o início ou use as palavras do nome, ex.: "calmo, piano"), previa: <url>}`.
-5. `python3 ferramentas/central-aprovacao/gerar.py 2026-10 <pasta da prévia>` e republique a Central (mesma url). A música passa a aparecer no passo "Música" do "+ Novo pedido".
+1. Drive `search_files` com `parentId = '1Rdg2OufStjaFQs0UDSujcvl3lPsu9mUH'` (pasta "Trilhas sonoras free"; pagine até o fim). Compare com `design/videos/catalogo/musicas.json` (campo `id` = nome do arquivo sem `.mp3`). Ignore cópias "(1)". Nada novo → siga em silêncio.
+2. Para cada MP3 novo (até 10 MB): `download_file_content` (o resultado grande fica salvo em arquivo; decodifique o base64 para `design/videos/musicas/<nome>.mp3`, fora do git). `pip install -q numpy imageio-ffmpeg` se faltar.
+3. `python3 design/ferramentas/catalogar-musicas.py analisar <nome>.mp3 ...`: mede BPM, energia (1 a 5), quando começa forte, melhor trecho e classifica clima, instrumentos, "combina com" e uso. Grave o `id_drive` da faixa na ficha.
+4. `python3 design/ferramentas/catalogar-musicas.py previas ferramentas/central-aprovacao/videos/subir/musicas` (30 s do melhor trecho, MP4 de áudio). Suba só as novas como assets da Central (`Artifact`, `url` da Central, `asset: true`, `file_paths`) e grave a url em `previa` na ficha.
+5. `python3 ferramentas/central-aprovacao/gerar.py 2026-10 <pasta da prévia>` e republique a Central (mesma url). A música aparece na aba **Músicas** e no passo "Música" do "+ Novo pedido".
+6. Favoritas e "não usar" do dono ficam no db da Central, coleção `musicas` (doc = id da faixa). Ao escolher música para um vídeo: favoritas primeiro, nunca "não usar".

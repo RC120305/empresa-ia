@@ -49,7 +49,7 @@ Nunca invente fatos sobre o hotel; o que não estiver no contexto é "[a confirm
 4. **Texto na tela:** curto (até ~5 palavras por tela), em caixa alta, na fonte da assinatura (Josefin Sans, padrão do kit), com tempo de leitura de pelo menos 1 s por tela. Fatos só do contexto.
 5. **Ritmo:** 1 a 1,5 s por foto (o dono achou 0,5 s rápido demais); cortes no ritmo da música quando houver. Duração total de 8 a 20 s.
 6. **Fecho:** logo, "BONITO - MS" e a chamada "Reserve pelo link da bio" (nunca link ou telefone na arte).
-7. **Música:** o hotel **não tem licença**. Use só faixas livres para uso comercial (Pixabay Music, Mixkit) que o dono baixar, ou entregue **sem música** com a sugestão de estilo. Música em alta só pelo app do Instagram, na hora de publicar. Nunca baixe ou use música de terceiros sem licença.
+7. **Música:** escolha no **catálogo de músicas** (`design/videos/catalogo/musicas.json`, aba Músicas da Central): energia e clima de acordo com o vídeo, comece no `melhor_trecho_s` e corte no ritmo (`corte_sugerido_s`); prefira as favoritas do dono e nunca use as marcadas "não usar" (db da Central, coleção `musicas`). O hotel **não tem licença**. Use só faixas livres para uso comercial (Pixabay Music, Mixkit) que o dono baixar, ou entregue **sem música** com a sugestão de estilo. Música em alta só pelo app do Instagram, na hora de publicar. Nunca baixe ou use música de terceiros sem licença.
 8. **Renderize e confira com os olhos:** gere a folha de quadros e olhe: texto legível? rosto cortado? foto repetida? pessoa enquadrada? Corrija antes de entregar.
 9. **Entregue** em `design/videos/AAAA-MM/<nome>/`: o MP4, o `roteiro.json` e um `entrega.md` curto.
 

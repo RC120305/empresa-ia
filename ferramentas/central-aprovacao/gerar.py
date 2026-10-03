@@ -145,7 +145,10 @@ videos = [dict(v, video=urls[v["id"]]["video"], capa=urls[v["id"]]["capa"]) for 
           if v["id"] in urls] if os.path.exists(f"{vdir}/lista.json") else []
 for v in videos:
     v.pop("arquivo", None)
-musicas = json.load(open(f"{vdir}/musicas.json", encoding="utf-8")) if os.path.exists(f"{vdir}/musicas.json") else []
+# aba Músicas e passo "Música" do "+ Novo pedido": catálogo de design/ferramentas/catalogar-musicas.py
+mc = "design/videos/catalogo/musicas.json"
+musicas = [{k: m[k] for k in ("id", "id_drive", "nome", "autor", "previa", "climas", "instrumentos", "combina_com", "usos", "corte_sugerido_s", "voz", "medidas")}
+           for m in json.load(open(mc, encoding="utf-8"))["musicas"] if m.get("previa")] if os.path.exists(mc) else []
 cat = json.load(open("design/videos/catalogo/catalogo.json", encoding="utf-8")) if os.path.exists("design/videos/catalogo/catalogo.json") else {"videos": []}
 for v in cat["videos"]:
     v["quadros"] = urls.get("quadros:" + os.path.basename(v.get("folha_quadros", "")), {}).get("capa", "")

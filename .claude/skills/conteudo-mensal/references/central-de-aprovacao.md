@@ -43,3 +43,6 @@ O dono responde 8 passos (tipo → formato/duração → tema, objetivo, persona
 - `uploads` são assets da Central (`/_blob/<id>`); `fotos` são IDs do banco no Drive.
 - A rotina "Central Cabanas" (7h58, 12h58 e 17h58, horário de Bonito) verifica pedidos, correções e chat; fora dela, o dono pode avisar no chat.
 - Prévias de música: `ferramentas/central-aprovacao/videos/musicas.json` (30 s em MP4 de áudio, assets da Central). Faixa nova: MP3 na pasta do Drive "Trilhas sonoras free" → baixar, gerar a prévia, subir e acrescentar no JSON.
+
+## Aba Músicas (03/10/2026)
+Mostra `design/videos/catalogo/musicas.json` (ferramenta `design/ferramentas/catalogar-musicas.py`): energia 1 a 5, BPM, duração, "começa forte em", melhor trecho (destacado na curva de energia), corte sugerido, clima, instrumentos, "combina com" e uso, com prévia de 30 s do melhor trecho. Filtros por clima, energia, "combina com" e busca. O dono marca **★ Favorita** ou **Não usar** (db, coleção `musicas`: `{musica, favorita, naoUsar}`); o passo "Música" do "+ Novo pedido" usa o mesmo catálogo, esconde as "não usar" e filtra por energia ou favoritas. A energia é calibrada pelo brilho do som, batidas por segundo e volume (faixas do Pixabay vêm todas altas): é ponto de partida, a escuta do dono decide.
