@@ -1629,6 +1629,8 @@
       ETAPAS.map(([k, t]) => el('option', { value: k, text: t, selected: k === n.etapa })));
   }
   // ---------- Pagamentos: cobrança por Pix (Banco do Brasil) com baixa automática ----------
+  // Dados da conta que aparecem no app do banco do cliente, para ele conferir antes de pagar (dono, 03/10/2026)
+  const RECEBEDOR_PIX = 'Para conferir no seu banco, o recebedor é:\nHotel Cabanas Ltda\nBanco do Brasil · Agência 1031-6 · Conta corrente 8583-9';
   const SIT_COB = { ativa: ['Aguardando pagamento', 'pendente'], paga: ['Pago ✓', 'ok'], expirada: ['Venceu sem pagamento', 'erro'], cancelada: ['Cancelada', 'off'] };
   const quandoBR = d => new Date(d).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', ' às');
   let modoPix = null;
@@ -1685,7 +1687,7 @@
   }
   function porNoCampo(cob) {
     const ta = $('resposta');
-    const t = 'Segue o Pix ' + (cob.tipo === 'sinal' ? 'do sinal (50%)' : cob.tipo === 'total' ? 'do valor total' : '') + ' de ' + brl(cob.valor) + ', válido até ' + quandoBR(cob.expira_em) + '. É só copiar o código abaixo e colar no app do seu banco, em Pix Copia e Cola. Assim que o pagamento cair, eu confirmo sua reserva por aqui 🌿';
+    const t = 'Segue o Pix ' + (cob.tipo === 'sinal' ? 'do sinal (50%)' : cob.tipo === 'total' ? 'do valor total' : '') + ' de ' + brl(cob.valor) + ', válido até ' + quandoBR(cob.expira_em) + '. É só copiar o código abaixo e colar no app do seu banco, em Pix Copia e Cola.\n\n' + RECEBEDOR_PIX + '\n\nAssim que o pagamento cair, eu confirmo sua reserva por aqui 🌿';
     ta.value = (ta.value.trim() ? ta.value.trim() + '\n---\n' : '') + t + '\n---\n' + (cob.copia_e_cola || '');
     ajustarAltura(); ta.focus();
   }
