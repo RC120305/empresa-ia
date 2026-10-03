@@ -1,6 +1,6 @@
 ---
 name: catalogar-videos
-description: Cataloga os vídeos novos que o dono coloca na pasta "Vídeos novos (para catalogar)" do Drive do Hotel Cabanas - baixa, divide em trechos, descreve cada trecho no catálogo de vídeos, renomeia no padrão, move para a subpasta certa e lista o que falta confirmar. Use quando o agendamento diário disparar ou quando o dono pedir "cataloga os vídeos novos", "/catalogar-videos". Não edita vídeos (ver o Editor de Vídeos) e nunca publica.
+description: Cataloga os vídeos novos (e registra as músicas novas da pasta "Trilhas sonoras free") que o dono coloca na pasta "Vídeos novos (para catalogar)" do Drive do Hotel Cabanas - baixa, divide em trechos, descreve cada trecho no catálogo de vídeos, renomeia no padrão, move para a subpasta certa e lista o que falta confirmar. Use quando o agendamento diário disparar ou quando o dono pedir "cataloga os vídeos novos", "/catalogar-videos". Não edita vídeos (ver o Editor de Vídeos) e nunca publica.
 ---
 
 # Catalogar vídeos novos (rotina)
@@ -41,3 +41,10 @@ Planilha para o dono: **"Catálogo de vídeos"** (ID `1Tu3XLD71IlG0w1CChR8Mm51l_
 - Nunca apaga nem esvazia arquivos no Drive; só renomeia e move vídeos que saíram da pasta de entrada.
 - Nunca publica, nunca muda compartilhamento de arquivos, nunca gera imagem com IA.
 - Descreve o que se vê, nunca quem as pessoas são.
+
+## Músicas novas (na mesma rodada)
+1. Drive `search_files` com `parentId = '1Rdg2OufStjaFQs0UDSujcvl3lPsu9mUH'` (pasta "Trilhas sonoras free"). Compare com `ferramentas/central-aprovacao/videos/musicas.json` (campo `id` = nome do arquivo sem `.mp3`). Nada novo → siga em silêncio.
+2. Para cada MP3 novo (até 10 MB): `download_file_content` (o resultado grande fica salvo em arquivo; decodifique o base64 para `design/videos/musicas/<nome>.mp3`, fora do git).
+3. Prévia de 30 s em MP4 de áudio (o asset não aceita MP3): `ffmpeg -i <mp3> -t 30 -vn -af "afade=t=out:st=27:d=3" -c:a aac -b:a 96k -movflags +faststart ferramentas/central-aprovacao/videos/subir/musica-<nome>.mp4`.
+4. Suba como asset da Central (`Artifact`, `url` da Central, `asset: true`) e acrescente em `musicas.json`: `{id, nome (legível, do nome do arquivo), estilo (2 a 3 palavras: ouça o início ou use as palavras do nome, ex.: "calmo, piano"), previa: <url>}`.
+5. `python3 ferramentas/central-aprovacao/gerar.py 2026-10 <pasta da prévia>` e republique a Central (mesma url). A música passa a aparecer no passo "Música" do "+ Novo pedido".
