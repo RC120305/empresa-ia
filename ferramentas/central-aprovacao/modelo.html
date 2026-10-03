@@ -200,6 +200,37 @@ details summary{cursor:pointer;padding:4px 0}
 .pk-foot span{font-size:13px;color:var(--muted);flex:1 1 100%}
 .pk-foot .btn{flex:1 1 auto}
 @media (min-width:640px){.pk-foot span{flex:1 1 auto}.pk-foot .btn{flex:0 0 auto}}
+/* ---------- abas Vídeos e Acervo ---------- */
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:22px;align-items:start}
+.vcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.vcard.aprovado{border-color:var(--green)}.vcard.corrigir{border-color:var(--fix)}
+.vcard video{width:100%;aspect-ratio:9/16;max-height:520px;background:#000;display:block;object-fit:contain}
+.vbody{padding:12px;display:flex;flex-direction:column;gap:8px}
+.vbody h3{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:18px;margin:0}
+.vmeta{display:flex;flex-wrap:wrap;gap:6px}
+.vmeta span,.tag{font-size:12px;background:var(--chip);border-radius:3px;padding:2px 7px;color:var(--ink)}
+.tag.gancho{background:var(--green-soft)}.tag.fecho{background:var(--wait-soft)}.tag.nao{background:var(--fix-soft)}
+.vacts{display:flex;gap:8px;flex-wrap:wrap}
+.vform{display:flex;flex-direction:column;gap:8px}
+.vform textarea,.acv-busca input,.acv-busca select{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:5px;padding:8px 10px;background:var(--surface);color:var(--ink);width:100%;box-sizing:border-box}
+.subtabs{display:flex;gap:8px;flex-wrap:wrap}
+.subtabs button{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:6px 14px;cursor:pointer}
+.subtabs button[aria-pressed="true"]{background:var(--brown);color:var(--brown-ink);border-color:var(--brown)}
+.acv-busca{display:grid;grid-template-columns:2fr 1fr;gap:8px;max-width:640px}
+.acv-video{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.acv-video h3{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:18px;margin:0;overflow-wrap:anywhere}
+.trechos{width:100%;border-collapse:collapse;font-size:13px}
+.trechos th,.trechos td{text-align:left;padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
+.trechos th{font-weight:600;color:var(--muted);font-size:12px}
+.trechos td:first-child{white-space:nowrap;font-variant-numeric:tabular-nums}
+.tbl-wrap{overflow-x:auto}
+.quadros img{width:100%;max-width:680px;border-radius:4px;display:block}
+.fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px}
+.foto{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--muted);min-width:0}
+.foto span.pk-img{aspect-ratio:1;border-radius:4px;display:block;background-color:var(--chip)}
+.foto small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.confirmar{font-size:13px;background:var(--wait-soft);border-radius:5px;padding:8px 10px;margin:0}
+@media (max-width:560px){.acv-busca{grid-template-columns:1fr}}
 .chat{display:flex;flex-direction:column;gap:14px;max-width:760px}
 .chips{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .chips .sbtn{white-space:nowrap}
@@ -239,6 +270,8 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   <nav class="tabsbar" role="tablist" aria-label="Seções">
     <button type="button" role="tab" id="tab-org" aria-selected="true">Posts orgânicos</button>
     <button type="button" role="tab" id="tab-ads" aria-selected="false">Anúncios</button>
+    <button type="button" role="tab" id="tab-vid" aria-selected="false">Vídeos</button>
+    <button type="button" role="tab" id="tab-acervo" aria-selected="false">Acervo</button>
     <button type="button" role="tab" id="tab-chat" aria-selected="false">Conversa <span class="dot" id="chat-dot" hidden></span></button>
   </nav>
   <p class="banner" id="offline" hidden>Os botões de aprovação não estão disponíveis nesta visualização. Abra a página pelo claude.ai com a sua conta para aprovar e pedir correções.</p>
@@ -280,6 +313,18 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
       <p class="msg" id="chat-msg"></p>
     </form>
   </section>
+  <section id="sec-vid" hidden aria-labelledby="vid-t" style="flex-direction:column;gap:22px">
+    <div><h2 id="vid-t">Vídeos para aprovar</h2><p class="note">Reels montados pelo Editor de Vídeos. Assista, aprove ou peça correção (trocar cena, texto, música, ritmo). A versão corrigida volta aqui. Prévia em qualidade reduzida; o arquivo final fica com a equipe.</p><p class="note" id="vid-tally"></p></div>
+    <div id="vid-list" style="display:flex;flex-direction:column;gap:32px"></div>
+  </section>
+  <section id="sec-acervo" hidden aria-labelledby="acv-t" style="flex-direction:column;gap:18px">
+    <div><h2 id="acv-t">Acervo catalogado</h2><p class="note">Tudo o que a equipe pode usar: vídeos descritos trecho a trecho e as fotos do banco. Vídeos novos entram pela pasta do Drive "Vídeos novos (para catalogar)" e aparecem aqui depois da rotina diária.</p></div>
+    <div class="subtabs" role="group" aria-label="Tipo de mídia"><button type="button" data-acv="videos" aria-pressed="true">Vídeos</button><button type="button" data-acv="fotos" aria-pressed="false">Fotos</button></div>
+    <div class="acv-busca"><input type="search" id="acv-q" placeholder="Buscar: rio, caiaque, casal, cabana…" aria-label="Buscar no acervo"><select id="acv-f" aria-label="Filtrar"></select></div>
+    <p class="note" id="acv-n" aria-live="polite"></p>
+    <div id="acv-out" style="display:flex;flex-direction:column;gap:16px"></div>
+  </section>
+
 
   <footer>Artes em <code>design/pecas/2026-10-instagram/POST-NN/final/</code> e textos em <code>social/conteudo/2026-10/conteudo.md</code> e na planilha "Calendário Outubro v2" do Drive. Horários no fuso de Mato Grosso do Sul. O pedido de correção é enviado ao Claude automaticamente quando a sua conta permite; se aparecer "Pedido salvo", avise na conversa.</footer>
 </div>
@@ -311,6 +356,8 @@ const WEEKS = [
 const ESTILOS = [{k:"1",n:"sem faixa",d:"Texto direto sobre a foto"},{k:"2",n:"caixa central",d:"Título numa caixa marrom no centro"},{k:"3",n:"faixa embaixo",d:"Faixa marrom discreta na base"}];
 const FMT = {carrossel:"Carrossel", reels:"Reels", imagem:"Imagem", enquete:"Story · enquete"};
 const ESTILOS_ENQ = [{k:"1",n:"sem faixa",d:"Pergunta direto sobre a foto"},{k:"3",n:"com faixa",d:"Pergunta numa faixa marrom"}];
+const VIDEOS = __VIDEOS__;
+const CATALOGO = __CATALOGO__;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const byId = Object.fromEntries(POSTS.map(p => [p.n, p]));
 const ADCARDS = (ANUNCIOS && ANUNCIOS.cards) || [];
@@ -771,10 +818,10 @@ function paint(n){
 }
 
 // ---------- aba Anúncios ----------
-const ABAS = ["org", "ads", "chat"];
+const ABAS = ["org", "ads", "vid", "acervo", "chat"];
 function showTab(k){
   if (k === true) k = "ads"; if (k === false) k = "org";
-  ABAS.forEach(a => { document.getElementById("sec-" + a).hidden = a !== k; document.getElementById("tab-" + a).setAttribute("aria-selected", String(a === k)); });
+  ABAS.forEach(a => { const sec = document.getElementById("sec-" + a); sec.hidden = a !== k; if ((a === "vid" || a === "acervo") && a === k) sec.style.display = "flex"; document.getElementById("tab-" + a).setAttribute("aria-selected", String(a === k)); });
   if (k === "chat") { chatVisto(); const m = document.getElementById("chat-msgs"); m.scrollTop = m.scrollHeight; if (showTab.pronto) document.querySelector(".tabsbar").scrollIntoView({block: "start"}); }
   try { localStorage.setItem("central-aba", k); } catch {}
 }
@@ -782,6 +829,8 @@ ABAS.forEach(a => document.getElementById("tab-" + a).addEventListener("click", 
 try { const a = localStorage.getItem("central-aba"); if (ABAS.includes(a)) showTab(a); } catch {}
 if (location.hash === "#anuncios") showTab("ads");
 if (location.hash === "#conversa") showTab("chat");
+if (location.hash === "#videos") showTab("vid");
+if (location.hash === "#acervo") showTab("acervo");
 showTab.pronto = true;
 
 // ---------- aba Conversa ----------
@@ -1115,6 +1164,94 @@ function tallyAds(){
   const ok = ADCARDS.filter(p => state[p.n]?.status === "aprovado").length, fix = ADCARDS.filter(p => state[p.n]?.status === "corrigir").length;
   el.innerHTML = `<b>${ok}</b> aprovados · <b>${fix}</b> com correção pedida · <b>${ADCARDS.length - ok - fix}</b> para revisar`;
 }
+// ---------- aba Vídeos ----------
+const vstate = {};   // id -> doc "videos/<id>"
+function vcardHtml(v){
+  return `<article class="vcard" id="vid-${esc(v.id)}"><video controls playsinline preload="none" poster="${esc(v.capa)}" src="${esc(v.video)}"></video>
+    <div class="vbody"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h3>${esc(v.titulo)}</h3><span class="st pendente" data-vst>para revisar</span></div>
+    <div class="vmeta"><span>${esc(v.duracao)} s</span><span>${esc(v.musica)}</span></div>
+    <p class="note">${esc(v.nota)}</p>
+    <div class="vacts" data-actions><button class="btn ok" type="button" data-vok>Aprovar</button><button class="btn fix" type="button" data-vfix>Pedir correção</button></div>
+    <form class="vform" data-vform hidden><label class="note" for="vf-${esc(v.id)}">O que mudar?</label><textarea id="vf-${esc(v.id)}" rows="3" placeholder="Ex.: trocar a 2ª cena, texto menor, música mais calma"></textarea><div class="vacts"><button class="btn fix" type="submit">Enviar pedido</button><button class="btn ghost" type="button" data-vcancel>Cancelar</button></div></form>
+    <div data-vsent></div></div></article>`;
+}
+function renderVideos(){
+  const box = document.getElementById("vid-list"); if (!box) return;
+  if (!VIDEOS.length) { box.innerHTML = '<p class="note">Nenhum vídeo para aprovar agora.</p>'; return; }
+  const grupos = [...new Set(VIDEOS.map(v => v.grupo))];
+  box.innerHTML = grupos.map(g => `<section style="display:flex;flex-direction:column;gap:14px"><div class="week-head"><h2>${esc(g)}</h2></div><div class="vgrid">${VIDEOS.filter(v => v.grupo === g).map(vcardHtml).join("")}</div></section>`).join("");
+  VIDEOS.forEach(v => {
+    const c = document.getElementById("vid-" + v.id);
+    c.querySelector("[data-vok]").addEventListener("click", async () => { if (!db) return; const st = vstate[v.id]?.status === "aprovado" ? "pendente" : "aprovado"; await saveVideo(v, {status: st}); });
+    c.querySelector("[data-vfix]").addEventListener("click", () => { c.querySelector("[data-vform]").hidden = false; c.querySelector("textarea").focus(); });
+    c.querySelector("[data-vcancel]").addEventListener("click", () => { c.querySelector("[data-vform]").hidden = true; });
+    c.querySelector("[data-vform]").addEventListener("submit", async ev => {
+      ev.preventDefault(); if (!db) return; const ta = c.querySelector("textarea"), t = ta.value.trim(); if (!t) return;
+      const peds = [...(vstate[v.id]?.pedidos || []), {pedido: t, situacao: "enviado", criadoEm: new Date().toISOString()}];
+      await saveVideo(v, {status: "corrigir", pedidos: peds}); ta.value = ""; c.querySelector("[data-vform]").hidden = true;
+    });
+    if (!db) c.querySelector("[data-actions]").hidden = true;
+  });
+  paintVideos();
+}
+async function saveVideo(v, patch){
+  const base = vstate[v.id] ? {...vstate[v.id]} : {video: v.id, titulo: v.titulo, grupo: v.grupo};
+  await db.collection("videos").doc(v.id).set({...base, ...patch, atualizadoEm: new Date().toISOString()});
+}
+function paintVideos(){
+  let ok = 0, fix = 0;
+  VIDEOS.forEach(v => {
+    const c = document.getElementById("vid-" + v.id); if (!c) return;
+    const d = vstate[v.id], st = d?.status || "pendente"; if (st === "aprovado") ok++; if (st === "corrigir") fix++;
+    c.classList.toggle("aprovado", st === "aprovado"); c.classList.toggle("corrigir", st === "corrigir");
+    const pill = c.querySelector("[data-vst]"); pill.className = "st " + st; pill.textContent = st === "aprovado" ? "aprovado" : st === "corrigir" ? "correção pedida" : "para revisar";
+    const b = c.querySelector("[data-vok]"); b.textContent = st === "aprovado" ? "Desfazer aprovação" : "Aprovar"; b.className = st === "aprovado" ? "btn ghost" : "btn ok";
+    c.querySelector("[data-vsent]").innerHTML = (d?.pedidos || []).map(x => `<div class="sent"><b>${x.situacao === "feito" ? "corrigido · confira o vídeo" : x.situacao === "em_andamento" ? "em andamento" : "pedido enviado"}</b><span>${esc(x.pedido)}</span>${x.resposta ? `<span class="reply">${esc(x.resposta)}</span>` : ""}</div>`).join("");
+  });
+  const t = document.getElementById("vid-tally"); if (t) t.textContent = `${VIDEOS.length} vídeos · ${ok} aprovados · ${fix} com correção pedida`;
+  const tab = document.getElementById("tab-vid"); if (tab) tab.textContent = VIDEOS.length - ok - fix > 0 ? `Vídeos (${VIDEOS.length - ok - fix})` : "Vídeos";
+}
+
+// ---------- aba Acervo ----------
+let acvModo = "videos";
+const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const fmtS = n => String(n).replace(".", ",");
+const usoTag = u => `<span class="tag ${u === "gancho" ? "gancho" : u === "fecho" ? "fecho" : u === "não usar" ? "nao" : ""}">${esc(u)}</span>`;
+function acvFiltros(){
+  const f = document.getElementById("acv-f");
+  f.innerHTML = acvModo === "videos"
+    ? `<option value="">Todos os trechos</option><option value="gancho">Bons para gancho</option><option value="fecho">Bons para fecho</option><option value="fundo para texto">Fundo para texto</option><option value="usaveis">Esconder "não usar"</option>`
+    : `<option value="">Todas as pastas</option>` + PASTAS.map(p => `<option>${esc(p)}</option>`).join("");
+}
+function renderAcervo(){
+  const q = norm(document.getElementById("acv-q").value), f = document.getElementById("acv-f").value, out = document.getElementById("acv-out"), n = document.getElementById("acv-n");
+  if (acvModo === "videos") {
+    const vids = (CATALOGO.videos || []).map(v => {
+      const txt = norm([v.titulo_drive, v.descricao, v.local?.nome, v.local?.tipo, v.acomodacao, ...(v.atividades||[]), ...(v.pessoas||[]), ...(v.area_hotel||[])].join(" "));
+      const tr = v.trechos.filter(t => (!f || (f === "usaveis" ? !t.uso_sugerido.includes("não usar") : t.uso_sugerido.includes(f))) && (!q || txt.includes(q) || norm(t.descricao).includes(q)));
+      return {v, tr};
+    }).filter(x => x.tr.length);
+    n.textContent = vids.length ? `${vids.length} vídeo(s) · ${vids.reduce((a, x) => a + x.tr.length, 0)} trecho(s)` : "Nada encontrado.";
+    out.innerHTML = vids.map(({v, tr}) => `<article class="acv-video"><h3>${esc(v.titulo_drive)}</h3>
+      <div class="vmeta"><span>${esc(v.local?.tipo || "")}${v.local?.nome ? ": " + esc(v.local.nome) : ""}${v.local?.confirmado ? "" : " (a confirmar)"}</span><span>${fmtS(v.tecnico?.duracao_s)} s</span><span>${esc(v.tecnico?.orientacao || "")} ${esc(v.tecnico?.resolucao || "")}</span><span>${esc(v.camera || "")}</span><span>gravado ${esc((v.tecnico?.data_gravacao || "").split("-").reverse().join("/"))}</span><span>imagem: ${esc(v.origem?.dono_imagem || "")}</span></div>
+      <p class="note">${esc(v.descricao)}</p>
+      ${(v.a_confirmar || []).length ? `<p class="confirmar"><b>A confirmar com você:</b> ${v.a_confirmar.map(esc).join(" · ")}</p>` : ""}
+      <div class="tbl-wrap"><table class="trechos"><thead><tr><th>Trecho</th><th>Cena</th><th>Uso</th><th>Pessoas</th></tr></thead><tbody>${tr.map(t => `<tr><td><b>${esc(t.id)}</b><br>${fmtS(t.ini)}–${fmtS(t.fim)} s</td><td>${esc(t.descricao)}</td><td>${t.uso_sugerido.map(usoTag).join(" ")}</td><td>${esc(t.pessoas || "")}</td></tr>`).join("")}</tbody></table></div>
+      <details class="quadros"><summary class="note">Ver os quadros de cada trecho</summary>${v.quadros ? `<img src="${esc(v.quadros)}" alt="Quadros de início, meio e fim de cada trecho" loading="lazy">` : '<p class="note">Quadros ainda não enviados.</p>'}</details>
+      <a class="note" href="https://drive.google.com/file/d/${encodeURIComponent(v.id_drive)}/view" target="_blank" rel="noopener">Abrir no Drive ↗</a></article>`).join("");
+  } else {
+    const fotos = BANCO.filter(b => (!f || b.pasta === f) && (!q || norm(b.nome + " " + b.pasta).includes(q)));
+    n.textContent = `${fotos.length} foto(s)`;
+    out.innerHTML = `<div class="fotos">${fotos.map(b => `<a class="foto" href="https://drive.google.com/file/d/${encodeURIComponent(b.id)}/view" target="_blank" rel="noopener" title="${esc(b.pasta)}"><span class="pk-img" role="img" aria-label="${esc(nomeFoto(b.nome))}" style="${esc(sprite(b))}"></span><small>${esc(nomeFoto(b.nome))}</small></a>`).join("")}</div>`;
+  }
+}
+document.querySelectorAll("[data-acv]").forEach(b => b.addEventListener("click", () => {
+  acvModo = b.dataset.acv; document.querySelectorAll("[data-acv]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  acvFiltros(); renderAcervo();
+}));
+document.getElementById("acv-q").addEventListener("input", renderAcervo);
+document.getElementById("acv-f").addEventListener("change", renderAcervo);
+acvFiltros(); renderAcervo(); renderVideos();
 buildAdCards(); tallyAds();
 renderAds();
 renderGrade();
@@ -1147,6 +1284,8 @@ tally();
   db.collection("banco").onSnapshot(snap => { bancoNovas = snap.docs.map(d => d.data()).filter(Boolean); }, () => {});
   if (ANUNCIOS) db.collection("anuncios").doc(ANUNCIOS.id).onSnapshot(s => { adsState = s.exists ? {...s.data()} : {}; renderAds(); }, () => {});
   renderAds();
+  renderVideos();
+  db.collection("videos").onSnapshot(snap => { snap.docs.forEach(d => { const b = d.data(); if (b && b.video) vstate[b.video] = b; }); paintVideos(); }, () => {});
   db.collection("decisoes").where("mes","==",MES).onSnapshot(snap => {
     snap.docs.forEach(d => { const b = d.data(); if (b && b.post) state[b.post] = b; });
     [...POSTS, ...ENQ].forEach(p => paint(p.n));

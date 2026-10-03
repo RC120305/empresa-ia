@@ -1,0 +1,56 @@
+[
+ {
+  "id": "drone-cinematico-ambient",
+  "titulo": "Cânion do Salobra · cinemático",
+  "grupo": "Testes com drone (Ecotrip)",
+  "arquivo": "design/videos/2026-10/teste-drone/com-musica/CINEMATICO-ambient.mp4",
+  "musica": "Ambient cinematic (Pixabay)",
+  "nota": "3 cenas longas + fecho do Cabanas. Passeio externo, não é o hotel.",
+  "duracao": "12,8"
+ },
+ {
+  "id": "drone-cinematico-piano",
+  "titulo": "Cânion do Salobra · cinemático",
+  "grupo": "Testes com drone (Ecotrip)",
+  "arquivo": "design/videos/2026-10/teste-drone/com-musica/CINEMATICO-piano.mp4",
+  "musica": "Piano cinematic (Pixabay)",
+  "nota": "Mesmo vídeo, música de piano.",
+  "duracao": "12,8"
+ },
+ {
+  "id": "drone-rapido-violao-1",
+  "titulo": "Cânion do Salobra · ritmo rápido",
+  "grupo": "Testes com drone (Ecotrip)",
+  "arquivo": "design/videos/2026-10/teste-drone/com-musica/RAPIDO-violao-1.mp4",
+  "musica": "Upbeat acoustic (Pixabay)",
+  "nota": "Cortes de 1,2 s alternando os dois vídeos.",
+  "duracao": "9,7"
+ },
+ {
+  "id": "drone-rapido-violao-2",
+  "titulo": "Cânion do Salobra · ritmo rápido",
+  "grupo": "Testes com drone (Ecotrip)",
+  "arquivo": "design/videos/2026-10/teste-drone/com-musica/RAPIDO-violao-2.mp4",
+  "musica": "Upbeat acoustic guitar (Pixabay)",
+  "nota": "Mesmo vídeo, violão mais animado.",
+  "duracao": "9,7"
+ },
+ {
+  "id": "um-dia-no-cabanas",
+  "titulo": "Um dia no Cabanas, hora a hora",
+  "grupo": "Reels de fotos do hotel",
+  "arquivo": "design/videos/2026-10/teste-t1/REELS-UM-DIA-NO-CABANAS.mp4",
+  "musica": "Sem música (escolher no app ou no Drive)",
+  "nota": "Programação inclusa com horários: café, arco e flecha, trilha, stand up, caiaque, piscina, redário, hidromassagem.",
+  "duracao": "13,2"
+ },
+ {
+  "id": "pause-a-tela",
+  "titulo": "Pause a tela e descubra",
+  "grupo": "Reels de fotos do hotel",
+  "arquivo": "design/pecas/2026-10-instagram/TESTE-MODELO-PAUSE/REELS-PAUSE.mp4",
+  "musica": "Sem música (sugestão: calm piano, do Drive)",
+  "nota": "Modelo \"Qual será seu próximo destino?\" com 12 telas de 1,1 s.",
+  "duracao": "17,7"
+ }
+]

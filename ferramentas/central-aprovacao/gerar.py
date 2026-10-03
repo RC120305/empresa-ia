@@ -138,5 +138,17 @@ for k in range(0, len(com), COLS * ROWS):
         b["f"] = f"{nome}?v={hashlib.md5(open(f'{out}/{nome}', 'rb').read()).hexdigest()[:8]}"
 banco = [dict(b, cols=COLS, rows=ROWS) for b in com]
 bjs = json.dumps(banco, ensure_ascii=False).replace("</", "<\\/")
-open(f"{out}/index.html", "w").write(tpl.replace("__BANCO__", bjs).replace("__DATA__", data).replace("__MES__", mes).replace("__ANUNCIOS__", anuncios).replace("__ENQUETES__", json.dumps(enq, ensure_ascii=False).replace("</", "<\\/")))
+# aba Vídeos (videos/lista.json + videos/urls.json, ver videos-prep.py) e aba Acervo (catálogo de vídeos)
+vdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "videos")
+urls = json.load(open(f"{vdir}/urls.json", encoding="utf-8")) if os.path.exists(f"{vdir}/urls.json") else {}
+videos = [dict(v, video=urls[v["id"]]["video"], capa=urls[v["id"]]["capa"]) for v in json.load(open(f"{vdir}/lista.json", encoding="utf-8"))
+          if v["id"] in urls] if os.path.exists(f"{vdir}/lista.json") else []
+for v in videos:
+    v.pop("arquivo", None)
+cat = json.load(open("design/videos/catalogo/catalogo.json", encoding="utf-8")) if os.path.exists("design/videos/catalogo/catalogo.json") else {"videos": []}
+for v in cat["videos"]:
+    v["quadros"] = urls.get("quadros:" + os.path.basename(v.get("folha_quadros", "")), {}).get("capa", "")
+    v.pop("arquivo_local", None)
+J = lambda x: json.dumps(x, ensure_ascii=False).replace("</", "<\\/")
+open(f"{out}/index.html", "w").write(tpl.replace("__BANCO__", bjs).replace("__DATA__", data).replace("__MES__", mes).replace("__ANUNCIOS__", anuncios).replace("__VIDEOS__", J(videos)).replace("__CATALOGO__", J(cat)).replace("__ENQUETES__", json.dumps(enq, ensure_ascii=False).replace("</", "<\\/")))
 print(f"{len(posts)} posts, {len(enq)} stories com enquete -> {out}/index.html")
