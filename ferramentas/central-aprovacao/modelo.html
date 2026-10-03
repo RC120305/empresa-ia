@@ -200,6 +200,44 @@ details summary{cursor:pointer;padding:4px 0}
 .pk-foot span{font-size:13px;color:var(--muted);flex:1 1 100%}
 .pk-foot .btn{flex:1 1 auto}
 @media (min-width:640px){.pk-foot span{flex:1 1 auto}.pk-foot .btn{flex:0 0 auto}}
+/* ---------- aba Pedidos (guia passo a passo) ---------- */
+.wiz{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:16px;max-width:820px}
+.wiz-prog{display:flex;gap:4px}.wiz-prog i{flex:1;height:4px;border-radius:2px;background:var(--line)}.wiz-prog i.on{background:var(--brown)}
+.wiz h3{font-family:"Playfair Display",Georgia,serif;font-weight:500;font-size:22px;margin:0}
+.wiz .q{display:flex;flex-direction:column;gap:8px}
+.wiz .q>b{font-size:14px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{font:inherit;font-size:14px;text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0}
+.opt small{color:var(--muted);font-size:12px}
+.opt[aria-pressed="true"]{border-color:var(--brown);background:var(--chip);box-shadow:inset 0 0 0 1px var(--brown)}
+.opt:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.opts.big .opt{flex:1 1 200px}
+.opt img{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:5px;margin-bottom:6px;max-height:220px}
+.opts.cards .opt{flex:0 1 calc(50% - 4px);max-width:220px;box-sizing:border-box}
+@media (min-width:700px){.opts.cards .opt{flex-basis:160px}}
+.opts.cards.r34 .opt img{aspect-ratio:3/4}
+.wiz input[type=text],.wiz input[type=date],.wiz textarea{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:5px;padding:9px 10px;background:var(--surface);color:var(--ink);width:100%;box-sizing:border-box}
+.wiz-nav{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px}
+.wiz-nav .btn{flex:0 0 auto}
+.picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;max-height:340px;overflow:auto;padding:2px}
+.pick{position:relative;border:2px solid transparent;border-radius:6px;padding:0;background:none;cursor:pointer;display:flex;flex-direction:column;gap:2px;font:inherit;font-size:11px;color:var(--muted);text-align:left}
+.pick span.pk-img,.pick img{aspect-ratio:1;border-radius:4px;display:block;width:100%;object-fit:cover;background-color:var(--chip)}
+.pick[aria-pressed="true"]{border-color:var(--green)}
+.pick[aria-pressed="true"]::after{content:"✓";position:absolute;top:4px;right:4px;background:var(--green);color:var(--surface);border-radius:50%;width:20px;height:20px;display:grid;place-items:center;font-size:12px}
+.trlist{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto}
+.tr{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--bg);font:inherit;font-size:13px;text-align:left;cursor:pointer;color:var(--ink)}
+.tr[aria-pressed="true"]{border-color:var(--green);background:var(--green-soft)}
+.resumo{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;font-size:14px;margin:0}
+.resumo dt{color:var(--muted)}.resumo dd{margin:0;overflow-wrap:anywhere}
+.mus{display:flex;flex-direction:column;gap:8px}
+.mus .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--bg)}
+.mus .row[aria-pressed="true"]{border-color:var(--brown);box-shadow:inset 0 0 0 1px var(--brown)}
+.mus audio{height:34px;max-width:100%;flex:1 1 200px}
+.mus .row button.sel{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:5px;padding:6px 10px;cursor:pointer;color:var(--ink)}
+.peds{display:flex;flex-direction:column;gap:10px;max-width:820px}
+.ped{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.ped .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.st.novo{background:var(--wait-soft);color:var(--wait)}.st.producao{background:var(--chip);color:var(--ink)}.st.pronto{background:var(--green-soft);color:var(--green)}
 /* ---------- abas Vídeos e Acervo ---------- */
 .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:22px;align-items:start}
 .vcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
@@ -270,6 +308,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   <nav class="tabsbar" role="tablist" aria-label="Seções">
     <button type="button" role="tab" id="tab-org" aria-selected="true">Posts orgânicos</button>
     <button type="button" role="tab" id="tab-ads" aria-selected="false">Anúncios</button>
+    <button type="button" role="tab" id="tab-ped" aria-selected="false">+ Novo pedido</button>
     <button type="button" role="tab" id="tab-vid" aria-selected="false">Vídeos</button>
     <button type="button" role="tab" id="tab-acervo" aria-selected="false">Acervo</button>
     <button type="button" role="tab" id="tab-chat" aria-selected="false">Conversa <span class="dot" id="chat-dot" hidden></span></button>
@@ -312,6 +351,12 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
       <div class="thumbs" id="chat-thumbs"></div>
       <p class="msg" id="chat-msg"></p>
     </form>
+  </section>
+  <section id="sec-ped" hidden aria-labelledby="ped-t" style="flex-direction:column;gap:22px">
+    <div><h2 id="ped-t">Pedir um vídeo ou um criativo</h2><p class="note">Responda passo a passo; o que você não souber, deixe a equipe decidir. O pedido vai para a equipe e a peça pronta volta para você aprovar (Vídeos ou Posts). Nada é publicado sem o seu OK.</p></div>
+    <form class="wiz" id="wiz" novalidate></form>
+    <div><h2 style="font-size:20px">Seus pedidos</h2></div>
+    <div class="peds" id="peds"><p class="note">Nenhum pedido ainda.</p></div>
   </section>
   <section id="sec-vid" hidden aria-labelledby="vid-t" style="flex-direction:column;gap:22px">
     <div><h2 id="vid-t">Vídeos para aprovar</h2><p class="note">Reels montados pelo Editor de Vídeos. Assista, aprove ou peça correção (trocar cena, texto, música, ritmo). A versão corrigida volta aqui. Prévia em qualidade reduzida; o arquivo final fica com a equipe.</p><p class="note" id="vid-tally"></p></div>
@@ -358,6 +403,7 @@ const FMT = {carrossel:"Carrossel", reels:"Reels", imagem:"Imagem", enquete:"Sto
 const ESTILOS_ENQ = [{k:"1",n:"sem faixa",d:"Pergunta direto sobre a foto"},{k:"3",n:"com faixa",d:"Pergunta numa faixa marrom"}];
 const VIDEOS = __VIDEOS__;
 const CATALOGO = __CATALOGO__;
+const MUSICAS = __MUSICAS__;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const byId = Object.fromEntries(POSTS.map(p => [p.n, p]));
 const ADCARDS = (ANUNCIOS && ANUNCIOS.cards) || [];
@@ -818,10 +864,10 @@ function paint(n){
 }
 
 // ---------- aba Anúncios ----------
-const ABAS = ["org", "ads", "vid", "acervo", "chat"];
+const ABAS = ["org", "ads", "ped", "vid", "acervo", "chat"];
 function showTab(k){
   if (k === true) k = "ads"; if (k === false) k = "org";
-  ABAS.forEach(a => { const sec = document.getElementById("sec-" + a); sec.hidden = a !== k; if ((a === "vid" || a === "acervo") && a === k) sec.style.display = "flex"; document.getElementById("tab-" + a).setAttribute("aria-selected", String(a === k)); });
+  ABAS.forEach(a => { const sec = document.getElementById("sec-" + a); sec.hidden = a !== k; if (["vid","acervo","ped"].includes(a) && a === k) sec.style.display = "flex"; document.getElementById("tab-" + a).setAttribute("aria-selected", String(a === k)); });
   if (k === "chat") { chatVisto(); const m = document.getElementById("chat-msgs"); m.scrollTop = m.scrollHeight; if (showTab.pronto) document.querySelector(".tabsbar").scrollIntoView({block: "start"}); }
   try { localStorage.setItem("central-aba", k); } catch {}
 }
@@ -830,6 +876,7 @@ try { const a = localStorage.getItem("central-aba"); if (ABAS.includes(a)) showT
 if (location.hash === "#anuncios") showTab("ads");
 if (location.hash === "#conversa") showTab("chat");
 if (location.hash === "#videos") showTab("vid");
+if (location.hash === "#pedido") showTab("ped");
 if (location.hash === "#acervo") showTab("acervo");
 showTab.pronto = true;
 
@@ -1252,6 +1299,123 @@ document.querySelectorAll("[data-acv]").forEach(b => b.addEventListener("click",
 document.getElementById("acv-q").addEventListener("input", renderAcervo);
 document.getElementById("acv-f").addEventListener("change", renderAcervo);
 acvFiltros(); renderAcervo(); renderVideos();
+// ---------- aba Pedidos: guia passo a passo ----------
+const PED_PERSONAS = [["casais","Casais"],["familias","Famílias"],["aventureiros","Aventureiros"],["eco","Amantes da natureza"],["55","55+ (tranquilidade)"],["equipe","Equipe decide"]];
+const PED_OBJETIVOS = [["alcance","Alcançar gente nova","Reels para quem ainda não conhece"],["reserva","Gerar reservas","Chamada clara para o link da bio"],["salvar","Salvar e compartilhar","Dicas e conteúdo útil"],["equipe","Equipe decide",""]];
+const capaVid = id => (VIDEOS.find(v => v.id === id) || {}).capa || "";
+const exPost = (() => { const p = POSTS.find(p => p.estilos && p.estilos["1"] && p.estilos["2"] && p.estilos["3"]); return k => p ? p.estilos[k][0] : ""; })();
+const ESTILOS_VID = [["cinematico","Cinemático","Poucas cenas longas, movimento suave",()=>capaVid("drone-cinematico-ambient")],["rapido","Ritmo rápido","Cortes de 1 a 1,5 s, energia",()=>capaVid("drone-rapido-violao-1")],["horaahora","Hora a hora","Roteiro do dia com horários",()=>capaVid("um-dia-no-cabanas")],["pause","Pause a tela","Pergunta + telas rápidas",()=>capaVid("pause-a-tela")],["equipe","Equipe decide","O Editor escolhe o melhor",()=>""]];
+const ESTILOS_ART = [["1","Sem faixa","Texto direto sobre a foto",()=>exPost("1")],["2","Caixa central","Título numa caixa no centro",()=>exPost("2")],["3","Faixa embaixo","Faixa marrom na base",()=>exPost("3")],["equipe","Equipe decide","O Designer escolhe o melhor",()=>""]];
+const PNOVO = () => ({tipo:"", formato:"", duracao:"", telas:"", tema:"", objetivo:"", persona:"", data:"", estilo:"", midia:"equipe", fotos:[], trechos:[], uploads:[], copy:"equipe", textoTela:"", legenda:"", letreiro:"sim", transcricao:"nao", musica:"app", faixa:"", obs:""});
+let P = PNOVO(), passo = 0, pedidos = [];
+try { const r = JSON.parse(localStorage.getItem("pedido-rascunho") || "null"); if (r && r.tipo !== undefined) P = {...PNOVO(), ...r}; } catch {}
+const guarda = () => { try { localStorage.setItem("pedido-rascunho", JSON.stringify(P)); } catch {} };
+const ehVideo = () => P.tipo === "video";
+const opt = (campo, v, t, d = "", img = "") => `<button type="button" class="opt" data-campo="${campo}" data-v="${esc(v)}" aria-pressed="${String(P[campo] === v)}">${img ? `<img src="${esc(img)}" alt="" loading="lazy">` : ""}<b>${esc(t)}</b>${d ? `<small>${esc(d)}</small>` : ""}</button>`;
+const PASSOS = [
+  {t: "O que você quer?", ok: () => !!P.tipo, h: () => `<div class="opts big">${opt("tipo","video","Vídeo","Reels ou story em vídeo")}${opt("tipo","criativo","Criativo","Post, carrossel ou story em imagem")}${opt("tipo","anuncio","Anúncio","Arte para anúncio pago (4:5 e 9:16)")}</div>`},
+  {t: "Formato", ok: () => !!P.formato && (!ehVideo() || !!P.duracao), h: () => ehVideo()
+    ? `<div class="q"><b>Onde vai sair?</b><div class="opts">${opt("formato","reels","Reels","9:16, aparece no feed")}${opt("formato","story","Story","9:16, some em 24 h")}</div></div>
+       <div class="q"><b>Duração</b><div class="opts">${opt("duracao","8-10","8 a 10 s","rápido, prende fácil")}${opt("duracao","12-15","12 a 15 s","o mais comum")}${opt("duracao","20-30","20 a 30 s","mais história")}${opt("duracao","equipe","Equipe decide")}</div></div>`
+    : `<div class="q"><b>Qual formato?</b><div class="opts">${P.tipo === "anuncio" ? opt("formato","anuncio","Feed 4:5 + Story 9:16","os dois tamanhos do anúncio") : opt("formato","post","Post único","3:4 no feed") + opt("formato","carrossel","Carrossel","várias telas, 3:4") + opt("formato","story","Story","9:16")}</div></div>
+       ${P.formato === "carrossel" ? `<div class="q"><b>Quantas telas?</b><div class="opts">${["3","5","7","equipe"].map(n => opt("telas", n, n === "equipe" ? "Equipe decide" : n + " telas")).join("")}</div></div>` : ""}`},
+  {t: "Tema e objetivo", ok: () => P.tema.trim().length > 2, h: () => `<div class="q"><label for="w-tema"><b>Sobre o que é?</b></label><input type="text" id="w-tema" data-txt="tema" value="${esc(P.tema)}" placeholder="Ex.: Cabana Master para casais, feriado de novembro, Cânion do Salobra">
+      <div class="opts">${["Cabana Master","Programação inclusa","Piscina e hidromassagem","Boia cross e arvorismo","Passeios de Bonito","Feriado"].map(x => `<button type="button" class="opt" data-sug="${esc(x)}"><small>+ ${esc(x)}</small></button>`).join("")}</div></div>
+      <div class="q"><b>Objetivo</b><div class="opts">${PED_OBJETIVOS.map(([v,t,d]) => opt("objetivo",v,t,d)).join("")}</div></div>
+      <div class="q"><b>Para quem?</b><div class="opts">${PED_PERSONAS.map(([v,t]) => opt("persona",v,t)).join("")}</div></div>
+      <div class="q"><label for="w-data"><b>Para quando? (opcional)</b></label><input type="date" id="w-data" data-txt="data" value="${esc(P.data)}" style="max-width:220px"></div>`},
+  {t: "Estilo", ok: () => !!P.estilo, h: () => `<div class="opts cards${ehVideo() ? "" : " r34"}">${(ehVideo() ? ESTILOS_VID : ESTILOS_ART).map(([v,t,d,img]) => opt("estilo",v,t,d,img())).join("")}</div>`},
+  {t: ehVideoT => "Imagens e vídeos", ok: () => P.midia === "equipe" || P.fotos.length + P.trechos.length + P.uploads.length > 0, h: () => `<div class="opts">${opt("midia","equipe","A equipe escolhe","usa o acervo catalogado")}${opt("midia","eu","Eu escolho","do acervo ou do celular")}</div>
+      ${P.midia === "eu" ? `${(CATALOGO.videos||[]).length ? `<div class="q"><b>Trechos de vídeo do acervo</b><div class="trlist">${CATALOGO.videos.flatMap(v => v.trechos.filter(t => !t.uso_sugerido.includes("não usar")).map(t => { const k = v.id_drive + ":" + t.id; return `<button type="button" class="tr" data-trecho="${esc(k)}" aria-pressed="${String(P.trechos.includes(k))}"><b style="white-space:nowrap">${esc(t.id)} · ${fmtS(t.ini)}–${fmtS(t.fim)} s</b><span>${esc(v.local?.nome || v.titulo_drive)}: ${esc(t.descricao)}</span></button>`; })).join("")}</div></div>` : ""}
+        <div class="q"><b>Fotos do banco</b> <input type="text" id="w-fq" placeholder="Buscar foto por nome ou pasta" aria-label="Buscar foto"><div class="picker" id="w-fotos"></div></div>
+        <div class="q" data-up-ped><b>Do celular ou computador</b><input type="file" id="w-up" accept="image/*,video/*" multiple><span class="note" id="w-upn">${P.uploads.length ? P.uploads.length + " arquivo(s) enviado(s)" : "Fotos e vídeos curtos (até 20 MB). Vídeo maior: coloque na pasta do Drive \"Vídeos novos (para catalogar)\"."}</span></div>
+        <p class="note" id="w-cnt">${P.fotos.length + P.trechos.length + P.uploads.length} item(ns) escolhido(s).</p>` : ""}`},
+  {t: "Textos", ok: () => true, h: () => `<div class="q"><b>Quem escreve o texto?</b><div class="opts">${opt("copy","equipe","A equipe escreve","Marketing cria texto e legenda")}${opt("copy","eu","Eu escrevo","você manda o texto")}${opt("copy","juntos","Eu dou a ideia","a equipe lapida")}</div></div>
+      ${P.copy !== "equipe" ? `<div class="q"><label for="w-tt"><b>Texto na ${ehVideo() ? "tela" : "arte"}</b></label><textarea id="w-tt" rows="3" data-txt="textoTela" placeholder="Ex.: UMA QUARTA A DOIS / BANHEIRA PARA DOIS">${esc(P.textoTela)}</textarea></div>
+        <div class="q"><label for="w-leg"><b>Legenda do post</b></label><textarea id="w-leg" rows="3" data-txt="legenda" placeholder="Opcional">${esc(P.legenda)}</textarea></div>` : ""}
+      ${ehVideo() ? `<div class="q"><b>Letreiro (texto na tela)</b><div class="opts">${opt("letreiro","sim","Com letreiro","frases curtas em caixa alta")}${opt("letreiro","nao","Sem letreiro","só imagem e música")}</div></div>
+        <div class="q"><b>Legenda da fala (transcrição)</b><div class="opts">${opt("transcricao","nao","Não precisa","vídeo sem fala")}${opt("transcricao","sim","Sim, legendar a fala","quando alguém fala no vídeo")}</div></div>` : ""}`},
+  {t: "Música", skip: () => !ehVideo(), ok: () => P.musica !== "lista" || !!P.faixa, h: () => `<div class="opts">${opt("musica","app","Sem música no arquivo","eu escolho no app ao publicar")}${opt("musica","equipe","A equipe escolhe","faixa livre do Drive")}${opt("musica","lista","Quero escolher","ouça abaixo")}</div>
+      ${P.musica === "lista" ? `<div class="mus">${MUSICAS.map(m => `<div class="row" aria-pressed="${String(P.faixa === m.id)}"><b style="min-width:150px">${esc(m.nome)}<br><small class="note">${esc(m.estilo)}</small></b><audio controls preload="none" src="${esc(m.previa)}"></audio><button type="button" class="sel" data-faixa="${esc(m.id)}">${P.faixa === m.id ? "✓ Escolhida" : "Escolher"}</button></div>`).join("")}<p class="note">Prévia de 30 s. Músicas livres para uso comercial (pasta "Trilhas sonoras free" no Drive). Para acrescentar opções, é só colocar o MP3 nessa pasta.</p></div>` : ""}`},
+  {t: "Conferir e enviar", ok: () => true, h: () => `<dl class="resumo">${resumo().map(([k,v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+      <div class="q"><label for="w-obs"><b>Mais alguma coisa? (opcional)</b></label><textarea id="w-obs" rows="3" data-txt="obs" placeholder="Ex.: mostrar o pôr do sol, evitar crianças, usar o logo grande">${esc(P.obs)}</textarea></div>`},
+];
+const nomeDe = (lista, v) => (lista.find(x => x[0] === v) || [, v])[1];
+function resumo(){
+  const r = [["Pedido", {video:"Vídeo", criativo:"Criativo", anuncio:"Anúncio"}[P.tipo] || "-"], ["Formato", [P.formato, P.duracao && P.duracao !== "equipe" ? P.duracao + " s" : "", P.telas ? P.telas + " telas" : ""].filter(Boolean).join(" · ") || "-"],
+    ["Tema", P.tema || "-"], ["Objetivo", nomeDe(PED_OBJETIVOS, P.objetivo) || "equipe decide"], ["Para quem", nomeDe(PED_PERSONAS, P.persona) || "equipe decide"], ["Data", P.data ? P.data.split("-").reverse().join("/") : "sem data"],
+    ["Estilo", nomeDe(ehVideo() ? ESTILOS_VID : ESTILOS_ART, P.estilo) || "-"], ["Imagens", P.midia === "equipe" ? "a equipe escolhe" : `${P.trechos.length} trecho(s), ${P.fotos.length} foto(s) do banco, ${P.uploads.length} enviada(s)`],
+    ["Texto", {equipe:"a equipe escreve", eu:"eu escrevo", juntos:"eu dou a ideia"}[P.copy] + (P.textoTela ? ` · "${P.textoTela}"` : "")]];
+  if (ehVideo()) r.push(["Letreiro", P.letreiro === "sim" ? "sim" : "não"], ["Transcrição", P.transcricao === "sim" ? "sim" : "não"], ["Música", P.musica === "app" ? "sem música (escolho no app)" : P.musica === "equipe" ? "a equipe escolhe" : (MUSICAS.find(m => m.id === P.faixa) || {}).nome || "-"]);
+  return r;
+}
+const passosAtivos = () => PASSOS.filter(x => !x.skip || !x.skip());
+function renderWiz(){
+  const ps = passosAtivos(); passo = Math.min(passo, ps.length - 1); const ps0 = ps[passo];
+  const w = document.getElementById("wiz");
+  w.innerHTML = `<div class="wiz-prog" aria-hidden="true">${ps.map((_, i) => `<i class="${i <= passo ? "on" : ""}"></i>`).join("")}</div>
+    <span class="label">Passo ${passo + 1} de ${ps.length}</span><h3>${esc(typeof ps0.t === "function" ? ps0.t() : ps0.t)}</h3>${ps0.h()}
+    <div class="wiz-nav"><div style="display:flex;gap:8px">${passo ? '<button type="button" class="btn ghost" data-wiz="voltar">← Voltar</button>' : ""}<button type="button" class="btn ghost" data-wiz="limpar">Recomeçar</button></div>
+    ${passo < ps.length - 1 ? `<button type="button" class="btn ok" data-wiz="seguir" ${ps0.ok() ? "" : "disabled"}>Continuar →</button>` : `<button type="submit" class="btn ok" ${db ? "" : "disabled"}>Enviar pedido</button>`}</div>
+    ${passo === ps.length - 1 && !db ? '<p class="note">Abra pelo claude.ai com a sua conta para enviar.</p>' : ""}`;
+  if (document.getElementById("w-fotos")) renderPicker();
+  const up = document.querySelector("[data-up-ped]"); if (up && !assets) up.hidden = true;
+}
+function atualizaSeguir(){
+  const s2 = wiz.querySelector('[data-wiz="seguir"]'); if (s2) s2.disabled = !passosAtivos()[passo].ok();
+  const c = document.getElementById("w-cnt"); if (c) c.textContent = (P.fotos.length + P.trechos.length + P.uploads.length) + " item(ns) escolhido(s).";
+}
+function renderPicker(){
+  const q = norm(document.getElementById("w-fq").value);
+  const lista = BANCO.filter(b => !q || norm(b.nome + " " + b.pasta).includes(q)).slice(0, 120);
+  document.getElementById("w-fotos").innerHTML = lista.map(b => `<button type="button" class="pick" data-foto="${esc(b.id)}" aria-pressed="${String(P.fotos.includes(b.id))}"><span class="pk-img" style="${esc(sprite(b))}"></span>${esc(nomeFoto(b.nome)).slice(0, 18)}</button>`).join("") + (lista.length === 120 ? '<p class="note" style="grid-column:1/-1">Mostrando 120; busque para achar outras.</p>' : "");
+}
+const wiz = document.getElementById("wiz");
+wiz.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.campo) { P[b.dataset.campo] = b.dataset.v; if (b.dataset.campo === "tipo") { P.formato = ""; P.estilo = ""; } guarda(); renderWiz(); return; }
+  if (b.dataset.sug) { P.tema = P.tema ? P.tema + ", " + b.dataset.sug : b.dataset.sug; guarda(); renderWiz(); return; }
+  if (b.dataset.trecho) { const k = b.dataset.trecho; P.trechos = P.trechos.includes(k) ? P.trechos.filter(x => x !== k) : [...P.trechos, k]; guarda(); b.setAttribute("aria-pressed", String(P.trechos.includes(k))); atualizaSeguir(); return; }
+  if (b.dataset.foto) { const k = b.dataset.foto; P.fotos = P.fotos.includes(k) ? P.fotos.filter(x => x !== k) : [...P.fotos, k]; guarda(); b.setAttribute("aria-pressed", String(P.fotos.includes(k))); atualizaSeguir(); return; }
+  if (b.dataset.faixa) { P.faixa = b.dataset.faixa; guarda(); renderWiz(); return; }
+  if (b.dataset.wiz === "seguir") { passo++; renderWiz(); wiz.scrollIntoView({block: "start", behavior: "smooth"}); }
+  if (b.dataset.wiz === "voltar") { passo--; renderWiz(); }
+  if (b.dataset.wiz === "limpar") { P = PNOVO(); passo = 0; guarda(); renderWiz(); }
+});
+wiz.addEventListener("input", e => {
+  const el = e.target; if (el.dataset.txt) { P[el.dataset.txt] = el.value; guarda(); atualizaSeguir(); }
+  if (el.id === "w-fq") renderPicker();
+});
+wiz.addEventListener("change", async e => {
+  if (e.target.id !== "w-up" || !assets) return;
+  const n = document.getElementById("w-upn");
+  for (const f of e.target.files) {
+    if (f.size > 20 * 1024 * 1024) { n.textContent = `"${f.name}" passa de 20 MB: coloque na pasta do Drive "Vídeos novos (para catalogar)" e cite o nome aqui.`; continue; }
+    n.textContent = `Enviando ${f.name}…`;
+    try { const r = await assets.upload(f); P.uploads.push({id: r.id, nome: f.name, tipo: f.type}); guarda(); n.textContent = P.uploads.length + " arquivo(s) enviado(s)"; atualizaSeguir(); }
+    catch (err) { n.textContent = `Não consegui enviar ${f.name}. Tente de novo.`; }
+  }
+});
+wiz.addEventListener("submit", async e => {
+  e.preventDefault(); if (!db) return;
+  const id = "ped-" + Date.now().toString(36);
+  const btn = wiz.querySelector('[type="submit"]'); btn.disabled = true; btn.textContent = "Enviando…";
+  try {
+    await db.collection("pedidos").doc(id).set({...P, id, resumo: resumo().map(([k, v]) => `${k}: ${v}`).join("\n"), status: "novo", criadoEm: new Date().toISOString()});
+    P = PNOVO(); passo = 0; guarda(); renderWiz();
+    document.getElementById("peds").scrollIntoView({block: "start", behavior: "smooth"});
+  } catch { btn.disabled = false; btn.textContent = "Enviar pedido"; alert("Não consegui enviar. Tente de novo."); }
+});
+function renderPedidos(){
+  const box = document.getElementById("peds"); if (!box) return;
+  const nAbertos = pedidos.filter(x => x.status !== "entregue").length;
+  document.getElementById("tab-ped").textContent = nAbertos ? `+ Novo pedido (${nAbertos})` : "+ Novo pedido";
+  if (!pedidos.length) { box.innerHTML = '<p class="note">Nenhum pedido ainda.</p>'; return; }
+  const ST = {novo: ["novo","recebido"], producao: ["producao","em produção"], pronto: ["pronto","pronto para aprovar"], entregue: ["pronto","entregue"]};
+  box.innerHTML = pedidos.map(x => { const [c, t] = ST[x.status] || ST.novo; return `<article class="ped"><div class="top"><b>${esc({video:"Vídeo", criativo:"Criativo", anuncio:"Anúncio"}[x.tipo] || "Pedido")} · ${esc(x.tema || "")}</b><span class="st ${c}">${t}</span></div>
+    <span class="note">${esc(fmtHora(x.criadoEm))} · ${esc([x.formato, x.estilo].filter(Boolean).join(" · "))}</span>${x.resposta ? `<span class="reply">${esc(x.resposta)}</span>` : ""}</article>`; }).join("");
+}
+renderWiz();
 buildAdCards(); tallyAds();
 renderAds();
 renderGrade();
@@ -1284,7 +1448,8 @@ tally();
   db.collection("banco").onSnapshot(snap => { bancoNovas = snap.docs.map(d => d.data()).filter(Boolean); }, () => {});
   if (ANUNCIOS) db.collection("anuncios").doc(ANUNCIOS.id).onSnapshot(s => { adsState = s.exists ? {...s.data()} : {}; renderAds(); }, () => {});
   renderAds();
-  renderVideos();
+  renderVideos(); renderWiz();
+  db.collection("pedidos").onSnapshot(snap => { pedidos = snap.docs.map(d => d.data()).filter(x => x && x.id).sort((a, b) => (b.criadoEm || "").localeCompare(a.criadoEm || "")); renderPedidos(); }, () => {});
   db.collection("videos").onSnapshot(snap => { snap.docs.forEach(d => { const b = d.data(); if (b && b.video) vstate[b.video] = b; }); paintVideos(); }, () => {});
   db.collection("decisoes").where("mes","==",MES).onSnapshot(snap => {
     snap.docs.forEach(d => { const b = d.data(); if (b && b.post) state[b.post] = b; });
