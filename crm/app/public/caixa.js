@@ -93,13 +93,20 @@
     const msg = $('msg-entrar');
     $('btn-entrar').setAttribute('disabled', '');
     msg.textContent = 'Enviando…';
-    const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + '/caixa' } });
+    const pedir = () => sb.auth.signInWithOtp({ email, options: { shouldCreateUser: false, emailRedirectTo: location.origin + '/caixa' } });
+    let { error } = await pedir();
+    if (error && /signups not allowed|not found|invalid|not confirmed/i.test(error.message)) {
+      // Pode ser alguém liberado na equipe que ainda não tem login: o servidor cria e confirma, e tentamos de novo
+      await fetch('/entrar/preparar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) }).catch(() => {});
+      ({ error } = await pedir());
+    }
+    if (error) console.warn('login:', error.status, error.message);
     $('btn-entrar').removeAttribute('disabled');
     msg.textContent = !error ? 'Pronto! Abra o link que chegou no seu e-mail (veja também o spam). Só o link mais recente funciona.'
       : (error.status === 429 || /rate limit|security purposes|seconds/i.test(error.message))
         ? 'Muitos links pedidos em pouco tempo. O envio de e-mail gratuito do Supabase tem limite por hora: use o último link que chegou ou tente de novo mais tarde.'
         : /signups not allowed|not found|invalid/i.test(error.message)
-          ? 'Este e-mail não tem acesso. Peça ao Ricardo para cadastrar.'
+          ? 'Este e-mail não tem acesso. Confira se digitou certo; se estiver certo, peça ao Ricardo para liberar (' + error.message + ').'
           : 'Não deu para enviar agora (' + error.message + '). Tente de novo em alguns minutos.';
   });
   const sair = async () => { await sb.auth.signOut(); location.replace('/caixa'); };

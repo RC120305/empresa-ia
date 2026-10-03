@@ -629,6 +629,25 @@ async function patchBanco(tabela, filtro, dados, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/${tabela}?${filtro}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(dados), signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw new ErroEnvio(r.status === 400 ? 400 : 502, 'Não deu para salvar' + (r.status === 400 ? ' (o banco precisa da migração 007?)' : '') + '.');
 }
+// ---------- Login da equipe: criar/confirmar no Supabase Auth quem está liberado em "usuarios" ----------
+async function prepararLogin(email, buscar = fetch) {
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&select=email`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+  const lista = r.ok ? await r.json() : [];
+  if (!lista.some(u => String(u.email).trim().toLowerCase() === email)) return false;
+  const adm = { ...cabecalhosBanco(), Authorization: 'Bearer ' + SUPABASE_KEY };
+  const c = await buscar(`${SUPABASE_URL}/auth/v1/admin/users`, { method: 'POST', headers: adm, body: JSON.stringify({ email, email_confirm: true }), signal: AbortSignal.timeout(8000) });
+  if (c.ok) { console.log(JSON.stringify({ evento: 'login_criado' })); return true; }
+  // Já existe (ex.: criado como convite e ainda não confirmado): confirma
+  const l = await buscar(`${SUPABASE_URL}/auth/v1/admin/users?page=1&per_page=1000`, { headers: adm, signal: AbortSignal.timeout(8000) });
+  const j = l.ok ? await l.json().catch(() => ({})) : {};
+  const u = (j.users || []).find(x => String(x.email || '').toLowerCase() === email);
+  if (u && !u.email_confirmed_at) {
+    await buscar(`${SUPABASE_URL}/auth/v1/admin/users/${u.id}`, { method: 'PUT', headers: adm, body: JSON.stringify({ email_confirm: true }), signal: AbortSignal.timeout(8000) });
+    console.log(JSON.stringify({ evento: 'login_confirmado' }));
+  }
+  return !!u;
+}
+
 // ---------- Cobrança por Pix (Banco do Brasil) e baixa automática ----------
 // Prazo: 48 h; 2 h se o check-in for em até 3 dias; nunca depois das 15h do dia do check-in (horário de Bonito).
 function prazoCobranca(dataEntrada, agora = new Date()) {
@@ -1669,6 +1688,19 @@ const servidor = http.createServer((req, res) => {
         .then(() => json(res, 200, { ok: true }))
         .catch(e => { console.error(JSON.stringify({ evento: 'falha_banco', erro: String(e.message || e) })); json(res, 500, { ok: false }); });
     });
+    return;
+  }
+
+  // Entrada da equipe: se o e-mail está na lista da equipe (tabela usuarios, ativo), cria/confirma o login no Supabase.
+  // Responde sempre igual (não revela quem é da equipe). Assim o dono só precisa liberar o e-mail no SQL.
+  if (url.pathname === '/entrar/preparar' && req.method === 'POST') {
+    if (limiteExcedido(req)) return json(res, 429, { ok: false });
+    lerCorpo(req, 2000).then(async corpo => {
+      const email = String(corpo.email || '').trim().toLowerCase().slice(0, 160);
+      if (!bancoLigado() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json(res, 200, { ok: true });
+      await prepararLogin(email).catch(e => console.warn(JSON.stringify({ evento: 'preparar_login', erro: String(e.message || e).slice(0, 200) })));
+      json(res, 200, { ok: true });
+    }).catch(() => json(res, 400, { ok: false }));
     return;
   }
 

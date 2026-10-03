@@ -176,6 +176,10 @@ const falso = http.createServer((req, res) => {
     if (/^\/rest\/v1\/(produtos|agencias|respostas|sugestoes)\?id=eq\./.test(req.url) && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/rest/v1/respostas?id=eq.') && req.method === 'GET') return responder(200, [{ usos: 4 }]);
     if (req.url === '/rest/v1/sugestoes' && req.method === 'POST') return responder(201, [{ id: 'dddddddd-dddd-dddd-dddd-dddddddddddd' }]);
+    if (req.url.startsWith('/rest/v1/usuarios?ativo=eq.true&select=email')) return responder(200, [{ email: 'Nova@Hotel.com' }, { email: 'convidado@hotel.com' }]);
+    if (req.url === '/auth/v1/admin/users' && req.method === 'POST') return json.email === 'convidado@hotel.com' ? responder(422, { msg: 'already registered' }) : responder(200, { id: 'au-novo', email: json.email });
+    if (req.url.startsWith('/auth/v1/admin/users?')) return responder(200, { users: [{ id: 'au-1', email: 'convidado@hotel.com', email_confirmed_at: null }] });
+    if (req.url === '/auth/v1/admin/users/au-1' && req.method === 'PUT') return responder(200, { id: 'au-1' });
     if (req.url.startsWith('/rest/v1/usuarios?')) return responder(200, [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }]);
     if (req.url.startsWith('/rest/v1/conversas?') && req.url.includes('select=contato_id')) return responder(200, [{ contato_id: 'k-1' }]);
     if (req.url.startsWith('/rest/v1/conversas?')) return responder(200, [{ id: '11111111-1111-1111-1111-111111111111', canal: 'wa', numero_id: '111',
@@ -553,6 +557,18 @@ falso.listen(0, () => {
     assert.equal((await r.json()).pagas, 1);
     assert.deepEqual([cobrancasF.at(-1).situacao, cobrancasF.at(-1).e2e_id, cobrancasF.at(-1).pagador, cobrancasF.at(-1).valor_pago], ['paga', 'E123', 'ANA SOUZA', 500]);
     process.env.BB_MODO = 'simulador';
+    // Entrada da equipe: o CRM cria/confirma o login de quem está liberado em "usuarios" (e só dessa pessoa)
+    const prep = email => fetch(base + '/entrar/preparar', { method: 'POST', body: JSON.stringify({ email }) });
+    r = await prep('nova@hotel.com');
+    assert.equal(r.status, 200);
+    const adm = chamadas.findLast(c => c.url === '/auth/v1/admin/users' && c.metodo === 'POST');
+    assert.deepEqual(adm.corpo, { email: 'nova@hotel.com', email_confirm: true });
+    const nAdm = chamadas.filter(c => c.url.startsWith('/auth/v1/admin')).length;
+    r = await prep('estranho@hotel.com');
+    assert.deepEqual([r.status, await r.json()], [200, { ok: true }], 'mesma resposta para quem não é da equipe');
+    assert.equal(chamadas.filter(c => c.url.startsWith('/auth/v1/admin')).length, nAdm, 'não cria login para quem não está liberado');
+    await prep('convidado@hotel.com');
+    assert.deepEqual(chamadas.findLast(c => c.url === '/auth/v1/admin/users/au-1').corpo, { email_confirm: true }, 'convite pendente: confirma');
     // Completar o contato de um lead que chegou sem WhatsApp/e-mail (Instagram, Facebook, balcão)
     r = await api('/api/contato', { negocio_id: 'eeeeeeee-0000-0000-0000-000000000001', telefone: '+55 (67) 98888-7777', email: 'cli@exemplo.com', nome: 'Ana Souza' });
     assert.equal(r.status, 200, await r.clone().text());
