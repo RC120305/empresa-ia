@@ -1,0 +1,278 @@
+{
+  "atualizado_em": "2026-10-03",
+  "videos": [
+    {
+      "id_drive": "1dHFSi5BJR-VxsuKcx0Q_fKZKphtSUYn1",
+      "arquivo_local": "design/videos/brutos/DJI_0113.mp4",
+      "titulo_drive": "DJI_20260211122523_0113_D.mp4",
+      "nome_sugerido": "2026-02_passeio-canion_rio-turquesa-paredao_drone_01.mp4",
+      "tecnico": {
+        "duracao_s": 39.07,
+        "resolucao": "2160x3840",
+        "orientacao": "vertical",
+        "fps": 30,
+        "audio": false,
+        "data_gravacao": "2026-02-11"
+      },
+      "origem": {
+        "dono_imagem": "Ecotrip (agência)",
+        "credito": "a confirmar"
+      },
+      "local": {
+        "tipo": "passeio externo",
+        "nome": "cânion com rio (a confirmar)",
+        "confirmado": false
+      },
+      "ambiente": [
+        "aéreo (drone)",
+        "externo"
+      ],
+      "acomodacao": "",
+      "area_hotel": [],
+      "atividades": [
+        "passeio externo"
+      ],
+      "pessoas": [
+        "sem pessoas"
+      ],
+      "criancas": false,
+      "rostos_identificaveis": false,
+      "luz": "dia",
+      "camera": "drone",
+      "qualidade": "boa",
+      "descricao": "Drone em voo lento sobre um cânion: rio verde-turquesa estreito correndo no fundo, entre paredão de pedra e mata fechada. Sem pessoas. Ótima luz no começo; escurece (sombra do paredão) a partir de ~28 s.",
+      "melhores_trechos": [
+        "T1 (0,0–5,6 s) gancho",
+        "T3 (11,2–16,7 s)",
+        "T4 (16,7–22,3 s)"
+      ],
+      "trechos": [
+        {
+          "id": "T1",
+          "ini": 0.0,
+          "fim": 5.6,
+          "descricao": "Abertura do cânion: rio turquesa em curva, paredão iluminado à direita, mata densa. Melhor quadro do vídeo.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "sem pessoas",
+          "atividade": "",
+          "uso_sugerido": [
+            "gancho",
+            "fundo para texto"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T2",
+          "ini": 5.6,
+          "fim": 11.2,
+          "descricao": "Drone avança pelo cânion; rio aparece mais reto, paredão saindo de quadro.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "sem pessoas",
+          "atividade": "",
+          "uso_sugerido": [
+            "meio",
+            "fundo para texto"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T3",
+          "ini": 11.2,
+          "fim": 16.7,
+          "descricao": "Rio turquesa no meio da mata, pequena corredeira; paredão escuro ao fundo.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "sem pessoas",
+          "atividade": "",
+          "uso_sugerido": [
+            "meio",
+            "fundo para texto"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T4",
+          "ini": 16.7,
+          "fim": 22.3,
+          "descricao": "Corredeira mais visível, mata bem verde iluminada.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "sem pessoas",
+          "atividade": "",
+          "uso_sugerido": [
+            "meio"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T5",
+          "ini": 22.3,
+          "fim": 27.9,
+          "descricao": "Rio mais largo com corredeiras; começa a sombra.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "sem pessoas",
+          "atividade": "",
+          "uso_sugerido": [
+            "meio"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T6",
+          "ini": 27.9,
+          "fim": 33.5,
+          "descricao": "Sombra do paredão: imagem escura, rio pouco visível.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "sem pessoas",
+          "atividade": "",
+          "uso_sugerido": [
+            "não usar"
+          ],
+          "qualidade": "escura"
+        },
+        {
+          "id": "T7",
+          "ini": 33.5,
+          "fim": 39.1,
+          "descricao": "Muito escuro, quase só mata.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "sem pessoas",
+          "atividade": "",
+          "uso_sugerido": [
+            "não usar"
+          ],
+          "qualidade": "escura"
+        }
+      ],
+      "a_confirmar": [
+        "Nome e local do passeio (parece Cânion do Rio Salobra / Serra da Bodoquena)",
+        "Direito de uso das imagens da Ecotrip no Instagram do hotel e se precisa de crédito"
+      ],
+      "folha_quadros": "design/videos/catalogo/quadros/DJI_0113.jpg",
+      "catalogado_em": "2026-10-03",
+      "status": "descrito, aguardando o dono"
+    },
+    {
+      "id_drive": "1qtYBsipAVXvjZ0s7BpvvxBvDAPeGXjR0",
+      "arquivo_local": "design/videos/brutos/DJI_0114.mp4",
+      "titulo_drive": "DJI_20260211122634_0114_D.mp4",
+      "nome_sugerido": "2026-02_passeio-canion_paredao-botes_drone_02.mp4",
+      "tecnico": {
+        "duracao_s": 29.56,
+        "resolucao": "2160x3840",
+        "orientacao": "vertical",
+        "fps": 30,
+        "audio": false,
+        "data_gravacao": "2026-02-11"
+      },
+      "origem": {
+        "dono_imagem": "Ecotrip (agência)",
+        "credito": "a confirmar"
+      },
+      "local": {
+        "tipo": "passeio externo",
+        "nome": "cânion com rio (a confirmar)",
+        "confirmado": false
+      },
+      "ambiente": [
+        "aéreo (drone)",
+        "externo"
+      ],
+      "acomodacao": "",
+      "area_hotel": [],
+      "atividades": [
+        "passeio externo"
+      ],
+      "pessoas": [
+        "pessoas ao longe (sem rosto)"
+      ],
+      "criancas": false,
+      "rostos_identificaveis": false,
+      "luz": "dia",
+      "camera": "drone",
+      "qualidade": "escura",
+      "descricao": "Drone desce e se afasta ao longo de um paredão alto de pedra; rio turquesa com corredeira e botes/caiaques amarelos na margem, com algumas pessoas ao longe. Luz suave, um pouco escura (pede leve correção de cor).",
+      "melhores_trechos": [
+        "T1 (0,0–5,9 s) gancho",
+        "T3 (11,8–17,7 s) botes",
+        "T5 (23,6–29,6 s) fecho"
+      ],
+      "trechos": [
+        {
+          "id": "T1",
+          "ini": 0.0,
+          "fim": 5.9,
+          "descricao": "Paredão no alto, rio turquesa com corredeira em primeiro plano. Sem pessoas visíveis.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "sem pessoas",
+          "atividade": "",
+          "uso_sugerido": [
+            "gancho",
+            "fundo para texto"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T2",
+          "ini": 5.9,
+          "fim": 11.8,
+          "descricao": "Mesmo plano, drone recua; corredeira sai de quadro.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "sem pessoas",
+          "atividade": "",
+          "uso_sugerido": [
+            "meio"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T3",
+          "ini": 11.8,
+          "fim": 17.7,
+          "descricao": "Botes/caiaques amarelos e pessoas pequenas na margem, sob o paredão. Mostra a aventura.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "pessoas ao longe (sem rosto)",
+          "atividade": "",
+          "uso_sugerido": [
+            "meio"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T4",
+          "ini": 17.7,
+          "fim": 23.6,
+          "descricao": "Paredão grande e rio na base; botes amarelos no canto inferior.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "sem pessoas",
+          "atividade": "",
+          "uso_sugerido": [
+            "meio",
+            "fundo para texto"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T5",
+          "ini": 23.6,
+          "fim": 29.6,
+          "descricao": "Drone gira: paredão à esquerda e rio turquesa em diagonal na mata.",
+          "ambiente": "aéreo (drone)",
+          "pessoas": "sem pessoas",
+          "atividade": "",
+          "uso_sugerido": [
+            "fecho",
+            "fundo para texto"
+          ],
+          "qualidade": "boa"
+        }
+      ],
+      "a_confirmar": [
+        "Nome e local do passeio (parece Cânion do Rio Salobra / Serra da Bodoquena)",
+        "Direito de uso das imagens da Ecotrip no Instagram do hotel e se precisa de crédito",
+        "Atividade dos botes amarelos (rafting? boia?) e autorização de imagem das pessoas ao longe"
+      ],
+      "folha_quadros": "design/videos/catalogo/quadros/DJI_0114.jpg",
+      "catalogado_em": "2026-10-03",
+      "status": "descrito, aguardando o dono"
+    }
+  ]
+}
