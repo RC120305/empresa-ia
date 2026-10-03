@@ -84,10 +84,10 @@ def escreve(im, txt, fonte, cy, espaco, cor=CREME, sombra=True):
     im.alpha_composite(camada)
 
 
-def png_texto(txt, nome):
+def png_texto(txt, nome, cor=CREME):
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     f = ImageFont.truetype(ttf("josefin-sans-latin-600-normal"), 38)
-    escreve(im, txt.upper(), f, 1585, 38 * .08)  # mesma faixa do kit (bottom: 310 px), fora dos 250 px de baixo
+    escreve(im, txt.upper(), f, 1585, 38 * .08, cor=cor)  # mesma faixa do kit (bottom: 310 px), fora dos 250 px de baixo
     arq = os.path.join(TMP, nome + ".png"); im.save(arq); return arq
 
 
@@ -107,12 +107,15 @@ def roda(args):
     subprocess.run([FF, "-y", "-hide_banner", "-loglevel", "error", *args], check=True)
 
 
+# Pedido do dono na Central (03/10): versão do cinemático com o letreiro amarelo (o fecho segue no creme da marca).
+ROTEIROS["cinematico-amarelo"] = dict(ROTEIROS["cinematico"], saida="REELS-DRONE-CINEMATICO-AMARELO.mp4", cor_texto=(242, 201, 76))
+
 # ---------- montagem ----------
 def monta(chave):
     R = ROTEIROS[chave]; xf = R["fusao"]; n = len(R["trechos"]); partes = []
     for i, t in enumerate(R["trechos"]):
         dur = t["dur"]
-        png = png_fim(f"{chave}-fim") if t.get("fim") else png_texto(t["texto"], f"{chave}-texto-{i + 1:02d}")
+        png = png_fim(f"{chave}-fim") if t.get("fim") else png_texto(t["texto"], f"{chave}-texto-{i + 1:02d}", tuple(R.get("cor_texto", CREME)))
         # janela do texto: entra depois da fusão de entrada e sai antes da fusão de saída
         ini = 0.05 if i == 0 else (xf + 0.1 if xf else 0.05)
         fim = dur if i == n - 1 else (dur - xf - 0.1 if xf else dur)

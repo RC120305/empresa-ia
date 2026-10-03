@@ -10,6 +10,7 @@ os.makedirs(O, exist_ok=True)
 VERSOES = [  # (vídeo, faixa, início na faixa em s, saída)
     ("REELS-DRONE-CINEMATICO.mp4", "atlasaudio-ambient-cinematic-510518", 1, "CINEMATICO-ambient.mp4"),
     ("REELS-DRONE-CINEMATICO.mp4", "nastelbom-piano-cinematic-304999", 0, "CINEMATICO-piano.mp4"),
+    ("REELS-DRONE-CINEMATICO-AMARELO.mp4", "nastelbom-piano-cinematic-304999", 0, "CINEMATICO-piano-amarelo.mp4"),
     ("REELS-DRONE-RITMO-RAPIDO.mp4", "the_mountain-upbeat-acoustic-593084", 0, "RAPIDO-violao-1.mp4"),
     ("REELS-DRONE-RITMO-RAPIDO.mp4", "tunetank-upbeat-acoustic-guitar-347972", 0, "RAPIDO-violao-2.mp4"),
 ]
