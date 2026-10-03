@@ -220,6 +220,14 @@ details summary{cursor:pointer;padding:4px 0}
 .mrow .acts button{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:5px;padding:5px 9px;cursor:pointer;white-space:nowrap}
 .mrow .acts button[aria-pressed="true"]{background:var(--green);color:var(--surface);border-color:var(--green)}
 .mrow .acts button.nao[aria-pressed="true"]{background:var(--fix);border-color:var(--fix)}
+.estrelas{display:inline-flex;align-items:center;gap:1px;flex-wrap:wrap}
+.mrow .acts .estrelas button,.estrelas button{font:inherit;font-size:20px;line-height:1;border:none!important;background:none!important;border-radius:0;color:var(--line);cursor:pointer;padding:4px 3px;min-width:28px;min-height:32px}
+.estrelas button.on,.mrow .acts .estrelas button.on{color:var(--wait)}
+.estrelas button.zero{font-size:16px;color:var(--muted)}
+.estrelas button.zero[aria-checked="true"]{color:var(--fix)}
+.estrelas button:focus-visible{outline:2px solid var(--green);outline-offset:1px}
+.estrelas small{font-size:12px;color:var(--muted);margin-left:4px;min-width:52px}
+@media (max-width:560px){.mrow{grid-template-columns:1fr}.mrow .acts{justify-content:flex-start}}
 .energia{display:inline-flex;gap:3px;align-items:center;vertical-align:middle}
 .energia i{width:9px;height:9px;border-radius:50%;background:var(--line);display:inline-block}
 .energia i.on{background:var(--wait)}
@@ -353,10 +361,11 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   </div>
   <div id="sec-ads" class="ads" hidden><div id="ads-cards" style="display:flex;flex-direction:column;gap:36px"></div><div id="ads-main" class="ads"></div></div>
   <section id="sec-mus" hidden aria-labelledby="mus-t" style="flex-direction:column;gap:18px">
-    <div><h2 id="mus-t">Músicas catalogadas</h2><p class="note">Faixas livres para uso comercial (pasta do Drive "Trilhas sonoras free"). A equipe mede cada uma (ritmo, energia, quando começa forte, melhor trecho) e sugere o clima e onde combina. Ouça a prévia (30 s do melhor trecho), marque <b>★ Favorita</b> ou <b>Não usar</b>: a equipe segue a sua escolha nos próximos vídeos.</p></div>
+    <div><h2 id="mus-t">Músicas catalogadas</h2><p class="note">Faixas livres para uso comercial (pasta do Drive "Trilhas sonoras free"). A equipe mede cada uma (ritmo, energia, quando começa forte, melhor trecho) e sugere o clima e onde combina. Ouça a prévia (30 s do melhor trecho) e dê uma <b>nota de 0 a 5</b>: 5 = adoro, 4 = gosto, 3 = ok, 1–2 = só se precisar, 0 = não usar. A equipe usa primeiro as notas mais altas e nunca as de nota 0. Tocar de novo na mesma nota tira a nota.</p></div>
     <div class="mfilt">
       <div class="linha" role="group" aria-label="Clima"><span>Clima</span><div id="mf-clima" style="display:contents"></div></div>
       <div class="linha" role="group" aria-label="Energia"><span>Energia</span><div id="mf-energia" style="display:contents"></div></div>
+      <div class="linha" role="group" aria-label="Sua nota"><span>Sua nota</span><div id="mf-nota" style="display:contents"></div></div>
       <div class="acv-busca"><input type="search" id="mf-q" placeholder="Buscar: violão, piano, boia cross, casais…" aria-label="Buscar música"><select id="mf-comb" aria-label="Combina com"></select></div>
     </div>
     <p class="note" id="mus-n" aria-live="polite"></p>
@@ -1338,9 +1347,11 @@ document.getElementById("acv-q").addEventListener("input", renderAcervo);
 document.getElementById("acv-f").addEventListener("change", renderAcervo);
 acvFiltros(); renderAcervo(); renderVideos();
 // ---------- aba Músicas ----------
-const mstate = {};  // id -> {favorita, naoUsar} (db "musicas")
+const mstate = {};  // id -> {nota 0-5} (db "musicas"); 0 = não usar, 4-5 = preferidas
+const notaDe = id => { const st = mstate[id]; if (!st) return null; if (typeof st.nota === "number") return st.nota; return st.naoUsar ? 0 : st.favorita ? 5 : null; };
+const estrelasHtml = (id, n) => `<span class="estrelas" role="radiogroup" aria-label="Sua nota">${[0,1,2,3,4,5].map(v => `<button type="button" role="radio" data-mnota="${esc(id)}" data-v="${v}" aria-checked="${String(n === v)}" title="${v === 0 ? "0 · não usar" : v + " de 5"}" class="${v === 0 ? "zero" : (n !== null && n >= v && n > 0 ? "on" : "")}">${v === 0 ? "⊘" : "★"}</button>`).join("")}<small>${n === null ? "sem nota" : n === 0 ? "não usar" : n + "/5"}</small></span>`;
 const CLIMAS = ["energético", "aventura", "alegre", "calmo", "emotivo"];
-let mfClima = "", mfEnergia = "";
+let mfClima = "", mfEnergia = "", mfNota = "";
 const energiaHtml = n => `<span class="energia" role="img" aria-label="energia ${n} de 5">${[1,2,3,4,5].map(i => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>`;
 const mmss = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
 function curvaSvg(m){
@@ -1352,6 +1363,7 @@ function curvaSvg(m){
 function mchips(){
   document.getElementById("mf-clima").innerHTML = [["", "Todos"], ...CLIMAS.map(c => [c, c])].map(([v, t]) => `<button type="button" class="chip" data-mc="${esc(v)}" aria-pressed="${String(mfClima === v)}">${esc(t)}</button>`).join("");
   document.getElementById("mf-energia").innerHTML = [["", "Todas"], ["baixa", "Calma (1–2)"], ["media", "Média (3)"], ["alta", "Agitada (4–5)"]].map(([v, t]) => `<button type="button" class="chip" data-me="${v}" aria-pressed="${String(mfEnergia === v)}">${t}</button>`).join("");
+  document.getElementById("mf-nota").innerHTML = [["", "Todas"], ["pref", "★ Preferidas (4–5)"], ["sem", "Sem nota"], ["zero", "Não usar (0)"]].map(([v, t]) => `<button type="button" class="chip" data-mf="${v}" aria-pressed="${String(mfNota === v)}">${t}</button>`).join("");
   const comb = [...new Set(MUSICAS.flatMap(m => m.combina_com))].sort();
   const sel = document.getElementById("mf-comb"), atual = sel.value;
   sel.innerHTML = `<option value="">Combina com…</option>` + comb.map(c => `<option${c === atual ? " selected" : ""}>${esc(c)}</option>`).join("");
@@ -1363,11 +1375,12 @@ function renderMusicas(){
     && (!mfEnergia || (mfEnergia === "baixa" ? m.medidas.energia <= 2 : mfEnergia === "media" ? m.medidas.energia === 3 : m.medidas.energia >= 4))
     && (!comb || m.combina_com.includes(comb))
     && (!q || norm([m.nome, m.autor, ...m.climas, ...m.instrumentos, ...m.combina_com, ...m.usos].join(" ")).includes(q)))
-    .sort((a, b) => (mstate[b.id]?.favorita ? 1 : 0) - (mstate[a.id]?.favorita ? 1 : 0) || (mstate[a.id]?.naoUsar ? 1 : 0) - (mstate[b.id]?.naoUsar ? 1 : 0));
-  document.getElementById("mus-n").textContent = `${lista.length} de ${MUSICAS.length} músicas · ${Object.values(mstate).filter(x => x.favorita).length} favoritas`;
-  box.innerHTML = lista.map(m => { const d = m.medidas, st = mstate[m.id] || {};
-    return `<article class="mrow${st.favorita ? " fav" : ""}${st.naoUsar ? " nao" : ""}"><div><h3>${esc(m.nome)}</h3><span class="au">${esc(m.autor)} · Pixabay · ${esc(m.voz)}</span></div>
-      <div class="acts" data-actions><button type="button" data-mfav="${esc(m.id)}" aria-pressed="${String(!!st.favorita)}">★ Favorita</button><button type="button" class="nao" data-mnao="${esc(m.id)}" aria-pressed="${String(!!st.naoUsar)}">Não usar</button></div>
+    .filter(m => !mfNota || (mfNota === "pref" ? (notaDe(m.id) ?? -1) >= 4 : mfNota === "sem" ? notaDe(m.id) === null : notaDe(m.id) === 0))
+    .sort((a, b) => { const na = notaDe(a.id), nb = notaDe(b.id), k = n => n === null ? 2.5 : n === 0 ? -1 : n; return k(nb) - k(na); });
+  document.getElementById("mus-n").textContent = `${lista.length} de ${MUSICAS.length} músicas · ${MUSICAS.filter(m => (notaDe(m.id) ?? -1) >= 4).length} preferidas (nota 4–5) · ${MUSICAS.filter(m => notaDe(m.id) === null).length} sem nota`;
+  box.innerHTML = lista.map(m => { const d = m.medidas, n = notaDe(m.id);
+    return `<article class="mrow${(n ?? -1) >= 4 ? " fav" : ""}${n === 0 ? " nao" : ""}"><div><h3>${esc(m.nome)}</h3><span class="au">${esc(m.autor)} · Pixabay · ${esc(m.voz)}</span></div>
+      <div class="acts" data-actions>${estrelasHtml(m.id, n)}</div>
       <div class="info">${energiaHtml(d.energia)}<span>${d.bpm} BPM</span><span>${mmss(d.duracao_s)}</span><span>começa forte em ${d.comeca_forte_s} s</span><span>melhor trecho ${mmss(d.melhor_trecho_s[0])}–${mmss(d.melhor_trecho_s[1])}</span><span>corte a cada ${fmtS(m.corte_sugerido_s)} s</span>${m.climas.map(c => `<span class="cl">${esc(c)}</span>`).join("")}${m.instrumentos.map(c => `<span>${esc(c)}</span>`).join("")}</div>
       ${curvaSvg(m)}
       <p class="combina"><b>Combina com:</b> ${esc(m.combina_com.join(", "))} · <b>Uso:</b> ${esc(m.usos.join(", "))}</p>
@@ -1378,11 +1391,11 @@ document.getElementById("sec-mus").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.mc !== undefined) { mfClima = b.dataset.mc; mchips(); renderMusicas(); return; }
   if (b.dataset.me !== undefined) { mfEnergia = b.dataset.me; mchips(); renderMusicas(); return; }
-  const id = b.dataset.mfav || b.dataset.mnao; if (!id || !db) return;
-  const st = {...(mstate[id] || {})};
-  if (b.dataset.mfav) { st.favorita = !st.favorita; if (st.favorita) st.naoUsar = false; } else { st.naoUsar = !st.naoUsar; if (st.naoUsar) st.favorita = false; }
-  mstate[id] = st; renderMusicas();
-  try { await db.collection("musicas").doc(id).set({musica: id, favorita: !!st.favorita, naoUsar: !!st.naoUsar, atualizadoEm: new Date().toISOString()}); } catch {}
+  if (b.dataset.mf !== undefined) { mfNota = b.dataset.mf; mchips(); renderMusicas(); return; }
+  const id = b.dataset.mnota; if (!id || !db) return;
+  const v = Number(b.dataset.v), nova = notaDe(id) === v ? null : v;   // tocar de novo na mesma nota tira a nota
+  mstate[id] = {...(mstate[id] || {}), nota: nova}; renderMusicas();
+  try { await db.collection("musicas").doc(id).set({musica: id, nota: nova, favorita: (nova ?? -1) >= 4, naoUsar: nova === 0, atualizadoEm: new Date().toISOString()}); } catch {}
 });
 document.getElementById("mf-q").addEventListener("input", renderMusicas);
 document.getElementById("mf-comb").addEventListener("change", renderMusicas);
@@ -1424,8 +1437,8 @@ const PASSOS = [
       ${ehVideo() ? `<div class="q"><b>Letreiro (texto na tela)</b><div class="opts">${opt("letreiro","sim","Com letreiro","frases curtas em caixa alta")}${opt("letreiro","nao","Sem letreiro","só imagem e música")}</div></div>
         <div class="q"><b>Legenda da fala (transcrição)</b><div class="opts">${opt("transcricao","nao","Não precisa","vídeo sem fala")}${opt("transcricao","sim","Sim, legendar a fala","quando alguém fala no vídeo")}</div></div>` : ""}`},
   {t: "Música", skip: () => !ehVideo(), ok: () => P.musica !== "lista" || !!P.faixa, h: () => `<div class="opts">${opt("musica","app","Sem música no arquivo","eu escolho no app ao publicar")}${opt("musica","equipe","A equipe escolhe","faixa livre do Drive")}${opt("musica","lista","Quero escolher","ouça abaixo")}</div>
-      ${P.musica === "lista" ? `<div class="opts">${[["", "Todas"], ["baixa", "Calma"], ["media", "Média"], ["alta", "Agitada"], ["fav", "★ Favoritas"]].map(([v, t]) => `<button type="button" class="chip" data-wmf="${v}" aria-pressed="${String((P.musFiltro || "") === v)}">${t}</button>`).join("")}</div>
-        <div class="mus">${MUSICAS.filter(m => !mstate[m.id]?.naoUsar).filter(m => { const f = P.musFiltro || "", e = m.medidas.energia; return !f || (f === "fav" ? mstate[m.id]?.favorita : f === "baixa" ? e <= 2 : f === "media" ? e === 3 : e >= 4); }).map(m => `<div class="row" aria-pressed="${String(P.faixa === m.id)}"><b style="min-width:150px">${mstate[m.id]?.favorita ? "★ " : ""}${esc(m.nome)}<br><small class="note">${energiaHtml(m.medidas.energia)} ${esc(m.climas.join(", "))}</small></b><audio controls preload="none" src="${esc(m.previa)}"></audio><button type="button" class="sel" data-faixa="${esc(m.id)}">${P.faixa === m.id ? "✓ Escolhida" : "Escolher"}</button></div>`).join("") || '<p class="note">Nenhuma música nesse filtro.</p>'}<p class="note">Prévia: 30 s do melhor trecho. Mais detalhes e favoritas na aba Músicas. Para acrescentar opções, coloque o MP3 na pasta "Trilhas sonoras free" do Drive.</p></div>` : ""}`},
+      ${P.musica === "lista" ? `<div class="opts">${[["", "Todas"], ["baixa", "Calma"], ["media", "Média"], ["alta", "Agitada"], ["fav", "★ Preferidas"]].map(([v, t]) => `<button type="button" class="chip" data-wmf="${v}" aria-pressed="${String((P.musFiltro || "") === v)}">${t}</button>`).join("")}</div>
+        <div class="mus">${MUSICAS.filter(m => notaDe(m.id) !== 0).sort((a, b) => (notaDe(b.id) ?? 2.5) - (notaDe(a.id) ?? 2.5)).filter(m => { const f = P.musFiltro || "", e = m.medidas.energia; return !f || (f === "fav" ? (notaDe(m.id) ?? -1) >= 4 : f === "baixa" ? e <= 2 : f === "media" ? e === 3 : e >= 4); }).map(m => `<div class="row" aria-pressed="${String(P.faixa === m.id)}"><b style="min-width:150px">${notaDe(m.id) ? "★".repeat(notaDe(m.id)) + " " : ""}${esc(m.nome)}<br><small class="note">${energiaHtml(m.medidas.energia)} ${esc(m.climas.join(", "))}</small></b><audio controls preload="none" src="${esc(m.previa)}"></audio><button type="button" class="sel" data-faixa="${esc(m.id)}">${P.faixa === m.id ? "✓ Escolhida" : "Escolher"}</button></div>`).join("") || '<p class="note">Nenhuma música nesse filtro.</p>'}<p class="note">Prévia: 30 s do melhor trecho. Dê notas na aba Músicas: as mais bem avaliadas aparecem primeiro. Para acrescentar opções, coloque o MP3 na pasta "Trilhas sonoras free" do Drive.</p></div>` : ""}`},
   {t: "Conferir e enviar", ok: () => true, h: () => `<dl class="resumo">${resumo().map(([k,v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
       <div class="q"><label for="w-obs"><b>Mais alguma coisa? (opcional)</b></label><textarea id="w-obs" rows="3" data-txt="obs" placeholder="Ex.: mostrar o pôr do sol, evitar crianças, usar o logo grande">${esc(P.obs)}</textarea></div>`},
 ];
