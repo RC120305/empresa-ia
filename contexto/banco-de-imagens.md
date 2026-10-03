@@ -38,3 +38,6 @@ Pasta **"Vídeos do hotel cabanas"** (dentro de "Hotel Cabanas"), criada em 2026
 | Rio, amanhecer, café e decks | `1MbWp9LeM-sfwSKj9Aig-wjrO2gVOfWBy` |
 | Outros | `1QVId-zrPIejlgnyoDqKqkafmclGyfc-7` |
 Vídeos grandes não são lidos direto: para ver as cenas, extrair 3 a 5 quadros com ffmpeg (arquivos pequenos) ou pedir ao dono a descrição das cenas.
+- **Como baixar vídeos grandes (03/10/2026):** a ferramenta do Drive só baixa até 10 MB. Para vídeos maiores, o arquivo precisa estar com "qualquer pessoa com o link" e a rede libera `drive.usercontent.google.com`: `curl -L -o design/videos/brutos/<nome>.mp4 "https://drive.usercontent.google.com/download?id=<ID>&export=download&confirm=t"`. Brutos ficam em `design/videos/brutos/` (fora do git). Atalhos ("arrastar" uma pasta compartilhada para o Drive) não copiam os arquivos: baixe e suba na pasta do hotel.
+- **Brutos de drone na raiz da pasta:** `DJI_20260211122523_0113_D.mp4` e `DJI_20260211122634_0114_D.mp4` (cânion com rio turquesa, passeio da região, local [a confirmar com o dono]; não é o hotel).
+- **Subpasta "Trilhas sonoras free"** (ID `1Rdg2OufStjaFQs0UDSujcvl3lPsu9mUH`): músicas livres para uso comercial (Pixabay), baixadas para `design/videos/musicas/` (fora do git). Ambient/piano para vídeos calmos; violão "upbeat" para ritmo rápido.
