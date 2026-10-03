@@ -38,3 +38,4 @@ A equipe sobe as campanhas pela API da Meta, **pausadas**, e só ativa com o OK 
 - **Decisão do dono (30/09/2026):** se o portfólio não for liberado a tempo, **adiar o início das campanhas** (em vez do kit manual). As datas de início em `subida.json` (06/10) são ajustadas na subida; a MS continua para 08/11.
 
 - **02/10/2026 (16h45, conferência só de leitura):** a Página 158244147578036 ainda **não** aparece no portfólio Hotel Cabanas (owned_pages e client_pages vazios), e o dono continua só no portfólio Hotel Cabanas. A agência ainda não liberou. Segue a decisão do dono de 30/09: campanhas adiadas até a liberação (sem kit manual).
+- **03/10/2026:** o Raí informou que **não tem acesso** ao portfólio da agência. Plano: pedido ao suporte da Meta para mover a Página ao portfólio do hotel (rascunho em `pedido-suporte-meta.md`). Campanhas seguem adiadas.
