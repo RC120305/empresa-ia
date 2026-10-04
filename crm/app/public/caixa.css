@@ -93,7 +93,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .quem{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--lat-texto);padding:0 4px}
 .app.recolhido{grid-template-columns:68px minmax(0,1fr)}
 .app.recolhido .lateral{padding:16px 8px;align-items:center}
-.app.recolhido .logo span,.app.recolhido .nav .tx,.app.recolhido .agente-status,.app.recolhido .quem,.app.recolhido .nav .qtd{display:none}
+.app.recolhido .logo span,.app.recolhido .nav .tx,.app.recolhido .agente-status,.app.recolhido .plantao,.app.recolhido .quem,.app.recolhido .nav .qtd{display:none}
 .app.recolhido .recolher{align-self:center;margin-bottom:0;transform:rotate(180deg)}
 .app.recolhido .nav button{justify-content:center;padding:9px}
 .app.recolhido .logo img{height:32px}
@@ -246,7 +246,7 @@ section[data-painel]{flex:1;min-height:0;display:flex;flex-direction:column}
 @media (max-width:900px){
   .app,.app.recolhido{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
   .lateral{flex-direction:column;gap:8px;padding:8px 12px;overflow:visible}
-  .recolher,.agente-status,.logo span{display:none}
+  .recolher,.agente-status,.plantao,.logo span{display:none}
   .logo img{height:30px}
   .lateral{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center}
   .nav{flex-direction:row;overflow-x:auto;gap:2px;grid-column:1/-1}
@@ -467,3 +467,12 @@ section[data-painel="produtos"],section[data-painel="agencias"],section[data-pai
 .cob-sit.erro{color:var(--cor-erro)}
 .cob-sit.off{color:var(--cor-texto-sec)}
 .alertas .al-item.pago .al-tipo{color:var(--cor-sucesso)}
+
+/* Plantão (barra lateral) e dono do alerta */
+.plantao{display:flex;flex-direction:column;gap:4px;padding:10px 12px;margin:8px 0 0;border-radius:var(--r-md);background:rgba(255,255,255,.06);color:var(--lat-texto,#F2ECE2);font-size:13px}
+.plantao label{font-weight:700}
+.plantao select{font:inherit;font-size:13px;padding:5px 6px;border-radius:var(--r-sm);border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.2);color:inherit}
+.plantao select option{color:#2E2620}
+.plantao small{opacity:.75;font-size:11px;line-height:1.35}
+.alertas .al-dono{font-size:12px;color:var(--cor-texto-sec)}
+.alertas .al-dono.escalado{color:var(--cor-erro);font-weight:700}

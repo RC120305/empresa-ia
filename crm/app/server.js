@@ -13,6 +13,7 @@ const drive = require('./drive');
 const produtos = require('./produtos');
 const vitrine = require('./vitrine');
 const bb = require('./bb');
+const pedidos = require('./pedidos');
 const path = require('path');
 
 const porta = process.env.PORT || 8080;
@@ -220,6 +221,8 @@ async function registrar(evento, buscar = fetch) {
           // Toque num botão de oferta ("Eu aceito" / "Não, obrigado"): marca a resposta sozinho
           const botao = m.type === 'interactive' && produtos.lerBotao(((m.interactive || {}).button_reply || {}).id);
           if (botao) await respostaDoBotao(botao, corpoDe(m), buscar).catch(e => console.warn(JSON.stringify({ evento: 'botao_oferta', erro: String(e.message || e).slice(0, 200) })));
+          // Pede uma pessoa, reclama, quer cancelar ou alterar: alerta para quem está de plantão
+          else if (res && res.nova && res.conversa_id && ['text', 'button', 'interactive'].includes(m.type)) await conferirPedido(corpoDe(m), res.conversa_id, buscar).catch(e => console.warn(JSON.stringify({ evento: 'pedido_alerta', erro: String(e.message || e).slice(0, 200) })));
           // Foto, áudio, vídeo, documento: guarda já uma cópia (a Meta apaga em 30 dias). Se falhar, a tela busca depois.
           if (midia && midia.id && res && res.nova && WA_TOKEN) {
             await guardarMidia({ id: res.mensagem_id, conversa_id: res.conversa_id, midia_id: midia.id, midia_nome: midia.filename || null }, buscar)
@@ -637,6 +640,38 @@ async function patchBanco(tabela, filtro, dados, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/${tabela}?${filtro}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(dados), signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw new ErroEnvio(r.status === 400 ? 400 : 502, 'Não deu para salvar' + (r.status === 400 ? ' (o banco precisa da migração 007?)' : '') + '.');
 }
+// ---------- Alertas de atendimento (pede pessoa, reclamação, cancelamento, alteração, Gilberto passou) ----------
+// Vão para quem está de plantão; sem dono em 10 min, são escalados para toda a equipe.
+let plantaoCache = { ate: 0, id: null };
+async function plantaoAtual(buscar = fetch) {
+  if (plantaoCache.ate > Date.now()) return plantaoCache.id;
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/config?chave=eq.plantao&select=valor`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const v = r && r.ok ? ((await r.json().catch(() => []))[0] || {}).valor : null;
+  plantaoCache = { ate: Date.now() + 30000, id: (v && v.usuario_id) || null };
+  return plantaoCache.id;
+}
+async function alertaAtendimento(tipo, conversa, info, buscar = fetch) {
+  if (!pedidos.TITULOS[tipo] || !conversa) return;
+  const ja = await buscar(`${SUPABASE_URL}/rest/v1/alertas?conversa_id=eq.${conversa}&tipo=eq.${tipo}&situacao=eq.aberto&select=id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  if (ja && ja.ok && (await ja.json().catch(() => [])).length) return; // já tem um aberto para esta conversa
+  const negocio = await negocioDaConversa(conversa, 'id', buscar);
+  await criarAlerta({ tipo, titulo: pedidos.TITULOS[tipo], info: String(info || '').slice(0, 300), conversa_id: conversa, negocio_id: negocio, para_id: await plantaoAtual(buscar) }, buscar);
+  if (negocio) await eventoNegocio(negocio, 'Alerta: ' + pedidos.TITULOS[tipo], 'CRM', buscar);
+  console.log(JSON.stringify({ evento: 'alerta_atendimento', tipo }));
+}
+// Mensagem nova do cliente: se for um desses pedidos, avisa a equipe
+async function conferirPedido(texto, conversa, buscar = fetch) {
+  const tipo = pedidos.detectarPedido(texto);
+  if (tipo) await alertaAtendimento(tipo, conversa, 'Cliente: “' + String(texto).slice(0, 200) + '”', buscar);
+}
+async function escalarAlertas(buscar = fetch) {
+  const limite = new Date(Date.now() - 10 * 60e3).toISOString();
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/alertas?situacao=eq.aberto&assumido_por=is.null&escalado_em=is.null&tipo=in.(${pedidos.ATENDIMENTO.join(',')})&criado_em=lt.${limite}&select=id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const lista = r && r.ok ? await r.json().catch(() => []) : [];
+  for (const a of lista) await buscar(`${SUPABASE_URL}/rest/v1/alertas?id=eq.${a.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ escalado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  return lista.length;
+}
+
 // ---------- Login da equipe: criar/confirmar no Supabase Auth quem está liberado em "usuarios" ----------
 async function prepararLogin(email, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&select=email`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
@@ -1255,13 +1290,29 @@ const API_EQUIPE = {
     }
     throw new ErroEnvio(400, 'Ação inválida.');
   },
+  // Quem está de plantão (recebe os alertas com som; sem dono em 10 min, vão para todos)
+  'POST /api/plantao': async (corpo, eu) => {
+    const id = corpo.usuario_id || null;
+    if (id && !uuidOk(id)) throw new ErroEnvio(400, 'Pessoa inválida.');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/config?on_conflict=chave`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ chave: 'plantao', valor: { usuario_id: id }, atualizado_por: eu.id, atualizado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) });
+    if (!r.ok) throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para salvar o plantão (o banco precisa da migração 018?).');
+    plantaoCache = { ate: 0, id: null };
+    return { ok: true };
+  },
   // Sino: resolver um alerta ("✓ Lançado na conta" também marca a venda e conclui a tarefa de lançar)
   'POST /api/alerta': async (corpo, eu) => {
     if (!uuidOk(corpo.id)) throw new ErroEnvio(400, 'Alerta inválido.');
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/alertas?id=eq.${corpo.id}&select=id,tipo,venda_id,negocio_id,titulo,info,situacao`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/alertas?id=eq.${corpo.id}&select=id,tipo,venda_id,negocio_id,conversa_id,titulo,info,situacao`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
     const a = r.ok ? (await r.json())[0] : null;
     if (!a) throw new ErroEnvio(404, 'Alerta não encontrado.');
     if (a.situacao !== 'aberto') return { ok: true };
+    if (corpo.acao === 'assumir') { // fica com quem assumiu; a conversa passa para essa pessoa
+      await patchBanco('alertas', `id=eq.${a.id}`, { assumido_por: eu.id, assumido_em: new Date().toISOString() });
+      if (a.conversa_id) await patchBanco('conversas', `id=eq.${a.conversa_id}`, { atribuida_a: eu.id, status: 'aberta' }).catch(() => {});
+      if (a.negocio_id) await eventoNegocio(a.negocio_id, 'Assumiu o alerta: ' + a.titulo, eu.id);
+      return { ok: true };
+    }
     if (a.tipo === 'lancar_conta' && a.venda_id) {
       await patchBanco('vendas', `id=eq.${a.venda_id}`, { situacao: 'lancado', lancado_em: new Date().toISOString(), lancado_por: eu.id });
       await resolverAlertasDaVenda(a.venda_id, ['lancar_conta'], eu.id);
@@ -1446,6 +1497,7 @@ async function transcreverMensagem(msg, buscar = fetch) {
         method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
         body: JSON.stringify({ transcricao: r.texto || null, transcricao_status: r.status }), signal: AbortSignal.timeout(5000),
       }).catch(() => {});
+      if (r.texto && msg.conversa_id && msg.direcao !== 'saida') await conferirPedido(r.texto, msg.conversa_id, buscar).catch(() => {}); // áudio também
     }
     return r;
   })().finally(() => transcrevendo.delete(msg.id));
@@ -1457,7 +1509,7 @@ async function transcreverParaEquipe(tokenUsuario, corpo, buscar = fetch) {
   const id = String(corpo.mensagem_id || '');
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw new ErroEnvio(400, 'Mensagem inválida.');
   await autenticarEquipe(tokenUsuario, buscar);
-  const r = await buscar(`${SUPABASE_URL}/rest/v1/mensagens?id=eq.${id}&select=id,tipo,midia_id,midia_caminho,transcricao,transcricao_status`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/mensagens?id=eq.${id}&select=id,conversa_id,direcao,tipo,midia_id,midia_caminho,transcricao,transcricao_status`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw new ErroEnvio(503, 'A transcrição ainda não está ligada no banco (falta a migração 005).');
   const msg = (await r.json())[0];
   if (!msg || msg.tipo !== 'audio') throw new ErroEnvio(404, 'Áudio não encontrado.');
@@ -1480,7 +1532,7 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
     const conv = c.ok ? (await c.json())[0] : null;
     if (!conv) throw new ErroEnvio(404, 'Conversa não encontrada.');
     const url = campos => `${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${id}&select=${campos}&order=enviada_em.desc&limit=40`;
-    let h = await buscar(url('id,direcao,tipo,corpo,enviada_em,midia_id,midia_caminho,transcricao,transcricao_status'), { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+    let h = await buscar(url('id,conversa_id,direcao,tipo,corpo,enviada_em,midia_id,midia_caminho,transcricao,transcricao_status'), { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
     if (!h.ok) h = await buscar(url('direcao,tipo,corpo,enviada_em'), { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }); // banco sem a migração 005
     const historico = h.ok ? (await h.json()).reverse() : [];
     // Áudios do cliente ainda sem texto: transcreve os 3 mais recentes antes de o Gilberto ler.
@@ -1513,6 +1565,7 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
         mensagem: r.mensagem, notas_internas: r.notas_internas, precisa_equipe: r.precisa_equipe, modelo: r.modelo,
         ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo), produto_oferecido: r.produto_oferecido || null, vitrines: r.vitrines || [] }, pedida_por: eu.id }) }).catch(() => null);
     const sugestaoId = reg && reg.ok ? ((await reg.json().catch(() => []))[0] || {}).id : null;
+    if (r.precisa_equipe) await alertaAtendimento('gilberto_passou', conv.id, r.notas_internas || 'O Gilberto indicou que este caso é para a equipe.', buscar).catch(() => {});
     let avisoRevisao = null;
     if (!sugestaoId) { // a sugestão vale, mas não entrou na Revisão: mostra o motivo para a equipe
       const det = reg ? (await reg.text().catch(() => '')).slice(0, 200) : 'sem resposta do banco';
@@ -1715,7 +1768,7 @@ const servidor = http.createServer((req, res) => {
   // Agendador do Google (a cada 2 min): confere as cobranças Pix ativas. Não devolve dado nenhum, só contagens.
   if (url.pathname === '/cron/pix' && req.method === 'POST') {
     if (!bancoLigado()) return json(res, 503, { ok: false });
-    verificarCobrancas().then(r => json(res, 200, { ok: true, ...r })).catch(() => json(res, 500, { ok: false }));
+    Promise.all([verificarCobrancas(), escalarAlertas().catch(() => 0)]).then(([r, escalados]) => json(res, 200, { ok: true, ...r, escalados })).catch(() => json(res, 500, { ok: false }));
     return;
   }
 

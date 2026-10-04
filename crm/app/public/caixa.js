@@ -121,7 +121,7 @@
     eu = meu;
     $('quem-nome').textContent = meu.nome;
     mostrarTela('tela-caixa');
-    chamarApi('/api/equipe', null, 'GET').then(j => { equipe = Object.fromEntries(j.equipe.map(u => [u.id, u.nome])); preencherFiltrosEquipe(); if (aberta) pintarCabecalho(); }).catch(() => { equipe = { [meu.id]: meu.nome }; preencherFiltrosEquipe(); });
+    chamarApi('/api/equipe', null, 'GET').then(j => { equipe = Object.fromEntries(j.equipe.map(u => [u.id, u.nome])); preencherFiltrosEquipe(); if (aberta) pintarCabecalho(); carregarPlantao(); }).catch(() => { equipe = { [meu.id]: meu.nome }; preencherFiltrosEquipe(); carregarPlantao(); });
     await carregarConversas();
     await carregarFunil();
     carregarRespostas();
@@ -1872,7 +1872,25 @@
 
   // ---------- Sino: alertas da equipe (cliente pediu produto; lançar na conta no dia do check-in) ----------
   let alertas = [], alertasOk = true, painelAlertas = false, vistos = null, vendasResumo = {};
-  const ROT_ALERTA = { produto_pedido: 'Cliente pediu produto', lancar_conta: 'Lançar na conta do hóspede', pagamento_recebido: 'Pagamento recebido', cobranca_vencida: 'Cobrança vencida' };
+  const ROT_ALERTA = { produto_pedido: 'Cliente pediu produto', lancar_conta: 'Lançar na conta do hóspede', pagamento_recebido: 'Pagamento recebido', cobranca_vencida: 'Cobrança vencida',
+    atendimento_humano: 'Pede atendimento humano', reclamacao: 'Reclamação', cancelamento: 'Pedido de cancelamento', alteracao: 'Pedido de alteração', gilberto_passou: 'Gilberto passou para a equipe' };
+  const ATENDIMENTO = ['reclamacao', 'cancelamento', 'atendimento_humano', 'alteracao', 'gilberto_passou'];
+  // Toca para mim? Alerta de atendimento: só para quem está de plantão (ou todos, sem plantão ou depois de escalado)
+  const meuAlerta = a => !ATENDIMENTO.includes(a.tipo) || !a.para_id || !!a.escalado_em || (eu && a.para_id === eu.id);
+  let plantaoId = null;
+  async function carregarPlantao() {
+    const { data, error } = await sb.from('config').select('valor').eq('chave', 'plantao').maybeSingle();
+    plantaoId = !error && data && data.valor ? data.valor.usuario_id || null : null;
+    const sel = $('sel-plantao');
+    sel.replaceChildren(el('option', { value: '', text: 'Ninguém (todos recebem)' }), ...Object.entries(equipe).map(([id, nome]) => el('option', { value: id, text: nome, selected: id === plantaoId })));
+    sel.disabled = !!error;
+    sel.title = error ? 'Falta rodar a migração 018 no Supabase.' : '';
+  }
+  $('sel-plantao').addEventListener('change', async e => {
+    const v = e.target.value || null;
+    try { await chamarApi('/api/plantao', { usuario_id: v }); plantaoId = v; toast(v ? (equipe[v] || 'Equipe') + ' está de plantão: recebe os alertas com som.' : 'Sem plantão: todos recebem os alertas.'); }
+    catch (err) { toast(err.message); carregarPlantao(); }
+  });
   const alertasVencidos = () => alertas.filter(a => new Date(a.quando) <= new Date());
   const desde = q => { const m = Math.max(0, Math.round((Date.now() - new Date(q)) / 6e4)); return m < 1 ? 'agora' : m < 60 ? 'há ' + m + ' min' : m < 1440 ? 'há ' + Math.round(m / 60) + ' h' : 'há ' + Math.round(m / 1440) + ' dias'; };
   async function carregarAlertas() {
@@ -1910,8 +1928,9 @@
   }
   function pintarSino() {
     const ab = alertasVencidos();
-    const novos = vistos ? ab.filter(a => !vistos.has(a.id)) : [];
-    vistos = new Set(ab.map(a => a.id));
+    const chave = a => a.id + (a.escalado_em ? ':e' : '');
+    const novos = vistos ? ab.filter(a => !vistos.has(chave(a)) && meuAlerta(a)) : [];
+    vistos = new Set(ab.map(chave));
     $('sino-n').hidden = !ab.length; $('sino-n').textContent = ab.length;
     $('bt-sino').setAttribute('aria-label', ab.length ? ab.length + (ab.length > 1 ? ' alertas da equipe' : ' alerta da equipe') : 'Sem alertas');
     if (novos.length) {
@@ -1940,15 +1959,17 @@
     }
     ab.forEach(a => {
       const c = conversas.find(x => x.id === a.conversa_id);
-      const abrirConv = () => { painelAlertas = false; pintarAlertas(); irPara('conversas'); if (c) abrir(c.id); painel = /pagamento|cobranca/.test(a.tipo) ? 'res' : 'pro'; guardar('crm-painel', painel); pintarPainel(); };
+      const abrirConv = () => { painelAlertas = false; pintarAlertas(); irPara('conversas'); if (c) abrir(c.id); painel = /pagamento|cobranca/.test(a.tipo) ? 'res' : ATENDIMENTO.includes(a.tipo) ? 'his' : 'pro'; guardar('crm-painel', painel); pintarPainel(); };
       box.append(el('div', { class: 'al-item' + (a.tipo === 'lancar_conta' ? ' lancar' : '') },
         el('span', { class: 'al-tipo', text: '⚑ ' + (ROT_ALERTA[a.tipo] || a.titulo) }),
         el('b', { text: (c ? c.nome : 'Cliente') + ' · ' + desde(a.quando) }),
         a.info ? el('span', { class: 'lat-txt', text: a.info }) : null,
+        ATENDIMENTO.includes(a.tipo) ? el('small', { class: 'al-dono' + (a.escalado_em && !a.assumido_por ? ' escalado' : ''), text: a.assumido_por ? (equipe[a.assumido_por] || 'Alguém da equipe') + ' assumiu' : a.escalado_em ? 'Sem dono há mais de 10 min: avisada toda a equipe' : a.para_id ? 'Para ' + (equipe[a.para_id] || 'quem está de plantão') + ' (plantão)' : 'Para toda a equipe' }) : null,
         el('div', { class: 'al-acoes' },
+          ATENDIMENTO.includes(a.tipo) && !a.assumido_por ? el('button', { class: 'btn-mini', type: 'button', text: 'Assumir', onclick: async () => { try { await chamarApi('/api/alerta', { id: a.id, acao: 'assumir' }); toast('Você assumiu. A conversa passou para você.'); carregarAlertas(); abrirConv(); } catch (e) { toast(e.message); } } }) : null,
           a.tipo === 'lancar_conta'
             ? el('button', { class: 'btn-mini', type: 'button', text: '✓ Lançado na conta', onclick: () => resolverAlerta(a, 'Lançamento registrado. Alerta resolvido.') })
-            : el('button', { class: 'btn-mini', type: 'button', text: a.tipo === 'pagamento_recebido' ? '✓ Visto' : a.tipo === 'cobranca_vencida' ? '✓ Resolvido' : '✓ Reservado', onclick: () => resolverAlerta(a, 'Alerta resolvido.') }),
+            : el('button', { class: 'btn-mini', type: 'button', text: a.tipo === 'pagamento_recebido' ? '✓ Visto' : a.tipo === 'produto_pedido' ? '✓ Reservado' : '✓ Resolvido', onclick: () => resolverAlerta(a, 'Alerta resolvido.') }),
           c ? el('button', { class: 'btn-mini', type: 'button', text: 'Abrir conversa', onclick: abrirConv }) : null)));
     });
   }
@@ -2012,6 +2033,7 @@
       .subscribe();
     sb.channel('caixa-alertas')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alertas' }, () => { clearTimeout(alertasT); alertasT = setTimeout(carregarAlertas, 300); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'config' }, () => carregarPlantao())
       .subscribe();
   }
 

@@ -33,6 +33,7 @@ const ofertasF = [], vendasF = [], alertasF = [], vitrinesF = [];
 let iaVitrines = null;
 const cobrancasF = [];
 let bbPago = false;
+const configF = {};
 let iaOferta = '';
 const RAIZ_DRIVE = '1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5';
 const JPG_DRIVE = require('child_process').execFileSync('ffmpeg', ['-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc=size=1600x900', '-frames:v', '1', '-f', 'mjpeg', '-']);
@@ -84,6 +85,10 @@ const falso = http.createServer((req, res) => {
       if (req.url.includes('situacao=eq.ativa')) return responder(200, cobrancasF.filter(c => c.situacao === 'ativa'));
       return responder(200, cobrancasF.filter(c => c.id === id));
     }
+    if (req.url.startsWith('/rest/v1/config')) {
+      if (req.method === 'POST') { configF[json.chave] = json.valor; res.writeHead(201); return res.end(); }
+      return responder(200, configF.plantao ? [{ valor: configF.plantao }] : []);
+    }
     if (req.url.startsWith('/rest/v1/vitrines')) {
       if (req.method === 'POST') { const v = { id: crypto.randomUUID(), aberturas: 0, pedido: null, pedido_em: null, criado_em: new Date().toISOString(), ...json }; vitrinesF.unshift(v); return responder(201, [v]); }
       if (req.method === 'PATCH') {
@@ -97,6 +102,9 @@ const falso = http.createServer((req, res) => {
       if (req.method === 'POST') { alertasF.push({ id: crypto.randomUUID(), situacao: 'aberto', ...json }); res.writeHead(201); return res.end(); }
       const id = (req.url.match(/[?&]id=eq\.([0-9a-f-]+)/) || [])[1], venda = (req.url.match(/venda_id=eq\.([0-9a-f-]+)/) || [])[1];
       if (req.method === 'PATCH') { Object.assign(alertasF.find(a => a.id === id), json); res.writeHead(204); return res.end(); }
+      const u = new URL(req.url, 'http://x'), q = k => (u.searchParams.get(k) || '').replace(/^eq\./, '');
+      if (u.searchParams.get('conversa_id')) return responder(200, alertasF.filter(a => a.conversa_id === q('conversa_id') && a.tipo === q('tipo') && a.situacao === 'aberto'));
+      if (u.searchParams.get('escalado_em') === 'is.null') return responder(200, alertasF.filter(a => a.situacao === 'aberto' && !a.assumido_por && !a.escalado_em && u.searchParams.get('tipo').includes(a.tipo) && (a.criado_em || '') < u.searchParams.get('criado_em').replace(/^lt\./, '')));
       return responder(200, alertasF.filter(a => (id && a.id === id) || (venda && a.venda_id === venda && a.situacao === 'aberto')));
     }
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'PATCH' && json && json.feita === true && !json.tipo) { res.writeHead(204); return res.end(); }
@@ -521,6 +529,35 @@ falso.listen(0, () => {
     assert.equal((await api('/api/modelo', { numero_id: '111', nome: 'ruim', categoria: 'UTILITY', texto: 'Texto qualquer de teste' })).status, 400);
     r = await api('/api/numeros', null, 'token-equipe', 'GET');
     assert.deepEqual((await r.json()).numeros, [{ id: '111', numero: '15551829766' }]);
+    // Alertas de atendimento: pede pessoa / reclamação / cancelamento / alteração → para quem está de plantão
+    r = await api('/api/plantao', { usuario_id: 'u-1' });
+    assert.equal(r.status, 400, 'id inválido');
+    r = await api('/api/plantao', { usuario_id: 'aaaaaaaa-1111-1111-1111-111111111111' });
+    assert.equal(r.status, 200); assert.deepEqual(configF.plantao, { usuario_id: 'aaaaaaaa-1111-1111-1111-111111111111' });
+    const msgCliente = (id, body) => JSON.stringify({ entry: [{ changes: [{ value: { metadata: { phone_number_id: '111' }, contacts: [{ wa_id: '5567999990000', profile: { name: 'Cliente Teste' } }], messages: [{ from: '5567999990000', id, timestamp: '1700000300', type: 'text', text: { body } }] } }] }] });
+    alertasF.length = 0;
+    await postar(msgCliente('wamid.H1', 'Quero falar com uma pessoa, por favor'));
+    assert.deepEqual(alertasF.map(a => [a.tipo, a.titulo, a.para_id]), [['atendimento_humano', 'Pede atendimento humano', 'aaaaaaaa-1111-1111-1111-111111111111']]);
+    await postar(msgCliente('wamid.H2', 'alguém aí? quero falar com um atendente'));
+    assert.equal(alertasF.length, 1, 'não repete enquanto o alerta está aberto');
+    await postar(msgCliente('wamid.H3', 'Qual a política de cancelamento?'));
+    assert.equal(alertasF.length, 1, 'pergunta sobre a regra não é pedido');
+    await postar(msgCliente('wamid.H4', 'Preciso cancelar minha reserva'));
+    assert.equal(alertasF.at(-1).tipo, 'cancelamento'); assert.ok(alertasF.at(-1).info.includes('Preciso cancelar'));
+    // Escalonamento: sem dono em 10 min → toda a equipe
+    alertasF[0].criado_em = new Date(Date.now() - 11 * 60e3).toISOString(); alertasF[1].criado_em = new Date().toISOString();
+    r = await fetch(base + '/cron/pix', { method: 'POST' });
+    assert.equal((await r.json()).escalados, 1); assert.ok(alertasF[0].escalado_em && !alertasF[1].escalado_em);
+    // Assumir: fica com quem assumiu e a conversa passa para essa pessoa
+    r = await api('/api/alerta', { id: alertasF[1].id, acao: 'assumir' });
+    assert.equal(r.status, 200); assert.equal(alertasF[1].assumido_por, 'u-1'); assert.equal(alertasF[1].situacao, 'aberto');
+    assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/conversas?id=eq.') && c.corpo.atribuida_a === 'u-1'));
+    r = await api('/api/alerta', { id: alertasF[1].id });
+    assert.equal(alertasF[1].situacao, 'resolvido');
+    // Gilberto passa para a equipe (precisa_equipe na sugestão)
+    alertasF.length = 0;
+    const { detectarPedido } = require('./pedidos');
+    assert.equal(detectarPedido('O quarto estava péssimo'), 'reclamacao'); assert.equal(detectarPedido('dá para remarcar?'), 'alteracao'); assert.equal(detectarPedido('tem vaga?'), null);
     // Cobrança por Pix (E1): simulador
     r = await api('/api/cobranca', { conversa_id: conv, tipo: 'sinal', valor: '1254,60', descricao: 'Sinal do Bangalô' });
     const cj1 = await r.json();
@@ -529,7 +566,7 @@ falso.listen(0, () => {
     assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'pag'), 'card em Aguardando pagamento');
     assert.equal((await api('/api/cobranca', { conversa_id: conv, valor: '0' })).status, 400);
     r = await fetch(base + '/cron/pix', { method: 'POST' });
-    assert.deepEqual(await r.json(), { ok: true, verificadas: 1, pagas: 0, vencidas: 0 });
+    assert.deepEqual(await r.json(), { ok: true, verificadas: 1, pagas: 0, vencidas: 0, escalados: 0 });
     r = await api('/api/cobranca-acao', { id: cobrancasF[0].id, acao: 'simular_pagamento' });
     assert.equal((await r.json()).pagas, 1);
     assert.deepEqual([cobrancasF[0].situacao, cobrancasF[0].valor_pago, cobrancasF[0].pagador], ['paga', 1254.6, 'Cliente de teste']);
