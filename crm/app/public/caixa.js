@@ -142,11 +142,11 @@
     agencias: ['Agências'],
     vagas: ['Vagas', 'O mapa de vagas completo depende do Silbeck real (ponte com o hotel). Por enquanto, as vagas aparecem no painel 🛏 de cada conversa.'],
     pagamentos: ['Pagamentos', 'Pix (Banco do Brasil), link de cartão (Cielo), reservas a receber e baixa automática. Chega na etapa E, depois do Silbeck real e dos bancos.'],
-    painel: ['Painel', 'Indicadores de atendimento e de vendas. Chega na etapa F.'],
+    painel: ['Painel'],
     regua: ['Régua de mensagens', 'Mensagens automáticas antes e depois da estadia, com modelos aprovados pela Meta. Chega na etapa F, com o 99117.'],
     ajustes: ['Ajustes do agente'],
   };
-  const PRONTAS = ['conversas', 'funil', 'tarefas', 'produtos', 'agencias', 'ajustes'];
+  const PRONTAS = ['conversas', 'funil', 'tarefas', 'produtos', 'agencias', 'painel', 'ajustes'];
   function irPara(v) {
     document.querySelectorAll('.nav [data-vista]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.vista === v)));
     const [titulo, texto] = SECOES[v];
@@ -157,6 +157,7 @@
     if (v === 'tarefas') pintarTarefas();
     if (v === 'produtos') carregarProdutos();
     if (v === 'agencias') carregarAgencias();
+    if (v === 'painel') pintarPainelIndicadores();
     if (v === 'ajustes') abrirSub(subAtual);
   }
   document.querySelector('.nav').addEventListener('click', e => { const b = e.target.closest('[data-vista]'); if (b) irPara(b.dataset.vista); });
@@ -2035,6 +2036,167 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alertas' }, () => { clearTimeout(alertasT); alertasT = setTimeout(carregarAlertas, 300); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'config' }, () => carregarPlantao())
       .subscribe();
+  }
+
+  // ---------- Painel de indicadores: atendimento e vendas no período ----------
+  // Tudo calculado aqui, a partir do que a equipe já lê no banco (RLS). Faturamento real da hospedagem chega com o Silbeck.
+  let pnPeriodo = lido('crm-painel-periodo') || 'mes', pnVez = 0;
+  const pnTotal = (ls, f) => ls.reduce((s, x) => s + (Number(f(x)) || 0), 0);
+  const pnPct = (a, b) => b ? Math.round(100 * a / b) + '%' : '—';
+  const pnDia = d => { const z = x => String(x).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`; };
+  const pnMediana = ls => { if (!ls.length) return null; const o = ls.slice().sort((a, b) => a - b), m = o.length >> 1; return o.length % 2 ? o[m] : (o[m - 1] + o[m]) / 2; };
+  const pnMin = m => m == null ? '—' : m < 1 ? 'menos de 1 min' : m < 60 ? Math.round(m) + ' min' : m < 1440 ? (m / 60).toFixed(1).replace('.', ',') + ' h' : (m / 1440).toFixed(1).replace('.', ',') + ' dias';
+  const pnBrl0 = v => 'R$ ' + Math.round(Number(v) || 0).toLocaleString('pt-BR');
+  function pnIntervalo(p) {
+    const fim = new Date();
+    let ini;
+    if (p === 'mes') ini = new Date(fim.getFullYear(), fim.getMonth(), 1);
+    else { ini = new Date(fim); ini.setHours(0, 0, 0, 0); ini.setDate(ini.getDate() - Number(p) + 1); }
+    const ant = new Date(ini.getTime() - (fim - ini)); // período anterior, mesmo tamanho
+    return { ini, fim, ant };
+  }
+  $('pn-periodo').addEventListener('click', e => {
+    const c = e.target.closest('[data-d]'); if (!c) return;
+    pnPeriodo = c.dataset.d; guardar('crm-painel-periodo', pnPeriodo); pintarPainelIndicadores();
+  });
+  function pnTile(rotulo, num, sub, delta) {
+    return el('div', { class: 'cartao pn-tile' }, el('span', { class: 'rotulo', text: rotulo }), el('span', { class: 'pn-num', text: num }),
+      delta || null, sub ? el('span', { class: 'pn-sub', text: sub }) : null);
+  }
+  function pnDelta(agora, antes) {
+    if (antes == null) return null;
+    if (!antes && !agora) return el('span', { class: 'pn-delta igual', text: 'igual ao período anterior' });
+    if (!antes) return el('span', { class: 'pn-delta sobe', text: '▲ nenhum no período anterior' });
+    const d = Math.round(100 * (agora - antes) / antes);
+    return el('span', { class: 'pn-delta ' + (d > 0 ? 'sobe' : d < 0 ? 'desce' : 'igual'), text: (d > 0 ? '▲ ' : d < 0 ? '▼ ' : '') + Math.abs(d) + '% vs período anterior (' + antes + ')' });
+  }
+  function pnBloco(titulo, dica, ...filhos) {
+    const larga = titulo.startsWith('!'); if (larga) titulo = titulo.slice(1);
+    return el('div', { class: 'cartao pn-bloco' + (larga ? ' larga' : '') }, el('h3', { text: titulo }), dica ? el('p', { class: 'dica', text: dica }) : null, ...filhos);
+  }
+  const pnFalta = mig => el('div', { class: 'pn-falta', text: '⚠ Falta rodar a migração ' + mig + ' no Supabase para este número.' });
+  // Barras horizontais com o valor escrito ao lado (uma série; a cor da etapa repete a do funil)
+  function pnBarras(linhas) {
+    const max = Math.max(1, ...linhas.map(l => l[1]));
+    return el('div', { class: 'pn-hbar', role: 'table' }, ...linhas.flatMap(([nome, v, cor, extra]) => [
+      el('span', { role: 'cell', text: nome }),
+      el('div', { class: 'trilha', 'aria-hidden': 'true' }, el('div', { class: 'enche', style: `width:${(100 * v / max).toFixed(1)}%${cor ? ';--c:var(' + cor + ')' : ''}` })),
+      el('span', { class: 'v', role: 'cell', text: String(v) + (extra ? ' · ' + extra : '') })]));
+  }
+  // Colunas por dia (uma série), com dica ao passar o mouse e tabela para quem prefere ler os números
+  function pnColunas(dias) {
+    const NS = 'http://www.w3.org/2000/svg', s = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
+    const caixa = el('div', { class: 'pn-col' }), dica = el('div', { class: 'pn-dica', hidden: true });
+    const desenhar = W => { // desenha na largura real (texto sem distorcer); refaz se a tela mudar de tamanho
+      const H = 180, mE = 26, mB = 22, mT = 8, larg = (W - mE) / dias.length;
+      const max = Math.max(1, ...dias.map(d => d[1])), passo = max <= 4 ? 1 : Math.ceil(max / 4), topo = Math.ceil(max / passo) * passo;
+      const y = v => mT + (H - mT - mB) * (1 - v / topo);
+      const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Novos leads por dia' });
+      for (let v = 0; v <= topo; v += passo) {
+        svg.append(s('line', { class: v ? 'grade' : 'eixo', x1: mE, x2: W, y1: y(v), y2: y(v) }));
+        const t = s('text', { x: mE - 6, y: y(v) + 4, 'text-anchor': 'end' }); t.textContent = v; svg.append(t);
+      }
+      const marcar = [0, dias.length >> 1, dias.length - 1];
+      dias.forEach(([dia, v], i) => {
+        const x = mE + i * larg, bw = Math.max(1, Math.min(28, larg - 2)), bx = x + (larg - bw) / 2;
+        const alvo = s('rect', { class: 'alvo', x, y: mT, width: larg, height: H - mT - mB });
+        const h = Math.max(0, y(0) - y(v)), r = Math.min(4, bw / 2, h);
+        const barra = s('path', { class: 'barra', d: v ? `M${bx},${y(0)}V${y(v) + r}Q${bx},${y(v)} ${bx + r},${y(v)}H${bx + bw - r}Q${bx + bw},${y(v)} ${bx + bw},${y(v) + r}V${y(0)}Z` : '' });
+        alvo.addEventListener('mouseenter', () => {
+          barra.classList.add('on');
+          dica.textContent = dia.slice(8, 10) + '/' + dia.slice(5, 7) + ' · ' + v + (v === 1 ? ' lead' : ' leads'); dica.hidden = false;
+          dica.style.left = Math.min(W - 50, Math.max(50, bx + bw / 2)) + 'px'; dica.style.top = (y(v) - 6) + 'px';
+        });
+        alvo.addEventListener('mouseleave', () => { dica.hidden = true; barra.classList.remove('on'); });
+        svg.append(alvo, barra);
+        if (marcar.includes(i)) { const t = s('text', { x: x + larg / 2, y: H - 6, 'text-anchor': i === 0 ? 'start' : i === dias.length - 1 ? 'end' : 'middle' }); t.textContent = dia.slice(8, 10) + '/' + dia.slice(5, 7); svg.append(t); }
+      });
+      caixa.replaceChildren(svg, dica);
+    };
+    let ultima = 0;
+    new ResizeObserver(() => { const w = Math.round(caixa.clientWidth); if (w && w !== ultima) { ultima = w; desenhar(w); } }).observe(caixa);
+    const tab = el('table', { class: 'pn-tabela' }, el('thead', {}, el('tr', {}, el('th', { text: 'Dia' }), el('th', { class: 'n', text: 'Novos leads' }))),
+      el('tbody', {}, ...dias.filter(d => d[1]).map(([d, v]) => el('tr', {}, el('td', { text: d.slice(8, 10) + '/' + d.slice(5, 7) }), el('td', { class: 'n', text: String(v) })))));
+    return [caixa, el('details', { class: 'pn-tabela-ver' }, el('summary', { text: 'Ver em tabela' }), tab)];
+  }
+  async function pintarPainelIndicadores() {
+    const vez = ++pnVez, corpo = $('pn-corpo');
+    document.querySelectorAll('#pn-periodo [data-d]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.d === pnPeriodo)));
+    const { ini, fim, ant } = pnIntervalo(pnPeriodo), iso = ini.toISOString(), isoAnt = ant.toISOString();
+    $('pn-intervalo').textContent = ini.toLocaleDateString('pt-BR') + ' a ' + fim.toLocaleDateString('pt-BR');
+    if (!corpo.children.length) corpo.append(el('p', { class: 'lat-txt', text: 'Calculando…' }));
+    if (!modoPix) modoPix = await fetch('/saude').then(r => r.json()).then(j => j.pix || 'simulador').catch(() => 'simulador');
+    const [neg, orc, ven, cob, sug, ale] = await Promise.all([
+      sb.from('negocios').select('id,etapa,etapa_desde,fechado_em,origem,valor_previsto,motivo_perda,criado_em').or(`criado_em.gte.${isoAnt},etapa_desde.gte.${isoAnt}`).limit(5000),
+      sb.from('orcamentos').select('id,criado_em,aberto_primeira_vez_em,escolhida').gte('criado_em', iso).limit(5000),
+      sb.from('vendas').select('valor_total,situacao').gte('criado_em', iso).neq('situacao', 'cancelado').limit(5000),
+      sb.from('cobrancas').select('valor,valor_pago').eq('situacao', 'paga').gte('pago_em', iso).limit(5000),
+      sb.from('sugestoes').select('situacao').gte('criado_em', iso).limit(5000),
+      sb.from('alertas').select('tipo,criado_em,assumido_em,escalado_em,situacao').in('tipo', ATENDIMENTO).gte('criado_em', iso).limit(5000),
+    ]);
+    if (vez !== pnVez) return;
+    corpo.textContent = '';
+    if (neg.error) { corpo.append(pnFalta('008')); return; }
+    const noPer = d => d && new Date(d) >= ini, noAnt = d => d && new Date(d) >= ant && new Date(d) < ini;
+    const leads = neg.data.filter(n => noPer(n.criado_em)), leadsAnt = neg.data.filter(n => noAnt(n.criado_em));
+    const fechou = n => n.etapa === 'res' ? (n.fechado_em || n.etapa_desde) : null;
+    const reservas = neg.data.filter(n => noPer(fechou(n))), reservasAnt = neg.data.filter(n => noAnt(fechou(n)));
+    const convertidos = leads.filter(n => n.etapa === 'res').length;
+    const orcs = orc.data || [], abertos = orcs.filter(o => o.aberto_primeira_vez_em).length, quero = orcs.filter(o => o.escolhida).length;
+    const sugs = sug.data || [], boas = sugs.filter(x => x.situacao === 'usada' || x.situacao === 'aprovada').length, ruins = sugs.filter(x => x.situacao === 'descartada' || x.situacao === 'reprovada').length;
+    const chamados = ale.data || [], tempos = chamados.filter(a => a.assumido_em).map(a => (new Date(a.assumido_em) - new Date(a.criado_em)) / 6e4);
+
+    corpo.append(el('div', { class: 'pn-tiles' },
+      pnTile('Novos leads', String(leads.length), null, pnDelta(leads.length, leadsAnt.length)),
+      pnTile('Reservas fechadas', String(reservas.length), reservas.length ? pnBrl0(pnTotal(reservas, n => n.valor_previsto)) + ' pelo orçamento' : null, pnDelta(reservas.length, reservasAnt.length)),
+      pnTile('Conversão', pnPct(convertidos, leads.length), `${convertidos} de ${leads.length} leads do período já reservaram`),
+      pnTile('Orçamentos enviados', orc.error ? '—' : String(orcs.length), orc.error ? null : `${pnPct(abertos, orcs.length)} abertos · ${quero} clicaram em "Quero reservar"`),
+      ven.error ? el('div', { class: 'cartao pn-tile' }, el('span', { class: 'rotulo', text: 'Extras vendidos' }), pnFalta('012'))
+        : pnTile('Extras vendidos', pnBrl0(pnTotal(ven.data, v => v.valor_total)), ven.data.length + (ven.data.length === 1 ? ' venda' : ' vendas') + ' · na conta do hóspede'),
+      cob.error ? el('div', { class: 'cartao pn-tile' }, el('span', { class: 'rotulo', text: 'Pix recebidos' }), pnFalta('017'))
+        : pnTile('Pix recebidos', pnBrl0(pnTotal(cob.data, c => c.valor_pago || c.valor)), cob.data.length + (cob.data.length === 1 ? ' pagamento' : ' pagamentos') + (modoPix === 'simulador' ? ' · modo de teste' : '')),
+      pnTile('Acerto do Gilberto', sug.error ? '—' : pnPct(boas, boas + ruins), sug.error ? null : `${boas} de ${boas + ruins} sugestões aproveitadas pela equipe`),
+      ale.error ? el('div', { class: 'cartao pn-tile' }, el('span', { class: 'rotulo', text: 'Tempo para assumir' }), pnFalta('018'))
+        : pnTile('Tempo para assumir', pnMin(pnMediana(tempos)), `mediana de ${tempos.length} chamado${tempos.length === 1 ? '' : 's'} assumido${tempos.length === 1 ? '' : 's'}`)));
+
+    // Novos leads por dia
+    const conta = {}; leads.forEach(n => { const d = pnDia(new Date(n.criado_em)); conta[d] = (conta[d] || 0) + 1; });
+    const dias = []; for (const d = new Date(ini); d <= fim; d.setDate(d.getDate() + 1)) { const k = pnDia(d); dias.push([k, conta[k] || 0]); }
+    const grade = el('div', { class: 'pn-grade' });
+    grade.append(pnBloco('!Novos leads por dia', 'Cada negócio novo no funil (primeira mensagem, lead cadastrado ou conversa iniciada pela equipe).', ...pnColunas(dias)));
+
+    // Funil agora (todas as etapas, com os negócios carregados na tela)
+    grade.append(pnBloco('Funil agora', 'Quantos negócios estão em cada etapa neste momento.',
+      pnBarras(ETAPAS.map(([k, nome, , cor]) => [nome, negocios.filter(n => n.etapa === k).length, cor]))));
+
+    // Resultado por origem
+    const porOrigem = {}; leads.forEach(n => { const o = porOrigem[n.origem] ||= { leads: 0, res: 0, perd: 0, valor: 0 }; o.leads++; if (n.etapa === 'res') { o.res++; o.valor += Number(n.valor_previsto) || 0; } if (n.etapa === 'perd') o.perd++; });
+    const linhasO = Object.entries(porOrigem).sort((a, b) => b[1].leads - a[1].leads);
+    grade.append(pnBloco('!Resultado por origem', 'Leads que chegaram no período, por onde vieram, e quantos já viraram reserva.',
+      linhasO.length ? el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela' },
+        el('thead', {}, el('tr', {}, ...['Origem', 'Leads', 'Reservas', 'Conversão', 'Perdidos', 'Valor previsto'].map((t, i) => el('th', { class: i ? 'n' : '', text: t })))),
+        el('tbody', {}, ...linhasO.map(([o, x]) => el('tr', {}, el('td', { text: ORIGENS[o] || o }), el('td', { class: 'n', text: String(x.leads) }), el('td', { class: 'n', text: String(x.res) }),
+          el('td', { class: 'n', text: pnPct(x.res, x.leads) }), el('td', { class: 'n', text: String(x.perd) }), el('td', { class: 'n', text: x.valor ? pnBrl0(x.valor) : '—' }))))))
+        : el('div', { class: 'vazio', text: 'Nenhum lead novo no período.' })));
+
+    // Motivos de perda
+    const perdidos = neg.data.filter(n => n.etapa === 'perd' && noPer(n.fechado_em || n.etapa_desde)), mot = {};
+    perdidos.forEach(n => { const m = n.motivo_perda || 'Sem motivo informado'; mot[m] = (mot[m] || 0) + 1; });
+    grade.append(pnBloco('Por que perdemos', `${perdidos.length} negócio${perdidos.length === 1 ? '' : 's'} marcado${perdidos.length === 1 ? '' : 's'} como perdido${perdidos.length === 1 ? '' : 's'} no período.`,
+      perdidos.length ? pnBarras(Object.entries(mot).sort((a, b) => b[1] - a[1]).map(([m, v]) => [m, v])) : el('div', { class: 'vazio', text: 'Nenhuma perda no período.' })));
+
+    // Atendimento: chamados para a equipe e quanto tempo levaram para alguém assumir
+    if (!ale.error) {
+      const porTipo = {}; chamados.forEach(a => { const t = porTipo[a.tipo] ||= { n: 0, tempos: [], esc: 0, abertos: 0 }; t.n++; if (a.assumido_em) t.tempos.push((new Date(a.assumido_em) - new Date(a.criado_em)) / 6e4); if (a.escalado_em) t.esc++; if (a.situacao === 'aberto') t.abertos++; });
+      const linhasA = ATENDIMENTO.filter(t => porTipo[t]);
+      grade.append(pnBloco('!Chamados para a equipe', 'Quando o cliente pede uma pessoa, reclama, quer cancelar ou alterar, ou o Gilberto passa a conversa. "Escalados" são os que ninguém do plantão assumiu em 10 minutos.',
+        linhasA.length ? el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela' },
+          el('thead', {}, el('tr', {}, ...['Tipo', 'Chamados', 'Até assumir', 'Escalados', 'Em aberto'].map((t, i) => el('th', { class: i ? 'n' : '', text: t })))),
+          el('tbody', {}, ...linhasA.map(t => { const x = porTipo[t]; return el('tr', {}, el('td', { text: ROT_ALERTA[t] || t }), el('td', { class: 'n', text: String(x.n) }),
+            el('td', { class: 'n', text: pnMin(pnMediana(x.tempos)) }), el('td', { class: 'n', text: String(x.esc) }), el('td', { class: 'n', text: String(x.abertos) })); }))))
+          : el('div', { class: 'vazio', text: 'Nenhum chamado no período.' })));
+    }
+    corpo.append(grade, el('p', { class: 'dica', text: 'Valores de hospedagem vêm do orçamento enviado (valor previsto). O faturamento real e a ocupação entram quando o Silbeck estiver ligado.' }));
   }
 
   // ---------- Início ----------
