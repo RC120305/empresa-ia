@@ -18,13 +18,13 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 | `009_produtos_agencias_ajustes.sql` | `produtos` (já com combo, boia cross, arvorismo, decoração e massagem), `agencias`, `respostas` (biblioteca) e `sugestoes` (revisão das sugestões do Gilberto) | 02/10/2026 (dono) |
 | `010_biblioteca_origem.sql` | coluna `origem` em `respostas` (equipe, questionário ou revisão) | 02/10/2026 (dono) |
 | `011_fotos_biblioteca.sql` | `fotos_biblioteca`: fotos que a equipe trouxe do Drive e fotos da curadoria tiradas/devolvidas no Banco de fotos | 02/10/2026 (dono) |
-| `012_produtos_vendas.sql` | produtos completos (para quem, idade e altura, preço em número, variações, adicionais, foto representativa e fotos), `ofertas` (1 por conversa) e `vendas` (na conta do hóspede, com tarefas) | (pendente: rodar no SQL Editor) |
-| `013_alertas.sql` | `alertas` (sino da equipe): "Cliente pediu produto" e "Lançar na conta do hóspede" às 8h do check-in | (pendente: rodar no SQL Editor) |
-| `014_vitrines.sql` | links de extras (`vitrines`): páginas "Aventuras no Rio Formoso" e "Momentos especiais"; campo `vitrine` nos produtos; `registrar_abertura_vitrine` | (pendente: rodar no SQL Editor) |
-| `015_correcoes_questionario.sql` | origem `correcao` nas respostas: edição das respostas do questionário (o Gilberto usa a versão corrigida) | (pendente: rodar no SQL Editor) |
-| `016_produtos_fotos.sql` | `fotos` nos produtos: fotos escolhidas (do Drive ou do Banco de fotos), a primeira é a capa | (pendente: rodar no SQL Editor) |
-| `017_cobrancas_pix.sql` | `cobrancas` (Pix do Banco do Brasil: txid, valor, prazo, copia e cola, baixa) e alertas "Pagamento recebido" / "Cobrança vencida" | (pendente: rodar no SQL Editor) |
-| `018_alertas_atendimento.sql` | alertas de atendimento (pede pessoa, reclamação, cancelamento, alteração, Gilberto passou), plantão (`config`) e escalonamento | (pendente: rodar no SQL Editor) |
+| `012_produtos_vendas.sql` | produtos completos (para quem, idade e altura, preço em número, variações, adicionais, foto representativa e fotos), `ofertas` (1 por conversa) e `vendas` (na conta do hóspede, com tarefas) | até 04/10/2026 (dono, conferido) |
+| `013_alertas.sql` | `alertas` (sino da equipe): "Cliente pediu produto" e "Lançar na conta do hóspede" às 8h do check-in | até 04/10/2026 (dono, conferido) |
+| `014_vitrines.sql` | links de extras (`vitrines`): páginas "Aventuras no Rio Formoso" e "Momentos especiais"; campo `vitrine` nos produtos; `registrar_abertura_vitrine` | até 04/10/2026 (dono, conferido) |
+| `015_correcoes_questionario.sql` | origem `correcao` nas respostas: edição das respostas do questionário (o Gilberto usa a versão corrigida) | até 04/10/2026 (dono, conferido) |
+| `016_produtos_fotos.sql` | `fotos` nos produtos: fotos escolhidas (do Drive ou do Banco de fotos), a primeira é a capa | até 04/10/2026 (dono, conferido) |
+| `017_cobrancas_pix.sql` | `cobrancas` (Pix do Banco do Brasil: txid, valor, prazo, copia e cola, baixa) e alertas "Pagamento recebido" / "Cobrança vencida" | até 04/10/2026 (dono, conferido) |
+| `018_alertas_atendimento.sql` | alertas de atendimento (pede pessoa, reclamação, cancelamento, alteração, Gilberto passou), plantão (`config`) e escalonamento | até 04/10/2026 (dono, conferido) |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.
