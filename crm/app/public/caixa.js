@@ -886,6 +886,7 @@
       $('sug-notas').className = 'sug-notas' + (j.precisa_equipe || j.simulador ? ' alerta' : '');
       $('sug-modelo').textContent = /\[\[/.test(j.mensagem) ? 'complete os [[ ]] antes de enviar' : '';
       $('sugestao').dataset.texto = j.mensagem;
+      $('sugestao').dataset.pix = j.pix ? JSON.stringify(j.pix) : '';
       $('sugestao').dataset.sugestao = j.sugestao_id || '';
       $('sug-motivos').hidden = true;
       const fl = $('sug-fotos-lista'); fl.textContent = '';
@@ -901,9 +902,20 @@
   }
   $('sugerir').addEventListener('click', sugerir);
   let sugestaoEmUso = null; // {id, texto}: marcada como "usada" quando o texto for enviado
-  $('sug-usar').addEventListener('click', () => {
+  $('sug-usar').addEventListener('click', async () => {
     const ta = $('resposta');
-    ta.value = $('sugestao').dataset.texto || '';
+    let texto = $('sugestao').dataset.texto || '';
+    // O Gilberto pediu um Pix: só agora, com a aprovação da equipe, o CRM gera e troca o [[PIX]] pelo Pix de verdade
+    const pix = $('sugestao').dataset.pix ? JSON.parse($('sugestao').dataset.pix) : null;
+    if (pix && texto.includes('[[PIX]]') && confirm('Gerar o Pix de ' + brl(pix.valor) + ' (' + pix.descricao + ') e pôr na mensagem?')) {
+      try {
+        const j = await chamarApi('/api/cobranca', { conversa_id: aberta, tipo: pix.tipo, valor: pix.valor, descricao: pix.descricao });
+        texto = texto.replace('[[PIX]]', textoPix(j.cobranca));
+        toast('Pix gerado. Revise a mensagem e envie.');
+        if (painel === 'res') pintarPainel();
+      } catch (e) { toast(e.message); }
+    }
+    ta.value = texto;
     if ($('sugestao').dataset.sugestao) sugestaoEmUso = { id: $('sugestao').dataset.sugestao, texto: ta.value, conversa: aberta };
     $('sugestao').hidden = $('sug-fotos').hidden; // se houver fotos sugeridas, o painel fica para enviá-las
     $('sug-texto').textContent = ''; $('sug-notas').textContent = '';
@@ -1767,10 +1779,11 @@
     }
     lat.append(el('span', { class: 'rotulo', text: 'Reservas no Silbeck' }), el('p', { class: 'lat-txt', text: 'Aparecem aqui quando a ponte com o Silbeck estiver ligada. Link de cartão (Cielo): numa próxima etapa.' }));
   }
+  // Texto do Pix (2 balões: a explicação com os dados da conta e, sozinho, o copia e cola)
+  const textoPix = cob => 'Segue o Pix ' + (cob.tipo === 'sinal' ? 'do sinal (50%)' : cob.tipo === 'total' ? 'do valor total' : '') + ' de ' + brl(cob.valor) + ', válido até ' + quandoBR(cob.expira_em) + '. É só copiar o código abaixo e colar no app do seu banco, em Pix Copia e Cola.\n\n' + RECEBEDOR_PIX + '\n\nAssim que o pagamento cair, eu confirmo sua reserva por aqui 🌿' + '\n---\n' + (cob.copia_e_cola || '');
   function porNoCampo(cob) {
     const ta = $('resposta');
-    const t = 'Segue o Pix ' + (cob.tipo === 'sinal' ? 'do sinal (50%)' : cob.tipo === 'total' ? 'do valor total' : '') + ' de ' + brl(cob.valor) + ', válido até ' + quandoBR(cob.expira_em) + '. É só copiar o código abaixo e colar no app do seu banco, em Pix Copia e Cola.\n\n' + RECEBEDOR_PIX + '\n\nAssim que o pagamento cair, eu confirmo sua reserva por aqui 🌿';
-    ta.value = (ta.value.trim() ? ta.value.trim() + '\n---\n' : '') + t + '\n---\n' + (cob.copia_e_cola || '');
+    ta.value = (ta.value.trim() ? ta.value.trim() + '\n---\n' : '') + textoPix(cob);
     ajustarAltura(); ta.focus();
   }
   async function acaoCobranca(cob, acao) {

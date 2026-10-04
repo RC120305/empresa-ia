@@ -10,7 +10,7 @@ let janelaAberta = true;
 let ultimoPedidoIA = null;
 const pedidosIA = [];
 const emDias = n => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
-let iaCota = false, iaOrcamento = false;
+let iaCota = false, iaOrcamento = false, iaPix = false;
 const orcs = [];
 const FAKE = {
   '/auth/v1/user': req => req.headers.authorization === 'Bearer token-equipe' ? { email: 'equipe@teste.com' }
@@ -231,6 +231,14 @@ const falso = http.createServer((req, res) => {
       if (iaOrcamento && !jaConsultou) return responder(200, { id: 'msg_o', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_o', name: 'gerar_orcamento', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], opcoes: [{ acomodacoes: ['BGE'] }, { acomodacoes: ['STD'] }], persona: 'familia', pessoas_aptas_combo: 2, frase_de_abertura: 'Ana, separei as opções para a família curtir os rios', sugerida: 'BGE' } }],
         usage: { input_tokens: 10, output_tokens: 20 } });
+      if (iaPix && !jaConsultou) return responder(200, { id: 'msg_p', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
+        content: [{ type: 'tool_use', id: 'toolu_p1', name: 'gerar_cobranca', input: { opcao_codigo: 'BGE', forma: 'pix', percentual: 50 } },
+          { type: 'tool_use', id: 'toolu_p2', name: 'gerar_cobranca', input: { opcao_codigo: 'BGE', forma: 'cartao', percentual: 50 } },
+          { type: 'tool_use', id: 'toolu_p3', name: 'abrir_alerta', input: { motivo: 'reserva_urgente', prioridade: 3, resumo: 'Ana aceitou o Bangalô Especial e vai pagar o sinal no Pix. Falta criar a reserva no Silbeck.' } }],
+        usage: { input_tokens: 10, output_tokens: 20 } });
+      if (iaPix) return responder(200, { id: 'msg_pf', type: 'message', role: 'assistant', model: b.model, stop_reason: 'end_turn', stop_sequence: null,
+        content: [{ type: 'text', text: JSON.stringify({ mensagem: 'Perfeito, Ana! Vou deixar tudo pronto 🌿\n---\n[[PIX]]', notas_internas: 'Criar a reserva no Silbeck.', precisa_equipe: true, produto_oferecido: '' }) }],
+        usage: { input_tokens: 10, output_tokens: 20, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 } });
       if (iaCota && !jaConsultou) return responder(200, { id: 'msg_0', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_1', name: 'consultar_disponibilidade', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], finalidade: 'cotacao' } }],
         usage: { input_tokens: 10, output_tokens: 20 } });
@@ -993,7 +1001,7 @@ falso.listen(0, () => {
     assert.ok(pi.messages[3].content.includes('Modo: sugestao'));
     assert.equal(pi.output_config.format.type, 'json_schema');
     assert.equal(pi.fallbacks, 'default'); assert.ok(ultimoPedidoIA.beta.includes('server-side-fallback-2026-07-01'));
-    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'enviar_fotos', 'enviar_link_extras']);
+    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'gerar_cobranca', 'enviar_fotos', 'abrir_alerta', 'enviar_link_extras']);
     assert.ok(pi.messages[3].content.includes('SIMULADOR'));
     // Cotação: o Gilberto pede, o CRM consulta o simulador do Silbeck e devolve o resultado na 2ª rodada
     iaCota = true; pedidosIA.length = 0;
@@ -1023,6 +1031,23 @@ falso.listen(0, () => {
     assert.ok(/\/o\/[A-Za-z0-9_-]{22}$/.test(resOrc.link));
     assert.equal(sug3.orcamentos.length, 1); assert.equal(sug3.simulador, true);
     assert.ok(JSON.stringify(pedidosIA[0].messages).includes('Reserva: ainda não paga'), 'o Gilberto sabe que ainda não é hora dos extras');
+    // Aceite: o Gilberto pede o Pix do sinal (o CRM NÃO cria na hora: marcador [[PIX]]) e passa o caso para a equipe
+    {
+      iaPix = true; pedidosIA.length = 0; alertasF.length = 0;
+      const nCob = cobrancasF.length;
+      r = await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-equipe' }, body: JSON.stringify({ conversa_id: conv }) });
+      const sp = await r.json(); iaPix = false;
+      assert.equal(r.status, 200, JSON.stringify(sp));
+      const res = pedidosIA[1].messages.at(-1).content.map(c => JSON.parse(c.content));
+      assert.equal(res[0].marcador, '[[PIX]]'); assert.equal(res[1].ok, false, 'cartão ainda não'); assert.equal(res[2].ok, true);
+      const bge = orcs.at(-1).opcoes.find(o => o.codigo === 'BGE');
+      assert.equal(sp.pix.tipo, 'sinal'); assert.equal(sp.pix.valor, Math.round(bge.valor_total * 50) / 100); assert.ok(sp.pix.descricao.startsWith('Sinal 50% · Bangalô Especial ('));
+      assert.ok(sp.mensagem.includes('[[PIX]]'));
+      assert.equal(cobrancasF.length, nCob, 'nenhum Pix criado antes de a equipe aprovar');
+      assert.deepEqual(alertasF.map(a => [a.tipo, a.titulo]), [['gilberto_passou', 'Gilberto: Reserva urgente (check-in em até 3 dias)']], 'um alerta só, com o motivo (sem duplicar pelo precisa_equipe)');
+      assert.ok(alertasF[0].info.includes('Falta criar a reserva'));
+      alertasF.length = 0;
+    }
     const salvo = orcs.at(-1);
     assert.equal(salvo.primeiro_nome, null); assert.equal(salvo.numero_whatsapp, '15551829766'); assert.equal(salvo.fonte, 'simulador');
     const tok = resOrc.link.split('/o/')[1];

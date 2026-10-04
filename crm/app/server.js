@@ -652,15 +652,19 @@ async function plantaoAtual(buscar = fetch) {
   plantaoCache = { ate: Date.now() + 30000, id: (v && v.usuario_id) || null };
   return plantaoCache.id;
 }
-async function alertaAtendimento(tipo, conversa, info, buscar = fetch) {
+async function alertaAtendimento(tipo, conversa, info, buscar = fetch, titulo = null) {
   if (!pedidos.TITULOS[tipo] || !conversa) return;
   const ja = await buscar(`${SUPABASE_URL}/rest/v1/alertas?conversa_id=eq.${conversa}&tipo=eq.${tipo}&situacao=eq.aberto&select=id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
   if (ja && ja.ok && (await ja.json().catch(() => [])).length) return; // já tem um aberto para esta conversa
   const negocio = await negocioDaConversa(conversa, 'id', buscar);
-  await criarAlerta({ tipo, titulo: pedidos.TITULOS[tipo], info: String(info || '').slice(0, 300), conversa_id: conversa, negocio_id: negocio, para_id: await plantaoAtual(buscar) }, buscar);
-  if (negocio) await eventoNegocio(negocio, 'Alerta: ' + pedidos.TITULOS[tipo], 'CRM', buscar);
+  await criarAlerta({ tipo, titulo: titulo || pedidos.TITULOS[tipo], info: String(info || '').slice(0, 300), conversa_id: conversa, negocio_id: negocio, para_id: await plantaoAtual(buscar) }, buscar);
+  if (negocio) await eventoNegocio(negocio, 'Alerta: ' + (titulo || pedidos.TITULOS[tipo]), 'CRM', buscar);
   console.log(JSON.stringify({ evento: 'alerta_atendimento', tipo }));
 }
+// Motivos com que o Gilberto passa um caso para a equipe (ferramenta abrir_alerta)
+const MOTIVOS_ALERTA = { alteracao: 'Pedido de alteração', fora_da_base: 'Pergunta fora da base', excecao_politica: 'Exceção de política', acessibilidade: 'Acessibilidade',
+  desconto_insistente: 'Pede desconto', problema_pagamento: 'Problema no pagamento', dado_sensivel_recebido: 'Dado sensível recebido', pedido_especial_outro: 'Pedido especial',
+  comprovante_recebido: 'Comprovante recebido', reserva_urgente: 'Reserva urgente (check-in em até 3 dias)', atividade_escolhida: 'Atividade escolhida', seguranca: 'Segurança' };
 // Mensagem nova do cliente: se for um desses pedidos, avisa a equipe
 async function conferirPedido(texto, conversa, buscar = fetch) {
   const tipo = pedidos.detectarPedido(texto);
@@ -1655,6 +1659,8 @@ const API_EQUIPE = {
       gerar_orcamento: async e => { const c = await silbeck.cotar(e); if (!c.ok) return c; const m = orcamento.montar(e, c); return m.erro ? { ok: false, erro: m.erro } : { ok: true, link: URL_PUBLICA + '/o/TESTE-sem-link-real', fonte: c.fonte, opcoes: m.opcoes, aviso: 'Teste: nenhum orçamento foi gravado.' }; },
       enviar_fotos: async e => { const f = orcamento.escolherFotos(e); return f.length ? { ok: true, modo: 'sugestao', fotos: f.map(x => ({ arquivo: x.arquivo, descricao: x.descricao })) } : { ok: false, erro: 'Sem foto na biblioteca para esse pedido.' }; },
       enviar_link_extras: async e => vitrine.TEMAS[e.tema] ? { ok: true, link: URL_PUBLICA + '/e/TESTE-sem-link-real', tema: vitrine.TEMAS[e.tema].nome, aviso: 'Teste: nenhum link foi criado.' } : { ok: false, erro: 'Tema inválido.' },
+      gerar_cobranca: async e => e.forma === 'pix' ? { ok: true, marcador: '[[PIX]]', aviso: 'Teste: nenhum Pix foi criado. Escreva [[PIX]] sozinho num balão.' } : { ok: false, erro: 'Cartão ainda não está ligado.' },
+      abrir_alerta: async e => MOTIVOS_ALERTA[e.motivo] ? { ok: true, aviso: 'Teste: nenhum alerta foi aberto.' } : { ok: false, erro: 'Motivo inválido.' },
     };
     try { return { ok: true, ...(await gilberto.sugerir(historico, { canal: 'wa', nome: String(corpo.nome || 'Cliente de teste') }, executores, await catalogo())) }; }
     catch (e) { if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message); throw e; }
@@ -1777,6 +1783,25 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
         const v = await criarVitrine(conv.id, e.tema, { por: 'gilberto', enviada: false }, buscar);
         return { ok: true, link: v.link, vitrine_id: v.id, tema: vitrine.TEMAS[e.tema].nome, produtos: nomes };
       },
+      // Pix: o CRM NÃO cria na hora. Devolve o marcador [[PIX]]; o Pix nasce quando a equipe aprova o envio
+      // (sugestão descartada não deixa Pix solto vencendo). Valor = opção escolhida do último orçamento.
+      gerar_cobranca: async e => {
+        if (e.forma !== 'pix') return { ok: false, erro: 'O link de cartão (Cielo) ainda não está ligado. Escreva [[link do cartão]] na mensagem e avise a equipe em notas_internas.' };
+        const o = (await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?conversa_id=eq.${conv.id}&select=id,opcoes,data_entrada,data_saida&order=criado_em.desc&limit=1`, buscar))[0];
+        const op = o && (o.opcoes || []).find(x => x.codigo === String(e.opcao_codigo || '').toUpperCase());
+        if (!op) return { ok: false, erro: 'Essa acomodação não está no último orçamento desta conversa. Gere um orçamento com ela antes ou confirme com o cliente qual opção ele quer.' };
+        const pct = e.percentual === 100 ? 100 : 50, valor = Math.round(Number(op.valor_total) * pct) / 100;
+        return { ok: true, marcador: '[[PIX]]', valor, percentual: pct,
+          aviso: 'Escreva [[PIX]] sozinho num balão. Quando a equipe aprovar, o CRM gera o Pix e troca o marcador pelo valor, o prazo, os dados da conta e o copia e cola. A reserva no Silbeck a equipe cria: diga isso em notas_internas.',
+          pix: { tipo: pct === 100 ? 'total' : 'sinal', valor, descricao: (pct === 100 ? 'Valor total' : 'Sinal 50%') + ' · ' + op.nome + ' (' + orcamento.periodo(o.data_entrada, o.data_saida) + ')' } };
+      },
+      // Passa o caso para a equipe: alerta no sino e no celular (plantão primeiro), com o resumo do Gilberto
+      abrir_alerta: async e => {
+        const rot = MOTIVOS_ALERTA[e.motivo];
+        if (!rot) return { ok: false, erro: 'Motivo inválido.' };
+        await alertaAtendimento(e.motivo === 'alteracao' ? 'alteracao' : 'gilberto_passou', conv.id, String(e.resumo || ''), buscar, 'Gilberto: ' + rot);
+        return { ok: true, aviso: 'A equipe foi avisada (quem está de plantão primeiro). Continue a conversa: diga ao cliente que vai ver com o pessoal, sem prometer o resultado.' };
+      },
       // Modo sugestão: o Gilberto escolhe as fotos; quem envia é a equipe, pelo painel da sugestão.
       enviar_fotos: async entrada => {
         const fotos = orcamento.escolherFotos(entrada);
@@ -1793,9 +1818,9 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
       body: JSON.stringify({ conversa_id: conv.id, pergunta: ultimaDoCliente ? String(ultimaDoCliente.transcricao || ultimaDoCliente.corpo || '[' + ultimaDoCliente.tipo + ']').slice(0, 2000) : null,
         mensagem: r.mensagem, notas_internas: r.notas_internas, precisa_equipe: r.precisa_equipe, modelo: r.modelo,
-        ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo), produto_oferecido: r.produto_oferecido || null, vitrines: r.vitrines || [] }, pedida_por: eu.id }) }).catch(() => null);
+        ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo), produto_oferecido: r.produto_oferecido || null, vitrines: r.vitrines || [], pix: r.pix || null, alerta: !!r.alertou }, pedida_por: eu.id }) }).catch(() => null);
     const sugestaoId = reg && reg.ok ? ((await reg.json().catch(() => []))[0] || {}).id : null;
-    if (r.precisa_equipe) await alertaAtendimento('gilberto_passou', conv.id, r.notas_internas || 'O Gilberto indicou que este caso é para a equipe.', buscar).catch(() => {});
+    if (r.precisa_equipe && !r.alertou) await alertaAtendimento('gilberto_passou', conv.id, r.notas_internas || 'O Gilberto indicou que este caso é para a equipe.', buscar).catch(() => {});
     let avisoRevisao = null;
     if (!sugestaoId) { // a sugestão vale, mas não entrou na Revisão: mostra o motivo para a equipe
       const det = reg ? (await reg.text().catch(() => '')).slice(0, 200) : 'sem resposta do banco';

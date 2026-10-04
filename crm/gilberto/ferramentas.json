@@ -185,13 +185,14 @@
   },
   {
     "name": "gerar_cobranca",
-    "description": "Gera o link de pagamento por Pix (Banco do Brasil) ou cartão de crédito (link Cielo), em uma das 4 opções do hotel (P61): 50% de sinal no cartão em até 3x · 100% no cartão em até 6x sem juros · Pix de 50% · Pix de 100%. Com sinal, o restante é pago no check-out. O sinal no cartão pode ser dividido em 2 cartões (2 links). Use logo depois de criar_reserva, na forma que o cliente escolheu, ou para mandar um novo link quando o prazo venceu e a reserva ainda está ativa. Devolve o(s) link(s), o valor e o prazo-limite calculado pelo CRM (48 h; 2 h se o check-in for em até 3 dias; nunca depois do check-in). O CRM envia junto, sozinho, a política de cancelamento (resposta fixa) e registra o envio. O pagamento é sempre pelo link: nunca peça nem aceite número de cartão no chat.",
+    "description": "Gera o Pix (Banco do Brasil) da reserva, depois do aceite do cliente e de ele escolher pagar no Pix: 50% de sinal (o restante no check-out) ou 100%. Nesta fase (antes do Silbeck real) o valor vem da opção escolhida no último orçamento da conversa (opcao_codigo). O CRM NÃO cria o Pix na hora: devolve o marcador [[PIX]], que você escreve sozinho num balão; quando a equipe aprova o envio, o CRM gera o Pix e troca o marcador pelo valor, o prazo (48 h; 2 h se o check-in for em até 3 dias), os dados da conta para o cliente conferir e o copia e cola. Não repita essas informações no texto. Cartão (link Cielo) ainda não está ligado: devolve erro; nesse caso escreva [[link do cartão]] e avise a equipe em notas_internas. A reserva no Silbeck quem cria é a equipe. Nunca peça nem aceite número de cartão no chat.",
     "strict": true,
     "input_schema": {
       "type": "object",
       "properties": {
-        "reserva_id": {
-          "type": "string"
+        "opcao_codigo": {
+          "type": "string",
+          "description": "Código da acomodação que o cliente escolheu, de uma das opções do último orçamento (ex.: \"BGE\")."
         },
         "forma": {
           "type": "string",
@@ -206,19 +207,11 @@
             50,
             100
           ],
-          "description": "50 = sinal (cartão até 3x ou Pix); 100 = valor total (cartão até 6x ou Pix)."
-        },
-        "cartoes": {
-          "type": "integer",
-          "enum": [
-            1,
-            2
-          ],
-          "description": "Só para cartão com percentual 50: em quantos cartões o cliente quer dividir o sinal. O CRM divide o valor e gera um link por cartão."
+          "description": "50 = sinal; 100 = valor total."
         }
       },
       "required": [
-        "reserva_id",
+        "opcao_codigo",
         "forma",
         "percentual"
       ],
