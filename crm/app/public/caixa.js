@@ -959,7 +959,7 @@
         if (r.atencao) res.append(el('div', { class: 'aviso-sim', text: '⚠ ' + r.atencao }));
         if (!r.opcoes.length) { res.append(el('p', { class: 'lat-txt', text: 'Sem vaga para esse grupo nessas datas.' + (r.aviso ? ' ' + r.aviso : '') })); return; }
         const marcadas = [];
-        r.opcoes.forEach(o => {
+        r.opcoes.slice().sort((a, b) => Number(a.valor_total) - Number(b.valor_total)).forEach(o => { // da mais em conta para a maior
           const cb = el('input', { type: 'checkbox', onchange: ev => {
             if (ev.target.checked) marcadas.push(o.codigo); else marcadas.splice(marcadas.indexOf(o.codigo), 1);
             criar.toggleAttribute('disabled', !marcadas.length);

@@ -19,6 +19,8 @@ const CATALOGO = {
   QST: { nome: 'Standard Quádruplo', cap: '20 a 25 m² · até 4 pessoas', dest: ['Ótimo custo para família ou grupo', 'Térreo, com estacionamento em frente', 'Cama queen + 2 de solteiro'] },
   CST: { nome: 'Duplo Casa Standard', cap: 'para 2 pessoas', dest: ['Opção econômica para casal', 'Ar quente e frio, frigobar e Wi-Fi', 'Café da manhã incluso'] },
 };
+// Antes das opções e dos valores, os benefícios (dono, 04/10/2026). Fatos aprovados: contexto/hotel-operacional.md
+const PORQUE = 'O único hotel de Bonito cercado por dois rios, o Formoso e o Formosinho: 40 hectares de natureza a 6 km do centro, todo o caminho em asfalto. A diária já inclui o café da manhã e a programação diária com monitor (trilhas com banho de rio, tirolesa, stand up, caiaque e arco e flecha), também para quem fica uma noite só.';
 const INCLUSO = ['Café da manhã (6h30 às 9h30)', 'Piscina climatizada', 'Hidromassagem aquecida', 'Sauna', 'Trilhas e decks nos dois rios', 'Caiaque e stand up com monitor', 'Arco e flecha', 'Playground e salão de jogos'];
 const EXTRAS = [
   { nome: 'Combo boia cross + arvorismo', txt: 'As duas aventuras dentro do hotel, com guias. A partir de 5 anos e 1,15 m.', preco: 'R$ 170 por pessoa', combo: true },
@@ -104,15 +106,17 @@ function montar(entrada, cotacao) {
     if (!c) return { erro: `${CATALOGO[cod] ? CATALOGO[cod].nome : cod} não tem vaga nessas datas ou não comporta o grupo. Use só códigos que vieram de consultar_disponibilidade.` };
     if (!opcoes.some(x => x.codigo === cod)) opcoes.push({ codigo: cod, nome: (CATALOGO[cod] && CATALOGO[cod].nome) || c.nome, valor_total: c.valor_total, media_por_noite: c.media_por_noite, parcela_6x: c.parcela_6x, diarias: c.diarias, taxas: c.taxas });
   }
-  return { opcoes };
+  // Sempre da mais em conta para a de maior valor (dono, 04/10/2026): nunca abrir com a mais cara
+  return { opcoes: emOrdemDeValor(opcoes) };
 }
+const emOrdemDeValor = ops => [...(ops || [])].sort((a, b) => (Number(a.valor_total) || 0) - (Number(b.valor_total) || 0));
 
 function pagina(o, { previa = false, produtos = null } = {}) {
   const n = noites(o.data_entrada, o.data_saida);
   const nome = o.primeiro_nome ? esc(o.primeiro_nome) : '';
   const bib = biblioteca();
   const fotosDe = cod => ((bib.find(g => g.grupo === cod) || bib.find(g => g.grupo === { QES: 'SUP', QST: 'STD', CST: 'STD' }[cod]) || { fotos: [] }).fotos).slice(0, 5);
-  const cards = (o.opcoes || []).map((op, i) => {
+  const cards = emOrdemDeValor(o.opcoes).map((op, i) => {
     const cat = CATALOGO[op.codigo] || { nome: op.nome, cap: '', dest: [] };
     const fotos = fotosDe(op.codigo);
     const galeria = fotos.length ? `<div class="fotos" tabindex="0" aria-label="Fotos: ${esc(cat.nome)}">${fotos.map((f, k) => `<img src="/fotos/${esc(f.arquivo)}" alt="${esc(cat.nome)} · foto ${k + 1}" loading="${k ? 'lazy' : 'eager'}" width="800" height="600">`).join('')}</div>${fotos.length > 1 ? `<div class="pontos" aria-hidden="true">${fotos.map((_, k) => `<i${k ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}` : '';
@@ -153,8 +157,8 @@ ${previa ? '<div class="aviso-teste">Prévia da equipe: esta visita não conta c
 <div class="resumo"><span>${esc(periodo(o.data_entrada, o.data_saida))}</span><span>${n} ${n > 1 ? 'noites' : 'noite'}</span><span>${esc(grupo(o))}</span></div></div></header>
 <main>
 <p class="intro">${abertura}${o.frase_de_abertura ? (o.opcoes.length > 1 ? `São ${o.opcoes.length} opções` : 'É uma opção') : (o.opcoes.length > 1 ? `Separei ${o.opcoes.length} opções` : 'Separei uma opção')} com vaga nas suas datas. Os valores são os de hoje, conferidos no nosso sistema de reservas, e ficam sujeitos à disponibilidade até a reserva. 🌿<br><small>Equipe do Hotel Cabanas</small></p>
+<section class="bloco porque"><h3 class="sec-t">Por que o Cabanas</h3><p class="porque-t">${esc(PORQUE)}</p><h3 class="sec-t">Já está incluso na diária</h3><ul class="inclui">${INCLUSO.map(x => `<li>${esc(x)}</li>`).join('')}</ul></section>
 ${cards}
-<section class="bloco"><h3 class="sec-t">Já está incluso na diária</h3><ul class="inclui">${INCLUSO.map(x => `<li>${esc(x)}</li>`).join('')}</ul></section>
 <section class="bloco"><h3 class="sec-t">Para deixar a viagem completa</h3><p class="extra-intro">Pagos à parte: vão para a conta da hospedagem e são acertados no check-out. ${selecionavel ? 'Marque o que quiser incluir: vai junto quando você tocar em “Quero reservar esta”.' : 'É só pedir na conversa que a gente organiza.'}</p><div class="extras">${extras}</div></section>
 <section class="bloco"><h3 class="sec-t">Condições</h3><ul class="cond">
 <li><b>Formas de pagamento:</b> sinal de 50% no Pix ou no cartão em até 3x, ou 100% no Pix ou no cartão em até 6x sem juros. Com sinal, o restante é pago no check-out.</li>

@@ -1016,7 +1016,8 @@ falso.listen(0, () => {
     assert.equal(r.status, 200, JSON.stringify(sug3));
     const resOrc = JSON.parse(pedidosIA[1].messages.at(-1).content[0].content);
     assert.equal(resOrc.ok, true, JSON.stringify(resOrc));
-    assert.deepEqual(resOrc.opcoes.map(o => o.codigo), ['BGE', 'STD']);
+    assert.deepEqual(resOrc.opcoes.map(o => o.codigo), ['STD', 'BGE'], 'da mais em conta para a maior, mesmo pedindo a mais cara primeiro');
+    assert.ok(resOrc.opcoes[0].valor_total <= resOrc.opcoes[1].valor_total);
     assert.ok(/\/o\/[A-Za-z0-9_-]{22}$/.test(resOrc.link));
     assert.equal(sug3.orcamentos.length, 1); assert.equal(sug3.simulador, true);
     const salvo = orcs.at(-1);
@@ -1026,6 +1027,9 @@ falso.listen(0, () => {
     const html = await r.text();
     assert.equal(r.status, 200);
     assert.ok(html.includes('Bangalô Especial') && html.includes('Apartamento Standard') && html.includes('valores fictícios'));
+    // Benefícios antes das opções; opções da mais em conta para a maior
+    assert.ok(html.indexOf('Por que o Cabanas') < html.indexOf('class="op') && html.includes('cercado por dois rios') && html.indexOf('Já está incluso') < html.indexOf('class="op'));
+    assert.ok(html.indexOf('<h2>Apartamento Standard') < html.indexOf('<h2>Bangalô Especial'));
     assert.ok(html.includes('Ana, separei as opções para a família curtir os rios.') && html.includes('noindex'));
     assert.ok(chamadas.some(c => c.url === '/rest/v1/rpc/registrar_abertura_orcamento' && c.corpo.p_token === tok));
     const antesPrevia = chamadas.filter(c => c.url === '/rest/v1/rpc/registrar_abertura_orcamento').length;
