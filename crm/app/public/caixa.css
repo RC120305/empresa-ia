@@ -520,3 +520,5 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
 .pg-tabela .pn-sub{font-size:12px}
 .pg-acoes{display:flex;flex-wrap:wrap;gap:2px;justify-content:flex-end}
 .pg-tabela .lead-link{text-align:left;white-space:nowrap}
+.alertas .al-avisos{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--cor-borda);padding-top:10px;margin-top:2px}
+.alertas .al-avisos .btn{align-self:flex-start}

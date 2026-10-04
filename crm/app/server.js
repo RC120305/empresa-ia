@@ -14,6 +14,7 @@ const produtos = require('./produtos');
 const vitrine = require('./vitrine');
 const bb = require('./bb');
 const pedidos = require('./pedidos');
+const push = require('./push');
 const path = require('path');
 
 const porta = process.env.PORT || 8080;
@@ -34,9 +35,9 @@ const JANELA_MS = 24 * 3600 * 1000;
 
 // Arquivos da caixa de entrada (carregados uma vez; lista fechada, nada de caminho vindo da URL).
 const PUB = path.join(__dirname, 'public');
-const TIPOS = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.json': 'application/json' };
+const TIPOS = { '.webmanifest': 'application/manifest+json', '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.json': 'application/json' };
 const ESTATICOS = {};
-for (const [rota, arquivo] of [['/caixa', 'caixa.html'], ['/caixa.css', 'caixa.css'], ['/caixa.js', 'caixa.js'], ['/vendor/supabase-2.117.2.js', 'vendor/supabase-2.117.2.js']]) {
+for (const [rota, arquivo] of [['/caixa', 'caixa.html'], ['/caixa.css', 'caixa.css'], ['/caixa.js', 'caixa.js'], ['/vendor/supabase-2.117.2.js', 'vendor/supabase-2.117.2.js'], ['/sw.js', 'sw.js'], ['/manifest.webmanifest', 'manifest.webmanifest']]) {
   try { ESTATICOS[rota] = { corpo: fs.readFileSync(path.join(PUB, arquivo)), tipo: TIPOS[path.extname(arquivo)] }; } catch (e) { /* arquivo ausente: rota fica 404 */ }
 }
 // A cada publicação a tela pede caixa.js/caixa.css com a versão no endereço: o navegador nunca fica com a versão velha.
@@ -121,6 +122,7 @@ const as8h = data => { const d = new Date(data + 'T08:00:00-04:00'); return (d >
 async function criarAlerta(a, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/alertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(a), signal: AbortSignal.timeout(5000) }).catch(() => null);
   if (r && !r.ok) console.warn(JSON.stringify({ evento: 'alerta_nao_criado', http: r.status })); // banco sem a migração 013
+  else if (r) notificarAlertas(buscar).catch(() => {}); // avisa no celular sem segurar quem criou o alerta
 }
 async function tarefasEAlertasDaVenda(p, venda, { negocio, responsavel, chegada, pedidoDoCliente, origemTxt }, buscar = fetch) {
   const nomes = [];
@@ -666,10 +668,77 @@ async function conferirPedido(texto, conversa, buscar = fetch) {
 }
 async function escalarAlertas(buscar = fetch) {
   const limite = new Date(Date.now() - 10 * 60e3).toISOString();
-  const r = await buscar(`${SUPABASE_URL}/rest/v1/alertas?situacao=eq.aberto&assumido_por=is.null&escalado_em=is.null&tipo=in.(${pedidos.ATENDIMENTO.join(',')})&criado_em=lt.${limite}&select=id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/alertas?situacao=eq.aberto&assumido_por=is.null&escalado_em=is.null&tipo=in.(${pedidos.ATENDIMENTO.join(',')})&criado_em=lt.${limite}&select=id,titulo,info,conversa_id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
   const lista = r && r.ok ? await r.json().catch(() => []) : [];
-  for (const a of lista) await buscar(`${SUPABASE_URL}/rest/v1/alertas?id=eq.${a.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ escalado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  for (const a of lista) {
+    await buscar(`${SUPABASE_URL}/rest/v1/alertas?id=eq.${a.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ escalado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) }).catch(() => null);
+    await avisarCelulares(null, await mensagemDoAlerta({ ...a, titulo: 'Ninguém assumiu: ' + a.titulo }, buscar), buscar).catch(() => 0);
+  }
   return lista.length;
+}
+
+// ---------- Avisos no celular (Web Push) ----------
+// Cada alerta que chega na hora (ou cuja hora chegou, como o "Lançar na conta" das 8h) vira uma notificação nos aparelhos
+// da equipe que ativaram os avisos: atendimento vai para quem está de plantão (ou todos, sem plantão); o resto, para todos.
+let chaveVapid = { ate: 0, v: null };
+async function chaveAvisos(buscar = fetch) {
+  if (process.env.K_SERVICE && chaveVapid.ate > Date.now()) return chaveVapid.v; // fora do Cloud Run (testes) lê sempre
+  const s = await silbeck.segredo('vapid-chave', buscar).catch(() => null);
+  chaveVapid = { ate: Date.now() + (s ? 3600e3 : 60e3), v: s ? push.lerChave(s) : null };
+  return chaveVapid.v;
+}
+async function avisarCelulares(usuarios, mensagem, buscar = fetch) {
+  const chave = await chaveAvisos(buscar);
+  if (!chave || (usuarios && !usuarios.length)) return 0;
+  const ativos = await buscar(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&select=id`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  let ids = ativos && ativos.ok ? (await ativos.json().catch(() => [])).map(u => u.id) : [];
+  if (usuarios) ids = ids.filter(id => usuarios.includes(id));
+  if (!ids.length) return 0;
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/push_inscricoes?usuario_id=in.(${ids.join(',')})&select=id,endpoint,p256dh,auth`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const lista = r && r.ok ? await r.json().catch(() => []) : [];
+  let enviados = 0;
+  await Promise.all(lista.map(async i => {
+    try {
+      const e = await push.enviar(i, mensagem, chave, URL_PUBLICA, buscar);
+      if (e.ok) { enviados++; await buscar(`${SUPABASE_URL}/rest/v1/push_inscricoes?id=eq.${i.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ ultimo_envio_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) }).catch(() => null); }
+      else if (e.expirada) await buscar(`${SUPABASE_URL}/rest/v1/push_inscricoes?id=eq.${i.id}`, { method: 'DELETE', headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+      else console.warn(JSON.stringify({ evento: 'aviso_celular_falhou', http: e.status }));
+    } catch (er) { console.warn(JSON.stringify({ evento: 'aviso_celular_falhou', erro: String(er.message || er).slice(0, 120) })); }
+  }));
+  return enviados;
+}
+async function mensagemDoAlerta(a, buscar = fetch) {
+  let nome = null;
+  if (a.conversa_id) {
+    const r = await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${a.conversa_id}&select=contato:contatos(nome)`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+    nome = r && r.ok ? (((await r.json().catch(() => []))[0] || {}).contato || {}).nome || null : null;
+  }
+  return { titulo: a.titulo + (nome ? ' · ' + nome : ''), corpo: String(a.info || '').slice(0, 180), url: a.conversa_id ? '/caixa#c=' + a.conversa_id : '/caixa', tag: a.id };
+}
+let notificando = null, notificarDeNovo = false;
+function notificarAlertas(buscar = fetch) {
+  if (notificando) { notificarDeNovo = true; return notificando; }
+  notificando = (async () => {
+    let total = 0;
+    do { notificarDeNovo = false; total += await rodadaDeAvisos(buscar); } while (notificarDeNovo);
+    return total;
+  })().finally(() => { notificando = null; });
+  return notificando;
+}
+async function rodadaDeAvisos(buscar) {
+  if (!(await chaveAvisos(buscar))) return 0;
+  const agora = new Date(), recente = new Date(agora - 30 * 60e3); // só o que tocou há pouco (nada de avisar coisa velha)
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/alertas?situacao=eq.aberto&notificado_em=is.null&quando=lte.${agora.toISOString()}&quando=gte.${recente.toISOString()}&select=id,tipo,titulo,info,conversa_id,para_id&order=quando&limit=20`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const lista = r && r.ok ? await r.json().catch(() => []) : [];
+  let n = 0;
+  for (const a of lista) {
+    // Marca antes de enviar (só quem conseguiu marcar envia: nunca dois avisos do mesmo alerta)
+    const m = await buscar(`${SUPABASE_URL}/rest/v1/alertas?id=eq.${a.id}&notificado_em=is.null`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify({ notificado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) }).catch(() => null);
+    if (!m || !m.ok || !(await m.json().catch(() => [])).length) continue;
+    const para = pedidos.ATENDIMENTO.includes(a.tipo) && a.para_id ? [a.para_id] : null;
+    n += await avisarCelulares(para, await mensagemDoAlerta(a, buscar), buscar).catch(() => 0);
+  }
+  return n;
 }
 
 // ---------- Login da equipe: criar/confirmar no Supabase Auth quem está liberado em "usuarios" ----------
@@ -843,6 +912,28 @@ const eventoNegocio = (negocio, texto, por, buscar = fetch) => buscar(`${SUPABAS
   body: JSON.stringify({ negocio_id: negocio, texto: texto.slice(0, 300), por }), signal: AbortSignal.timeout(5000) }).catch(() => null);
 const API_EQUIPE = {
   // Lista da equipe (para o "responsável" da conversa)
+  // Avisos no celular: chave pública (para o aparelho se inscrever), inscrever, cancelar e testar
+  'GET /api/push-chave': async () => { const c = await chaveAvisos(); return { ok: true, chave: c ? c.publicaB64 : null }; },
+  'POST /api/push-inscrever': async (corpo, eu) => {
+    const b64 = /^[A-Za-z0-9_-]+={0,2}$/;
+    if (!push.endpointOk(corpo.endpoint)) throw new ErroEnvio(400, 'Este navegador não é compatível com os avisos.');
+    if (!b64.test(corpo.p256dh || '') || String(corpo.p256dh).length > 120 || !b64.test(corpo.auth || '') || String(corpo.auth).length > 40) throw new ErroEnvio(400, 'Inscrição inválida.');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/push_inscricoes?on_conflict=endpoint`, { method: 'POST', signal: AbortSignal.timeout(5000),
+      headers: { ...cabecalhosBanco(), Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ usuario_id: eu.id, endpoint: corpo.endpoint, p256dh: corpo.p256dh, auth: corpo.auth, aparelho: String(corpo.aparelho || '').slice(0, 60) || null }) });
+    if (!r.ok) throw new ErroEnvio(r.status === 404 || r.status === 400 ? 400 : 502, r.status === 404 || r.status === 400 ? 'Falta rodar a migração 019 no Supabase.' : 'Não deu para salvar agora.');
+    return { ok: true };
+  },
+  'POST /api/push-cancelar': async (corpo, eu) => {
+    if (!push.endpointOk(corpo.endpoint)) return { ok: true };
+    await fetch(`${SUPABASE_URL}/rest/v1/push_inscricoes?usuario_id=eq.${eu.id}&endpoint=eq.${encodeURIComponent(corpo.endpoint)}`, { method: 'DELETE', headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+    return { ok: true };
+  },
+  'POST /api/push-teste': async (corpo, eu) => {
+    if (!(await chaveAvisos())) throw new ErroEnvio(503, 'Os avisos no celular ainda não foram ligados no servidor.');
+    const enviados = await avisarCelulares([eu.id], { titulo: 'CRM Cabanas', corpo: 'Teste: os avisos estão chegando neste aparelho ✓', url: '/caixa', tag: 'teste' });
+    return { ok: true, enviados };
+  },
   'GET /api/equipe': async () => {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&select=id,nome,papel&order=nome`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
     return { ok: true, equipe: r.ok ? await r.json() : [] };
@@ -1768,7 +1859,7 @@ const servidor = http.createServer((req, res) => {
   // Agendador do Google (a cada 2 min): confere as cobranças Pix ativas. Não devolve dado nenhum, só contagens.
   if (url.pathname === '/cron/pix' && req.method === 'POST') {
     if (!bancoLigado()) return json(res, 503, { ok: false });
-    Promise.all([verificarCobrancas(), escalarAlertas().catch(() => 0)]).then(([r, escalados]) => json(res, 200, { ok: true, ...r, escalados })).catch(() => json(res, 500, { ok: false }));
+    Promise.all([verificarCobrancas(), escalarAlertas().catch(() => 0)]).then(async ([r, escalados]) => json(res, 200, { ok: true, ...r, escalados, avisos: await notificarAlertas().catch(() => 0) })).catch(() => json(res, 500, { ok: false }));
     return;
   }
 
@@ -1873,7 +1964,7 @@ const servidor = http.createServer((req, res) => {
   }
   const est = req.method === 'GET' && ESTATICOS[url.pathname];
   if (est) {
-    res.writeHead(200, { 'Content-Type': est.tipo, 'Cache-Control': url.pathname === '/caixa' ? 'no-store' : 'public, max-age=300', ...cabecalhosSeguranca() });
+    res.writeHead(200, { 'Content-Type': est.tipo, 'Cache-Control': url.pathname === '/caixa' ? 'no-store' : url.pathname === '/sw.js' ? 'no-cache' : 'public, max-age=300', ...cabecalhosSeguranca() });
     return res.end(est.corpo);
   }
   if (url.pathname === '/config.js' && req.method === 'GET') {
@@ -1890,4 +1981,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => { console.log('CRM Cabanas ouvindo na porta ' + porta); conferirIpSaida(); });
-module.exports = { servidor, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca };
+module.exports = { servidor, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca };

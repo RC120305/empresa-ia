@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <title>CRM Cabanas</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#3B3128">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CRM Cabanas">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="/o/icone-180.png">
 <link rel="stylesheet" href="/caixa.css">
 </head>
 <body>
@@ -19,6 +26,11 @@
       <button type="submit" class="btn btn-enviar" id="btn-entrar">Enviar link de acesso</button>
     </form>
     <p class="msg" id="msg-entrar" role="status"></p>
+    <form id="form-codigo" hidden>
+      <label for="codigo">Ou digite o código que veio no e-mail</label>
+      <input id="codigo" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" maxlength="10" placeholder="Ex.: 123456" required>
+      <button type="submit" class="btn btn-editar" id="btn-codigo">Entrar com o código</button>
+    </form>
   </div>
 </section>
 

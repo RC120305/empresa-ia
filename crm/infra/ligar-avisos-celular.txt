@@ -1,0 +1,16 @@
+bash <<'FIM'
+# CRM Cabanas: cria a chave dos avisos no celular (VAPID) direto no cofre do Google (Secret Manager).
+# Rodar no Cloud Shell, uma vez só. A chave é gerada aqui e vai direto para o cofre: não aparece na tela e não vai para o chat.
+set -euo pipefail
+gcloud config set project cabanas-crm >/dev/null
+if gcloud secrets describe vapid-chave >/dev/null 2>&1; then
+  echo "A chave dos avisos já existe no cofre. Nada a fazer."
+else
+  node -e "const c=require('crypto').generateKeyPairSync('ec',{namedCurve:'prime256v1'});process.stdout.write(JSON.stringify(c.privateKey.export({format:'jwk'})))" \
+    | gcloud secrets create vapid-chave --replication-policy=user-managed --locations=southamerica-east1 --data-file=- >/dev/null
+  echo "  ✓ chave dos avisos guardada no cofre (vapid-chave)"
+fi
+echo "----------------------------------------------------------------"
+echo "Pronto! Mande 'chave dos avisos no cofre' no chat (sem nenhum valor)."
+echo "----------------------------------------------------------------"
+FIM

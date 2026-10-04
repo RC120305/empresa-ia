@@ -1,0 +1,17 @@
+{
+  "name": "CRM Cabanas",
+  "short_name": "CRM Cabanas",
+  "description": "Atendimento e reservas do Hotel Cabanas",
+  "lang": "pt-BR",
+  "id": "/caixa",
+  "start_url": "/caixa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#3B3128",
+  "theme_color": "#3B3128",
+  "icons": [
+    { "src": "/o/icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/o/icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/o/icone-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

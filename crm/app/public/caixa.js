@@ -102,6 +102,7 @@
     }
     if (error) console.warn('login:', error.status, error.message);
     $('btn-entrar').removeAttribute('disabled');
+    $('form-codigo').hidden = !!error;
     msg.textContent = !error ? 'Pronto! Abra o link que chegou no seu e-mail (veja também o spam). Só o link mais recente funciona.'
       : (error.status === 429 || /rate limit|security purposes|seconds/i.test(error.message))
         ? 'Muitos links pedidos em pouco tempo. O envio de e-mail gratuito do Supabase tem limite por hora: use o último link que chegou ou tente de novo mais tarde.'
@@ -109,10 +110,20 @@
           ? 'Este e-mail não tem acesso. Confira se digitou certo; se estiver certo, peça ao Ricardo para liberar (' + error.message + ').'
           : 'Não deu para enviar agora (' + error.message + '). Tente de novo em alguns minutos.';
   });
+  // Código de 6 dígitos do e-mail: no iPhone, o CRM instalado na tela inicial não recebe o login do link (abre no Safari)
+  $('form-codigo').addEventListener('submit', async e => {
+    e.preventDefault();
+    const msg = $('msg-entrar'), token = $('codigo').value.replace(/\D/g, '');
+    $('btn-codigo').setAttribute('disabled', ''); msg.textContent = 'Conferindo…';
+    const { error } = await sb.auth.verifyOtp({ email: $('email').value.trim(), token, type: 'email' });
+    $('btn-codigo').removeAttribute('disabled');
+    msg.textContent = error ? (/expired|invalid/i.test(error.message) ? 'Código errado ou vencido. Use o do e-mail mais recente ou peça outro.' : 'Não deu para entrar (' + error.message + ').') : '';
+  });
   const sair = async () => { await sb.auth.signOut(); location.replace('/caixa'); };
   $('sair').addEventListener('click', sair);
   $('sair-bloqueado').addEventListener('click', sair);
 
+  const abrirAoEntrar = (location.hash.match(/^#c=([0-9a-f-]{36})$/i) || [])[1] || null; // veio de um aviso no celular
   async function iniciar(session) {
     if (location.hash || location.search) history.replaceState(null, '', '/caixa');
     if (!session) { mostrarTela('tela-entrar'); return; }
@@ -123,8 +134,10 @@
     mostrarTela('tela-caixa');
     chamarApi('/api/equipe', null, 'GET').then(j => { equipe = Object.fromEntries(j.equipe.map(u => [u.id, u.nome])); preencherFiltrosEquipe(); if (aberta) pintarCabecalho(); carregarPlantao(); }).catch(() => { equipe = { [meu.id]: meu.nome }; preencherFiltrosEquipe(); carregarPlantao(); });
     await carregarConversas();
+    if (abrirAoEntrar) abrirDoAviso('#c=' + abrirAoEntrar);
     await carregarFunil();
     carregarRespostas();
+    prepararAvisos();
     contarRevisao();
     assinar();
     vigiar();
@@ -1938,7 +1951,7 @@
     if (novos.length) {
       const s = $('bt-sino'); s.classList.remove('ativo'); void s.offsetWidth; s.classList.add('ativo');
       bip();
-      if ('Notification' in window && Notification.permission === 'granted' && document.hidden) novos.forEach(a => { try { new Notification(a.titulo, { body: a.info || '', tag: a.id }); } catch (e) { /* sem notificação */ } });
+      if ('Notification' in window && Notification.permission === 'granted' && document.hidden && avisos !== 'ligado') novos.forEach(a => { try { new Notification(a.titulo, { body: a.info || '', tag: a.id }); } catch (e) { /* sem notificação */ } });
       painelAlertas = true;
     }
     if (!ab.length) $('bt-sino').classList.remove('ativo');
@@ -1957,6 +1970,7 @@
       const prox = alertas.filter(a => new Date(a.quando) > new Date()).length;
       box.append(el('p', { class: 'vazio-al', text: 'Quando um cliente pedir um produto, o alerta toca aqui com som. No dia do check-in, às 8h, toca o aviso para lançar na conta.' + (prox ? ' Agendados: ' + prox + '.' : '') }));
       box.append(el('div', { class: 'al-acoes' }, el('button', { class: 'btn-mini', type: 'button', text: '🔊 Testar som', onclick: bip })));
+      const rod = rodapeAvisos(); if (rod) box.append(rod);
       return;
     }
     ab.forEach(a => {
@@ -1974,6 +1988,7 @@
             : el('button', { class: 'btn-mini', type: 'button', text: a.tipo === 'pagamento_recebido' ? '✓ Visto' : a.tipo === 'produto_pedido' ? '✓ Reservado' : '✓ Resolvido', onclick: () => resolverAlerta(a, 'Alerta resolvido.') }),
           c ? el('button', { class: 'btn-mini', type: 'button', text: 'Abrir conversa', onclick: abrirConv }) : null)));
     });
+    const rod = rodapeAvisos(); if (rod) box.append(rod);
   }
   async function resolverAlerta(a, msg) {
     try { await chamarApi('/api/alerta', { id: a.id }); alertas = alertas.filter(x => x.id !== a.id); pintarSino(); toast(msg); if (painel === 'pro') pintarPainel(); }
@@ -2274,6 +2289,81 @@
           : el('div', { class: 'vazio', text: 'Nenhum chamado no período.' })));
     }
     corpo.append(grade, el('p', { class: 'dica', text: 'Valores de hospedagem vêm do orçamento enviado (valor previsto). O faturamento real e a ocupação entram quando o Silbeck estiver ligado.' }));
+  }
+
+  // ---------- Avisos no celular: notificação mesmo com o CRM fechado (CRM instalado na tela inicial) ----------
+  const ehIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const instalado = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const pushSuportado = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  let avisos = 'carregando', swReg = null;
+  const deB64u = t => { const b = atob(t.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((t.length + 3) % 4)); return Uint8Array.from(b, ch => ch.charCodeAt(0)); };
+  function nomeAparelho() {
+    const ua = navigator.userAgent;
+    const so = ehIOS ? 'iPhone' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'Mac' : 'Computador';
+    const nav = /Edg\//.test(ua) ? 'Edge' : /Firefox\//.test(ua) ? 'Firefox' : /SamsungBrowser/.test(ua) ? 'Samsung' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'navegador';
+    return so + ' · ' + nav + (instalado() ? ' (instalado)' : '');
+  }
+  const dadosInscricao = ins => { const j = ins.toJSON(); return { endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, aparelho: nomeAparelho() }; };
+  function abrirDoAviso(hash) {
+    const id = (String(hash || '').match(/^#c=([0-9a-f-]{36})$/i) || [])[1];
+    if (!id) return;
+    painelAlertas = false; pintarAlertas(); irPara('conversas'); abrir(id);
+  }
+  async function prepararAvisos() {
+    if ('serviceWorker' in navigator) {
+      try { swReg = await navigator.serviceWorker.register('/sw.js'); } catch (e) { swReg = null; }
+      navigator.serviceWorker.addEventListener('message', e => { if (e.data && e.data.abrir) abrirDoAviso(e.data.abrir); });
+    }
+    await conferirAvisos();
+    // No celular, lembra uma vez de ligar os avisos
+    if (/Android|iPhone|iPad/.test(navigator.userAgent) && ['desligado', 'instalar-ios'].includes(avisos) && !lido('crm-dica-avisos')) {
+      guardar('crm-dica-avisos', '1'); toast('Dica: toque no sino 🔔 e ligue os "Avisos no celular".');
+    }
+  }
+  async function conferirAvisos() {
+    if (!swReg || !pushSuportado()) avisos = ehIOS && !instalado() ? 'instalar-ios' : 'sem-suporte';
+    else if (Notification.permission === 'denied') avisos = 'negado';
+    else {
+      const ins = await swReg.pushManager.getSubscription().catch(() => null);
+      avisos = ins && Notification.permission === 'granted' ? 'ligado' : 'desligado';
+      if (avisos === 'ligado') chamarApi('/api/push-inscrever', dadosInscricao(ins)).catch(() => {}); // mantém o aparelho ligado à pessoa certa
+    }
+    if (painelAlertas) pintarAlertas();
+  }
+  async function ativarAvisos(b) {
+    b.disabled = true;
+    try {
+      const { chave } = await chamarApi('/api/push-chave', null, 'GET');
+      if (!chave) throw new Error('Os avisos no celular ainda não foram ligados no servidor. Avise o Ricardo.');
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { avisos = perm === 'denied' ? 'negado' : 'desligado'; pintarAlertas(); return toast('Sem permissão, o celular não mostra os avisos.'); }
+      let ins = await swReg.pushManager.getSubscription();
+      if (!ins) ins = await swReg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: deB64u(chave) });
+      await chamarApi('/api/push-inscrever', dadosInscricao(ins));
+      avisos = 'ligado'; pintarAlertas();
+      const t = await chamarApi('/api/push-teste', {});
+      toast(t.enviados ? 'Avisos ligados! Mandamos um teste para este aparelho.' : 'Avisos ligados.');
+    } catch (e) { toast(e.message || 'Não deu para ligar os avisos agora.'); b.disabled = false; }
+  }
+  async function desligarAvisos() {
+    const ins = swReg && await swReg.pushManager.getSubscription().catch(() => null);
+    if (ins) { await chamarApi('/api/push-cancelar', { endpoint: ins.endpoint }).catch(() => {}); await ins.unsubscribe().catch(() => {}); }
+    avisos = 'desligado'; pintarAlertas(); toast('Avisos desligados neste aparelho.');
+  }
+  function rodapeAvisos() {
+    const TXT = {
+      'sem-suporte': 'Este navegador não recebe avisos com o CRM fechado. No Android, use o Chrome; no iPhone, instale o CRM na tela inicial.',
+      'instalar-ios': 'No iPhone: toque em Compartilhar (quadrado com a seta ↑) → "Adicionar à Tela de Início". Depois abra o CRM pelo ícone e ligue os avisos aqui.',
+      negado: 'As notificações estão bloqueadas neste aparelho. Libere nos Ajustes do celular (Notificações → CRM Cabanas) ou nas permissões do site e abra o sino de novo.',
+      desligado: 'Receba os alertas mesmo com o CRM fechado e o celular bloqueado.' + (/Android/.test(navigator.userAgent) && !instalado() ? ' Dica: no menu ⋮ do Chrome, "Adicionar à tela inicial" deixa o CRM como um aplicativo.' : ''),
+      ligado: 'Ligados neste aparelho ✓ Os alertas chegam como notificação.',
+    };
+    if (!TXT[avisos]) return null;
+    return el('div', { class: 'al-avisos' }, el('b', { text: '📱 Avisos no celular' }), el('span', { class: 'lat-txt', text: TXT[avisos] }),
+      avisos === 'desligado' ? el('div', { class: 'al-acoes' }, el('button', { class: 'btn btn-enviar', type: 'button', text: 'Ligar avisos neste aparelho', onclick: e => ativarAvisos(e.currentTarget) })) :
+      avisos === 'ligado' ? el('div', { class: 'al-acoes' },
+        el('button', { class: 'btn-mini', type: 'button', text: 'Mandar um teste', onclick: () => chamarApi('/api/push-teste', {}).then(t => toast(t.enviados ? 'Teste enviado. Deve chegar em segundos.' : 'Nenhum aparelho recebeu. Tente desligar e ligar de novo.')).catch(e => toast(e.message)) }),
+        el('button', { class: 'btn-mini', type: 'button', text: 'Desligar', onclick: desligarAvisos })) : null);
   }
 
   // ---------- Início ----------

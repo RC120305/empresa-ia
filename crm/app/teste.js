@@ -34,6 +34,7 @@ let iaVitrines = null;
 const cobrancasF = [];
 let bbPago = false;
 const configF = {};
+const pushF = [], pushRecebidos = []; // inscrições de avisos no celular e o que o "serviço de push" recebeu
 let iaOferta = '';
 const RAIZ_DRIVE = '1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5';
 const JPG_DRIVE = require('child_process').execFileSync('ffmpeg', ['-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc=size=1600x900', '-frames:v', '1', '-f', 'mjpeg', '-']);
@@ -101,12 +102,35 @@ const falso = http.createServer((req, res) => {
     if (req.url.startsWith('/rest/v1/alertas')) {
       if (req.method === 'POST') { alertasF.push({ id: crypto.randomUUID(), situacao: 'aberto', ...json }); res.writeHead(201); return res.end(); }
       const id = (req.url.match(/[?&]id=eq\.([0-9a-f-]+)/) || [])[1], venda = (req.url.match(/venda_id=eq\.([0-9a-f-]+)/) || [])[1];
-      if (req.method === 'PATCH') { Object.assign(alertasF.find(a => a.id === id), json); res.writeHead(204); return res.end(); }
+      if (req.method === 'PATCH') {
+        const a = alertasF.find(x => x.id === id);
+        if (req.url.includes('notificado_em=is.null') && a.notificado_em) return responder(200, []);
+        Object.assign(a, json);
+        if ((req.headers.prefer || '').includes('return=representation')) return responder(200, [a]);
+        res.writeHead(204); return res.end();
+      }
       const u = new URL(req.url, 'http://x'), q = k => (u.searchParams.get(k) || '').replace(/^eq\./, '');
+      if (u.searchParams.get('notificado_em') === 'is.null') {
+        const [ate, desde] = u.searchParams.getAll('quando').map(x => x.replace(/^(lte|gte)\./, ''));
+        return responder(200, alertasF.filter(a => a.situacao === 'aberto' && !a.notificado_em && (a.quando || '') <= ate && (a.quando || '') >= desde));
+      }
       if (u.searchParams.get('conversa_id')) return responder(200, alertasF.filter(a => a.conversa_id === q('conversa_id') && a.tipo === q('tipo') && a.situacao === 'aberto'));
       if (u.searchParams.get('escalado_em') === 'is.null') return responder(200, alertasF.filter(a => a.situacao === 'aberto' && !a.assumido_por && !a.escalado_em && u.searchParams.get('tipo').includes(a.tipo) && (a.criado_em || '') < u.searchParams.get('criado_em').replace(/^lt\./, '')));
       return responder(200, alertasF.filter(a => (id && a.id === id) || (venda && a.venda_id === venda && a.situacao === 'aberto')));
     }
+    if (req.url.startsWith('/rest/v1/push_inscricoes')) {
+      const u = new URL(req.url, 'http://x');
+      if (req.method === 'POST') { const i = pushF.findIndex(x => x.endpoint === json.endpoint); if (i >= 0) Object.assign(pushF[i], json); else pushF.push({ id: crypto.randomUUID(), ...json }); res.writeHead(201); return res.end(); }
+      if (req.method === 'DELETE') {
+        const id = (u.searchParams.get('id') || '').replace(/^eq\./, ''), ep = (u.searchParams.get('endpoint') || '').replace(/^eq\./, '');
+        for (let i = pushF.length - 1; i >= 0; i--) if ((id && pushF[i].id === id) || (ep && pushF[i].endpoint === ep)) pushF.splice(i, 1);
+        res.writeHead(204); return res.end();
+      }
+      if (req.method === 'PATCH') { res.writeHead(204); return res.end(); }
+      const ids = (u.searchParams.get('usuario_id') || '').replace(/^in\.\(|\)$/g, '').split(',');
+      return responder(200, pushF.filter(x => ids.includes(x.usuario_id)));
+    }
+    if (req.url.startsWith('/push/')) { pushRecebidos.push({ url: req.url, headers: req.headers, corpo: bruto }); res.writeHead(req.url.includes('expirada') ? 410 : 201); return res.end(); }
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'PATCH' && json && json.feita === true && !json.tipo) { res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/rest/v1/vendas')) {
       if (req.method === 'POST') { const v = { id: crypto.randomUUID(), situacao: 'vendido', ...json }; vendasF.push(v); return responder(201, [v]); }
@@ -315,6 +339,13 @@ falso.listen(0, () => {
     assert.ok(csp.includes("script-src 'self'") && csp.includes("frame-ancestors 'none'"));
     assert.equal(r.headers.get('cache-control'), 'no-store');
     for (const f of ['/caixa.js', '/caixa.css', '/vendor/supabase-2.117.2.js']) assert.equal((await fetch(base + f)).status, 200, f);
+    // CRM instalável no celular: service worker, manifesto e ícones
+    for (const f of ['/o/icone-192.png', '/o/icone-512.png', '/o/icone-maskable-512.png', '/o/icone-180.png', '/o/icone-aviso.png']) assert.equal((await fetch(base + f)).status, 200, f);
+    const sw = await fetch(base + '/sw.js');
+    assert.equal(sw.headers.get('cache-control'), 'no-cache'); assert.ok((await sw.text()).includes("addEventListener('push'"));
+    const mf = await fetch(base + '/manifest.webmanifest');
+    assert.equal(mf.headers.get('content-type'), 'application/manifest+json');
+    const man = await mf.json(); assert.equal(man.start_url, '/caixa'); assert.equal(man.display, 'standalone');
     const cfgTxt = await (await fetch(base + '/config.js')).text();
     assert.ok(cfgTxt.includes('sb_publishable_teste'));
     assert.ok(!cfgTxt.includes('chave-de-teste'), 'a chave secreta nunca vai para o navegador');
@@ -558,6 +589,64 @@ falso.listen(0, () => {
     alertasF.length = 0;
     const { detectarPedido } = require('./pedidos');
     assert.equal(detectarPedido('O quarto estava péssimo'), 'reclamacao'); assert.equal(detectarPedido('dá para remarcar?'), 'alteracao'); assert.equal(detectarPedido('tem vaga?'), null);
+    // Avisos no celular (Web Push): chave, inscrição, teste, aviso de alerta (plantão x todos), sem repetir, aparelho que saiu
+    {
+      const fetchReal = globalThis.fetch;
+      const ecdhAp = crypto.createECDH('prime256v1'); ecdhAp.generateKeys(); const authAp = crypto.randomBytes(16);
+      const hm = (k, d) => crypto.createHmac('sha256', k).update(d).digest();
+      const decifrar = b => { // como o navegador faz (RFC 8291)
+        const sal = b.subarray(0, 16), n = b[20], asPub = b.subarray(21, 21 + n), ct = b.subarray(21 + n);
+        const prk = hm(sal, hm(hm(authAp, ecdhAp.computeSecret(asPub)), Buffer.concat([Buffer.from('WebPush: info\0'), ecdhAp.getPublicKey(), asPub, Buffer.from([1])])));
+        const d = crypto.createDecipheriv('aes-128-gcm', hm(prk, Buffer.from('Content-Encoding: aes128gcm\0\x01')).subarray(0, 16), hm(prk, Buffer.from('Content-Encoding: nonce\0\x01')).subarray(0, 12));
+        d.setAuthTag(ct.subarray(-16)); const t = Buffer.concat([d.update(ct.subarray(0, -16)), d.final()]);
+        assert.equal(t.at(-1), 2); return JSON.parse(t.subarray(0, -1).toString('utf8'));
+      };
+      assert.equal((await (await api('/api/push-chave', null, 'token-equipe', 'GET')).json()).chave, null, 'sem chave no cofre: avisos desligados');
+      assert.equal((await api('/api/push-teste', {})).status, 503);
+      const { privateKey, publicKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+      process.env.VAPID_CHAVE = JSON.stringify(privateKey.export({ format: 'jwk' }));
+      const chavePub = (await (await api('/api/push-chave', null, 'token-equipe', 'GET')).json()).chave;
+      assert.equal(Buffer.from(chavePub, 'base64url').length, 65);
+      assert.equal((await api('/api/push-inscrever', { endpoint: 'https://servidor-qualquer.com/x', p256dh: 'AAAA', auth: 'BBBB' })).status, 400, 'só serviços de push conhecidos');
+      r = await api('/api/push-inscrever', { endpoint: 'https://fcm.googleapis.com/fcm/send/aparelho1', p256dh: ecdhAp.getPublicKey().toString('base64url'), auth: authAp.toString('base64url'), aparelho: 'Android · Chrome' });
+      assert.equal(r.status, 200); assert.deepEqual(pushF.map(x => [x.usuario_id, x.aparelho]), [['u-1', 'Android · Chrome']]);
+      globalThis.fetch = (u, o) => String(u).startsWith('https://fcm.googleapis.com/') ? fetchReal(process.env.SUPABASE_URL + 'push/' + String(u).split('/').pop(), o) : fetchReal(u, o);
+      try {
+        assert.equal((await (await api('/api/push-teste', {})).json()).enviados, 1);
+        const env = pushRecebidos.at(-1);
+        assert.equal(env.headers['content-encoding'], 'aes128gcm'); assert.equal(env.headers.ttl, '3600');
+        const [, jwt, k] = env.headers.authorization.match(/^vapid t=([\w-]+\.[\w-]+\.[\w-]+), k=([\w-]+)$/);
+        assert.equal(k, chavePub);
+        const [h, d, sig] = jwt.split('.');
+        assert.ok(crypto.verify('sha256', Buffer.from(h + '.' + d), { key: publicKey, dsaEncoding: 'ieee-p1363' }, Buffer.from(sig, 'base64url')), 'assinatura VAPID válida');
+        assert.equal(JSON.parse(Buffer.from(d, 'base64url')).aud, 'https://fcm.googleapis.com');
+        assert.equal(decifrar(env.corpo).corpo, 'Teste: os avisos estão chegando neste aparelho ✓');
+        // Alertas: atendimento vai para o plantão (outra pessoa: este aparelho não recebe); produto pedido vai para todos;
+        // o agendado (8h do check-in) espera a hora; o antigo não é avisado; nada se repete
+        alertasF.length = 0;
+        const agora = Date.now(), mk = (tipo, quando, extra) => ({ id: crypto.randomUUID(), tipo, titulo: tipo === 'reclamacao' ? 'Reclamação' : 'Cliente pediu produto', info: 'Combo · R$ 340,00', conversa_id: conv, situacao: 'aberto', quando: new Date(quando).toISOString(), ...extra });
+        alertasF.push(mk('reclamacao', agora - 1000, { para_id: 'outra-pessoa' }), mk('produto_pedido', agora - 2000), mk('lancar_conta', agora + 3600e3), mk('produto_pedido', agora - 3 * 3600e3));
+        const antes = pushRecebidos.length;
+        const { notificarAlertas } = require('./server');
+        assert.equal(await notificarAlertas(), 1);
+        assert.equal(pushRecebidos.length, antes + 1);
+        const m = decifrar(pushRecebidos.at(-1).corpo);
+        assert.ok(m.titulo.startsWith('Cliente pediu produto')); assert.equal(m.url, '/caixa#c=' + conv); assert.equal(m.tag, alertasF[1].id);
+        assert.ok(alertasF[0].notificado_em && alertasF[1].notificado_em && !alertasF[2].notificado_em && !alertasF[3].notificado_em);
+        assert.equal(await notificarAlertas(), 0, 'não avisa duas vezes');
+        // Escalonamento avisa todos (inclusive quem não estava de plantão)
+        alertasF[0].criado_em = new Date(agora - 11 * 60e3).toISOString();
+        r = await fetch(base + '/cron/pix', { method: 'POST' });
+        assert.equal((await r.json()).escalados, 1);
+        assert.ok(decifrar(pushRecebidos.at(-1).corpo).titulo.startsWith('Ninguém assumiu: Reclamação'));
+        // Aparelho que cancelou (410): a inscrição é apagada
+        pushF.push({ id: crypto.randomUUID(), usuario_id: 'u-1', endpoint: 'https://fcm.googleapis.com/fcm/send/expirada', p256dh: ecdhAp.getPublicKey().toString('base64url'), auth: authAp.toString('base64url') });
+        assert.equal((await (await api('/api/push-teste', {})).json()).enviados, 1);
+        assert.deepEqual(pushF.map(x => x.endpoint), ['https://fcm.googleapis.com/fcm/send/aparelho1']);
+        await api('/api/push-cancelar', { endpoint: 'https://fcm.googleapis.com/fcm/send/aparelho1' });
+        assert.equal(pushF.length, 0);
+      } finally { globalThis.fetch = fetchReal; delete process.env.VAPID_CHAVE; alertasF.length = 0; }
+    }
     // Cobrança por Pix (E1): simulador
     r = await api('/api/cobranca', { conversa_id: conv, tipo: 'sinal', valor: '1254,60', descricao: 'Sinal do Bangalô' });
     const cj1 = await r.json();
@@ -566,7 +655,7 @@ falso.listen(0, () => {
     assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'pag'), 'card em Aguardando pagamento');
     assert.equal((await api('/api/cobranca', { conversa_id: conv, valor: '0' })).status, 400);
     r = await fetch(base + '/cron/pix', { method: 'POST' });
-    assert.deepEqual(await r.json(), { ok: true, verificadas: 1, pagas: 0, vencidas: 0, escalados: 0 });
+    assert.deepEqual(await r.json(), { ok: true, verificadas: 1, pagas: 0, vencidas: 0, escalados: 0, avisos: 0 });
     r = await api('/api/cobranca-acao', { id: cobrancasF[0].id, acao: 'simular_pagamento' });
     assert.equal((await r.json()).pagas, 1);
     assert.deepEqual([cobrancasF[0].situacao, cobrancasF[0].valor_pago, cobrancasF[0].pagador], ['paga', 1254.6, 'Cliente de teste']);

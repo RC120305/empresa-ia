@@ -25,6 +25,7 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 | `016_produtos_fotos.sql` | `fotos` nos produtos: fotos escolhidas (do Drive ou do Banco de fotos), a primeira é a capa | até 04/10/2026 (dono, conferido) |
 | `017_cobrancas_pix.sql` | `cobrancas` (Pix do Banco do Brasil: txid, valor, prazo, copia e cola, baixa) e alertas "Pagamento recebido" / "Cobrança vencida" | até 04/10/2026 (dono, conferido) |
 | `018_alertas_atendimento.sql` | alertas de atendimento (pede pessoa, reclamação, cancelamento, alteração, Gilberto passou), plantão (`config`) e escalonamento | até 04/10/2026 (dono, conferido) |
+| `019_avisos_celular.sql` | `push_inscricoes` (aparelhos com avisos no celular ativados) e `alertas.notificado_em` | (pendente: rodar no SQL Editor) |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.

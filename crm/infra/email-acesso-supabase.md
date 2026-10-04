@@ -12,7 +12,9 @@
 <h2>Acesso ao CRM Cabanas</h2>
 <p>Olá! Para entrar na caixa de entrada do Hotel Cabanas, toque no botão abaixo.</p>
 <p><a href="{{ .ConfirmationURL }}">Entrar no CRM</a></p>
-<p>O link vale por pouco tempo e só o mais recente funciona. Se você não pediu este acesso, ignore este e-mail.</p>
+<p>Ou digite este código na tela de entrada (no iPhone, use o código para entrar pelo CRM instalado na tela inicial):</p>
+<p style="font-size:24px;font-weight:bold;letter-spacing:4px">{{ .Token }}</p>
+<p>O link e o código valem por pouco tempo e só o mais recente funciona. Se você não pediu este acesso, ignore este e-mail.</p>
 ```
 
 **Invite user** — Assunto: `Você foi convidado para o CRM Cabanas`
