@@ -27,6 +27,7 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 | `018_alertas_atendimento.sql` | alertas de atendimento (pede pessoa, reclamação, cancelamento, alteração, Gilberto passou), plantão (`config`) e escalonamento | até 04/10/2026 (dono, conferido) |
 | `019_avisos_celular.sql` | `push_inscricoes` (aparelhos com avisos no celular ativados) e `alertas.notificado_em` | (pendente: rodar no SQL Editor) |
 | `020_reservas.sql` | `reservas` (reserva criada pelo CRM no Silbeck: número, item, titular, valor, situação) e `cobrancas.reserva_id` | (pendente: rodar no SQL Editor) |
+| `021_gilberto_automatico.sql` | `conversas.gilberto_pausado` (a equipe assumiu a conversa; o Gilberto automático não responde nela) | (pendente: rodar no SQL Editor) |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.

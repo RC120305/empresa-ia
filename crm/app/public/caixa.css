@@ -555,3 +555,10 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
 .aviso-extras .acoes{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .alertas .al-resumo{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--cor-texto-sec);cursor:pointer}
 .alertas .al-resumo input{margin-top:2px;accent-color:var(--cor-primaria)}
+.gil-auto{all:unset;cursor:pointer;align-self:flex-start;font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.3);color:var(--lat-texto)}
+.gil-auto[aria-pressed="true"]{background:var(--cor-secundaria);border-color:var(--cor-secundaria);color:#1E1914}
+.gil-conv{all:unset;cursor:pointer;font-size:13px;font-weight:600;padding:6px 10px;border-radius:999px;background:var(--cor-secundaria-suave);color:var(--cor-secundaria-texto);border:1px solid var(--cor-secundaria)}
+.gil-conv.pausado{background:var(--cor-alerta-suave);color:var(--cor-alerta);border-color:var(--cor-alerta)}
+.gil-geral{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin-bottom:10px;flex-wrap:wrap}
+.gil-geral div{display:flex;flex-direction:column;gap:2px}
+.gil-geral span{font-size:13px;color:var(--cor-texto-sec)}

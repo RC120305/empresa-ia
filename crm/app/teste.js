@@ -10,7 +10,7 @@ let janelaAberta = true;
 let ultimoPedidoIA = null;
 const pedidosIA = [];
 const emDias = n => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
-let iaCota = false, iaOrcamento = false, iaPix = false;
+let iaCota = false, iaOrcamento = false, iaPix = false, iaAuto = null, autoUltimaId = null, autoPausado = false;
 const orcs = [];
 const FAKE = {
   '/auth/v1/user': req => req.headers.authorization === 'Bearer token-equipe' ? { email: 'equipe@teste.com' }
@@ -223,9 +223,11 @@ const falso = http.createServer((req, res) => {
     if (req.url === '/auth/v1/admin/users/au-1' && req.method === 'PUT') return responder(200, { id: 'au-1' });
     if (req.url.startsWith('/rest/v1/usuarios?')) return responder(200, [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }]);
     if (req.url.startsWith('/rest/v1/conversas?') && req.url.includes('select=contato_id')) return responder(200, [{ contato_id: 'k-1' }]);
-    if (req.url.startsWith('/rest/v1/conversas?')) return responder(200, [{ id: '11111111-1111-1111-1111-111111111111', canal: 'wa', numero_id: '111',
+    if (req.url.startsWith('/rest/v1/conversas?')) return responder(200, [{ id: '11111111-1111-1111-1111-111111111111', canal: 'wa', numero_id: '111', status: 'aberta', gilberto_pausado: autoPausado,
       ultima_msg_cliente_em: new Date(Date.now() - (janelaAberta ? 3600e3 : 30 * 3600e3)).toISOString(),
       contato: { contato_identificadores: [{ tipo: 'whatsapp', valor: '+5567999990000' }] } }]);
+    if (req.url.startsWith('/rest/v1/mensagens?') && req.url.includes('direcao=eq.entrada&select=id&order=')) return responder(200, autoUltimaId ? [{ id: autoUltimaId }] : []);
+    if (req.url.startsWith('/rest/v1/mensagens?') && req.url.includes('autor=eq.gilberto')) return responder(200, []);
     if (req.url.startsWith('/rest/v1/mensagens?')) return responder(200, [
       { direcao: 'entrada', tipo: 'text', corpo: 'Tem vaga de 14 a 16/11 para 2 adultos?', enviada_em: '2026-10-02T10:01:00Z', id_externo: 'wamid.CLIENTE' },
       { direcao: 'saida', tipo: 'text', corpo: 'Oi! Vou ver para você.', enviada_em: '2026-10-02T10:00:30Z' },
@@ -238,6 +240,14 @@ const falso = http.createServer((req, res) => {
       if (iaOrcamento && !jaConsultou) return responder(200, { id: 'msg_o', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_o', name: 'gerar_orcamento', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], opcoes: [{ acomodacoes: ['BGE'] }, { acomodacoes: ['STD'] }], persona: 'familia', pessoas_aptas_combo: 2, frase_de_abertura: 'Ana, separei as opções para a família curtir os rios', sugerida: 'BGE' } }],
         usage: { input_tokens: 10, output_tokens: 20 } });
+      if (iaAuto && !jaConsultou) return responder(200, { id: 'msg_a', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
+        content: iaAuto === 'pix' ? [{ type: 'tool_use', id: 'toolu_a1', name: 'criar_reserva', input: { opcao_codigo: 'STD', aceite_cliente_literal: 'tem vaga de 14 a 16/11', titular_nome_completo: 'Ana Souza Lima', email: 'ana@exemplo.com', acompanhantes: [] } },
+          { type: 'tool_use', id: 'toolu_a2', name: 'gerar_cobranca', input: { forma: 'pix', percentual: 50 } }]
+          : [{ type: 'tool_use', id: 'toolu_a3', name: 'gerar_cobranca', input: { forma: 'pix', percentual: 50 } }],
+        usage: { input_tokens: 10, output_tokens: 20 } });
+      if (iaAuto) return responder(200, { id: 'msg_af', type: 'message', role: 'assistant', model: b.model, stop_reason: 'end_turn', stop_sequence: null,
+        content: [{ type: 'text', text: JSON.stringify({ mensagem: iaAuto === 'pix' ? 'Reserva garantida, Ana! 🌿\n---\n[[PIX]]' : 'Antes de te mandar o Pix, preciso confirmar a reserva. Qual o nome completo do titular?', notas_internas: '', precisa_equipe: false, produto_oferecido: '' }) }],
+        usage: { input_tokens: 10, output_tokens: 20, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 } });
       if (iaPix && !jaConsultou) return responder(200, { id: 'msg_p', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_p0', name: 'criar_reserva', input: { opcao_codigo: 'BGE', aceite_cliente_literal: 'pode reservar o bangalô', titular_nome_completo: 'Ana Souza Lima', email: 'ana@exemplo.com', acompanhantes: [] } },
           { type: 'tool_use', id: 'toolu_p1', name: 'criar_reserva', input: { opcao_codigo: 'BGE', aceite_cliente_literal: 'tem vaga de 14 a 16/11', titular_nome_completo: 'Ana Souza Lima', email: 'ana@exemplo.com', acompanhantes: ['Theo Lima'] } },
@@ -306,7 +316,7 @@ falso.listen(0, () => {
     } }] }] });
     r = await postar(msg);
     assert.equal(r.status, 200);
-    const c1 = chamadas.at(-1);
+    const c1 = chamadas.findLast(c => c.url === '/rest/v1/rpc/registrar_entrada_whatsapp');
     assert.equal(c1.url, '/rest/v1/rpc/registrar_entrada_whatsapp');
     assert.equal(c1.apikey, 'chave-de-teste');
     assert.deepEqual(c1.corpo, { p_numero_id: '111', p_de: '5567999990000', p_nome: 'Cliente Teste', p_wamid: 'wamid.A',
@@ -1082,6 +1092,56 @@ falso.listen(0, () => {
       assert.equal(r.status, 200, JSON.stringify(fc)); assert.equal(fc.cobranca, null);
       assert.equal(chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.tipo, 'Enviar link do cartão');
       reservasF.length = 0; alertasF.length = 0;
+    }
+    // Gilberto automático: responde sozinho à mensagem do cliente; reserva no Silbeck e só então manda o Pix
+    {
+      process.env.URL_INTERNA = base; process.env.GILBERTO_ESPERA_MS = '0';
+      const aguardar = async (cond, ms = 8000) => { const fim = Date.now() + ms; while (!cond() && Date.now() < fim) await new Promise(ok => setTimeout(ok, 50)); return cond(); };
+      const enviosMeta = () => chamadas.filter(c => c.url === '/graph/111/messages' && c.corpo && c.corpo.type === 'text');
+      assert.equal((await api('/api/gilberto-auto', { ligado: true })).status, 200);
+      assert.deepEqual(configF.gilberto_auto, { ligado: true });
+      // 1) aceite + Pix: reserva criada pelo Gilberto e Pix ligado a ela, tudo enviado sem ninguém aprovar
+      iaAuto = 'pix'; autoUltimaId = MSG_MIDIA; autoPausado = false;
+      const nEnv = enviosMeta().length, nIA = pedidosIA.length;
+      await postar(msgCliente('wamid.AUTO1', 'Pode reservar! Vou pagar no Pix'));
+      assert.ok(await aguardar(() => enviosMeta().length >= nEnv + 3), 'o Gilberto respondeu sozinho (3 balões: texto, Pix e copia e cola)');
+      const txt = enviosMeta().slice(nEnv).map(c => c.corpo.text.body);
+      assert.equal(txt[0], 'Reserva garantida, Ana! 🌿'); assert.ok(txt[1].startsWith('Segue o Pix do sinal (50%)') && txt[1].includes('Agência 1031-6')); assert.ok(txt[2].includes('SIMULADOR'));
+      const rv = reservasF.at(-1);
+      assert.deepEqual([rv.criado_por, rv.situacao, rv.codigo], ['gilberto', 'nao_confirmada', 'STD']);
+      assert.equal(cobrancasF.at(-1).reserva_id, rv.id, 'o Pix é da reserva criada antes');
+      assert.ok(chamadas.some(c => c.url === '/rest/v1/rpc/registrar_saida_whatsapp' && c.corpo.p_autor === 'gilberto'));
+      assert.ok(JSON.stringify(pedidosIA.at(-1).messages).includes('MODO AUTOMÁTICO'));
+      // 2) trava: sem reserva no Silbeck, o Pix não sai
+      reservasF.length = 0; iaAuto = 'sem_reserva';
+      const nCob = cobrancasF.length, n2 = enviosMeta().length;
+      await postar(msgCliente('wamid.AUTO2', 'Manda o Pix'));
+      assert.ok(await aguardar(() => enviosMeta().length >= n2 + 1));
+      assert.equal(cobrancasF.length, nCob, 'sem reserva, nenhum Pix');
+      const resTrava = JSON.parse(pedidosIA.at(-1).messages.at(-1).content[0].content);
+      assert.equal(resTrava.ok, false); assert.ok(resTrava.erro.includes('depois da reserva'));
+      // 3) conversa assumida pela equipe: o Gilberto não responde
+      autoPausado = true; const nIA3 = pedidosIA.length, n3 = enviosMeta().length;
+      await postar(msgCliente('wamid.AUTO3', 'Oi?'));
+      await new Promise(ok => setTimeout(ok, 400));
+      assert.equal(pedidosIA.length, nIA3); assert.equal(enviosMeta().length, n3);
+      // 4) quem responde à mão assume; o botão devolve ao Gilberto
+      autoPausado = false;
+      r = await api('/api/enviar', { conversa_id: conv, baloes: ['Oi, aqui é o Jagles!'] });
+      assert.equal(r.status, 200);
+      assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/conversas?id=eq.' + conv) && c.corpo.gilberto_pausado === true), 'resposta à mão pausa o Gilberto');
+      r = await api('/api/conversa-gilberto', { conversa_id: conv, pausado: false });
+      assert.equal(r.status, 200);
+      assert.ok(chamadas.findLast(c => c.metodo === 'PATCH' && c.url === '/rest/v1/conversas?id=eq.' + conv).corpo.gilberto_pausado === false);
+      // 5) desligado no geral: não responde
+      assert.equal((await api('/api/gilberto-auto', { ligado: false })).status, 200);
+      const nIA5 = pedidosIA.length;
+      await postar(msgCliente('wamid.AUTO5', 'Oi de novo'));
+      await new Promise(ok => setTimeout(ok, 400));
+      assert.equal(pedidosIA.length, nIA5, 'desligado: nada');
+      // pedido interno sem o código desta instância é recusado
+      assert.equal((await fetch(base + '/interno/gilberto', { method: 'POST', body: JSON.stringify({ conversa_id: conv, mensagem_id: MSG_MIDIA }) })).status, 403);
+      iaAuto = null; autoUltimaId = null; reservasF.length = 0; alertasF.length = 0;
     }
     const salvo = orcs.at(-1);
     assert.equal(salvo.primeiro_nome, null); assert.equal(salvo.numero_whatsapp, '15551829766'); assert.equal(salvo.fonte, 'simulador');

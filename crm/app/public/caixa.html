@@ -61,7 +61,8 @@
     </nav>
     <div class="agente-status">
       <strong>Gilberto</strong>
-      <span>Modo sugestão: escreve as respostas e a equipe revisa antes de enviar.</span>
+      <span id="gil-modo">Modo sugestão: escreve as respostas e a equipe revisa antes de enviar.</span>
+      <button type="button" class="gil-auto" id="gil-auto" aria-pressed="false" hidden>Automático: desligado</button>
       <span class="ao-vivo" id="ao-vivo" title="Atualiza sozinho">● ao vivo</span>
     </div>
     <div class="plantao"><label for="sel-plantao">De plantão agora</label><select id="sel-plantao"><option value="">Ninguém (todos recebem)</option></select>
@@ -191,6 +192,7 @@
 
     <!-- AJUSTES DO AGENTE -->
     <section data-painel="ajustes" hidden>
+      <div class="cartao gil-geral"><div><b>Gilberto automático</b><span id="gil-geral-txt">Desligado: o Gilberto só sugere, a equipe envia.</span></div><button type="button" class="btn btn-enviar" id="gil-geral">Ligar</button></div>
       <div class="segmento" role="tablist" aria-label="Ajustes do agente">
         <button role="tab" type="button" aria-selected="true" data-sub="rev">Revisão das sugestões</button>
         <button role="tab" type="button" aria-selected="false" data-sub="con">Questionário</button>

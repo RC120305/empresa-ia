@@ -151,6 +151,7 @@
     $('quem-nome').textContent = meu.nome;
     mostrarTela('tela-caixa');
     chamarApi('/api/equipe', null, 'GET').then(j => { equipe = Object.fromEntries(j.equipe.map(u => [u.id, u.nome])); preencherFiltrosEquipe(); if (aberta) pintarCabecalho(); carregarPlantao(); }).catch(() => { equipe = { [meu.id]: meu.nome }; preencherFiltrosEquipe(); carregarPlantao(); });
+    await carregarGilAuto();
     await carregarConversas();
     if (abrirAoEntrar) abrirDoAviso('#c=' + abrirAoEntrar);
     await carregarFunil();
@@ -219,11 +220,44 @@
     setInterval(conferirVersao, 10 * 60e3);
   }
 
+  // ---------- Gilberto automático: interruptor geral e, em cada conversa, assumir / devolver ----------
+  let gilAuto = false;
+  async function carregarGilAuto() {
+    const { data, error } = await sb.from('config').select('valor').eq('chave', 'gilberto_auto').maybeSingle();
+    gilAuto = !error && !!(data && data.valor && data.valor.ligado);
+    const b = $('gil-auto'); b.hidden = !!error;
+    b.setAttribute('aria-pressed', String(gilAuto)); b.textContent = gilAuto ? '🤖 Automático: ligado' : 'Automático: desligado';
+    $('gil-geral').textContent = gilAuto ? 'Desligar' : 'Ligar'; $('gil-geral').className = 'btn ' + (gilAuto ? 'btn-editar' : 'btn-enviar'); $('gil-geral').hidden = !!error;
+    $('gil-geral-txt').textContent = error ? 'Falta rodar a migração 018 no Supabase.' : gilAuto ? 'Ligado: responde sozinho, reserva no Silbeck e manda o Pix. Em cada conversa, a equipe pode assumir.' : 'Desligado: o Gilberto só sugere, a equipe envia.';
+    $('gil-modo').textContent = gilAuto ? 'Responde sozinho aos clientes, reserva e manda o Pix. A equipe assume quando quiser, em cada conversa.' : 'Modo sugestão: escreve as respostas e a equipe revisa antes de enviar.';
+    if (aberta) pintarCabecalho();
+  }
+  const alternarGilAuto = async () => {
+    const ligar = !gilAuto;
+    if (ligar && !confirm('Ligar o Gilberto automático?\n\nEle vai responder sozinho a todas as conversas abertas (menos as que a equipe assumiu), reservar no Silbeck e mandar o Pix, sem aprovação.')) return;
+    try { await chamarApi('/api/gilberto-auto', { ligado: ligar }); toast(ligar ? 'Gilberto automático ligado.' : 'Gilberto automático desligado: volta ao modo sugestão.'); carregarGilAuto(); }
+    catch (e) { toast(e.message); }
+  };
+  $('gil-auto').addEventListener('click', alternarGilAuto); $('gil-geral').addEventListener('click', alternarGilAuto);
+  function botaoGilberto(c) {
+    if (!gilAuto || c.gilberto_pausado === undefined) return null;
+    const pausado = !!c.gilberto_pausado;
+    return el('button', { class: 'gil-conv' + (pausado ? ' pausado' : ''), type: 'button', title: pausado ? 'A equipe está atendendo esta conversa. Toque para o Gilberto voltar a responder.' : 'O Gilberto está respondendo sozinho. Toque para assumir o atendimento.',
+      text: pausado ? '✋ Equipe atendendo · Devolver ao Gilberto' : '🤖 Gilberto atendendo · Assumir',
+      onclick: async () => {
+        try { await chamarApi('/api/conversa-gilberto', { conversa_id: c.id, pausado: !pausado }); c.gilberto_pausado = !pausado; pintarCabecalho(); pintarLista();
+          toast(pausado ? 'Conversa devolvida ao Gilberto: ele responde a próxima mensagem do cliente.' : 'Você assumiu: o Gilberto não responde mais nesta conversa.'); }
+        catch (e) { toast(e.message); }
+      } });
+  }
+
   // ---------- Lista de conversas ----------
   async function carregarConversas() {
-    const sel = campos => sb.from('conversas').select(`id,numero_id,status,atribuida_a,nao_lidas,ultima_msg_em,ultima_msg_cliente_em,contato:contatos(${campos},contato_identificadores(tipo,valor))`)
+    let comPausa = true;
+    const sel = campos => sb.from('conversas').select(`id,numero_id,status,atribuida_a,nao_lidas,ultima_msg_em,ultima_msg_cliente_em${comPausa ? ',gilberto_pausado' : ''},contato:contatos(${campos},contato_identificadores(tipo,valor))`)
       .order('ultima_msg_em', { ascending: false, nullsFirst: false }).limit(300);
     let { data, error } = await sel('nome,email,observacoes');
+    if (error) { comPausa = false; ({ data, error } = await sel('nome,email,observacoes')); } // banco sem a migração 021
     if (error) ({ data, error } = await sel('nome,observacoes')); // banco sem a migração 007
     if (error) { $('cx-lista').textContent = ''; $('cx-lista').append(el('div', { class: 'vazio', text: 'Não consegui carregar as conversas. Recarregue a página.' })); return; }
     const ids = data.map(c => c.id);
@@ -237,7 +271,7 @@
       const wa = idn.find(i => i.tipo === 'whatsapp');
       const tel = wa ? fmtTel(wa.valor) : '';
       const ct = c.contato || {};
-      return { id: c.id, numero_id: c.numero_id, nome: ct.nome || tel || 'Sem nome', nomeSalvo: ct.nome || '', tel, email: ct.email, obs: ct.observacoes || '', status: c.status, atribuida_a: c.atribuida_a,
+      return { id: c.id, numero_id: c.numero_id, gilberto_pausado: c.gilberto_pausado, nome: ct.nome || tel || 'Sem nome', nomeSalvo: ct.nome || '', tel, email: ct.email, obs: ct.observacoes || '', status: c.status, atribuida_a: c.atribuida_a,
         nao_lidas: c.nao_lidas, ultima_msg_em: c.ultima_msg_em, ultima_msg_cliente_em: c.ultima_msg_cliente_em, previa: previas[c.id] || null };
     });
     pintarLista();
@@ -395,7 +429,7 @@
         seletorEtapaConversa(c),
         fim ? el('span', { class: 'pilula ' + (aj ? 'p-ok' : 'p-erro'), title: aj ? 'Dá para responder com texto livre até esse horário.' : 'Fora da janela, só modelos aprovados pela Meta.',
           text: aj ? 'Responder até ' + (fim.toDateString() !== new Date().toDateString() ? 'amanhã ' : '') + hora(fim.toISOString()) : 'Janela 24 h fechada' }) : null,
-        stSel, rSel));
+        stSel, rSel, botaoGilberto(c)));
     // Composição: só com a janela aberta
     $('cx-compor').hidden = !aj; $('cx-fechada').hidden = aj;
   }
@@ -2170,7 +2204,7 @@
       .subscribe();
     sb.channel('caixa-alertas')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alertas' }, () => { clearTimeout(alertasT); alertasT = setTimeout(carregarAlertas, 300); })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'config' }, () => carregarPlantao())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'config' }, () => { carregarPlantao(); carregarGilAuto(); })
       .subscribe();
   }
 

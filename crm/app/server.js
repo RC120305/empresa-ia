@@ -225,6 +225,9 @@ async function registrar(evento, buscar = fetch) {
           if (botao) await respostaDoBotao(botao, corpoDe(m), buscar).catch(e => console.warn(JSON.stringify({ evento: 'botao_oferta', erro: String(e.message || e).slice(0, 200) })));
           // Pede uma pessoa, reclama, quer cancelar ou alterar: alerta para quem está de plantão
           else if (res && res.nova && res.conversa_id && ['text', 'button', 'interactive'].includes(m.type)) await conferirPedido(corpoDe(m), res.conversa_id, buscar).catch(e => console.warn(JSON.stringify({ evento: 'pedido_alerta', erro: String(e.message || e).slice(0, 200) })));
+          // Gilberto automático: responde a mensagem nova do cliente (exceto o toque nos botões de oferta)
+          if (!botao && res && res.nova && res.conversa_id && res.mensagem_id && ['text', 'audio', 'image', 'button', 'interactive', 'document', 'video'].includes(m.type))
+            await dispararGilberto(res.conversa_id, res.mensagem_id, buscar).catch(() => {});
           // Foto, áudio, vídeo, documento: guarda já uma cópia (a Meta apaga em 30 dias). Se falhar, a tela busca depois.
           if (midia && midia.id && res && res.nova && WA_TOKEN) {
             await guardarMidia({ id: res.mensagem_id, conversa_id: res.conversa_id, midia_id: midia.id, midia_nome: midia.filename || null }, buscar)
@@ -485,6 +488,7 @@ async function enviarPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
     await esperar(tempoDigitacao(texto));
     try {
       enviadas.push(await enviarTexto(conv, para, texto, equipe.id, buscar));
+      if (enviadas.length === 1) pausarGilberto(conv.id, true, equipe.id, buscar).catch(() => {}); // quem responde à mão assume a conversa
     } catch (e) {
       if (enviadas.length && e instanceof ErroEnvio) { e.enviadas = enviadas; } // a tela sabe o que já saiu
       throw e;
@@ -558,6 +562,9 @@ async function enviarFotosPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   const legenda = String(corpo.legenda || '').trim().slice(0, 1024);
   const equipe = await autenticarEquipe(tokenUsuario, buscar);
   const { conv, para } = await carregarConversaParaEnvio(corpo.conversa_id, buscar);
+  return { ok: true, enviadas: await enviarFotos(conv, para, fotos, legenda, equipe.id, buscar) };
+}
+async function enviarFotos(conv, para, fotos, legenda, autor, buscar = fetch) {
   const enviadas = [];
   for (const [i, f] of fotos.entries()) {
     if (i) await esperar(1500 * FATOR_DIGITACAO);
@@ -570,10 +577,10 @@ async function enviarFotosPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
       err.enviadas = enviadas;
       throw err;
     }
-    const id = await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: r.json.messages[0].id, p_tipo: 'image', p_legenda: i === 0 ? legenda : '', p_caminho: 'biblioteca/' + f, p_mime: 'image/jpeg', p_nome: null, p_autor: equipe.id }, buscar);
+    const id = await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: r.json.messages[0].id, p_tipo: 'image', p_legenda: i === 0 ? legenda : '', p_caminho: 'biblioteca/' + f, p_mime: 'image/jpeg', p_nome: null, p_autor: autor }, buscar);
     enviadas.push({ id, arquivo: f, corpo: i === 0 ? legenda : '', enviada_em: new Date().toISOString() });
   }
-  return { ok: true, enviadas };
+  return enviadas;
 }
 
 // ---------- Biblioteca de fotos: as fixas (public/fotos) + os ajustes da equipe (tabela fotos_biblioteca) ----------
@@ -774,6 +781,112 @@ async function linkDeEntrada(email, buscar = fetch) {
   return j.hashed_token || (j.properties || {}).hashed_token || null;
 }
 
+// A sugestão foi enviada: o link de extras ou o produto que ela oferecia passa a contar como oferta do Gilberto
+async function registrarUso(sugestaoId, porId) {
+
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/sugestoes?id=eq.${sugestaoId}&select=conversa_id,ferramentas`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+      const sg = r && r.ok ? (await r.json().catch(() => []))[0] : null;
+      const vts = (sg && sg.ferramentas && Array.isArray(sg.ferramentas.vitrines) ? sg.ferramentas.vitrines : []).filter(uuidOk);
+      if (vts.length) { // o link de extras do Gilberto foi enviado: passa a contar como oferta
+        await fetch(`${SUPABASE_URL}/rest/v1/vitrines?id=in.(${vts.join(',')})`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ enviada: true }), signal: AbortSignal.timeout(5000) }).catch(() => null);
+        const negocio = await negocioDaConversa(sg.conversa_id);
+        if (negocio) await eventoNegocio(negocio, 'Link de extras enviado (sugestão do Gilberto)', (porId || 'gilberto'));
+        return { ok: true, oferta: 'link de extras' };
+      }
+      const cod = sg && sg.ferramentas && sg.ferramentas.produto_oferecido;
+      if (cod && sg.conversa_id && !(await ofertasDaConversa(sg.conversa_id)).length) {
+        const p = await produtoPorCodigo(cod).catch(() => null);
+        if (p) {
+          const negocio = await negocioDaConversa(sg.conversa_id);
+          await fetch(`${SUPABASE_URL}/rest/v1/ofertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+            body: JSON.stringify({ conversa_id: sg.conversa_id, negocio_id: negocio, produto_codigo: p.codigo, produto_nome: p.nome, por: 'gilberto', autor_id: porId || null }) }).catch(() => null);
+          if (negocio) await eventoNegocio(negocio, 'Oferecido pelo Gilberto: ' + p.nome, (porId || 'gilberto'));
+          return { ok: true, oferta: p.nome };
+        }
+      }
+  return { ok: true };
+}
+// ---------- Gilberto automático (dono, 04/10/2026) ----------
+// Liga/desliga geral (config 'gilberto_auto') e por conversa (conversas.gilberto_pausado: a equipe assumiu).
+// Quando chega mensagem do cliente, o CRM chama a si mesmo (/interno/gilberto): no Cloud Run o servidor só
+// trabalha enquanto atende um pedido, então a resposta é feita dentro desse pedido interno.
+const TOKEN_INTERNO = crypto.randomBytes(24).toString('hex');
+const URL_INTERNA = () => (process.env.URL_INTERNA || URL_PUBLICA).replace(/\/$/, '');
+let autoCache = { ate: 0, ligado: false };
+async function gilbertoAutoLigado(buscar = fetch) {
+  if (autoCache.ate > Date.now()) return autoCache.ligado;
+  const v = await lerConfig('gilberto_auto', buscar).catch(() => null);
+  autoCache = { ate: Date.now() + 15000, ligado: !!(v && v.ligado) };
+  return autoCache.ligado;
+}
+async function pausarGilberto(conversa, pausado, por, buscar = fetch) {
+  await buscar(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${conversa}${pausado ? '&gilberto_pausado=eq.false' : ''}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+    body: JSON.stringify({ gilberto_pausado: !!pausado, gilberto_pausado_por: pausado && uuidOk(por) ? por : null, gilberto_pausado_em: pausado ? new Date().toISOString() : null }) });
+}
+async function dispararGilberto(conversa, mensagemId, buscar = fetch) {
+  if (!(await gilbertoAutoLigado(buscar))) return;
+  buscar(URL_INTERNA() + '/interno/gilberto', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Interno': TOKEN_INTERNO }, body: JSON.stringify({ conversa_id: conversa, mensagem_id: mensagemId }), signal: AbortSignal.timeout(280000) })
+    .catch(e => console.warn(JSON.stringify({ evento: 'gilberto_auto_disparo', erro: String(e.message || e).slice(0, 200) })));
+  await esperar(150); // garante que o pedido saiu antes de responder à Meta
+}
+const RECEBEDOR_PIX = 'Para conferir no seu banco, o recebedor é:\nHotel Cabanas Ltda\nBanco do Brasil · Agência 1031-6 · Conta corrente 8583-9';
+const quandoBR = d => new Date(d).toLocaleString('pt-BR', { timeZone: 'America/Campo_Grande', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', ' às');
+const textoPix = cob => 'Segue o Pix ' + (cob.tipo === 'sinal' ? 'do sinal (50%)' : cob.tipo === 'total' ? 'do valor total' : '') + ' de ' + produtos.brl(cob.valor) + ', válido até ' + quandoBR(cob.expira_em)
+  + '. É só copiar o código abaixo e colar no app do seu banco, em Pix Copia e Cola.\n\n' + RECEBEDOR_PIX + '\n\nAssim que o pagamento cair, eu confirmo sua reserva por aqui 🌿\n---\n' + (cob.copia_e_cola || '');
+const respondendo = new Set();
+async function responderSozinho(conversa, mensagemId, buscar = fetch) {
+  await esperar(Number(process.env.GILBERTO_ESPERA_MS ?? 15000)); // o cliente costuma mandar várias mensagens seguidas
+  const ultima = (await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${conversa}&direcao=eq.entrada&select=id&order=enviada_em.desc&limit=1`, buscar))[0];
+  if (!ultima || ultima.id !== mensagemId) return { pulou: 'chegou_outra' }; // a mais nova responde por todas
+  for (let i = 0; respondendo.has(conversa) && i < 60; i++) await esperar(1500);
+  if (!(await gilbertoAutoLigado(buscar))) return { pulou: 'desligado' };
+  const c = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${conversa}&select=status,gilberto_pausado`, buscar))[0];
+  if (!c || c.status !== 'aberta' || c.gilberto_pausado !== false) return { pulou: 'pausado' };
+  const dia = await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${conversa}&autor=eq.gilberto&enviada_em=gte.${new Date(Date.now() - 864e5).toISOString()}&select=id&limit=60`, buscar);
+  if (dia.length >= 60) { // trava contra conversa sem fim (ou outro robô do outro lado)
+    await pausarGilberto(conversa, true, null, buscar).catch(() => {});
+    await alertaAtendimento('gilberto_passou', conversa, 'O Gilberto já mandou 60 mensagens nesta conversa em 24 h e parou. Confira e, se for o caso, devolva a conversa a ele.', buscar, 'Gilberto parou: limite de mensagens').catch(() => {});
+    return { pulou: 'limite' };
+  }
+  respondendo.add(conversa);
+  try {
+    let r;
+    try { r = await gerarResposta(conversa, { modo: 'automatico', eu: null }, buscar); }
+    catch (e) {
+      if (e instanceof ErroEnvio && [409, 429].includes(e.http)) return { pulou: e.message };
+      await alertaAtendimento('gilberto_passou', conversa, 'O Gilberto não conseguiu responder (' + String(e.message || e).slice(0, 150) + '). Responda o cliente.', buscar, 'Gilberto não conseguiu responder').catch(() => {});
+      return { erro: String(e.message || e).slice(0, 200) };
+    }
+    // Mensagem nova do cliente enquanto o Gilberto pensava: a resposta pode estar velha; a mais nova responde
+    const depois = (await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${conversa}&direcao=eq.entrada&select=id&order=enviada_em.desc&limit=1`, buscar))[0];
+    if (depois && depois.id !== mensagemId && !r.cobranca && !r.reserva_criada) return { pulou: 'chegou_outra' };
+    let texto = r.mensagem || '';
+    if (r.cobranca) texto = texto.includes('[[PIX]]') ? texto.replace('[[PIX]]', textoPix(r.cobranca)) : texto + '\n---\n' + textoPix(r.cobranca);
+    const baloes = texto.split(/\n\s*[-–—]{3,}\s*\n/).map(t => t.trim()).filter(Boolean);
+    const alterado = linkAlterado(texto);
+    if (!baloes.length || baloes.length > 6 || /\[\[[^\]]*\]\]/.test(texto) || alterado) {
+      await pausarGilberto(conversa, true, null, buscar).catch(() => {});
+      await alertaAtendimento('gilberto_passou', conversa, 'O Gilberto preparou uma resposta que precisa de alguém (dado a completar ou link estranho). Ela está em ✨ Sugerir resposta/Revisão.', buscar, 'Gilberto: resposta para revisar').catch(() => {});
+      return { pulou: 'revisar' };
+    }
+    const { conv, para, wamidCliente } = await carregarConversaParaEnvio(conversa, buscar);
+    const enviadas = [];
+    for (const b of baloes) {
+      await mostrarDigitando(conv, wamidCliente, buscar);
+      await esperar(tempoDigitacao(b));
+      enviadas.push(await enviarTexto(conv, para, b, 'gilberto', buscar));
+    }
+    if (r.fotos && r.fotos.length) await enviarFotos(conv, para, r.fotos.map(f => f.arquivo), '', 'gilberto', buscar).catch(e => console.warn(JSON.stringify({ evento: 'gilberto_auto_fotos', erro: String(e.message || e).slice(0, 200) })));
+    if (r.sugestao_id) {
+      await patchBanco('sugestoes', `id=eq.${r.sugestao_id}`, { situacao: 'usada', motivo: 'Enviada pelo Gilberto (automático)', revisada_em: new Date().toISOString() }).catch(() => {});
+      await registrarUso(r.sugestao_id, null).catch(() => {});
+    }
+    if (r.precisa_equipe || r.alertou) await pausarGilberto(conversa, true, null, buscar).catch(() => {}); // passou para a equipe: ela assume
+    console.log(JSON.stringify({ evento: 'gilberto_auto', baloes: enviadas.length, reserva: !!r.reserva_criada, pix: !!r.cobranca }));
+    return { ok: true, enviadas: enviadas.length };
+  } finally { respondendo.delete(conversa); }
+}
+
 // ---------- Reserva no Silbeck (aceite) e cobrança ----------
 async function criarCobrancaPix(conversa, corpo, porId, buscar = fetch) {
   const valor = Math.round(Number(String(corpo.valor || '').replace(',', '.')) * 100) / 100;
@@ -795,13 +908,11 @@ async function criarCobrancaPix(conversa, corpo, porId, buscar = fetch) {
   }
   return cob;
 }
-async function fecharReserva(conversa, d, { usuario, origem }, buscar = fetch) {
+// Cria a reserva NÃO CONFIRMADA no Silbeck (vaga e preço conferidos na hora) e registra no CRM
+async function criarReservaSilbeck(conversa, d, { usuario, origem }, buscar = fetch) {
   const o = (await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?conversa_id=eq.${conversa}&select=id,opcoes,data_entrada,data_saida,adultos,criancas_idades&order=criado_em.desc&limit=1`, buscar))[0];
   const op = o && (o.opcoes || []).find(x => x.codigo === String(d.opcao_codigo || '').toUpperCase());
   if (!op) throw new ErroEnvio(400, 'Essa acomodação não está no último orçamento desta conversa.');
-  const forma = d.forma === 'cartao' ? 'cartao' : d.forma === 'pix' ? 'pix' : null;
-  if (!forma) throw new ErroEnvio(400, 'Escolha a forma de pagamento (Pix ou cartão).');
-  const pct = Number(d.percentual) === 100 ? 100 : 50;
   const titular = String(d.titular || '').trim().replace(/\s+/g, ' ').slice(0, 120);
   if (titular.split(' ').length < 2) throw new ErroEnvio(400, 'Falta o nome completo do titular.');
   const email = emailOk(d.email);
@@ -815,24 +926,35 @@ async function fecharReserva(conversa, d, { usuario, origem }, buscar = fetch) {
   const negocio = await negocioDaConversa(conversa, 'id', buscar);
   const linha = { conversa_id: conversa, negocio_id: negocio, orcamento_id: o.id, silbeck_id: r.reserva_id, silbeck_item_id: r.item_id, fonte: r.fonte === 'simulador' ? 'simulador' : 'silbeck',
     codigo: op.codigo, acomodacao: r.acomodacao, data_entrada: o.data_entrada, data_saida: o.data_saida, adultos: o.adultos, criancas_idades: o.criancas_idades || [], titular, email,
-    valor_total: r.valor_total, forma_pagamento: forma, percentual: pct, criado_por: String(origem || usuario || 'CRM') };
+    valor_total: r.valor_total, forma_pagamento: d.forma === 'cartao' ? 'cartao' : d.forma === 'pix' ? 'pix' : null, percentual: Number(d.percentual) === 100 ? 100 : Number(d.percentual) === 50 ? 50 : null, criado_por: String(origem || usuario || 'CRM') };
   const ins = await buscar(`${SUPABASE_URL}/rest/v1/reservas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify(linha), signal: AbortSignal.timeout(5000) }).catch(() => null);
   const reserva = ins && ins.ok ? (await ins.json().catch(() => []))[0] : null;
   const periodo = orcamento.periodo(o.data_entrada, o.data_saida);
   if (negocio) {
     await patchBanco('negocios', `id=eq.${negocio}`, { etapa: 'pag', etapa_desde: new Date().toISOString(), valor_previsto: r.valor_total, data_entrada: o.data_entrada, data_saida: o.data_saida, acomodacao: r.acomodacao, atualizado_em: new Date().toISOString() }).catch(() => {});
-    await eventoNegocio(negocio, `Reserva ${r.reserva_id} criada no Silbeck (não confirmada): ${r.acomodacao}, ${periodo}, ${produtos.brl(r.valor_total)}, titular ${titular}${r.fonte === 'simulador' ? ' · SIMULADOR' : ''}`, usuario || 'CRM', buscar);
+    await eventoNegocio(negocio, `Reserva ${r.reserva_id} criada no Silbeck (não confirmada)${origem === 'gilberto' ? ' pelo Gilberto' : ''}: ${r.acomodacao}, ${periodo}, ${produtos.brl(r.valor_total)}, titular ${titular}${r.fonte === 'simulador' ? ' · SIMULADOR' : ''}`, usuario || 'CRM', buscar);
   }
   if (!reserva) await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
     body: JSON.stringify({ negocio_id: negocio, responsavel_id: usuario || null, criado_por: 'CRM', tipo: 'Conferir no Silbeck', quando: new Date().toISOString(), descricao: `Reserva ${r.reserva_id} criada no Silbeck, mas não registrada no CRM (falta a migração 020). Lançar o pagamento no Silbeck quando cair.` }) }).catch(() => null);
-  const valor = Math.round(r.valor_total * pct) / 100;
-  const descricao = (pct === 100 ? 'Valor total' : 'Sinal 50%') + ' · ' + r.acomodacao + ' (' + periodo + ')';
+  return { ...(reserva || linha), id: reserva ? reserva.id : null, negocio_id: negocio, periodo, simulador: r.fonte === 'simulador' };
+}
+async function tarefaLinkCartao(reserva, valor, pct, usuario, buscar = fetch) {
+  if (!reserva.negocio_id) return;
+  await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+    body: JSON.stringify({ negocio_id: reserva.negocio_id, responsavel_id: usuario || null, criado_por: 'CRM', tipo: 'Enviar link do cartão', quando: new Date().toISOString(),
+      descricao: `Gerar na Cielo o link de ${produtos.brl(valor)} (${pct === 100 ? 'total em até 6x sem juros' : 'sinal de 50% em até 3x'}) da reserva ${reserva.silbeck_id} e mandar ao cliente. Quando pagar, lançar o adiantamento (cartão) no Silbeck.` }) }).catch(() => null);
+}
+async function fecharReserva(conversa, d, { usuario, origem }, buscar = fetch) {
+  const forma = d.forma === 'cartao' ? 'cartao' : d.forma === 'pix' ? 'pix' : null;
+  if (!forma) throw new ErroEnvio(400, 'Escolha a forma de pagamento (Pix ou cartão).');
+  const pct = Number(d.percentual) === 100 ? 100 : 50;
+  const reserva = await criarReservaSilbeck(conversa, { ...d, forma, percentual: pct }, { usuario, origem }, buscar);
+  const valor = Math.round(Number(reserva.valor_total) * pct) / 100;
+  const descricao = (pct === 100 ? 'Valor total' : 'Sinal 50%') + ' · ' + reserva.acomodacao + ' (' + reserva.periodo + ')';
   let cobranca = null;
-  if (forma === 'pix') cobranca = await criarCobrancaPix(conversa, { tipo: pct === 100 ? 'total' : 'sinal', valor, descricao, reserva_id: reserva && reserva.id }, usuario, buscar);
-  else if (negocio) await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
-    body: JSON.stringify({ negocio_id: negocio, responsavel_id: usuario || null, criado_por: 'CRM', tipo: 'Enviar link do cartão', quando: new Date().toISOString(),
-      descricao: `Gerar na Cielo o link de ${produtos.brl(valor)} (${pct === 100 ? 'total em até 6x sem juros' : 'sinal de 50% em até 3x'}) da reserva ${r.reserva_id} e mandar ao cliente. Quando pagar, lançar o adiantamento (cartão) no Silbeck.` }) }).catch(() => null);
-  return { reserva: reserva || { silbeck_id: r.reserva_id, acomodacao: r.acomodacao, valor_total: r.valor_total }, cobranca, valor_cobranca: valor, forma, simulador: r.fonte === 'simulador' };
+  if (forma === 'pix') cobranca = await criarCobrancaPix(conversa, { tipo: pct === 100 ? 'total' : 'sinal', valor, descricao, reserva_id: reserva.id }, usuario, buscar);
+  else await tarefaLinkCartao(reserva, valor, pct, usuario, buscar);
+  return { reserva, cobranca, valor_cobranca: valor, forma, simulador: reserva.simulador };
 }
 
 // ---------- Oportunidades (sem sino): retomar orçamentos parados e o resumo do dia ----------
@@ -1587,6 +1709,23 @@ const API_EQUIPE = {
     if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar agora.');
     return { ok: true, ligado: !!corpo.ligado };
   },
+  // Gilberto automático: geral (Ajustes/barra lateral) e por conversa (a equipe assume ou devolve)
+  'POST /api/gilberto-auto': async (corpo, eu) => {
+    const r = await gravarConfig('gilberto_auto', { ligado: !!corpo.ligado }, fetch, eu.id);
+    if (!r.ok) throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para salvar (o banco precisa da migração 018?).');
+    autoCache = { ate: 0, ligado: false };
+    console.log(JSON.stringify({ evento: 'gilberto_auto_' + (corpo.ligado ? 'ligado' : 'desligado') }));
+    return { ok: true, ligado: !!corpo.ligado };
+  },
+  'POST /api/conversa-gilberto': async (corpo, eu) => {
+    if (!uuidOk(corpo.conversa_id)) throw new ErroEnvio(400, 'Conversa inválida.');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${corpo.conversa_id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ gilberto_pausado: !!corpo.pausado, gilberto_pausado_por: corpo.pausado ? eu.id : null, gilberto_pausado_em: corpo.pausado ? new Date().toISOString() : null }) });
+    if (!r.ok) throw new ErroEnvio(r.status === 400 ? 503 : 502, 'Não deu para salvar (o banco precisa da migração 021?).');
+    const negocio = await negocioDaConversa(corpo.conversa_id);
+    if (negocio) await eventoNegocio(negocio, corpo.pausado ? 'A equipe assumiu o atendimento (Gilberto pausado)' : 'Conversa devolvida ao Gilberto', eu.id);
+    return { ok: true, pausado: !!corpo.pausado };
+  },
   'POST /api/plantao': async (corpo, eu) => {
     const id = corpo.usuario_id || null;
     if (id && !uuidOk(id)) throw new ErroEnvio(400, 'Pessoa inválida.');
@@ -1606,6 +1745,7 @@ const API_EQUIPE = {
     if (corpo.acao === 'assumir') { // fica com quem assumiu; a conversa passa para essa pessoa
       await patchBanco('alertas', `id=eq.${a.id}`, { assumido_por: eu.id, assumido_em: new Date().toISOString() });
       if (a.conversa_id) await patchBanco('conversas', `id=eq.${a.conversa_id}`, { atribuida_a: eu.id, status: 'aberta' }).catch(() => {});
+      if (a.conversa_id) await pausarGilberto(a.conversa_id, true, eu.id).catch(() => {}); // quem assume atende: o Gilberto sai
       if (a.negocio_id) await eventoNegocio(a.negocio_id, 'Assumiu o alerta: ' + a.titulo, eu.id);
       return { ok: true };
     }
@@ -1688,30 +1828,7 @@ const API_EQUIPE = {
     if (!/^[0-9a-f-]{36}$/i.test(String(corpo.id || ''))) throw new ErroEnvio(400, 'Sugestão inválida.');
     if (!['usada', 'descartada', 'aprovada', 'reprovada'].includes(corpo.situacao)) throw new ErroEnvio(400, 'Situação inválida.');
     await patchBanco('sugestoes', `id=eq.${corpo.id}`, { situacao: corpo.situacao, motivo: String(corpo.motivo || '').slice(0, 300) || null, revisada_por: eu.id, revisada_em: new Date().toISOString() });
-    // A sugestão enviada oferecia um produto: registra a oferta do Gilberto (se a conversa ainda não teve oferta)
-    if (corpo.situacao === 'usada') {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/sugestoes?id=eq.${corpo.id}&select=conversa_id,ferramentas`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
-      const sg = r && r.ok ? (await r.json().catch(() => []))[0] : null;
-      const vts = (sg && sg.ferramentas && Array.isArray(sg.ferramentas.vitrines) ? sg.ferramentas.vitrines : []).filter(uuidOk);
-      if (vts.length) { // o link de extras do Gilberto foi enviado: passa a contar como oferta
-        await fetch(`${SUPABASE_URL}/rest/v1/vitrines?id=in.(${vts.join(',')})`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ enviada: true }), signal: AbortSignal.timeout(5000) }).catch(() => null);
-        const negocio = await negocioDaConversa(sg.conversa_id);
-        if (negocio) await eventoNegocio(negocio, 'Link de extras enviado (sugestão do Gilberto)', eu.id);
-        return { ok: true, oferta: 'link de extras' };
-      }
-      const cod = sg && sg.ferramentas && sg.ferramentas.produto_oferecido;
-      if (cod && sg.conversa_id && !(await ofertasDaConversa(sg.conversa_id)).length) {
-        const p = await produtoPorCodigo(cod).catch(() => null);
-        if (p) {
-          const negocio = await negocioDaConversa(sg.conversa_id);
-          await fetch(`${SUPABASE_URL}/rest/v1/ofertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
-            body: JSON.stringify({ conversa_id: sg.conversa_id, negocio_id: negocio, produto_codigo: p.codigo, produto_nome: p.nome, por: 'gilberto', autor_id: eu.id }) }).catch(() => null);
-          if (negocio) await eventoNegocio(negocio, 'Oferecido pelo Gilberto: ' + p.nome, eu.id);
-          return { ok: true, oferta: p.nome };
-        }
-      }
-    }
-    return { ok: true };
+    return corpo.situacao === 'usada' ? registrarUso(corpo.id, eu.id) : { ok: true };
   },
   // Testar o agente: conversa de mentira, sem WhatsApp e sem gravar orçamento
   'POST /api/testar': async corpo => {
@@ -1823,6 +1940,15 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
   const id = String(corpo.conversa_id || '');
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw new ErroEnvio(400, 'Conversa inválida.');
   const eu = await autenticarEquipe(tokenUsuario, buscar);
+  const r = await gerarResposta(id, { modo: 'sugestao', eu }, buscar);
+  delete r.cobranca;
+  return r;
+}
+// Núcleo do Gilberto: lê a conversa, chama a IA com as ferramentas e registra a sugestão.
+// modo 'sugestao': nada que grave fora do CRM acontece antes de a equipe aprovar.
+// modo 'automatico': as ferramentas executam na hora (reserva no Silbeck, Pix) e quem envia é responderSozinho.
+async function gerarResposta(id, { modo, eu }, buscar = fetch) {
+  const auto = modo === 'automatico';
   await atualizarFotos(buscar).catch(() => {});
   if (sugerindo.has(id)) throw new ErroEnvio(429, 'Já estou preparando uma sugestão para esta conversa.');
   sugerindo.add(id);
@@ -1838,7 +1964,7 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
     const pendentes = historico.filter(m => m.tipo === 'audio' && m.direcao === 'entrada' && m.id && (!m.transcricao_status || m.transcricao_status === 'falhou')).slice(-3);
     await Promise.all(pendentes.map(m => transcreverMensagem(m, buscar).then(r => { m.transcricao = r.texto; m.transcricao_status = r.status; }).catch(() => {})));
     const nome = conv.contato && conv.contato.nome;
-    let reservaPendente = null;
+    let reservaPendente = null, reservaCriada = null, cobrancaGerada = null;
     const executores = {
       gerar_orcamento: entrada => criarOrcamento(entrada, { conversa_id: conv.id, numero_id: conv.numero_id, primeiro_nome: nome, criado_por: 'gilberto' }, buscar),
       // Link de extras: criado agora, mas só conta como oferta quando a equipe enviar a sugestão
@@ -1868,16 +1994,32 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
         if (Math.abs(atual.valor_total - Number(op.valor_total)) > 0.5) return { ok: false, preco_mudou: true, valor_novo: atual.valor_total, erro: 'O valor mudou desde o orçamento: avise o cliente, gere um orçamento novo e peça um novo OK.' };
         reservaPendente = { opcao_codigo: op.codigo, titular, email: String(e.email).trim(), acompanhantes: (e.acompanhantes || []).map(String).filter(Boolean).slice(0, 10),
           acomodacao: op.nome, valor_total: op.valor_total, periodo: orcamento.periodo(o.data_entrada, o.data_saida) };
+        if (auto) { // modo automático: a reserva nasce agora no Silbeck (não confirmada)
+          try { reservaCriada = await criarReservaSilbeck(conv.id, reservaPendente, { usuario: null, origem: 'gilberto' }, buscar); }
+          catch (er) { reservaPendente = null; return { ok: false, erro: 'Não consegui reservar agora: ' + er.message + ' Avise o cliente e use abrir_alerta.' }; }
+          return { ok: true, reserva_silbeck: reservaCriada.silbeck_id, acomodacao: op.nome, valor_total: reservaCriada.valor_total,
+            aviso: 'Reserva ' + reservaCriada.silbeck_id + ' criada no Silbeck (não confirmada, aguardando pagamento). Agora chame gerar_cobranca na forma escolhida. Não diga que está confirmada.' };
+        }
         return { ok: true, pendente_aprovacao: true, acomodacao: op.nome, valor_total: op.valor_total, reserva: reservaPendente,
           aviso: 'Vaga e preço conferidos agora. A reserva é criada no Silbeck (não confirmada, aguardando pagamento) quando a equipe aprovar o envio. Chame gerar_cobranca na forma escolhida, nesta mesma resposta.' };
       },
       gerar_cobranca: async e => {
         const pct = e.percentual === 100 ? 100 : 50, forma = e.forma === 'cartao' ? 'cartao' : 'pix';
-        const existente = reservaPendente ? null : (await getJson(`${SUPABASE_URL}/rest/v1/reservas?conversa_id=eq.${conv.id}&situacao=eq.nao_confirmada&select=id,silbeck_id,acomodacao,valor_total,data_entrada,data_saida&order=criado_em.desc&limit=1`, buscar))[0];
-        const base = reservaPendente || existente;
-        if (!base) return { ok: false, erro: 'Primeiro reserve com criar_reserva (depois do aceite e da escolha da forma de pagamento).' };
+        const existente = reservaCriada || (reservaPendente ? null : (await getJson(`${SUPABASE_URL}/rest/v1/reservas?conversa_id=eq.${conv.id}&situacao=eq.nao_confirmada&select=id,silbeck_id,acomodacao,valor_total,data_entrada,data_saida&order=criado_em.desc&limit=1`, buscar))[0]);
+        // Trava do dono (04/10/2026): dados de pagamento só depois de a reserva existir no Silbeck
+        const base = auto ? existente : (reservaPendente || existente);
+        if (!base) return { ok: false, erro: 'Ainda não há reserva no Silbeck: os dados de pagamento só saem depois da reserva. Use criar_reserva antes.' };
         const valor = Math.round(Number(base.valor_total) * pct) / 100;
         const descricao = (pct === 100 ? 'Valor total' : 'Sinal 50%') + ' · ' + base.acomodacao + ' (' + (base.periodo || orcamento.periodo(base.data_entrada, base.data_saida)) + ')';
+        if (auto) {
+          if (forma === 'pix') {
+            if (cobrancaGerada) return { ok: true, marcador: '[[PIX]]', valor: cobrancaGerada.valor, aviso: 'O Pix já foi gerado nesta resposta: escreva [[PIX]] uma vez.' };
+            cobrancaGerada = await criarCobrancaPix(conv.id, { tipo: pct === 100 ? 'total' : 'sinal', valor, descricao, reserva_id: existente.id }, null, buscar);
+            return { ok: true, marcador: '[[PIX]]', valor, aviso: 'Pix gerado. Escreva [[PIX]] sozinho num balão: o CRM troca pelo valor, o prazo, os dados da conta e o copia e cola.' };
+          }
+          await tarefaLinkCartao(existente, valor, pct, null, buscar);
+          return { ok: true, valor, aviso: 'O link do cartão a equipe gera na Cielo e manda em instantes (tarefa criada). Diga isso ao cliente, sem marcador.' };
+        }
         return { ok: true, marcador: forma === 'pix' ? '[[PIX]]' : '[[link do cartão]]', valor,
           aviso: forma === 'pix' ? 'Escreva [[PIX]] sozinho num balão: o CRM troca pelo Pix (valor, prazo, dados da conta e copia e cola) quando a equipe aprovar.' : 'Escreva [[link do cartão]] sozinho num balão: a equipe gera o link na Cielo e cola (o CRM cria a tarefa).',
           pagamento: { forma, percentual: pct, valor, descricao, tipo: pct === 100 ? 'total' : 'sinal', reserva_id: existente ? existente.id : null } };
@@ -1899,13 +2041,13 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
     };
     const neg = await negocioDaConversa(conv.id, 'id,perfil', buscar).catch(() => null);
     const retomar = neg && neg.etapa === 'orc' && (await getJson(`${SUPABASE_URL}/rest/v1/tarefas?negocio_id=eq.${neg.id}&tipo=eq.${encodeURIComponent(TIPO_RETOMAR)}&feita=eq.false&select=id&limit=1`, buscar)).length;
-    const r = await gilberto.sugerir(historico, { canal: conv.canal, nome, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, gatilho: retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null }, executores, await catalogo(buscar));
+    const r = await gilberto.sugerir(historico, { modo: auto ? 'automatico' : 'sugestao', canal: conv.canal, nome, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, gatilho: retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null }, executores, await catalogo(buscar));
     // Registro para a revisão (Ajustes do agente): o que o cliente perguntou e o que o Gilberto sugeriu
     const ultimaDoCliente = [...historico].reverse().find(m => m.direcao === 'entrada');
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
       body: JSON.stringify({ conversa_id: conv.id, pergunta: ultimaDoCliente ? String(ultimaDoCliente.transcricao || ultimaDoCliente.corpo || '[' + ultimaDoCliente.tipo + ']').slice(0, 2000) : null,
         mensagem: r.mensagem, notas_internas: r.notas_internas, precisa_equipe: r.precisa_equipe, modelo: r.modelo,
-        ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo), produto_oferecido: r.produto_oferecido || null, vitrines: r.vitrines || [], reserva: r.reserva || null, pagamento: r.pagamento || null, alerta: !!r.alertou }, pedida_por: eu.id }) }).catch(() => null);
+        ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo), produto_oferecido: r.produto_oferecido || null, vitrines: r.vitrines || [], reserva: r.reserva || null, pagamento: r.pagamento || null, alerta: !!r.alertou }, pedida_por: eu ? eu.id : null }) }).catch(() => null);
     const sugestaoId = reg && reg.ok ? ((await reg.json().catch(() => []))[0] || {}).id : null;
     if (r.precisa_equipe && !r.alertou) await alertaAtendimento('gilberto_passou', conv.id, r.notas_internas || 'O Gilberto indicou que este caso é para a equipe.', buscar).catch(() => {});
     let avisoRevisao = null;
@@ -1914,7 +2056,7 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
       console.warn(JSON.stringify({ evento: 'sugestao_nao_registrada', http: reg && reg.status, erro: det }));
       avisoRevisao = 'A sugestão não entrou na Revisão (' + (reg ? 'erro ' + reg.status : 'banco fora') + (reg && reg.status === 404 ? ': falta a migração 009' : '') + ').';
     }
-    return { ok: true, ...r, sugestao_id: sugestaoId || null, aviso_revisao: avisoRevisao };
+    return { ok: true, ...r, sugestao_id: sugestaoId || null, aviso_revisao: avisoRevisao, cobranca: cobrancaGerada, reserva_criada: reservaCriada };
   } catch (e) {
     if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message);
     throw e;
@@ -2120,6 +2262,13 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
+  // Pedido interno do próprio CRM: o Gilberto responde sozinho (só aceita com o código desta instância)
+  if (url.pathname === '/interno/gilberto' && req.method === 'POST') {
+    if (req.headers['x-interno'] !== TOKEN_INTERNO) return json(res, 403, { ok: false });
+    lerCorpo(req, 2000).then(c => uuidOk(c.conversa_id) && uuidOk(c.mensagem_id) ? responderSozinho(c.conversa_id, c.mensagem_id) : { ok: false })
+      .then(r => json(res, 200, r)).catch(e => { console.error(JSON.stringify({ evento: 'gilberto_auto_falha', erro: String(e.message || e).slice(0, 200) })); json(res, 500, { ok: false }); });
+    return;
+  }
   // Agendador do Google (a cada 2 min): confere as cobranças Pix ativas. Não devolve dado nenhum, só contagens.
   if (url.pathname === '/cron/pix' && req.method === 'POST') {
     if (!bancoLigado()) return json(res, 503, { ok: false });
