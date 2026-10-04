@@ -774,6 +774,67 @@ async function linkDeEntrada(email, buscar = fetch) {
   return j.hashed_token || (j.properties || {}).hashed_token || null;
 }
 
+// ---------- Reserva no Silbeck (aceite) e cobrança ----------
+async function criarCobrancaPix(conversa, corpo, porId, buscar = fetch) {
+  const valor = Math.round(Number(String(corpo.valor || '').replace(',', '.')) * 100) / 100;
+  if (!(valor >= 1 && valor <= 100000)) throw new ErroEnvio(400, 'Valor inválido (de R$ 1 a R$ 100.000).');
+  const tipo = ['sinal', 'total', 'outro'].includes(corpo.tipo) ? corpo.tipo : 'sinal';
+  const descricao = String(corpo.descricao || '').trim().slice(0, 120) || ({ sinal: 'Sinal de 50% da hospedagem', total: 'Hospedagem (valor total)', outro: 'Hotel Cabanas' })[tipo];
+  const negocio = await negocioDaConversa(conversa, 'id,etapa,data_entrada', buscar);
+  const est = await estadiaDaConversa(conversa, buscar);
+  const expira = prazoCobranca((negocio && negocio.data_entrada) || est.data_entrada);
+  const txid = bb.novoTxid();
+  const c = await bb.criarCobranca({ txid, valor, expiracaoSeg: Math.round((expira - new Date()) / 1000), descricao: 'Hotel Cabanas · ' + descricao });
+  const r = await buscar(`${SUPABASE_URL}/rest/v1/cobrancas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
+    body: JSON.stringify({ txid, conversa_id: conversa, negocio_id: negocio ? negocio.id : null, tipo, descricao, valor, expira_em: expira.toISOString(), copia_e_cola: c.copia_e_cola, fonte: c.fonte, criado_por: porId || null, ...(corpo.reserva_id ? { reserva_id: corpo.reserva_id } : {}) }) });
+  if (!r.ok) { await bb.cancelar(txid, c.fonte).catch(() => {}); throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para registrar a cobrança (o banco precisa da migração 017/020?).'); }
+  const cob = (await r.json())[0];
+  if (negocio) {
+    if (['novo', 'atend', 'orc'].includes(negocio.etapa)) await patchBanco('negocios', `id=eq.${negocio.id}`, { etapa: 'pag', etapa_desde: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
+    await eventoNegocio(negocio.id, 'Pix gerado: ' + produtos.brl(valor) + ' (' + descricao + '), vale até ' + expira.toLocaleString('pt-BR', { timeZone: 'America/Campo_Grande', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }), porId || 'CRM', buscar);
+  }
+  return cob;
+}
+async function fecharReserva(conversa, d, { usuario, origem }, buscar = fetch) {
+  const o = (await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?conversa_id=eq.${conversa}&select=id,opcoes,data_entrada,data_saida,adultos,criancas_idades&order=criado_em.desc&limit=1`, buscar))[0];
+  const op = o && (o.opcoes || []).find(x => x.codigo === String(d.opcao_codigo || '').toUpperCase());
+  if (!op) throw new ErroEnvio(400, 'Essa acomodação não está no último orçamento desta conversa.');
+  const forma = d.forma === 'cartao' ? 'cartao' : d.forma === 'pix' ? 'pix' : null;
+  if (!forma) throw new ErroEnvio(400, 'Escolha a forma de pagamento (Pix ou cartão).');
+  const pct = Number(d.percentual) === 100 ? 100 : 50;
+  const titular = String(d.titular || '').trim().replace(/\s+/g, ' ').slice(0, 120);
+  if (titular.split(' ').length < 2) throw new ErroEnvio(400, 'Falta o nome completo do titular.');
+  const email = emailOk(d.email);
+  const ja = await getJson(`${SUPABASE_URL}/rest/v1/reservas?conversa_id=eq.${conversa}&situacao=eq.nao_confirmada&codigo=eq.${op.codigo}&data_entrada=eq.${o.data_entrada}&select=id,silbeck_id&limit=1`, buscar);
+  if (ja.length) throw new ErroEnvio(409, 'Já existe a reserva ' + ja[0].silbeck_id + ' (não confirmada) para esta acomodação e datas. Mande um novo Pix dela no painel 💳.');
+  const conv = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${conversa}&select=contato:contatos(contato_identificadores(tipo,valor))`, buscar))[0];
+  const wa = ((conv && conv.contato && conv.contato.contato_identificadores) || []).find(x => x.tipo === 'whatsapp');
+  const r = await silbeck.reservar({ codigo: op.codigo, data_entrada: o.data_entrada, data_saida: o.data_saida, adultos: o.adultos, idades_criancas: o.criancas_idades || [],
+    titular, email, telefone: wa ? wa.valor : undefined, acompanhantes: Array.isArray(d.acompanhantes) ? d.acompanhantes : [], valor_esperado: op.valor_total }, buscar);
+  if (!r.ok) throw new ErroEnvio(409, r.preco_mudou ? `O valor mudou desde o orçamento: agora fica ${produtos.brl(r.valor_novo)}. Mande um orçamento novo e peça um novo OK ao cliente.` : r.erro);
+  const negocio = await negocioDaConversa(conversa, 'id', buscar);
+  const linha = { conversa_id: conversa, negocio_id: negocio, orcamento_id: o.id, silbeck_id: r.reserva_id, silbeck_item_id: r.item_id, fonte: r.fonte === 'simulador' ? 'simulador' : 'silbeck',
+    codigo: op.codigo, acomodacao: r.acomodacao, data_entrada: o.data_entrada, data_saida: o.data_saida, adultos: o.adultos, criancas_idades: o.criancas_idades || [], titular, email,
+    valor_total: r.valor_total, forma_pagamento: forma, percentual: pct, criado_por: String(origem || usuario || 'CRM') };
+  const ins = await buscar(`${SUPABASE_URL}/rest/v1/reservas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify(linha), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const reserva = ins && ins.ok ? (await ins.json().catch(() => []))[0] : null;
+  const periodo = orcamento.periodo(o.data_entrada, o.data_saida);
+  if (negocio) {
+    await patchBanco('negocios', `id=eq.${negocio}`, { etapa: 'pag', etapa_desde: new Date().toISOString(), valor_previsto: r.valor_total, data_entrada: o.data_entrada, data_saida: o.data_saida, acomodacao: r.acomodacao, atualizado_em: new Date().toISOString() }).catch(() => {});
+    await eventoNegocio(negocio, `Reserva ${r.reserva_id} criada no Silbeck (não confirmada): ${r.acomodacao}, ${periodo}, ${produtos.brl(r.valor_total)}, titular ${titular}${r.fonte === 'simulador' ? ' · SIMULADOR' : ''}`, usuario || 'CRM', buscar);
+  }
+  if (!reserva) await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+    body: JSON.stringify({ negocio_id: negocio, responsavel_id: usuario || null, criado_por: 'CRM', tipo: 'Conferir no Silbeck', quando: new Date().toISOString(), descricao: `Reserva ${r.reserva_id} criada no Silbeck, mas não registrada no CRM (falta a migração 020). Lançar o pagamento no Silbeck quando cair.` }) }).catch(() => null);
+  const valor = Math.round(r.valor_total * pct) / 100;
+  const descricao = (pct === 100 ? 'Valor total' : 'Sinal 50%') + ' · ' + r.acomodacao + ' (' + periodo + ')';
+  let cobranca = null;
+  if (forma === 'pix') cobranca = await criarCobrancaPix(conversa, { tipo: pct === 100 ? 'total' : 'sinal', valor, descricao, reserva_id: reserva && reserva.id }, usuario, buscar);
+  else if (negocio) await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+    body: JSON.stringify({ negocio_id: negocio, responsavel_id: usuario || null, criado_por: 'CRM', tipo: 'Enviar link do cartão', quando: new Date().toISOString(),
+      descricao: `Gerar na Cielo o link de ${produtos.brl(valor)} (${pct === 100 ? 'total em até 6x sem juros' : 'sinal de 50% em até 3x'}) da reserva ${r.reserva_id} e mandar ao cliente. Quando pagar, lançar o adiantamento (cartão) no Silbeck.` }) }).catch(() => null);
+  return { reserva: reserva || { silbeck_id: r.reserva_id, acomodacao: r.acomodacao, valor_total: r.valor_total }, cobranca, valor_cobranca: valor, forma, simulador: r.fonte === 'simulador' };
+}
+
 // ---------- Oportunidades (sem sino): retomar orçamentos parados e o resumo do dia ----------
 // Dono, 04/10/2026: o sino é só para urgência. Orçamento sem resposta em 24 h vira tarefa para o responsável;
 // às 8h, um único aviso no celular com o que há para hoje (quem quiser, desliga no sino).
@@ -924,20 +985,33 @@ async function baixaCobranca(cob, pg, buscar = fetch) {
   const valor = pg.valor || Number(cob.valor);
   await patchBanco('cobrancas', `id=eq.${cob.id}`, { situacao: 'paga', valor_pago: valor, pago_em: pg.horario || new Date().toISOString(), e2e_id: pg.e2e || null, pagador: pg.pagador || null, atualizado_em: new Date().toISOString() });
   const txt = 'Pagamento recebido por Pix: ' + produtos.brl(valor) + ' (' + (cob.descricao || cob.tipo) + ')' + (pg.pagador ? ' · ' + pg.pagador : '');
+  // Reserva criada pelo CRM: lança o adiantamento no Silbeck (Pix = tipo 8) e a reserva confirma sozinha
+  let silb = 'Lançar o adiantamento e confirmar a reserva no Silbeck, e mandar a confirmação ao cliente.';
+  const res = cob.reserva_id ? (await getJson(`${SUPABASE_URL}/rest/v1/reservas?id=eq.${cob.reserva_id}&select=id,silbeck_id,silbeck_item_id,fonte`, buscar))[0] : null;
+  if (res && res.silbeck_item_id) {
+    try {
+      await silbeck.lancarAdiantamento({ item_id: res.silbeck_item_id, valor, observacao: 'Pix BB ' + cob.txid + (pg.e2e ? ' · ' + pg.e2e : '') }, buscar);
+      await patchBanco('reservas', `id=eq.${res.id}`, { situacao: 'confirmada', confirmada_em: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
+      silb = `Pagamento lançado no Silbeck e reserva ${res.silbeck_id} confirmada automaticamente. Mandar a confirmação ao cliente.`;
+    } catch (e) {
+      silb = `O CRM NÃO conseguiu lançar o pagamento no Silbeck (${String(e.message || e).slice(0, 120)}): lançar o adiantamento na reserva ${res.silbeck_id} e mandar a confirmação ao cliente.`;
+    }
+  }
   if (cob.negocio_id) {
     await patchBanco('negocios', `id=eq.${cob.negocio_id}`, { etapa: 'res', etapa_desde: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
     await eventoNegocio(cob.negocio_id, txt + ' · card em Reservado', 'CRM', buscar);
     await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
-      body: JSON.stringify({ negocio_id: cob.negocio_id, responsavel_id: cob.criado_por || null, criado_por: 'CRM', tipo: 'Confirmar a reserva', descricao: txt + '. Lançar o adiantamento e confirmar a reserva no Silbeck, e mandar a confirmação ao cliente.', quando: new Date().toISOString() }) }).catch(() => null);
+      body: JSON.stringify({ negocio_id: cob.negocio_id, responsavel_id: cob.criado_por || null, criado_por: 'CRM', tipo: 'Confirmar a reserva', descricao: txt + '. ' + silb, quando: new Date().toISOString() }) }).catch(() => null);
   }
   await criarAlerta({ tipo: 'pagamento_recebido', titulo: 'Pagamento recebido', info: txt + '. Hora de oferecer os extras: abra a conversa (aviso 🎉).', conversa_id: cob.conversa_id, negocio_id: cob.negocio_id, cobranca_id: cob.id }, buscar);
 }
 async function cobrancaVencida(cob, buscar = fetch) {
   await patchBanco('cobrancas', `id=eq.${cob.id}`, { situacao: 'expirada', atualizado_em: new Date().toISOString() });
   await bb.cancelar(cob.txid, cob.fonte).catch(() => {});
-  const txt = 'Pix de ' + produtos.brl(cob.valor) + ' (' + (cob.descricao || cob.tipo) + ') venceu sem pagamento';
+  const res = cob.reserva_id ? (await getJson(`${SUPABASE_URL}/rest/v1/reservas?id=eq.${cob.reserva_id}&select=silbeck_id,situacao`, buscar))[0] : null;
+  const txt = 'Pix de ' + produtos.brl(cob.valor) + ' (' + (cob.descricao || cob.tipo) + ') venceu sem pagamento' + (res && res.situacao === 'nao_confirmada' ? '. A reserva ' + res.silbeck_id + ' continua NÃO CONFIRMADA no Silbeck' : '');
   if (cob.negocio_id) await eventoNegocio(cob.negocio_id, txt, 'CRM', buscar);
-  await criarAlerta({ tipo: 'cobranca_vencida', titulo: 'Cobrança vencida', info: txt + '. Falar com o cliente: mandar um novo Pix ou liberar a vaga.', conversa_id: cob.conversa_id, negocio_id: cob.negocio_id, cobranca_id: cob.id }, buscar);
+  await criarAlerta({ tipo: 'cobranca_vencida', titulo: 'Cobrança vencida', info: txt + '. Falar com o cliente: mandar um novo Pix ou ' + (res && res.situacao === 'nao_confirmada' ? 'cancelar a reserva no Silbeck (a API não cancela).' : 'liberar a vaga.'), conversa_id: cob.conversa_id, negocio_id: cob.negocio_id, cobranca_id: cob.id }, buscar);
 }
 
 // Fecha os alertas de uma venda (e conclui a tarefa de lançar ligada a eles)
@@ -1472,24 +1546,14 @@ const API_EQUIPE = {
   'POST /api/cobranca': async (corpo, eu) => {
     const conversa = String(corpo.conversa_id || '');
     if (!uuidOk(conversa)) throw new ErroEnvio(400, 'Conversa inválida.');
-    const valor = Math.round(Number(String(corpo.valor || '').replace(',', '.')) * 100) / 100;
-    if (!(valor >= 1 && valor <= 100000)) throw new ErroEnvio(400, 'Valor inválido (de R$ 1 a R$ 100.000).');
-    const tipo = ['sinal', 'total', 'outro'].includes(corpo.tipo) ? corpo.tipo : 'sinal';
-    const descricao = String(corpo.descricao || '').trim().slice(0, 120) || ({ sinal: 'Sinal de 50% da hospedagem', total: 'Hospedagem (valor total)', outro: 'Hotel Cabanas' })[tipo];
-    const negocio = await negocioDaConversa(conversa, 'id,etapa,data_entrada');
-    const est = await estadiaDaConversa(conversa);
-    const expira = prazoCobranca((negocio && negocio.data_entrada) || est.data_entrada);
-    const txid = bb.novoTxid();
-    const c = await bb.criarCobranca({ txid, valor, expiracaoSeg: Math.round((expira - new Date()) / 1000), descricao: 'Hotel Cabanas · ' + descricao });
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/cobrancas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
-      body: JSON.stringify({ txid, conversa_id: conversa, negocio_id: negocio ? negocio.id : null, tipo, descricao, valor, expira_em: expira.toISOString(), copia_e_cola: c.copia_e_cola, fonte: c.fonte, criado_por: eu.id }) });
-    if (!r.ok) { await bb.cancelar(txid, c.fonte).catch(() => {}); throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para registrar a cobrança (o banco precisa da migração 017?).'); }
-    const cob = (await r.json())[0];
-    if (negocio) {
-      if (['novo', 'atend', 'orc'].includes(negocio.etapa)) await patchBanco('negocios', `id=eq.${negocio.id}`, { etapa: 'pag', etapa_desde: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
-      await eventoNegocio(negocio.id, 'Pix gerado: ' + produtos.brl(valor) + ' (' + descricao + '), vale até ' + expira.toLocaleString('pt-BR', { timeZone: 'America/Campo_Grande', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }), eu.id);
-    }
-    return { ok: true, cobranca: cob };
+    return { ok: true, cobranca: await criarCobrancaPix(conversa, { ...corpo, reserva_id: uuidOk(corpo.reserva_id) ? corpo.reserva_id : null }, eu.id) };
+  },
+  // Aceite do cliente: cria a reserva NÃO CONFIRMADA no Silbeck (vaga e preço conferidos na hora) e já gera o Pix
+  // (ou a tarefa do link do cartão). Usada quando a equipe aprova a sugestão do Gilberto ou fecha pela tela.
+  'POST /api/fechar-reserva': async (corpo, eu) => {
+    const conversa = String(corpo.conversa_id || '');
+    if (!uuidOk(conversa)) throw new ErroEnvio(400, 'Conversa inválida.');
+    return { ok: true, ...(await fecharReserva(conversa, corpo, { usuario: eu.id, origem: corpo.origem === 'gilberto' ? 'gilberto' : eu.id })) };
   },
   // Cancelar, conferir agora, ou (só no simulador) simular o pagamento
   'POST /api/cobranca-acao': async (corpo, eu) => {
@@ -1659,7 +1723,8 @@ const API_EQUIPE = {
       gerar_orcamento: async e => { const c = await silbeck.cotar(e); if (!c.ok) return c; const m = orcamento.montar(e, c); return m.erro ? { ok: false, erro: m.erro } : { ok: true, link: URL_PUBLICA + '/o/TESTE-sem-link-real', fonte: c.fonte, opcoes: m.opcoes, aviso: 'Teste: nenhum orçamento foi gravado.' }; },
       enviar_fotos: async e => { const f = orcamento.escolherFotos(e); return f.length ? { ok: true, modo: 'sugestao', fotos: f.map(x => ({ arquivo: x.arquivo, descricao: x.descricao })) } : { ok: false, erro: 'Sem foto na biblioteca para esse pedido.' }; },
       enviar_link_extras: async e => vitrine.TEMAS[e.tema] ? { ok: true, link: URL_PUBLICA + '/e/TESTE-sem-link-real', tema: vitrine.TEMAS[e.tema].nome, aviso: 'Teste: nenhum link foi criado.' } : { ok: false, erro: 'Tema inválido.' },
-      gerar_cobranca: async e => e.forma === 'pix' ? { ok: true, marcador: '[[PIX]]', aviso: 'Teste: nenhum Pix foi criado. Escreva [[PIX]] sozinho num balão.' } : { ok: false, erro: 'Cartão ainda não está ligado.' },
+      criar_reserva: async () => ({ ok: true, pendente_aprovacao: true, aviso: 'Teste: nenhuma reserva foi criada. Chame gerar_cobranca na forma escolhida.' }),
+      gerar_cobranca: async e => ({ ok: true, marcador: e.forma === 'cartao' ? '[[link do cartão]]' : '[[PIX]]', aviso: 'Teste: nada foi criado. Escreva o marcador sozinho num balão.' }),
       abrir_alerta: async e => MOTIVOS_ALERTA[e.motivo] ? { ok: true, aviso: 'Teste: nenhum alerta foi aberto.' } : { ok: false, erro: 'Motivo inválido.' },
     };
     try { return { ok: true, ...(await gilberto.sugerir(historico, { canal: 'wa', nome: String(corpo.nome || 'Cliente de teste') }, executores, await catalogo())) }; }
@@ -1773,6 +1838,7 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
     const pendentes = historico.filter(m => m.tipo === 'audio' && m.direcao === 'entrada' && m.id && (!m.transcricao_status || m.transcricao_status === 'falhou')).slice(-3);
     await Promise.all(pendentes.map(m => transcreverMensagem(m, buscar).then(r => { m.transcricao = r.texto; m.transcricao_status = r.status; }).catch(() => {})));
     const nome = conv.contato && conv.contato.nome;
+    let reservaPendente = null;
     const executores = {
       gerar_orcamento: entrada => criarOrcamento(entrada, { conversa_id: conv.id, numero_id: conv.numero_id, primeiro_nome: nome, criado_por: 'gilberto' }, buscar),
       // Link de extras: criado agora, mas só conta como oferta quando a equipe enviar a sugestão
@@ -1783,17 +1849,38 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
         const v = await criarVitrine(conv.id, e.tema, { por: 'gilberto', enviada: false }, buscar);
         return { ok: true, link: v.link, vitrine_id: v.id, tema: vitrine.TEMAS[e.tema].nome, produtos: nomes };
       },
-      // Pix: o CRM NÃO cria na hora. Devolve o marcador [[PIX]]; o Pix nasce quando a equipe aprova o envio
-      // (sugestão descartada não deixa Pix solto vencendo). Valor = opção escolhida do último orçamento.
-      gerar_cobranca: async e => {
-        if (e.forma !== 'pix') return { ok: false, erro: 'O link de cartão (Cielo) ainda não está ligado. Escreva [[link do cartão]] na mensagem e avise a equipe em notas_internas.' };
-        const o = (await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?conversa_id=eq.${conv.id}&select=id,opcoes,data_entrada,data_saida&order=criado_em.desc&limit=1`, buscar))[0];
+      // Aceite: confere a frase do cliente, os dados do titular, a vaga e o preço AGORA. A reserva (não confirmada) e o
+      // Pix são criados no Silbeck e no banco quando a equipe aprova o envio (no modo automático, na hora).
+      criar_reserva: async e => {
+        const sem = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+        const lit = sem(e.aceite_cliente_literal);
+        if (lit.length < 2 || !historico.some(m => m.direcao === 'entrada' && sem(m.transcricao || m.corpo).includes(lit))) return { ok: false, erro: 'Não achei essa frase de aceite nas mensagens do cliente. Só reserve com aceite explícito.' };
+        const o = (await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?conversa_id=eq.${conv.id}&select=id,opcoes,data_entrada,data_saida,adultos,criancas_idades&order=criado_em.desc&limit=1`, buscar))[0];
         const op = o && (o.opcoes || []).find(x => x.codigo === String(e.opcao_codigo || '').toUpperCase());
-        if (!op) return { ok: false, erro: 'Essa acomodação não está no último orçamento desta conversa. Gere um orçamento com ela antes ou confirme com o cliente qual opção ele quer.' };
-        const pct = e.percentual === 100 ? 100 : 50, valor = Math.round(Number(op.valor_total) * pct) / 100;
-        return { ok: true, marcador: '[[PIX]]', valor, percentual: pct,
-          aviso: 'Escreva [[PIX]] sozinho num balão. Quando a equipe aprovar, o CRM gera o Pix e troca o marcador pelo valor, o prazo, os dados da conta e o copia e cola. A reserva no Silbeck a equipe cria: diga isso em notas_internas.',
-          pix: { tipo: pct === 100 ? 'total' : 'sinal', valor, descricao: (pct === 100 ? 'Valor total' : 'Sinal 50%') + ' · ' + op.nome + ' (' + orcamento.periodo(o.data_entrada, o.data_saida) + ')' } };
+        if (!op) return { ok: false, erro: 'Essa acomodação não está no último orçamento desta conversa. Gere um orçamento com ela antes.' };
+        const titular = String(e.titular_nome_completo || '').trim().replace(/\s+/g, ' ');
+        if (titular.split(' ').length < 2) return { ok: false, erro: 'Peça o nome completo do titular antes de reservar.' };
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(e.email || ''))) return { ok: false, erro: 'Peça o e-mail do titular antes de reservar.' };
+        const c = await silbeck.cotar({ data_entrada: o.data_entrada, data_saida: o.data_saida, adultos: o.adultos, idades_criancas: o.criancas_idades || [] }, buscar).catch(er => ({ ok: false, erro: er.message }));
+        if (!c.ok) return { ok: false, erro: 'Não consegui conferir a vaga agora (' + c.erro + '). Avise a equipe com abrir_alerta.' };
+        const atual = c.opcoes.find(x => x.codigo === op.codigo);
+        if (!atual) return { ok: false, sem_vaga: true, erro: op.nome + ' não tem mais vaga nessas datas. Avise o cliente e ofereça as opções que ainda têm vaga.' };
+        if (Math.abs(atual.valor_total - Number(op.valor_total)) > 0.5) return { ok: false, preco_mudou: true, valor_novo: atual.valor_total, erro: 'O valor mudou desde o orçamento: avise o cliente, gere um orçamento novo e peça um novo OK.' };
+        reservaPendente = { opcao_codigo: op.codigo, titular, email: String(e.email).trim(), acompanhantes: (e.acompanhantes || []).map(String).filter(Boolean).slice(0, 10),
+          acomodacao: op.nome, valor_total: op.valor_total, periodo: orcamento.periodo(o.data_entrada, o.data_saida) };
+        return { ok: true, pendente_aprovacao: true, acomodacao: op.nome, valor_total: op.valor_total, reserva: reservaPendente,
+          aviso: 'Vaga e preço conferidos agora. A reserva é criada no Silbeck (não confirmada, aguardando pagamento) quando a equipe aprovar o envio. Chame gerar_cobranca na forma escolhida, nesta mesma resposta.' };
+      },
+      gerar_cobranca: async e => {
+        const pct = e.percentual === 100 ? 100 : 50, forma = e.forma === 'cartao' ? 'cartao' : 'pix';
+        const existente = reservaPendente ? null : (await getJson(`${SUPABASE_URL}/rest/v1/reservas?conversa_id=eq.${conv.id}&situacao=eq.nao_confirmada&select=id,silbeck_id,acomodacao,valor_total,data_entrada,data_saida&order=criado_em.desc&limit=1`, buscar))[0];
+        const base = reservaPendente || existente;
+        if (!base) return { ok: false, erro: 'Primeiro reserve com criar_reserva (depois do aceite e da escolha da forma de pagamento).' };
+        const valor = Math.round(Number(base.valor_total) * pct) / 100;
+        const descricao = (pct === 100 ? 'Valor total' : 'Sinal 50%') + ' · ' + base.acomodacao + ' (' + (base.periodo || orcamento.periodo(base.data_entrada, base.data_saida)) + ')';
+        return { ok: true, marcador: forma === 'pix' ? '[[PIX]]' : '[[link do cartão]]', valor,
+          aviso: forma === 'pix' ? 'Escreva [[PIX]] sozinho num balão: o CRM troca pelo Pix (valor, prazo, dados da conta e copia e cola) quando a equipe aprovar.' : 'Escreva [[link do cartão]] sozinho num balão: a equipe gera o link na Cielo e cola (o CRM cria a tarefa).',
+          pagamento: { forma, percentual: pct, valor, descricao, tipo: pct === 100 ? 'total' : 'sinal', reserva_id: existente ? existente.id : null } };
       },
       // Passa o caso para a equipe: alerta no sino e no celular (plantão primeiro), com o resumo do Gilberto
       abrir_alerta: async e => {
@@ -1818,7 +1905,7 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
       body: JSON.stringify({ conversa_id: conv.id, pergunta: ultimaDoCliente ? String(ultimaDoCliente.transcricao || ultimaDoCliente.corpo || '[' + ultimaDoCliente.tipo + ']').slice(0, 2000) : null,
         mensagem: r.mensagem, notas_internas: r.notas_internas, precisa_equipe: r.precisa_equipe, modelo: r.modelo,
-        ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo), produto_oferecido: r.produto_oferecido || null, vitrines: r.vitrines || [], pix: r.pix || null, alerta: !!r.alertou }, pedida_por: eu.id }) }).catch(() => null);
+        ferramentas: { cotacoes: r.cotacoes, orcamentos: r.orcamentos, fotos: (r.fotos || []).map(f => f.arquivo), produto_oferecido: r.produto_oferecido || null, vitrines: r.vitrines || [], reserva: r.reserva || null, pagamento: r.pagamento || null, alerta: !!r.alertou }, pedida_por: eu.id }) }).catch(() => null);
     const sugestaoId = reg && reg.ok ? ((await reg.json().catch(() => []))[0] || {}).id : null;
     if (r.precisa_equipe && !r.alertou) await alertaAtendimento('gilberto_passou', conv.id, r.notas_internas || 'O Gilberto indicou que este caso é para a equipe.', buscar).catch(() => {});
     let avisoRevisao = null;

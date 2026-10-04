@@ -164,6 +164,17 @@ const hojeBonito = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/C
 const reais = v => Math.round(v * 100) / 100;
 const SEM_MENORES_DE_5 = new Set(['CBD', 'CBT']); // Cabana Casal e Cabana Tripla (regra do hotel; o Silbeck não aplica)
 
+// Regra do hotel (P68a): até 4 anos não paga (cortesia); 5 anos ou mais paga.
+function categoriasDoGrupo(categorias, adultos, idades) {
+  const cat = t => (categorias.find(c => c.tipo === t) || {}).id;
+  const pequenos = idades.filter(x => x <= 4).length, pagantesCriancas = idades.length - pequenos;
+  const lista = [{ id: cat(1), quantidade: adultos }];
+  if (pagantesCriancas) lista.push({ id: cat(3), quantidade: pagantesCriancas });
+  if (pequenos) lista.push({ id: cat(4), quantidade: pequenos });
+  if (lista.some(c => c.id == null)) throw new ErroSilbeck('categorias de hóspede não encontradas no Silbeck');
+  return { lista, pequenos, pagantesCriancas };
+}
+
 // consultar_disponibilidade (crm/gilberto/ferramentas.json): vagas e valores de hoje para um período e um grupo.
 async function cotar(entrada, buscar = fetch) {
   const { data_entrada: ini, data_saida: fim } = entrada;
@@ -179,13 +190,7 @@ async function cotar(entrada, buscar = fetch) {
   if (idades.some(x => !Number.isInteger(x) || x < 0 || x > 17)) return erro('Informe a idade de cada criança (0 a 17 anos).');
 
   const [tipos, categorias] = await Promise.all([cadastro('/v1/TipoApartamento', 'listaTipoApartamento', buscar), cadastro('/v1/CategoriaHospede', 'listaCategoriaHospede', buscar)]);
-  // Regra do hotel (P68a): até 4 anos não paga (cortesia); 5 anos ou mais paga.
-  const cat = t => (categorias.find(c => c.tipo === t) || {}).id;
-  const pequenos = idades.filter(x => x <= 4).length, pagantesCriancas = idades.length - pequenos;
-  const lista = [{ id: cat(1), quantidade: adultos }];
-  if (pagantesCriancas) lista.push({ id: cat(3), quantidade: pagantesCriancas });
-  if (pequenos) lista.push({ id: cat(4), quantidade: pequenos });
-  if (lista.some(c => c.id == null)) throw new ErroSilbeck('categorias de hóspede não encontradas no Silbeck');
+  const { lista, pequenos, pagantesCriancas } = categoriasDoGrupo(categorias, adultos, idades);
   const pessoas = adultos + idades.length;
 
   const disp = await chamar('GET', `/v1/Disponibilidade?dataInicial=${ini}&DataFinal=${somarDias(fim, -1)}&DetalharDiaADia=true`, null, buscar);
@@ -231,4 +236,53 @@ async function vagas(inicio, dias, buscar = fetch) {
       vagas: Array.from({ length: n }, (_, i) => { const d = somarDias(inicio, i); const x = ((porCod[t.codigo] || {}).listaSituacaoTipoApto || []).find(y => y.data === d); return x ? x.qtdeDisponivel : null; }) })) };
 }
 
-module.exports = { diagnostico, diagnosticoCache, segredo, cotar, vagas, MODO, ErroSilbeck };
+// criar_reserva: confere a vaga e o preço de novo (na mesma hora) e cria a reserva NÃO CONFIRMADA no Silbeck.
+// O preço vai sempre do Tarifario/Valor (nunca digitado). Se mudou em relação ao orçamento, não cria (o cliente precisa
+// de um novo OK). A reserva confirma sozinha quando o adiantamento (pagamento) é lançado (regra da Silbeck, P46).
+async function reservar(e, buscar = fetch) {
+  const codigo = String(e.codigo || '').toUpperCase(), ini = e.data_entrada, fim = e.data_saida;
+  const adultos = Number(e.adultos), idades = (e.idades_criancas || []).map(Number);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(ini || '') || !/^\d{4}-\d{2}-\d{2}$/.test(fim || '') || fim <= ini) return { ok: false, erro: 'Datas inválidas.' };
+  if (ini < hojeBonito()) return { ok: false, erro: 'A data de entrada já passou.' };
+  const titular = String(e.titular || '').trim();
+  if (titular.split(/\s+/).length < 2) return { ok: false, erro: 'Falta o nome completo do titular.' };
+  const [tipos, categorias] = await Promise.all([cadastro('/v1/TipoApartamento', 'listaTipoApartamento', buscar), cadastro('/v1/CategoriaHospede', 'listaCategoriaHospede', buscar)]);
+  const tipo = tipos.find(t => t.codigo === codigo);
+  if (!tipo) return { ok: false, erro: 'Acomodação ' + codigo + ' não encontrada no Silbeck.' };
+  if (adultos + idades.length > tipo.maximoOcupantes) return { ok: false, erro: tipo.nome + ' não comporta o grupo.' };
+  const { lista } = categoriasDoGrupo(categorias, adultos, idades);
+  const disp = await chamar('GET', `/v1/Disponibilidade?dataInicial=${ini}&DataFinal=${somarDias(fim, -1)}&DetalharDiaADia=true`, null, buscar);
+  const t = ((disp.dados && disp.dados.listaTipoApto) || []).find(x => x.codigo === codigo);
+  const vagas = t && (t.listaSituacaoTipoApto || []).length ? Math.min(...t.listaSituacaoTipoApto.map(d => d.qtdeDisponivel)) : 0;
+  if (!(vagas > 0)) return { ok: false, sem_vaga: true, erro: tipo.nome + ' não tem mais vaga nessas datas.' };
+  const preco = await chamar('POST', '/v1/Tarifario/Valor', { dataEntrada: ini, dataSaida: fim, idTipoApartamento: tipo.id, listaCategoriaHospede: lista }, buscar);
+  const dias = Array.isArray(preco.dados) ? preco.dados : [];
+  if (!dias.length) return { ok: false, erro: 'O Silbeck não devolveu a tarifa.' };
+  const diarias = reais(dias.reduce((s, d) => s + Number(d.valor || 0), 0));
+  const total = reais(diarias + dias.reduce((s, d) => s + Number(d.valorTaxaServico || 0) + Number(d.valorTaxaISS || 0), 0));
+  if (e.valor_esperado != null && Math.abs(total - Number(e.valor_esperado)) > 0.5) return { ok: false, preco_mudou: true, valor_novo: total, erro: 'O valor mudou desde o orçamento.' };
+  const hospedes = [{ nome: titular, adulto: true }, ...(e.acompanhantes || []).map(String).filter(Boolean).slice(0, 10).map((n, i) => ({ nome: n, adulto: i < adultos - 1 }))];
+  const corpo = {
+    titular, email: e.email || undefined, telefone: e.telefone || undefined,
+    observacao: ('Reserva feita pelo CRM (WhatsApp)' + (e.observacao ? '. ' + e.observacao : '')).slice(0, 250),
+    listaReservaItem: [{ idTipoApartamento: tipo.id, quantidadeAdulto: adultos, quantidadeCrianca: idades.length, dataEntrada: ini, dataSaida: fim, qtdeApartamento: 1,
+      valorTotalDiaria: diarias, listaHospede: hospedes,
+      listaData: dias.map(d => ({ data: d.data, valorDiaria: Number(d.valor), ...(d.idTarifario != null ? { idTarifario: d.idTarifario } : {}), ...(d.idTipoPensao != null ? { idTipoPensao: d.idTipoPensao } : {}) })) }],
+  };
+  const r = await chamar('POST', '/v1/reserva', corpo, buscar);
+  const id = r.dados && r.dados.id;
+  if (!id) throw new ErroSilbeck('o Silbeck não devolveu o número da reserva');
+  // O item da reserva (idConta) é o que recebe o pagamento depois
+  const hoje = hojeBonito();
+  const lr = await chamar('GET', `/v1/ListaReserva?dataInicial=${hoje}&dataFinal=${hoje}&tipoData=cadastro&idReserva=${id}`, null, buscar).catch(() => null);
+  const res = ((lr && lr.dados && (lr.dados.listaReserva || lr.dados)) || []);
+  const item = ((Array.isArray(res) ? res : []).find(x => String(x.id) === String(id)) || {}).listaReservaItem;
+  return { ok: true, fonte: r.fonte, reserva_id: String(id), item_id: item && item[0] ? String(item[0].id) : null, acomodacao: tipo.nome, codigo, valor_total: total };
+}
+// Pagamento recebido: lança o adiantamento no item da reserva (Pix = tipo 8). A reserva confirma sozinha.
+async function lancarAdiantamento({ item_id, valor, observacao }, buscar = fetch) {
+  const r = await chamar('POST', '/v1/Adiantamento', { valor: reais(Number(valor)), idConta: Number(item_id), tipoFormaPagamento: 8, observacao: String(observacao || '').slice(0, 200) }, buscar);
+  return { ok: true, id: r.dados && r.dados.id, confirmado: !!(r.dados && r.dados.confirmado), fonte: r.fonte };
+}
+
+module.exports = { diagnostico, diagnosticoCache, segredo, cotar, vagas, reservar, lancarAdiantamento, MODO, ErroSilbeck };

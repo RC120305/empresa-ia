@@ -31,7 +31,7 @@ const PRODS = [
 ];
 const ofertasF = [], vendasF = [], alertasF = [], vitrinesF = [];
 let iaVitrines = null;
-const cobrancasF = [];
+const cobrancasF = [], reservasF = [];
 let bbPago = false;
 const configF = {};
 const pushF = [], pushRecebidos = []; // inscrições de avisos no celular e o que o "serviço de push" recebeu
@@ -78,6 +78,13 @@ const falso = http.createServer((req, res) => {
       if (req.method === 'PUT') return responder(201, { txid: tx, status: 'ATIVA', pixCopiaECola: '00020126BB' + tx, valor: json.valor, chave: json.chave, calendario: json.calendario });
       if (req.method === 'PATCH') return responder(200, { txid: tx, status: json.status });
       return responder(200, bbPago ? { txid: tx, status: 'CONCLUIDA', pix: [{ endToEndId: 'E123', valor: '500.00', horario: '2026-10-02T20:00:00Z', pagador: { nome: 'ANA SOUZA' } }] } : { txid: tx, status: 'ATIVA' });
+    }
+    if (req.url.startsWith('/rest/v1/reservas')) {
+      const u = new URL(req.url, 'http://x'), q = k => (u.searchParams.get(k) || '').replace(/^eq\./, '');
+      if (req.method === 'POST') { const r = { id: crypto.randomUUID(), situacao: 'nao_confirmada', ...json }; reservasF.push(r); return responder(201, [r]); }
+      if (req.method === 'PATCH') { Object.assign(reservasF.find(r => r.id === q('id')), json); res.writeHead(204); return res.end(); }
+      return responder(200, reservasF.filter(r => (!q('id') || r.id === q('id')) && (!q('conversa_id') || r.conversa_id === q('conversa_id')) && (!q('situacao') || r.situacao === q('situacao'))
+        && (!q('codigo') || r.codigo === q('codigo')) && (!q('data_entrada') || r.data_entrada === q('data_entrada'))));
     }
     if (req.url.startsWith('/rest/v1/cobrancas')) {
       if (req.method === 'POST') { const c = { id: crypto.randomUUID(), situacao: 'ativa', ...json }; cobrancasF.push(c); return responder(201, [c]); }
@@ -232,9 +239,10 @@ const falso = http.createServer((req, res) => {
         content: [{ type: 'tool_use', id: 'toolu_o', name: 'gerar_orcamento', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], opcoes: [{ acomodacoes: ['BGE'] }, { acomodacoes: ['STD'] }], persona: 'familia', pessoas_aptas_combo: 2, frase_de_abertura: 'Ana, separei as opções para a família curtir os rios', sugerida: 'BGE' } }],
         usage: { input_tokens: 10, output_tokens: 20 } });
       if (iaPix && !jaConsultou) return responder(200, { id: 'msg_p', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
-        content: [{ type: 'tool_use', id: 'toolu_p1', name: 'gerar_cobranca', input: { opcao_codigo: 'BGE', forma: 'pix', percentual: 50 } },
-          { type: 'tool_use', id: 'toolu_p2', name: 'gerar_cobranca', input: { opcao_codigo: 'BGE', forma: 'cartao', percentual: 50 } },
-          { type: 'tool_use', id: 'toolu_p3', name: 'abrir_alerta', input: { motivo: 'reserva_urgente', prioridade: 3, resumo: 'Ana aceitou o Bangalô Especial e vai pagar o sinal no Pix. Falta criar a reserva no Silbeck.' } }],
+        content: [{ type: 'tool_use', id: 'toolu_p0', name: 'criar_reserva', input: { opcao_codigo: 'BGE', aceite_cliente_literal: 'pode reservar o bangalô', titular_nome_completo: 'Ana Souza Lima', email: 'ana@exemplo.com', acompanhantes: [] } },
+          { type: 'tool_use', id: 'toolu_p1', name: 'criar_reserva', input: { opcao_codigo: 'BGE', aceite_cliente_literal: 'tem vaga de 14 a 16/11', titular_nome_completo: 'Ana Souza Lima', email: 'ana@exemplo.com', acompanhantes: ['Theo Lima'] } },
+          { type: 'tool_use', id: 'toolu_p2', name: 'gerar_cobranca', input: { forma: 'pix', percentual: 50 } },
+          { type: 'tool_use', id: 'toolu_p3', name: 'abrir_alerta', input: { motivo: 'reserva_urgente', prioridade: 3, resumo: 'Ana aceitou o Bangalô Especial e vai pagar o sinal no Pix.' } }],
         usage: { input_tokens: 10, output_tokens: 20 } });
       if (iaPix) return responder(200, { id: 'msg_pf', type: 'message', role: 'assistant', model: b.model, stop_reason: 'end_turn', stop_sequence: null,
         content: [{ type: 'text', text: JSON.stringify({ mensagem: 'Perfeito, Ana! Vou deixar tudo pronto 🌿\n---\n[[PIX]]', notas_internas: 'Criar a reserva no Silbeck.', precisa_equipe: true, produto_oferecido: '' }) }],
@@ -1001,7 +1009,7 @@ falso.listen(0, () => {
     assert.ok(pi.messages[3].content.includes('Modo: sugestao'));
     assert.equal(pi.output_config.format.type, 'json_schema');
     assert.equal(pi.fallbacks, 'default'); assert.ok(ultimoPedidoIA.beta.includes('server-side-fallback-2026-07-01'));
-    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'gerar_cobranca', 'enviar_fotos', 'abrir_alerta', 'enviar_link_extras']);
+    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'abrir_alerta', 'enviar_link_extras']);
     assert.ok(pi.messages[3].content.includes('SIMULADOR'));
     // Cotação: o Gilberto pede, o CRM consulta o simulador do Silbeck e devolve o resultado na 2ª rodada
     iaCota = true; pedidosIA.length = 0;
@@ -1031,22 +1039,49 @@ falso.listen(0, () => {
     assert.ok(/\/o\/[A-Za-z0-9_-]{22}$/.test(resOrc.link));
     assert.equal(sug3.orcamentos.length, 1); assert.equal(sug3.simulador, true);
     assert.ok(JSON.stringify(pedidosIA[0].messages).includes('Reserva: ainda não paga'), 'o Gilberto sabe que ainda não é hora dos extras');
-    // Aceite: o Gilberto pede o Pix do sinal (o CRM NÃO cria na hora: marcador [[PIX]]) e passa o caso para a equipe
+    // Aceite: o Gilberto confere vaga e preço e prepara a reserva + o Pix (nada é criado antes de a equipe aprovar)
+    // e passa o caso para a equipe; depois a equipe aprova: reserva NÃO CONFIRMADA no Silbeck + Pix; o Pix cai: o CRM
+    // lança o pagamento no Silbeck e a reserva confirma sozinha
     {
       iaPix = true; pedidosIA.length = 0; alertasF.length = 0;
-      const nCob = cobrancasF.length;
+      const nCob = cobrancasF.length, nRes = reservasF.length;
       r = await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-equipe' }, body: JSON.stringify({ conversa_id: conv }) });
       const sp = await r.json(); iaPix = false;
       assert.equal(r.status, 200, JSON.stringify(sp));
       const res = pedidosIA[1].messages.at(-1).content.map(c => JSON.parse(c.content));
-      assert.equal(res[0].marcador, '[[PIX]]'); assert.equal(res[1].ok, false, 'cartão ainda não'); assert.equal(res[2].ok, true);
+      assert.equal(res[0].ok, false, 'aceite que o cliente não escreveu: recusa'); assert.ok(res[0].erro.includes('aceite'));
+      assert.equal(res[1].ok, true, JSON.stringify(res[1])); assert.equal(res[1].pendente_aprovacao, true);
+      assert.equal(res[2].marcador, '[[PIX]]'); assert.equal(res[3].ok, true);
       const bge = orcs.at(-1).opcoes.find(o => o.codigo === 'BGE');
-      assert.equal(sp.pix.tipo, 'sinal'); assert.equal(sp.pix.valor, Math.round(bge.valor_total * 50) / 100); assert.ok(sp.pix.descricao.startsWith('Sinal 50% · Bangalô Especial ('));
+      assert.deepEqual([sp.reserva.opcao_codigo, sp.reserva.titular, sp.reserva.valor_total], ['BGE', 'Ana Souza Lima', bge.valor_total]);
+      assert.deepEqual([sp.pagamento.forma, sp.pagamento.percentual, sp.pagamento.valor], ['pix', 50, Math.round(bge.valor_total * 50) / 100]);
       assert.ok(sp.mensagem.includes('[[PIX]]'));
-      assert.equal(cobrancasF.length, nCob, 'nenhum Pix criado antes de a equipe aprovar');
+      assert.equal(cobrancasF.length, nCob, 'nenhum Pix antes de a equipe aprovar'); assert.equal(reservasF.length, nRes, 'nenhuma reserva antes de a equipe aprovar');
       assert.deepEqual(alertasF.map(a => [a.tipo, a.titulo]), [['gilberto_passou', 'Gilberto: Reserva urgente (check-in em até 3 dias)']], 'um alerta só, com o motivo (sem duplicar pelo precisa_equipe)');
-      assert.ok(alertasF[0].info.includes('Falta criar a reserva'));
       alertasF.length = 0;
+      // A equipe aprova: reserva no Silbeck (simulador) + Pix ligado à reserva
+      r = await api('/api/fechar-reserva', { conversa_id: conv, ...sp.reserva, forma: 'pix', percentual: 50, origem: 'gilberto' });
+      const fr = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(fr));
+      const rv = reservasF.at(-1);
+      assert.ok(/^\d+$/.test(rv.silbeck_id) && /^\d+$/.test(rv.silbeck_item_id), 'número e item da reserva do Silbeck');
+      assert.deepEqual([rv.codigo, rv.titular, rv.situacao, rv.fonte, rv.forma_pagamento, rv.valor_total], ['BGE', 'Ana Souza Lima', 'nao_confirmada', 'simulador', 'pix', bge.valor_total]);
+      assert.equal(fr.cobranca.reserva_id, rv.id); assert.equal(fr.cobranca.valor, Math.round(bge.valor_total * 50) / 100);
+      assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'pag' && c.corpo.valor_previsto === bge.valor_total), 'card em Aguardando pagamento');
+      assert.equal((await api('/api/fechar-reserva', { conversa_id: conv, ...sp.reserva, forma: 'pix', percentual: 50 })).status, 409, 'não duplica a reserva');
+      assert.equal((await api('/api/fechar-reserva', { conversa_id: conv, ...sp.reserva, opcao_codigo: 'STD', titular: 'Ana', forma: 'pix', percentual: 50 })).status, 400, 'titular sem sobrenome');
+      // O Pix cai: o CRM lança o adiantamento no Silbeck e a reserva confirma
+      r = await api('/api/cobranca-acao', { id: fr.cobranca.id, acao: 'simular_pagamento' });
+      assert.equal((await r.json()).pagas, 1);
+      assert.equal(rv.situacao, 'confirmada', 'reserva confirmada no Silbeck pelo pagamento');
+      assert.ok(chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.descricao.includes('confirmada automaticamente'));
+      // Cartão: reserva criada e tarefa do link da Cielo
+      reservasF.length = 0;
+      r = await api('/api/fechar-reserva', { conversa_id: conv, ...sp.reserva, opcao_codigo: 'STD', forma: 'cartao', percentual: 100 });
+      const fc = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(fc)); assert.equal(fc.cobranca, null);
+      assert.equal(chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.tipo, 'Enviar link do cartão');
+      reservasF.length = 0; alertasF.length = 0;
     }
     const salvo = orcs.at(-1);
     assert.equal(salvo.primeiro_nome, null); assert.equal(salvo.numero_whatsapp, '15551829766'); assert.equal(salvo.fonte, 'simulador');

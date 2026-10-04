@@ -886,7 +886,8 @@
       $('sug-notas').className = 'sug-notas' + (j.precisa_equipe || j.simulador ? ' alerta' : '');
       $('sug-modelo').textContent = /\[\[/.test(j.mensagem) ? 'complete os [[ ]] antes de enviar' : '';
       $('sugestao').dataset.texto = j.mensagem;
-      $('sugestao').dataset.pix = j.pix ? JSON.stringify(j.pix) : '';
+      $('sugestao').dataset.reserva = j.reserva ? JSON.stringify(j.reserva) : '';
+      $('sugestao').dataset.pagamento = j.pagamento ? JSON.stringify(j.pagamento) : '';
       $('sugestao').dataset.sugestao = j.sugestao_id || '';
       $('sug-motivos').hidden = true;
       const fl = $('sug-fotos-lista'); fl.textContent = '';
@@ -905,11 +906,21 @@
   $('sug-usar').addEventListener('click', async () => {
     const ta = $('resposta');
     let texto = $('sugestao').dataset.texto || '';
-    // O Gilberto pediu um Pix: só agora, com a aprovação da equipe, o CRM gera e troca o [[PIX]] pelo Pix de verdade
-    const pix = $('sugestao').dataset.pix ? JSON.parse($('sugestao').dataset.pix) : null;
-    if (pix && texto.includes('[[PIX]]') && confirm('Gerar o Pix de ' + brl(pix.valor) + ' (' + pix.descricao + ') e pôr na mensagem?')) {
+    // Aceite: só agora, com a aprovação da equipe, o CRM cria a reserva (não confirmada) no Silbeck e o Pix,
+    // e troca o [[PIX]] pelo Pix de verdade. Cartão: a reserva é criada e fica a tarefa do link da Cielo.
+    const lerDs = k => { try { return $('sugestao').dataset[k] ? JSON.parse($('sugestao').dataset[k]) : null; } catch (e) { return null; } };
+    const reserva = lerDs('reserva'), pg = lerDs('pagamento');
+    if (reserva && pg && confirm('Reservar no Silbeck (não confirmada, aguardando pagamento):\n' + reserva.acomodacao + ' · ' + reserva.periodo + '\nTitular: ' + reserva.titular + '\n\n' +
+        (pg.forma === 'pix' ? 'E gerar o Pix de ' + brl(pg.valor) + ' (' + pg.descricao + ')?' : 'O link do cartão de ' + brl(pg.valor) + ' a equipe gera na Cielo (fica uma tarefa).'))) {
       try {
-        const j = await chamarApi('/api/cobranca', { conversa_id: aberta, tipo: pix.tipo, valor: pix.valor, descricao: pix.descricao });
+        const j = await chamarApi('/api/fechar-reserva', { conversa_id: aberta, ...reserva, forma: pg.forma, percentual: pg.percentual, origem: 'gilberto' });
+        if (j.cobranca) texto = texto.replace('[[PIX]]', textoPix(j.cobranca));
+        toast('Reserva ' + j.reserva.silbeck_id + ' criada no Silbeck (não confirmada)' + (j.simulador ? ' · SIMULADOR' : '') + (j.cobranca ? '. Pix gerado: revise e envie.' : '. Gere o link na Cielo e cole no lugar de [[link do cartão]].'));
+        if (painel === 'res') pintarPainel();
+      } catch (e) { toast(e.message); }
+    } else if (!reserva && pg && pg.forma === 'pix' && pg.reserva_id && texto.includes('[[PIX]]') && confirm('Gerar um novo Pix de ' + brl(pg.valor) + ' (' + pg.descricao + ')?')) {
+      try {
+        const j = await chamarApi('/api/cobranca', { conversa_id: aberta, tipo: pg.tipo, valor: pg.valor, descricao: pg.descricao, reserva_id: pg.reserva_id });
         texto = texto.replace('[[PIX]]', textoPix(j.cobranca));
         toast('Pix gerado. Revise a mensagem e envie.');
         if (painel === 'res') pintarPainel();
@@ -1739,6 +1750,16 @@
     lat.lastChild.remove();
     if (error) { lat.append(el('div', { class: 'aviso-sim', text: '⚠ Falta rodar a migração 017 no Supabase para as cobranças por Pix.' })); return; }
     if (modoPix === 'simulador') lat.append(el('div', { class: 'aviso-sim', text: '⚠ Modo de teste: o Pix é fictício (simulador do Banco do Brasil). Não envie a clientes reais.' }));
+    // Reservas que o CRM criou no Silbeck para esta conversa
+    const rs = await sb.from('reservas').select('*').eq('conversa_id', id).order('criado_em', { ascending: false });
+    if (painel !== 'res' || aberta !== id) return;
+    if (!rs.error && rs.data && rs.data.length) {
+      lat.append(el('span', { class: 'rotulo', text: 'Reservas no Silbeck' }));
+      rs.data.forEach(r => lat.append(el('div', { class: 'lat-card' },
+        el('b', { text: 'Reserva ' + r.silbeck_id + ' · ' + (r.acomodacao || r.codigo) }),
+        el('small', {}, el('span', { class: 'cob-sit ' + ({ nao_confirmada: 'pendente', confirmada: 'ok', cancelada: 'off' })[r.situacao], text: ({ nao_confirmada: 'Não confirmada · aguardando pagamento', confirmada: 'Confirmada ✓', cancelada: 'Cancelada' })[r.situacao] || r.situacao }),
+          ' · ' + fmtData(r.data_entrada) + ' a ' + fmtData(r.data_saida) + ' · ' + brl(r.valor_total) + ' · titular ' + r.titular + (r.fonte === 'simulador' ? ' · teste' : '')))));
+    }
     // Valor sugerido: a opção que o cliente escolheu no orçamento (ou o valor previsto do negócio)
     const orc = orcsCache.find(o => o.escolhida) || orcsCache[0];
     const op = orc && ((orc.opcoes || []).find(x => x.codigo === orc.escolhida) || (orc.opcoes || [])[0]);

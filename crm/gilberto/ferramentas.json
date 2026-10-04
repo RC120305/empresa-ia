@@ -132,17 +132,14 @@
   },
   {
     "name": "criar_reserva",
-    "description": "Cria a reserva no Silbeck (status 'não confirmada') a partir de uma opção de um orçamento. Use SOMENTE depois de um aceite explícito do cliente na conversa ('pode reservar', 'quero a Cabana Master', 'fechado'). Antes, confirme o nome completo do titular, o e-mail, os nomes dos acompanhantes (se não souber, o CRM usa 'Acompanhante 1, 2…') e, com mais de uma acomodação, se fica tudo em um nome só ou em reservas separadas. O CRM confere a vaga e o preço de novo antes de criar: se o preço mudou, NÃO cria e devolve preco_mudou=true com o valor novo, e você precisa de um novo OK do cliente. O CRM também recusa se a frase de aceite não estiver nas mensagens do cliente.",
+    "description": "Reserva a acomodação que o cliente escolheu, no Silbeck, como 'não confirmada' (ela confirma sozinha quando o pagamento cai). Use SOMENTE depois de um aceite explícito do cliente na conversa ('pode reservar', 'quero o Bangalô', 'fechado') E de ele escolher a forma de pagamento (Pix ou cartão). Antes, confirme o nome completo do titular, o e-mail e os nomes dos acompanhantes (se não souber, deixe a lista vazia). Nesta fase, uma acomodação por reserva (combinações: abrir_alerta para a equipe). O CRM confere a vaga e o preço de novo: sem vaga ou preço mudado, NÃO reserva e você avisa o cliente (preço novo precisa de novo OK). O CRM também recusa se a frase de aceite não estiver nas mensagens do cliente. Logo depois, na mesma resposta, chame gerar_cobranca na forma escolhida. Não diga 'reserva confirmada': ela está garantida aguardando o pagamento.",
     "strict": true,
     "input_schema": {
       "type": "object",
       "properties": {
-        "orcamento_id": {
-          "type": "string"
-        },
-        "opcao_escolhida": {
-          "type": "integer",
-          "description": "Número da opção no orçamento (1, 2 ou 3)."
+        "opcao_codigo": {
+          "type": "string",
+          "description": "Código da acomodação escolhida, de uma das opções do último orçamento (ex.: \"BGE\")."
         },
         "aceite_cliente_literal": {
           "type": "string",
@@ -161,39 +158,25 @@
             "type": "string"
           },
           "description": "Nomes dos acompanhantes; lista vazia se o cliente ainda não informou."
-        },
-        "estrutura": {
-          "type": "string",
-          "enum": [
-            "uma_acomodacao",
-            "varias_em_um_nome",
-            "reservas_separadas"
-          ]
         }
       },
       "required": [
-        "orcamento_id",
-        "opcao_escolhida",
+        "opcao_codigo",
         "aceite_cliente_literal",
         "titular_nome_completo",
         "email",
-        "acompanhantes",
-        "estrutura"
+        "acompanhantes"
       ],
       "additionalProperties": false
     }
   },
   {
     "name": "gerar_cobranca",
-    "description": "Gera o Pix (Banco do Brasil) da reserva, depois do aceite do cliente e de ele escolher pagar no Pix: 50% de sinal (o restante no check-out) ou 100%. Nesta fase (antes do Silbeck real) o valor vem da opção escolhida no último orçamento da conversa (opcao_codigo). O CRM NÃO cria o Pix na hora: devolve o marcador [[PIX]], que você escreve sozinho num balão; quando a equipe aprova o envio, o CRM gera o Pix e troca o marcador pelo valor, o prazo (48 h; 2 h se o check-in for em até 3 dias), os dados da conta para o cliente conferir e o copia e cola. Não repita essas informações no texto. Cartão (link Cielo) ainda não está ligado: devolve erro; nesse caso escreva [[link do cartão]] e avise a equipe em notas_internas. A reserva no Silbeck quem cria é a equipe. Nunca peça nem aceite número de cartão no chat.",
+    "description": "Pagamento da reserva: Pix (Banco do Brasil) de 50% (sinal; o restante no check-out) ou 100%; ou cartão (link Cielo: 50% em até 3x ou 100% em até 6x sem juros). Use logo depois de criar_reserva, na mesma resposta, na forma que o cliente escolheu; ou para mandar um novo Pix de uma reserva desta conversa que ainda não foi paga. Pix: escreva o marcador [[PIX]] sozinho num balão; o CRM troca pelo valor, o prazo (48 h; 2 h se o check-in for em até 3 dias), os dados da conta e o copia e cola, então não repita essas informações. Cartão: o link da Cielo ainda é gerado pela equipe; escreva [[link do cartão]] sozinho num balão. Nunca peça nem aceite número de cartão no chat.",
     "strict": true,
     "input_schema": {
       "type": "object",
       "properties": {
-        "opcao_codigo": {
-          "type": "string",
-          "description": "Código da acomodação que o cliente escolheu, de uma das opções do último orçamento (ex.: \"BGE\")."
-        },
         "forma": {
           "type": "string",
           "enum": [
@@ -207,11 +190,10 @@
             50,
             100
           ],
-          "description": "50 = sinal; 100 = valor total."
+          "description": "50 = sinal (cartão até 3x ou Pix); 100 = valor total (cartão até 6x ou Pix)."
         }
       },
       "required": [
-        "opcao_codigo",
         "forma",
         "percentual"
       ],
