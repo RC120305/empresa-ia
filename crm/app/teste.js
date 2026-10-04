@@ -1021,6 +1021,7 @@ falso.listen(0, () => {
     assert.deepEqual(resOrc.opcoes.map(o => !!o.sugerida), [false, true], 'a sugestão segue a opção marcada, não a posição');
     assert.ok(/\/o\/[A-Za-z0-9_-]{22}$/.test(resOrc.link));
     assert.equal(sug3.orcamentos.length, 1); assert.equal(sug3.simulador, true);
+    assert.ok(JSON.stringify(pedidosIA[0].messages).includes('Reserva: ainda não paga'), 'o Gilberto sabe que ainda não é hora dos extras');
     const salvo = orcs.at(-1);
     assert.equal(salvo.primeiro_nome, null); assert.equal(salvo.numero_whatsapp, '15551829766'); assert.equal(salvo.fonte, 'simulador');
     const tok = resOrc.link.split('/o/')[1];
@@ -1043,7 +1044,8 @@ falso.listen(0, () => {
     assert.ok(q.whatsapp.startsWith('https://wa.me/15551829766?text=') && decodeURIComponent(q.whatsapp).includes('o Bangalô Especial'));
     assert.equal((await fetch(base + '/o/' + tok + '/quero', { method: 'POST', body: JSON.stringify({ codigo: 'CBM' }) })).status, 404);
     // Extras na página: o cliente marca, vai na mensagem e vira oferta aceita para a equipe
-    assert.ok(html.includes('data-codigo="DECO"') && html.includes('value="Completa"') && html.includes('class="ex-sel"') && html.includes('class="ex-foto" src="/fotos/BOIA-1.jpg"'), 'extras selecionáveis com foto');
+    // Extras pagos não aparecem no orçamento (são oferecidos depois da reserva paga); o servidor ainda aceita os de páginas antigas abertas
+    assert.ok(!html.includes('class="ex-sel"') && !html.includes('data-codigo="DECO"') && html.includes('Depois de garantir a reserva'));
     ofertasF.length = 0;
     r = await fetch(base + '/o/' + tok + '/quero', { method: 'POST', body: JSON.stringify({ codigo: 'BGE', extras: [{ codigo: 'DECO', variacao: 'Completa' }, { codigo: 'COMBO' }, { codigo: 'FALSO' }, { codigo: 'DECO', variacao: 'Simples' }] }) });
     const qx = decodeURIComponent((await r.json()).whatsapp);

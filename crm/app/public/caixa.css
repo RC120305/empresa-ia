@@ -550,3 +550,5 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
   .topo{top:calc(8px + env(safe-area-inset-top,0px))}
 }
 .op-sug{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--cor-texto-sec);margin:-4px 0 6px 30px;cursor:pointer}
+.aviso-extras{display:flex;flex-direction:column;gap:6px;margin:0 0 6px;padding:10px 12px;border-radius:var(--r-md);background:var(--cor-secundaria-suave);border:1px solid var(--cor-secundaria)}
+.aviso-extras .acoes{display:flex;gap:6px;flex-wrap:wrap;align-items:center}

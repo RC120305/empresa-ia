@@ -310,6 +310,7 @@
     if (matchMedia('(max-width:900px)').matches) requestAnimationFrame(() => $('cx-chat').scrollIntoView({ block: 'start' })); // celular: mensagens na tela; dados do cliente logo acima
     pintarOrcamentos(id);
     pintarPainel();
+    avisoExtras(id);
     const c = conversas.find(x => x.id === id);
     if (c && c.nao_lidas) { c.nao_lidas = 0; sb.rpc('marcar_conversa_lida', { p_conversa: id }); }
     pintarLista();
@@ -1459,7 +1460,7 @@
     const v = document.querySelector('.nav [aria-selected="true"]');
     if (v && v.dataset.vista === 'funil') pintarFunil();
     if (v && v.dataset.vista === 'tarefas') pintarTarefas();
-    if (aberta) { pintarCabecalho(); if (painel === 'tar') pintarPainel(); }
+    if (aberta) { pintarCabecalho(); if (painel === 'tar') pintarPainel(); avisoExtras(aberta); }
     pintarLista();
   }
   let recarregarT = null;
@@ -1862,10 +1863,10 @@
   const TEMAS_VITRINE = { aventuras: { nome: 'Aventuras no Rio Formoso', texto: 'Separei as aventuras do hotel para vocês: boia cross, arvorismo ou o combo das duas, com guias. É só escolher na página, com o dia e quantas pessoas 🌿' },
     momentos: { nome: 'Momentos especiais', texto: 'Para deixar a estadia ainda mais especial: decoração no quarto e massagem para relaxar. É só escolher na página a opção e o dia 🌿' } };
   const confirmaOferta = lista => !lista.length || confirm('Já houve oferta nesta conversa (' + (lista[0].produto_nome || 'link ' + ((TEMAS_VITRINE[lista[0].tema] || {}).nome || '')) + '). A regra é 1 oferta por conversa. Oferecer mesmo assim?');
-  async function enviarLink(c, tema, ja) {
+  async function enviarLink(c, tema, ja, texto) {
     if (!confirmaOferta(ja)) return;
     abrirForm('Enviar link: ' + TEMAS_VITRINE[tema].nome, [
-      { k: 'texto', rotulo: 'Texto da mensagem (dá para editar)', tipo: 'textarea', largo: true, valor: TEMAS_VITRINE[tema].texto },
+      { k: 'texto', rotulo: 'Texto da mensagem (dá para editar)', tipo: 'textarea', largo: true, valor: texto || TEMAS_VITRINE[tema].texto },
       { tipo: 'nota', rotulo: 'Vai com a foto do primeiro produto, o rodapé "Vai na conta da hospedagem, acertada no check-out" e o botão "' + (tema === 'aventuras' ? 'Ver as aventuras' : 'Ver as opções') + '", que abre a página. Só dentro da janela de 24 h.' },
     ], async v => {
       const r = await chamarApi('/api/vitrine', { conversa_id: c.id, tema, enviar: true, texto: v.texto, forcar: true });
@@ -1873,8 +1874,33 @@
       if (m.arquivo && m.id) arquivos.set(m.id, Promise.resolve({ url: '/fotos/' + m.arquivo, nome: m.arquivo, mime: 'image/jpeg' }));
       if (aberta === c.id && m.id && !$('mensagens').querySelector('[data-id="' + m.id + '"]')) { adicionarMensagem({ id: m.id, direcao: 'saida', autor: eu && eu.id, tipo: m.tipo, corpo: m.corpo, status_entrega: 'sent', enviada_em: m.enviada_em }, ultimoDiaTela()); rolarFim(); }
       toast('Link enviado. Quando o cliente escolher, o alerta toca no sino.');
+      if (aberta === c.id) $('aviso-extras').hidden = true;
       if (painel === 'pro') pintarPainel();
     }, null, 'Enviar no WhatsApp');
+  }
+  // Reserva paga → hora de oferecer os extras, uma vez, com o link certo para o perfil (dono, 04/10/2026).
+  // Antes disso o orçamento mostra só a hospedagem e o que está incluso.
+  const TEXTO_POS = { aventuras: 'Reserva garantida! 🎉 Para aproveitar ainda mais o Rio Formoso, separei as aventuras do hotel: boia cross, arvorismo ou o combo das duas, com guias. As vagas são limitadas, então vale garantir o horário já. É só escolher na página 🌿',
+    momentos: 'Reserva garantida! 🎉 Se quiserem deixar a estadia ainda mais especial, dá para incluir decoração no quarto ou uma massagem para relaxar. É só escolher na página a opção e o dia 🌿' };
+  const temaDoPerfil = p => ['Casal', '55+'].includes(p) ? 'momentos' : 'aventuras';
+  async function avisoExtras(id) {
+    const box = $('aviso-extras');
+    const n = negocios.filter(x => x.conversa_id === id).find(x => x.etapa === 'res');
+    if (!n || lido('crm-extras-' + id)) { box.hidden = true; return; }
+    const ja = await Promise.all([sb.from('vitrines').select('id').eq('conversa_id', id).eq('enviada', true).limit(1), sb.from('ofertas').select('id').eq('conversa_id', id).limit(1), sb.from('vendas').select('id').eq('conversa_id', id).neq('situacao', 'cancelado').limit(1)]);
+    if (aberta !== id) return;
+    if (ja.some(r => r.data && r.data.length)) { box.hidden = true; return; } // já ofereceu ou já comprou
+    const c = conversas.find(x => x.id === id) || { id };
+    const tema = temaDoPerfil(n.perfil), outro = tema === 'aventuras' ? 'momentos' : 'aventuras';
+    const primeiro = (n.nomeContato || '').split(/\s+/)[0];
+    const texto = t => (primeiro ? primeiro + ', r' : 'R') + TEXTO_POS[t].slice(1);
+    box.replaceChildren(el('b', { text: '🎉 Reserva paga! Hora de oferecer os extras (uma vez só).' }),
+      el('span', { class: 'lat-txt', text: 'Sugestão para o perfil' + (n.perfil ? ' (' + n.perfil + ')' : '') + ': ' + TEMAS_VITRINE[tema].nome + '. Abre o texto para você revisar antes de enviar.' }),
+      el('div', { class: 'acoes' },
+        el('button', { class: 'btn btn-destaque', type: 'button', text: TEMAS_VITRINE[tema].nome, onclick: () => enviarLink(c, tema, [], texto(tema)) }),
+        el('button', { class: 'btn-mini', type: 'button', text: TEMAS_VITRINE[outro].nome, onclick: () => enviarLink(c, outro, [], texto(outro)) }),
+        el('button', { class: 'btn-mini', type: 'button', text: 'Agora não', onclick: () => { guardar('crm-extras-' + id, '1'); box.hidden = true; } })));
+    box.hidden = false;
   }
   async function copiarLink(c, tema, ja) {
     if (!confirmaOferta(ja)) return;

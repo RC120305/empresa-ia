@@ -22,13 +22,6 @@ const CATALOGO = {
 // Antes das opções e dos valores, os benefícios (dono, 04/10/2026). Fatos aprovados: contexto/hotel-operacional.md
 const PORQUE = 'O único hotel de Bonito cercado por dois rios, o Formoso e o Formosinho: 40 hectares de natureza a 6 km do centro, todo o caminho em asfalto. A diária já inclui o café da manhã e a programação diária com monitor (trilhas com banho de rio, tirolesa, stand up, caiaque e arco e flecha), também para quem fica uma noite só.';
 const INCLUSO = ['Café da manhã (6h30 às 9h30)', 'Piscina climatizada', 'Hidromassagem aquecida', 'Sauna', 'Trilhas e decks nos dois rios', 'Caiaque e stand up com monitor', 'Arco e flecha', 'Playground e salão de jogos'];
-const EXTRAS = [
-  { nome: 'Combo boia cross + arvorismo', txt: 'As duas aventuras dentro do hotel, com guias. A partir de 5 anos e 1,15 m.', preco: 'R$ 170 por pessoa', combo: true },
-  { nome: 'Boia cross', txt: '1.200 m de corredeiras e cachoeiras do Rio Formoso, com guias (1 h).', preco: 'R$ 100 por pessoa', combo: true },
-  { nome: 'Arvorismo', txt: '18 obstáculos e 2 tirolesas, a última sobre o Rio Formoso.', preco: 'R$ 120 por pessoa', combo: true },
-  { nome: 'Decoração especial no quarto', txt: 'Simples ou completa, para datas especiais. Pedido com 3 dias de antecedência.', preco: 'R$ 350 ou R$ 600' },
-  { nome: 'Massagem', txt: 'Com a massoterapeuta parceira do hotel; o horário é combinado com você.', preco: 'R$ 220' },
-];
 
 // Fotos reais por acomodação (item 2): public/fotos/<CODIGO>-<n>.jpg, listadas em public/fotos/fotos.json.
 const PASTA_FOTOS = process.env.FOTOS_DIR || path.join(__dirname, 'public', 'fotos');
@@ -129,20 +122,7 @@ ${op.sugerida ? '<span class="selo">Nossa sugestão para vocês</span>' : ''}<h2
 <div class="preco"><div><small>Total ${n > 1 ? `das ${n} noites` : 'da noite'}</small><b>${brl(op.valor_total)}</b><small>${n > 1 ? `média de ${brl(op.media_por_noite)} por noite · ` : ''}ou 6x de ${brl(op.parcela_6x)} sem juros</small></div></div>
 <button class="btn quero" type="button" data-codigo="${esc(op.codigo)}" data-nome="${esc(cat.nome)}">Quero reservar esta</button></div></article>`;
   }).join('\n');
-  // Extras: os produtos cadastrados (tela Produtos); sem banco, a lista fixa acima
-  // O cliente marca o que quer incluir (e a opção, quando há variações); vai junto no "Quero reservar esta".
-  const fotoDe = g => { g = String(g || '').split(',')[0]; const x = g && bib.find(b => b.grupo === g); return x && x.fotos[0] ? x.fotos[0].arquivo : null; };
-  const lista = produtos && produtos.length
-    ? produtos.map(p => ({ codigo: p.codigo, nome: p.nome, txt: [p.descricao, p.regras].filter(Boolean).join(' '), preco: p.preco, foto: (Array.isArray(p.fotos) && p.fotos[0]) || fotoDe(p.grupo_fotos),
-      variacoes: Array.isArray(p.variacoes) ? p.variacoes : [], por: p.unidade === 'pessoa' ? ' por pessoa' : '',
-      combo: ['COMBO', 'BOIA', 'ARVO'].includes(p.codigo) }))
-    : EXTRAS;
-  const reais = v => 'R$ ' + Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
-  const extras = lista.filter(x => !x.combo || o.pessoas_aptas_combo > 0)
-    .map(x => `<div class="ex"${x.codigo ? ` data-codigo="${esc(x.codigo)}" data-nome="${esc(x.nome)}"` : ''}>${x.foto ? `<img class="ex-foto" src="/fotos/${esc(x.foto)}" alt="${esc(x.nome)}" loading="lazy" width="120" height="90">` : ''}<div class="ex-corpo"><h4>${esc(x.nome)}</h4><p>${esc(x.txt)}</p><div class="pr">${esc(x.preco)}</div>${
-      x.codigo && x.variacoes.length > 1 ? `<div class="ex-var" role="radiogroup" aria-label="Opção de ${esc(x.nome)}">${x.variacoes.map((v, k) => `<label><input type="radio" name="v-${esc(x.codigo)}" value="${esc(v.nome)}"${k ? '' : ' checked'}> ${esc(v.nome)} · ${reais(v.preco)}${x.por}</label>`).join('')}</div>` : ''}${
-      x.codigo ? `<label class="ex-quero"><input type="checkbox" class="ex-sel"> Quero incluir</label>` : ''}</div></div>`).join('');
-  const selecionavel = lista.some(x => x.codigo);
+  // Extras pagos não entram no orçamento: são oferecidos depois da reserva paga (dono, 04/10/2026)
   const titulo = `${n > 1 ? `${['', '', 'Duas', 'Três', 'Quatro', 'Cinco', 'Seis', 'Sete'][n] || n} noites` : 'Uma noite'} entre <em>dois rios</em>`;
   const abertura = o.frase_de_abertura ? esc(o.frase_de_abertura.trim()) + (/[.!?]$/.test(o.frase_de_abertura.trim()) ? ' ' : '. ') : (nome ? `Oi, ${nome}! ` : 'Oi! ');
   return `<!doctype html>
@@ -160,7 +140,7 @@ ${previa ? '<div class="aviso-teste">Prévia da equipe: esta visita não conta c
 <p class="intro">${abertura}${o.frase_de_abertura ? (o.opcoes.length > 1 ? `São ${o.opcoes.length} opções` : 'É uma opção') : (o.opcoes.length > 1 ? `Separei ${o.opcoes.length} opções` : 'Separei uma opção')} com vaga nas suas datas. Os valores são os de hoje, conferidos no nosso sistema de reservas, e ficam sujeitos à disponibilidade até a reserva. 🌿<br><small>Equipe do Hotel Cabanas</small></p>
 <section class="bloco porque"><h3 class="sec-t">Por que o Cabanas</h3><p class="porque-t">${esc(PORQUE)}</p><h3 class="sec-t">Já está incluso na diária</h3><ul class="inclui">${INCLUSO.map(x => `<li>${esc(x)}</li>`).join('')}</ul></section>
 ${cards}
-<section class="bloco"><h3 class="sec-t">Para deixar a viagem completa</h3><p class="extra-intro">Pagos à parte: vão para a conta da hospedagem e são acertados no check-out. ${selecionavel ? 'Marque o que quiser incluir: vai junto quando você tocar em “Quero reservar esta”.' : 'É só pedir na conversa que a gente organiza.'}</p><div class="extras">${extras}</div></section>
+<section class="bloco depois"><p class="depois-t">🌿 Depois de garantir a reserva, a gente te mostra as aventuras no Rio Formoso e os momentos especiais para deixar a viagem completa.</p></section>
 <section class="bloco"><h3 class="sec-t">Condições</h3><ul class="cond">
 <li><b>Formas de pagamento:</b> sinal de 50% no Pix ou no cartão em até 3x, ou 100% no Pix ou no cartão em até 6x sem juros. Com sinal, o restante é pago no check-out.</li>
 <li>Check-in a partir das 15h e check-out até as 13h (a estrutura fica à disposição antes e depois).</li>

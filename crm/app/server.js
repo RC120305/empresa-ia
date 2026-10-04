@@ -831,7 +831,7 @@ async function baixaCobranca(cob, pg, buscar = fetch) {
     await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
       body: JSON.stringify({ negocio_id: cob.negocio_id, responsavel_id: cob.criado_por || null, criado_por: 'CRM', tipo: 'Confirmar a reserva', descricao: txt + '. Lançar o adiantamento e confirmar a reserva no Silbeck, e mandar a confirmação ao cliente.', quando: new Date().toISOString() }) }).catch(() => null);
   }
-  await criarAlerta({ tipo: 'pagamento_recebido', titulo: 'Pagamento recebido', info: txt, conversa_id: cob.conversa_id, negocio_id: cob.negocio_id, cobranca_id: cob.id }, buscar);
+  await criarAlerta({ tipo: 'pagamento_recebido', titulo: 'Pagamento recebido', info: txt + '. Hora de oferecer os extras: abra a conversa (aviso 🎉).', conversa_id: cob.conversa_id, negocio_id: cob.negocio_id, cobranca_id: cob.id }, buscar);
 }
 async function cobrancaVencida(cob, buscar = fetch) {
   await patchBanco('cobrancas', `id=eq.${cob.id}`, { situacao: 'expirada', atualizado_em: new Date().toISOString() });
@@ -1681,7 +1681,8 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
           : { ok: false, erro: 'Não há foto na biblioteca para esse pedido. Não prometa foto: ofereça descrever ou avise a equipe nas notas_internas.' };
       },
     };
-    const r = await gilberto.sugerir(historico, { canal: conv.canal, nome, ofertas: await ofertasDaConversa(conv.id, buscar) }, executores, await catalogo(buscar));
+    const neg = await negocioDaConversa(conv.id, 'perfil', buscar).catch(() => null);
+    const r = await gilberto.sugerir(historico, { canal: conv.canal, nome, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil }, executores, await catalogo(buscar));
     // Registro para a revisão (Ajustes do agente): o que o cliente perguntou e o que o Gilberto sugeriu
     const ultimaDoCliente = [...historico].reverse().find(m => m.direcao === 'entrada');
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
