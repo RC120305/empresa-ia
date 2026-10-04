@@ -131,7 +131,7 @@
       const j = await chamarApi('/api/conectar-aparelho', {});
       const ate = new Date(j.expira).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       abrirForm('Conectar celular', [
-        { tipo: 'nota', rotulo: 'No celular, abra o CRM pelo ícone da tela inicial e, na tela de entrada, digite este código em "Entrar com o código de conexão":' },
+        { tipo: 'nota', rotulo: 'No celular, abra o CRM pelo ícone da tela inicial e, na tela de entrada, digite este código no campo do código de conexão e toque em "Entrar com o código":' },
         { tipo: 'codigo', valor: j.codigo },
         { tipo: 'nota', rotulo: 'Vale até ' + ate + ' e só funciona uma vez. Ele entra com o seu usuário: não passe o código para outra pessoa.' },
       ], async () => {}, null, 'Pronto');
