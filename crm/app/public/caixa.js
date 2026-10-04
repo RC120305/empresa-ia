@@ -298,6 +298,7 @@
     let ultimoDia = '';
     (data || []).forEach(m => { ultimoDia = adicionarMensagem(m, ultimoDia); });
     rolarFim();
+    if (matchMedia('(max-width:900px)').matches) requestAnimationFrame(() => $('cx-chat').scrollIntoView({ block: 'start' })); // celular: mensagens na tela; dados do cliente logo acima
     pintarOrcamentos(id);
     pintarPainel();
     const c = conversas.find(x => x.id === id);
