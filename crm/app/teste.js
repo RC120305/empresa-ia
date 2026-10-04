@@ -210,6 +210,7 @@ const falso = http.createServer((req, res) => {
     if (req.url === '/rest/v1/sugestoes' && req.method === 'POST') return responder(201, [{ id: 'dddddddd-dddd-dddd-dddd-dddddddddddd' }]);
     if (req.url.startsWith('/rest/v1/usuarios?ativo=eq.true&select=email')) return responder(200, [{ email: 'Nova@Hotel.com' }, { email: 'convidado@hotel.com' }]);
     if (req.url === '/auth/v1/admin/users' && req.method === 'POST') return json.email === 'convidado@hotel.com' ? responder(422, { msg: 'already registered' }) : responder(200, { id: 'au-novo', email: json.email });
+    if (req.url === '/auth/v1/admin/generate_link' && req.method === 'POST') return responder(200, { id: 'au-1', email: json.email, hashed_token: 'hash-' + json.email, verification_type: 'magiclink' });
     if (req.url.startsWith('/auth/v1/admin/users?')) return responder(200, { users: [{ id: 'au-1', email: 'convidado@hotel.com', email_confirmed_at: null }] });
     if (req.url === '/auth/v1/admin/users/au-1' && req.method === 'PUT') return responder(200, { id: 'au-1' });
     if (req.url.startsWith('/rest/v1/usuarios?')) return responder(200, [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }]);
@@ -699,6 +700,24 @@ falso.listen(0, () => {
     assert.equal(chamadas.filter(c => c.url.startsWith('/auth/v1/admin')).length, nAdm, 'não cria login para quem não está liberado');
     await prep('convidado@hotel.com');
     assert.deepEqual(chamadas.findLast(c => c.url === '/auth/v1/admin/users/au-1').corpo, { email_confirm: true }, 'convite pendente: confirma');
+    // Conectar outro aparelho (iPhone com o CRM instalado): código de 6 dígitos, 5 min, uso único, sem e-mail
+    {
+      const entrarAp = codigo => fetch(base + '/entrar/aparelho', { method: 'POST', body: JSON.stringify({ codigo }) });
+      assert.equal((await entrarAp('123')).status, 400);
+      const cj = await (await api('/api/conectar-aparelho', {})).json();
+      assert.ok(/^\d{6}$/.test(cj.codigo) && new Date(cj.expira) > new Date());
+      const errado = String((Number(cj.codigo) + 1) % 1e6).padStart(6, '0');
+      assert.equal((await entrarAp(errado)).status, 400);
+      r = await entrarAp(cj.codigo);
+      assert.deepEqual(await r.json(), { ok: true, token_hash: 'hash-equipe@teste.com' }, 'entra como quem gerou o código');
+      assert.deepEqual(chamadas.findLast(c => c.url === '/auth/v1/admin/generate_link').corpo, { type: 'magiclink', email: 'equipe@teste.com' });
+      assert.equal((await entrarAp(cj.codigo)).status, 400, 'uso único');
+      const c2 = (await (await api('/api/conectar-aparelho', {})).json()).codigo, c3 = (await (await api('/api/conectar-aparelho', {})).json()).codigo;
+      if (c2 !== c3) assert.equal((await entrarAp(c2)).status, 400, 'código novo cancela o anterior');
+      for (let i = 0; i < 10; i++) await entrarAp(String((Number(c3) + 1 + i) % 1e6).padStart(6, '0'));
+      assert.equal((await entrarAp(c3)).status, 400, 'muitas tentativas erradas derrubam os códigos');
+      assert.equal((await fetch(base + '/api/conectar-aparelho', { method: 'POST', body: '{}' })).status, 401, 'só quem está logado gera código');
+    }
     // Completar o contato de um lead que chegou sem WhatsApp/e-mail (Instagram, Facebook, balcão)
     r = await api('/api/contato', { negocio_id: 'eeeeeeee-0000-0000-0000-000000000001', telefone: '+55 (67) 98888-7777', email: 'cli@exemplo.com', nome: 'Ana Souza' });
     assert.equal(r.status, 200, await r.clone().text());

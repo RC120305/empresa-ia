@@ -264,7 +264,7 @@ async function autenticarEquipe(tokenUsuario, buscar = fetch) {
   const email = (await u.json()).email;
   const equipe = await rpc('equipe_por_email', { p_email: email || '' }, buscar);
   if (!Array.isArray(equipe) || !equipe.length) throw new ErroEnvio(403, 'Seu e-mail não está liberado.');
-  return equipe[0];
+  return { ...equipe[0], email: String(email).toLowerCase() };
 }
 
 // Ritmo de gente: antes de cada balão o cliente vê "digitando…" por um tempo proporcional ao texto.
@@ -741,6 +741,35 @@ async function rodadaDeAvisos(buscar) {
   return n;
 }
 
+// ---------- Conectar outro aparelho (ex.: CRM instalado no iPhone, que não recebe o login do link do e-mail) ----------
+// Quem já está logado gera um código de 6 dígitos (5 min, uso único); o aparelho novo digita o código e entra como essa pessoa.
+// Guardado só na memória (o CRM roda numa instância só); muitas tentativas erradas derrubam todos os códigos.
+const conexoes = new Map(); // código -> { email, expira }
+let errosConexao = { desde: 0, n: 0 };
+function novoCodigoConexao(email, agora = Date.now()) {
+  for (const [c, v] of conexoes) if (v.expira < agora || v.email === email) conexoes.delete(c);
+  let codigo;
+  do { codigo = String(crypto.randomInt(0, 1e6)).padStart(6, '0'); } while (conexoes.has(codigo));
+  conexoes.set(codigo, { email, expira: agora + 5 * 60e3 });
+  return { codigo, expira: new Date(agora + 5 * 60e3).toISOString() };
+}
+function usarCodigoConexao(codigo, agora = Date.now()) {
+  if (agora - errosConexao.desde > 10 * 60e3) errosConexao = { desde: agora, n: 0 };
+  const v = conexoes.get(codigo);
+  if (!v || v.expira < agora) {
+    if (++errosConexao.n >= 10) conexoes.clear(); // alguém tentando adivinhar: todos os códigos caem
+    return null;
+  }
+  conexoes.delete(codigo);
+  return v.email;
+}
+async function linkDeEntrada(email, buscar = fetch) {
+  const adm = { ...cabecalhosBanco(), Authorization: 'Bearer ' + SUPABASE_KEY };
+  const r = await buscar(`${SUPABASE_URL}/auth/v1/admin/generate_link`, { method: 'POST', headers: adm, body: JSON.stringify({ type: 'magiclink', email }), signal: AbortSignal.timeout(8000) });
+  const j = r.ok ? await r.json().catch(() => ({})) : {};
+  return j.hashed_token || (j.properties || {}).hashed_token || null;
+}
+
 // ---------- Login da equipe: criar/confirmar no Supabase Auth quem está liberado em "usuarios" ----------
 async function prepararLogin(email, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&select=email`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
@@ -933,6 +962,10 @@ const API_EQUIPE = {
     if (!(await chaveAvisos())) throw new ErroEnvio(503, 'Os avisos no celular ainda não foram ligados no servidor.');
     const enviados = await avisarCelulares([eu.id], { titulo: 'CRM Cabanas', corpo: 'Teste: os avisos estão chegando neste aparelho ✓', url: '/caixa', tag: 'teste' });
     return { ok: true, enviados };
+  },
+  'POST /api/conectar-aparelho': async (corpo, eu) => {
+    if (!eu.email) throw new ErroEnvio(400, 'Entre de novo e tente outra vez.');
+    return { ok: true, ...novoCodigoConexao(eu.email) };
   },
   'GET /api/equipe': async () => {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&select=id,nome,papel&order=nome`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
@@ -1845,6 +1878,19 @@ const servidor = http.createServer((req, res) => {
 
   // Entrada da equipe: se o e-mail está na lista da equipe (tabela usuarios, ativo), cria/confirma o login no Supabase.
   // Responde sempre igual (não revela quem é da equipe). Assim o dono só precisa liberar o e-mail no SQL.
+  // Aparelho novo entra com o código gerado por quem já está logado (resposta igual para código errado ou vencido)
+  if (url.pathname === '/entrar/aparelho' && req.method === 'POST') {
+    if (limiteExcedido(req)) return json(res, 429, { ok: false });
+    lerCorpo(req, 500).then(async corpo => {
+      const codigo = String(corpo.codigo || '').replace(/\D/g, '');
+      const email = bancoLigado() && /^\d{6}$/.test(codigo) ? usarCodigoConexao(codigo) : null;
+      const token = email ? await linkDeEntrada(email).catch(() => null) : null;
+      if (!token) return json(res, 400, { ok: false, erro: 'Código errado ou vencido. Gere outro no aparelho que já está conectado.' });
+      console.log(JSON.stringify({ evento: 'aparelho_conectado' }));
+      json(res, 200, { ok: true, token_hash: token });
+    }).catch(() => json(res, 400, { ok: false, erro: 'Pedido inválido.' }));
+    return;
+  }
   if (url.pathname === '/entrar/preparar' && req.method === 'POST') {
     if (limiteExcedido(req)) return json(res, 429, { ok: false });
     lerCorpo(req, 2000).then(async corpo => {

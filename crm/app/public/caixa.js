@@ -102,7 +102,6 @@
     }
     if (error) console.warn('login:', error.status, error.message);
     $('btn-entrar').removeAttribute('disabled');
-    $('form-codigo').hidden = !!error;
     msg.textContent = !error ? 'Pronto! Abra o link que chegou no seu e-mail (veja também o spam). Só o link mais recente funciona.'
       : (error.status === 429 || /rate limit|security purposes|seconds/i.test(error.message))
         ? 'Muitos links pedidos em pouco tempo. O envio de e-mail gratuito do Supabase tem limite por hora: use o último link que chegou ou tente de novo mais tarde.'
@@ -110,14 +109,33 @@
           ? 'Este e-mail não tem acesso. Confira se digitou certo; se estiver certo, peça ao Ricardo para liberar (' + error.message + ').'
           : 'Não deu para enviar agora (' + error.message + '). Tente de novo em alguns minutos.';
   });
-  // Código de 6 dígitos do e-mail: no iPhone, o CRM instalado na tela inicial não recebe o login do link (abre no Safari)
+  // Código de conexão: quem já está logado gera no 📱 Conectar celular; serve para o CRM instalado no iPhone,
+  // que não recebe o login do link do e-mail (o link abre no Safari)
   $('form-codigo').addEventListener('submit', async e => {
     e.preventDefault();
-    const msg = $('msg-entrar'), token = $('codigo').value.replace(/\D/g, '');
+    const msg = $('msg-entrar'), codigo = $('codigo').value.replace(/\D/g, '');
     $('btn-codigo').setAttribute('disabled', ''); msg.textContent = 'Conferindo…';
-    const { error } = await sb.auth.verifyOtp({ email: $('email').value.trim(), token, type: 'email' });
+    try {
+      const r = await fetch('/entrar/aparelho', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ codigo }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.token_hash) throw new Error(r.status === 429 ? 'Muitas tentativas. Espere um minuto.' : j.erro || 'Não deu agora. Tente de novo.');
+      let { error } = await sb.auth.verifyOtp({ token_hash: j.token_hash, type: 'magiclink' });
+      if (error) ({ error } = await sb.auth.verifyOtp({ token_hash: j.token_hash, type: 'email' }));
+      if (error) throw new Error('Não deu para entrar (' + error.message + '). Gere outro código.');
+      msg.textContent = '';
+    } catch (er) { msg.textContent = er.message; }
     $('btn-codigo').removeAttribute('disabled');
-    msg.textContent = error ? (/expired|invalid/i.test(error.message) ? 'Código errado ou vencido. Use o do e-mail mais recente ou peça outro.' : 'Não deu para entrar (' + error.message + ').') : '';
+  });
+  $('bt-conectar').addEventListener('click', async () => {
+    try {
+      const j = await chamarApi('/api/conectar-aparelho', {});
+      const ate = new Date(j.expira).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      abrirForm('Conectar celular', [
+        { tipo: 'nota', rotulo: 'No celular, abra o CRM pelo ícone da tela inicial e, na tela de entrada, digite este código em "Entrar com o código de conexão":' },
+        { tipo: 'codigo', valor: j.codigo },
+        { tipo: 'nota', rotulo: 'Vale até ' + ate + ' e só funciona uma vez. Ele entra com o seu usuário: não passe o código para outra pessoa.' },
+      ], async () => {}, null, 'Pronto');
+    } catch (e) { toast(e.message); }
   });
   const sair = async () => { await sb.auth.signOut(); location.replace('/caixa'); };
   $('sair').addEventListener('click', sair);
@@ -1034,6 +1052,7 @@
       let inp;
       if (c.tipo === 'img') { box.append(el('img', { class: 'form-img', src: c.src, alt: c.rotulo || '' })); return; }
       if (c.tipo === 'nota') { box.append(el('p', { class: 'lat-txt largo', text: c.rotulo })); return; }
+      if (c.tipo === 'codigo') { box.append(el('p', { class: 'codigo-grande largo', text: c.valor })); return; }
       if (c.tipo === 'select') inp = el('select', {}, c.opcoes.map(([v, t]) => el('option', { value: v, text: t, selected: String(c.valor ?? '') === String(v) })));
       else if (c.tipo === 'textarea') { inp = el('textarea', { placeholder: c.dica || '' }); inp.value = c.valor || ''; }
       else if (c.tipo === 'check') { inp = el('input', { type: 'checkbox', checked: !!c.valor }); box.append(el('label', { class: 'campo-check' }, inp, c.rotulo)); ref[c.k] = inp; return; }
@@ -2353,7 +2372,7 @@
   function rodapeAvisos() {
     const TXT = {
       'sem-suporte': 'Este navegador não recebe avisos com o CRM fechado. No Android, use o Chrome; no iPhone, instale o CRM na tela inicial.',
-      'instalar-ios': 'No iPhone: toque em Compartilhar (quadrado com a seta ↑) → "Adicionar à Tela de Início". Depois abra o CRM pelo ícone e ligue os avisos aqui.',
+      'instalar-ios': 'No iPhone: toque em Compartilhar (quadrado com a seta ↑) → "Adicionar à Tela de Início". Abra o CRM pelo ícone, entre com o código do 📱 Conectar celular (gerado aqui) e ligue os avisos no sino.',
       negado: 'As notificações estão bloqueadas neste aparelho. Libere nos Ajustes do celular (Notificações → CRM Cabanas) ou nas permissões do site e abra o sino de novo.',
       desligado: 'Receba os alertas mesmo com o CRM fechado e o celular bloqueado.' + (/Android/.test(navigator.userAgent) && !instalado() ? ' Dica: no menu ⋮ do Chrome, "Adicionar à tela inicial" deixa o CRM como um aplicativo.' : ''),
       ligado: 'Ligados neste aparelho ✓ Os alertas chegam como notificação.',

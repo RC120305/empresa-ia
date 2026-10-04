@@ -7,6 +7,8 @@
 
 ## Modelos em português (Authentication → Emails → Templates)
 
+O Supabase só deixa editar os modelos depois de ligar o SMTP próprio (acima). Enquanto isso, o iPhone entra pelo **📱 Conectar celular** (código de conexão), sem depender do e-mail.
+
 **Magic Link** — Assunto: `Seu link de acesso ao CRM Cabanas`
 ```html
 <h2>Acesso ao CRM Cabanas</h2>

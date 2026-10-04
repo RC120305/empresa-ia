@@ -90,7 +90,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .agente-status strong{color:var(--lat-texto);font-weight:600;font-size:14px}
 .ao-vivo{font-size:12px;color:#A9C267}
 .ao-vivo.off{color:#E8B04A}
-.quem{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--lat-texto);padding:0 4px}
+.quem{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px;font-size:13px;color:var(--lat-texto);padding:0 4px}
 .app.recolhido{grid-template-columns:68px minmax(0,1fr)}
 .app.recolhido .lateral{padding:16px 8px;align-items:center}
 .app.recolhido .logo span,.app.recolhido .nav .tx,.app.recolhido .agente-status,.app.recolhido .plantao,.app.recolhido .quem,.app.recolhido .nav .qtd{display:none}
@@ -522,3 +522,7 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
 .pg-tabela .lead-link{text-align:left;white-space:nowrap}
 .alertas .al-avisos{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--cor-borda);padding-top:10px;margin-top:2px}
 .alertas .al-avisos .btn{align-self:flex-start}
+.form-codigo{border-top:1px solid var(--cor-borda);padding-top:12px;margin-top:4px}
+.entrar-cartao .dica-codigo{font-size:13px}
+.codigo-grande{font-family:var(--f-marca);font-size:40px;font-weight:700;letter-spacing:.25em;text-align:center;margin:6px 0;font-variant-numeric:tabular-nums;color:var(--cor-texto)}
+#bt-conectar{white-space:nowrap}

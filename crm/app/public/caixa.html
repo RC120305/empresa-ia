@@ -26,9 +26,10 @@
       <button type="submit" class="btn btn-enviar" id="btn-entrar">Enviar link de acesso</button>
     </form>
     <p class="msg" id="msg-entrar" role="status"></p>
-    <form id="form-codigo" hidden>
-      <label for="codigo">Ou digite o código que veio no e-mail</label>
-      <input id="codigo" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" maxlength="10" placeholder="Ex.: 123456" required>
+    <form id="form-codigo" class="form-codigo">
+      <label for="codigo">Já entrou no computador? Entre com o código de conexão</label>
+      <p class="dica-codigo">No CRM já aberto (computador ou outro aparelho), toque em <b>📱 Conectar celular</b> e digite aqui o código de 6 dígitos.</p>
+      <input id="codigo" type="text" inputmode="numeric" autocomplete="off" pattern="[0-9]{6}" maxlength="6" placeholder="Ex.: 123456" required>
       <button type="submit" class="btn btn-editar" id="btn-codigo">Entrar com o código</button>
     </form>
   </div>
@@ -65,7 +66,7 @@
     </div>
     <div class="plantao"><label for="sel-plantao">De plantão agora</label><select id="sel-plantao"><option value="">Ninguém (todos recebem)</option></select>
       <small>Recebe os alertas com som. Sem ninguém assumir em 10 min, o alerta vai para toda a equipe.</small></div>
-    <div class="quem"><span id="quem-nome"></span><button type="button" class="lnk-claro" id="sair">Sair</button></div>
+    <div class="quem"><span id="quem-nome"></span><button type="button" class="lnk-claro" id="bt-conectar" title="Entrar no CRM instalado no celular sem e-mail">📱 Conectar celular</button><button type="button" class="lnk-claro" id="sair">Sair</button></div>
   </aside>
 
   <main class="principal">

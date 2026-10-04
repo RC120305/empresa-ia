@@ -20,9 +20,11 @@ Cada pessoa faz isso **uma vez em cada celular**. Não custa nada.
 ## iPhone (Safari, iOS 16.4 ou mais novo)
 1. Abra o **Safari** e entre em https://crm-377803250649.southamerica-east1.run.app/caixa.
 2. Toque em **Compartilhar** (quadrado com a seta ↑) → **Adicionar à Tela de Início** → **Adicionar**.
-3. Abra o CRM pelo ícone novo "CRM Cabanas". Ele pede login de novo (o iPhone separa o app do Safari):
-   digite o e-mail, toque em **Enviar link de acesso** e, em vez de tocar no link do e-mail,
-   **digite o código de 6 dígitos** que veio no e-mail, no campo "Ou digite o código".
+3. Abra o CRM pelo ícone novo "CRM Cabanas". Ele pede login de novo (o iPhone separa o app do Safari).
+   Não use o link do e-mail (ele abre no Safari). Em vez disso:
+   - no computador (ou no Safari), com o CRM aberto, clique em **📱 Conectar celular** (embaixo, ao lado do seu nome);
+   - aparece um código de 6 dígitos (vale 5 minutos, uma vez só);
+   - no app do iPhone, digite o código em "Já entrou no computador? Entre com o código de conexão" → **Entrar com o código**.
 4. Toque no sino 🔔 → **Ligar avisos neste aparelho** → **Permitir**.
 5. Chega uma notificação de teste. Pronto!
 
