@@ -56,6 +56,7 @@ Documento com modelo de dados, telas, integrações, regras do Gilberto, alertas
 1. **Caixa única e funil:** WhatsApp 99117 (coexistência), Instagram e Messenger; contatos, funil, tarefas, nova conversa, respostas rápidas, alertas, login da equipe. Roda em paralelo com a Asksuite.
 2. **Gilberto em treino e painel:** biblioteca, questionário, revisão, banco de imagens completo, follow-up, métricas.
 3. **Silbeck e pagamentos:** vagas, orçamento, reserva, Pix BB e Cielo, reservas a receber, régua de pré e pós-estadia, upsell e atividades.
+   - **Upsell (decisão do dono, 04/10/2026):** extras só depois da reserva paga. Feito: fora do orçamento + aviso 🎉 na conversa quando o Pix cai. Falta (com a Régua e o número oficial): lembrete de 5 a 7 dias antes do check-in com o link de extras, por modelo aprovado da Meta, para quem ainda não pediu nada.
 4. **Gilberto sozinho à noite** (após 90% de acerto), migração do 99110 e saída da Asksuite.
 
 Cada fase: construir → testar em ambiente de teste → equipe usa de verdade → ajustes.
