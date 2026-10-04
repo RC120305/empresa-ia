@@ -222,6 +222,17 @@
       </div>
     </section>
 
+    <!-- PAGAMENTOS -->
+    <section data-painel="pagamentos" hidden>
+      <div class="barra-ferr">
+        <input type="search" id="pg-busca" placeholder="Buscar por cliente ou descrição" aria-label="Buscar cobrança">
+        <div class="chips" role="group" aria-label="Situação" id="pg-sit"><button class="chip" type="button" aria-pressed="true" data-s="">Todas</button><button class="chip" type="button" aria-pressed="false" data-s="ativa">Aguardando</button><button class="chip" type="button" aria-pressed="false" data-s="paga">Pagas</button><button class="chip" type="button" aria-pressed="false" data-s="expirada">Vencidas</button><button class="chip" type="button" aria-pressed="false" data-s="cancelada">Canceladas</button></div>
+        <select id="pg-periodo" aria-label="Período"><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option><option value="365">Último ano</option></select>
+        <button class="btn btn-editar" type="button" id="pg-conferir">Conferir no banco agora</button>
+      </div>
+      <div class="pn-rolagem" id="pg-corpo"></div>
+    </section>
+
     <!-- PAINEL DE INDICADORES -->
     <section data-painel="painel" hidden>
       <div class="barra-ferr">

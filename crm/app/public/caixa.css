@@ -509,8 +509,14 @@ section[data-painel="painel"]{gap:10px;overflow:hidden}
 .pn-tabela{width:100%;border-collapse:collapse;font-size:14px}
 .pn-tabela th{white-space:nowrap;text-align:left;font-size:12px;font-weight:600;color:var(--cor-texto-sec);border-bottom:1px solid var(--cor-borda);padding:6px 6px}
 .pn-tabela td{padding:7px 6px;border-bottom:1px solid var(--cor-borda);font-variant-numeric:tabular-nums}
-.pn-tabela td.n,.pn-tabela th.n{text-align:right}
+.pn-tabela td.n,.pn-tabela th.n{text-align:right;white-space:nowrap}
 .pn-tabela tr:last-child td{border-bottom:0}
 .pn-falta{font-size:13px;color:var(--cor-alerta);background:var(--cor-alerta-suave);border-radius:var(--r-sm);padding:6px 9px}
 .pn-tabela-ver{font-size:13px}
 .pn-tabela-ver summary{cursor:pointer;color:var(--cor-primaria-texto);font-weight:600}
+/* Pagamentos */
+section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
+.pg-tabela td{vertical-align:top}
+.pg-tabela .pn-sub{font-size:12px}
+.pg-acoes{display:flex;flex-wrap:wrap;gap:2px;justify-content:flex-end}
+.pg-tabela .lead-link{text-align:left;white-space:nowrap}

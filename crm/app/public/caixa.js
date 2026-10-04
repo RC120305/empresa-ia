@@ -141,12 +141,12 @@
     produtos: ['Produtos'],
     agencias: ['Agências'],
     vagas: ['Vagas', 'O mapa de vagas completo depende do Silbeck real (ponte com o hotel). Por enquanto, as vagas aparecem no painel 🛏 de cada conversa.'],
-    pagamentos: ['Pagamentos', 'Pix (Banco do Brasil), link de cartão (Cielo), reservas a receber e baixa automática. Chega na etapa E, depois do Silbeck real e dos bancos.'],
+    pagamentos: ['Pagamentos'],
     painel: ['Painel'],
     regua: ['Régua de mensagens', 'Mensagens automáticas antes e depois da estadia, com modelos aprovados pela Meta. Chega na etapa F, com o 99117.'],
     ajustes: ['Ajustes do agente'],
   };
-  const PRONTAS = ['conversas', 'funil', 'tarefas', 'produtos', 'agencias', 'painel', 'ajustes'];
+  const PRONTAS = ['conversas', 'funil', 'tarefas', 'produtos', 'agencias', 'pagamentos', 'painel', 'ajustes'];
   function irPara(v) {
     document.querySelectorAll('.nav [data-vista]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.vista === v)));
     const [titulo, texto] = SECOES[v];
@@ -158,6 +158,7 @@
     if (v === 'produtos') carregarProdutos();
     if (v === 'agencias') carregarAgencias();
     if (v === 'painel') pintarPainelIndicadores();
+    if (v === 'pagamentos') carregarPagamentos();
     if (v === 'ajustes') abrirSub(subAtual);
   }
   document.querySelector('.nav').addEventListener('click', e => { const b = e.target.closest('[data-vista]'); if (b) irPara(b.dataset.vista); });
@@ -1703,7 +1704,7 @@
     try {
       const j = await chamarApi('/api/cobranca-acao', { id: cob.id, acao });
       toast(acao === 'cancelar' ? 'Pix cancelado.' : j.pagas ? 'Pagamento recebido! O card foi para Reservado.' : j.cedo ? 'Conferido há poucos segundos. Tente de novo já já.' : 'Ainda não pago.');
-      pintarPainel();
+      pintarPainel(); if (vistaAtual() === 'pagamentos') carregarPagamentos();
     } catch (e) { toast(e.message); }
   }
 
@@ -1844,7 +1845,7 @@
     } catch (e) { toast(e.message); }
   }
   async function situacaoVenda(v, situacao) {
-    try { await chamarApi('/api/venda-situacao', { id: v.id, situacao }); toast(situacao === 'lancado' ? 'Marcado como lançado na conta.' : 'Venda cancelada.'); pintarPainel(); } catch (e) { toast(e.message); }
+    try { await chamarApi('/api/venda-situacao', { id: v.id, situacao }); toast(situacao === 'lancado' ? 'Marcado como lançado na conta.' : 'Venda cancelada.'); pintarPainel(); if (vistaAtual() === 'pagamentos') carregarPagamentos(); } catch (e) { toast(e.message); }
   }
   function formVenda(c, p, oferta) {
     const vs = p.variacoes || [], ads = p.adicionais || [];
@@ -2030,12 +2031,88 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'vendas' }, e => { repintarProdutos(e); clearTimeout(vendasT); vendasT = setTimeout(carregarVendasResumo, 400); })
       .subscribe();
     sb.channel('caixa-cobrancas')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'cobrancas' }, ({ new: r }) => { if (painel === 'res' && r && r.conversa_id === aberta) pintarPainel(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cobrancas' }, ({ new: r }) => { if (painel === 'res' && r && r.conversa_id === aberta) pintarPainel(); if (vistaAtual() === 'pagamentos') { clearTimeout(pgT); pgT = setTimeout(carregarPagamentos, 300); } })
       .subscribe();
     sb.channel('caixa-alertas')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alertas' }, () => { clearTimeout(alertasT); alertasT = setTimeout(carregarAlertas, 300); })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'config' }, () => carregarPlantao())
       .subscribe();
+  }
+
+  // ---------- Pagamentos: todas as cobranças por Pix e os extras a receber na conta do hóspede ----------
+  const vistaAtual = () => { const v = document.querySelector('.nav [aria-selected="true"]'); return v ? v.dataset.vista : ''; };
+  let pgSit = '', pgCob = [], pgVen = [], pgErro = null, pgVez = 0, pgT = null;
+  const nomeDe = cv => { const c = cv && cv.contato; if (!c) return 'Sem conversa'; const wa = (c.contato_identificadores || []).find(i => i.tipo === 'whatsapp'); return c.nome || (wa ? fmtTel(wa.valor) : 'Sem nome'); };
+  const abrirConversaPg = id => { if (!id) return; irPara('conversas'); abrir(id); };
+  $('pg-sit').addEventListener('click', e => { const c = e.target.closest('[data-s]'); if (!c) return; pgSit = c.dataset.s; document.querySelectorAll('#pg-sit [data-s]').forEach(x => x.setAttribute('aria-pressed', String(x === c))); pintarPagamentos(); });
+  $('pg-busca').addEventListener('input', () => pintarPagamentos());
+  $('pg-periodo').addEventListener('input', () => carregarPagamentos());
+  $('pg-conferir').addEventListener('click', async e => {
+    const b = e.currentTarget; b.disabled = true;
+    try { const j = await chamarApi('/api/cobranca-acao', { acao: 'verificar' }); toast(j.pagas ? j.pagas + (j.pagas === 1 ? ' pagamento recebido!' : ' pagamentos recebidos!') : j.cedo ? 'Conferido há poucos segundos. Tente de novo já já.' : 'Nenhum pagamento novo.'); }
+    catch (er) { toast(er.message); }
+    b.disabled = false; carregarPagamentos();
+  });
+  async function carregarPagamentos() {
+    const vez = ++pgVez, desde = new Date(Date.now() - Number($('pg-periodo').value) * 864e5).toISOString();
+    if (!modoPix) modoPix = await fetch('/saude').then(r => r.json()).then(j => j.pix || 'simulador').catch(() => 'simulador');
+    const conv = 'conversa:conversas(id,contato:contatos(nome,contato_identificadores(tipo,valor)))';
+    const [c, v] = await Promise.all([
+      sb.from('cobrancas').select('*,' + conv).gte('criado_em', desde).order('criado_em', { ascending: false }).limit(1000),
+      sb.from('vendas').select('id,conversa_id,produto_nome,variacao,quantidade,valor_total,data_uso,situacao,criado_em,' + conv).eq('situacao', 'vendido').order('data_uso', { ascending: true, nullsFirst: false }).limit(500),
+    ]);
+    if (vez !== pgVez) return;
+    pgErro = c.error ? '017' : null; pgCob = c.data || []; pgVen = v.error ? null : v.data || [];
+    pintarPagamentos();
+  }
+  function pintarPagamentos() {
+    const corpo = $('pg-corpo'); corpo.textContent = '';
+    if (pgErro) { corpo.append(pnFalta(pgErro)); return; }
+    if (modoPix === 'simulador') corpo.append(el('div', { class: 'aviso-sim', text: '⚠ Modo de teste: os Pix são fictícios (simulador do Banco do Brasil) até as credenciais do banco entrarem.' }));
+    const soma = ls => pnTotal(ls, x => x.situacao === 'paga' ? x.valor_pago || x.valor : x.valor);
+    const pagas = pgCob.filter(x => x.situacao === 'paga'), ativas = pgCob.filter(x => x.situacao === 'ativa'), vencidas = pgCob.filter(x => x.situacao === 'expirada');
+    corpo.append(el('div', { class: 'pn-tiles' },
+      pnTile('Recebido por Pix', pnBrl0(soma(pagas)), pagas.length + (pagas.length === 1 ? ' pagamento' : ' pagamentos') + ' no período'),
+      pnTile('Aguardando pagamento', pnBrl0(soma(ativas)), ativas.length + (ativas.length === 1 ? ' Pix em aberto' : ' Pix em aberto')),
+      pnTile('Venceram sem pagamento', String(vencidas.length), vencidas.length ? pnBrl0(soma(vencidas)) + ' · vale chamar o cliente' : 'nenhuma no período'),
+      pgVen ? pnTile('Extras a receber no check-out', pnBrl0(pnTotal(pgVen, x => x.valor_total)), pgVen.length + (pgVen.length === 1 ? ' venda' : ' vendas') + ' ainda não lançada' + (pgVen.length === 1 ? '' : 's') + ' na conta') : null));
+    // Cobranças por Pix
+    const q = semAcento($('pg-busca').value.trim());
+    const ls = pgCob.filter(x => (!pgSit || x.situacao === pgSit) && (!q || semAcento(nomeDe(x.conversa) + ' ' + (x.descricao || '')).includes(q)));
+    const TIPO = { sinal: 'Sinal', total: 'Total', outro: 'Outro valor' };
+    const linhas = ls.map(cob => {
+      const [sit, cl] = SIT_COB[cob.situacao] || [cob.situacao, ''];
+      const quando = cob.situacao === 'paga' ? 'pago em ' + quandoBR(cob.pago_em) + (cob.pagador ? ' · ' + cob.pagador : '') : cob.situacao === 'ativa' ? 'vale até ' + quandoBR(cob.expira_em) : 'gerado em ' + quandoBR(cob.criado_em);
+      return el('tr', {},
+        el('td', {}, cob.conversa_id ? el('button', { class: 'lead-link', type: 'button', text: nomeDe(cob.conversa), onclick: () => abrirConversaPg(cob.conversa_id) }) : el('span', { text: nomeDe(cob.conversa) })),
+        el('td', { text: (TIPO[cob.tipo] || cob.tipo) + (cob.descricao ? ' · ' + cob.descricao : '') + (cob.fonte === 'simulador' ? ' · teste' : '') }),
+        el('td', { class: 'n', text: brl(cob.situacao === 'paga' && cob.valor_pago ? cob.valor_pago : cob.valor) }),
+        el('td', {}, el('span', { class: 'cob-sit ' + cl, text: sit }), el('div', { class: 'pn-sub', text: quando })),
+        el('td', {}, el('div', { class: 'pg-acoes' }, ...(cob.situacao === 'ativa' ? [
+          el('button', { class: 'btn-mini', type: 'button', text: 'Copiar código', onclick: () => navigator.clipboard.writeText(cob.copia_e_cola || '').then(() => toast('Copia e cola copiado.')).catch(() => toast('Não deu para copiar.')) }),
+          cob.fonte === 'simulador' ? el('button', { class: 'btn-mini', type: 'button', text: '🧪 Simular pagamento', onclick: () => acaoCobranca(cob, 'simular_pagamento') }) : null,
+          el('button', { class: 'btn-mini', type: 'button', text: 'Cancelar', onclick: () => { if (confirm('Cancelar este Pix? O cliente não vai mais conseguir pagar por ele.')) acaoCobranca(cob, 'cancelar'); } })].filter(Boolean) : []))));
+    });
+    corpo.append(pnBloco('Cobranças por Pix', 'O Pix é gerado na conversa (painel 💳). Quando cai, o CRM dá baixa sozinho: o card vai para Reservado e o sino avisa.',
+      linhas.length ? el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela pg-tabela' },
+        el('thead', {}, el('tr', {}, ...['Cliente', 'Cobrança', 'Valor', 'Situação', ''].map((t, i) => el('th', { class: i === 2 ? 'n' : '', text: t })))),
+        el('tbody', {}, ...linhas))) : el('div', { class: 'vazio', text: pgCob.length ? 'Nenhuma cobrança com esse filtro.' : 'Nenhum Pix gerado no período.' })));
+    // Extras vendidos que ainda não foram lançados na conta do hóspede
+    if (pgVen) {
+      const lv = pgVen.filter(x => !q || semAcento(nomeDe(x.conversa) + ' ' + x.produto_nome).includes(q));
+      corpo.append(pnBloco('Extras na conta do hóspede', 'Vendidos e ainda não lançados na conta (o hóspede paga no check-out). No dia do check-in o sino lembra de lançar.',
+        lv.length ? el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela pg-tabela' },
+          el('thead', {}, el('tr', {}, ...['Cliente', 'Extra', 'Valor', 'Data de uso', ''].map((t, i) => el('th', { class: i === 2 ? 'n' : '', text: t })))),
+          el('tbody', {}, ...lv.map(v => el('tr', {},
+            el('td', {}, v.conversa_id ? el('button', { class: 'lead-link', type: 'button', text: nomeDe(v.conversa), onclick: () => abrirConversaPg(v.conversa_id) }) : el('span', { text: nomeDe(v.conversa) })),
+            el('td', { text: (v.quantidade > 1 ? v.quantidade + '× ' : '') + v.produto_nome + (v.variacao ? ' · ' + v.variacao : '') }),
+            el('td', { class: 'n', text: brl(v.valor_total) }),
+            el('td', { text: v.data_uso ? fmtData(v.data_uso) : 'a combinar' }),
+            el('td', {}, el('div', { class: 'pg-acoes' }, el('button', { class: 'btn-mini', type: 'button', text: '✓ Lançado na conta', onclick: async () => {
+              try { await chamarApi('/api/venda-situacao', { id: v.id, situacao: 'lancado' }); toast('Marcado como lançado na conta.'); carregarPagamentos(); } catch (e) { toast(e.message); }
+            } })))))))) : el('div', { class: 'vazio', text: 'Nada para lançar agora.' })));
+    }
+    corpo.append(el('p', { class: 'dica', text: 'Link de pagamento por cartão (Cielo) e as reservas a receber do Silbeck entram aqui quando essas ligações estiverem prontas.' }));
   }
 
   // ---------- Painel de indicadores: atendimento e vendas no período ----------
