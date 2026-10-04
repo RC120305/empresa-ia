@@ -152,6 +152,7 @@
     mostrarTela('tela-caixa');
     chamarApi('/api/equipe', null, 'GET').then(j => { equipe = Object.fromEntries(j.equipe.map(u => [u.id, u.nome])); preencherFiltrosEquipe(); if (aberta) pintarCabecalho(); carregarPlantao(); }).catch(() => { equipe = { [meu.id]: meu.nome }; preencherFiltrosEquipe(); carregarPlantao(); });
     await carregarGilAuto();
+    carregarNumerosTeste();
     await carregarConversas();
     if (abrirAoEntrar) abrirDoAviso('#c=' + abrirAoEntrar);
     await carregarFunil();
@@ -251,6 +252,34 @@
       } });
   }
 
+  // ---------- Números de teste da equipe: recomeçar a conversa do zero (para testar o Gilberto) ----------
+  let numerosTeste = [];
+  const chaveNumero = n => { let d = String(n || '').replace(/\D/g, ''); if (d.startsWith('55') && d.length >= 12) d = d.slice(2); if (d.length === 11 && d[2] === '9') d = d.slice(0, 2) + d.slice(3); return /^[1-9]{2}\d{8}$/.test(d) ? d : null; };
+  const fmtChave = k => '(' + k.slice(0, 2) + ') 9' + k.slice(2, 6) + '-' + k.slice(6);
+  async function carregarNumerosTeste() {
+    const { data } = await sb.from('config').select('valor').eq('chave', 'numeros_teste').maybeSingle();
+    numerosTeste = (data && data.valor && data.valor.numeros) || [];
+    pintarNumerosTeste(); if (aberta) pintarCabecalho();
+  }
+  async function salvarNumerosTeste(lista) {
+    try { const j = await chamarApi('/api/numeros-teste', { numeros: lista }); numerosTeste = j.numeros; pintarNumerosTeste(); if (aberta) pintarCabecalho(); toast('Números de teste salvos.'); }
+    catch (e) { toast(e.message); }
+  }
+  function pintarNumerosTeste() {
+    const box = $('nt-lista'); box.textContent = '';
+    numerosTeste.forEach(k => box.append(el('span', { class: 'nt-num' }, fmtChave(k), el('button', { type: 'button', 'aria-label': 'Tirar ' + fmtChave(k), text: '×', onclick: () => salvarNumerosTeste(numerosTeste.filter(x => x !== k)) }))));
+    const inp = el('input', { type: 'tel', placeholder: '67 99999-0000', 'aria-label': 'Número de teste' });
+    box.append(inp, el('button', { class: 'btn btn-editar', type: 'button', text: '+ Incluir', onclick: () => { const k = chaveNumero(inp.value); if (!k) return toast('Use DDD + número (ex.: 67 99999-0000).'); salvarNumerosTeste([...numerosTeste, k]); } }));
+  }
+  function botaoRecomecar(c) {
+    if (!c.wa || !numerosTeste.includes(chaveNumero(c.wa))) return null;
+    return el('button', { class: 'btn-mini', type: 'button', text: '↺ Recomeçar (teste)', title: 'Apaga esta conversa de teste para começar do zero', onclick: async () => {
+      if (!confirm('Recomeçar a conversa de teste de ' + c.nome + '?\n\nApaga as mensagens, o negócio no funil, orçamentos, Pix e reservas de teste desta conversa. Não dá para desfazer.')) return;
+      try { await chamarApi('/api/recomecar-conversa', { conversa_id: c.id }); toast('Conversa apagada. A próxima mensagem desse número começa do zero.'); voltar(); aberta = null; await carregarConversas(); carregarFunil(); }
+      catch (e) { toast(e.message); }
+    } });
+  }
+
   // ---------- Lista de conversas ----------
   async function carregarConversas() {
     let comPausa = true;
@@ -271,7 +300,7 @@
       const wa = idn.find(i => i.tipo === 'whatsapp');
       const tel = wa ? fmtTel(wa.valor) : '';
       const ct = c.contato || {};
-      return { id: c.id, numero_id: c.numero_id, gilberto_pausado: c.gilberto_pausado, nome: ct.nome || tel || 'Sem nome', nomeSalvo: ct.nome || '', tel, email: ct.email, obs: ct.observacoes || '', status: c.status, atribuida_a: c.atribuida_a,
+      return { id: c.id, numero_id: c.numero_id, wa: wa ? wa.valor : '', gilberto_pausado: c.gilberto_pausado, nome: ct.nome || tel || 'Sem nome', nomeSalvo: ct.nome || '', tel, email: ct.email, obs: ct.observacoes || '', status: c.status, atribuida_a: c.atribuida_a,
         nao_lidas: c.nao_lidas, ultima_msg_em: c.ultima_msg_em, ultima_msg_cliente_em: c.ultima_msg_cliente_em, previa: previas[c.id] || null };
     });
     pintarLista();
@@ -429,7 +458,7 @@
         seletorEtapaConversa(c),
         fim ? el('span', { class: 'pilula ' + (aj ? 'p-ok' : 'p-erro'), title: aj ? 'Dá para responder com texto livre até esse horário.' : 'Fora da janela, só modelos aprovados pela Meta.',
           text: aj ? 'Responder até ' + (fim.toDateString() !== new Date().toDateString() ? 'amanhã ' : '') + hora(fim.toISOString()) : 'Janela 24 h fechada' }) : null,
-        stSel, rSel, botaoGilberto(c)));
+        stSel, rSel, botaoGilberto(c), botaoRecomecar(c)));
     // Composição: só com a janela aberta
     $('cx-compor').hidden = !aj; $('cx-fechada').hidden = aj;
   }
@@ -2204,7 +2233,7 @@
       .subscribe();
     sb.channel('caixa-alertas')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'alertas' }, () => { clearTimeout(alertasT); alertasT = setTimeout(carregarAlertas, 300); })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'config' }, () => { carregarPlantao(); carregarGilAuto(); })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'config' }, () => { carregarPlantao(); carregarGilAuto(); carregarNumerosTeste(); })
       .subscribe();
   }
 

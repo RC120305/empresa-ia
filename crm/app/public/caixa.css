@@ -562,3 +562,7 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
 .gil-geral{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin-bottom:10px;flex-wrap:wrap}
 .gil-geral div{display:flex;flex-direction:column;gap:2px}
 .gil-geral span{font-size:13px;color:var(--cor-texto-sec)}
+.nt-lista{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.nt-num{display:inline-flex;align-items:center;gap:4px;font-size:13px;padding:4px 4px 4px 10px;border-radius:999px;background:var(--cor-primaria-suave)}
+.nt-num button{all:unset;cursor:pointer;padding:0 6px;font-weight:700}
+.nt-lista input{border:1px solid var(--cor-borda-forte);border-radius:var(--r-md);padding:7px 10px;width:150px;background:var(--cor-superficie)}

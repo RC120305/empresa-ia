@@ -1279,6 +1279,21 @@ falso.listen(0, () => {
       [{ role: 'user', content: '[enviou uma foto: essa?]\ntem vaga?' }]);
 
 
+    // Recomeçar conversa de teste: só números de teste da equipe (conferido no servidor)
+    {
+      delete configF.numeros_teste;
+      assert.equal((await api('/api/recomecar-conversa', { conversa_id: conv })).status, 403, 'número fora da lista: recusa');
+      assert.equal((await api('/api/numeros-teste', { numeros: ['123'] })).status, 400);
+      r = await api('/api/numeros-teste', { numeros: ['(67) 99999-0000'] });
+      assert.equal(r.status, 200); assert.deepEqual(configF.numeros_teste, { numeros: ['6799990000'] }, 'guardado sem 55 e sem o 9 (casa com o número que a Meta manda)');
+      const nDel = chamadas.filter(c => c.metodo === 'DELETE').length;
+      r = await api('/api/recomecar-conversa', { conversa_id: conv });
+      assert.equal(r.status, 200, await r.clone().text());
+      const dels = chamadas.filter(c => c.metodo === 'DELETE').slice(nDel).map(c => c.url.split('?')[0].replace('/rest/v1/', ''));
+      assert.deepEqual(dels, ['reservas', 'cobrancas', 'vendas', 'orcamentos', 'negocios', 'conversas']);
+      assert.ok(chamadas.some(c => c.metodo === 'DELETE' && c.url === '/rest/v1/conversas?id=eq.' + conv));
+      delete configF.numeros_teste;
+    }
     // Oportunidades (sem sino): tarefa de retomar orçamento parado e o resumo do dia às 8h
     {
       const { retomarOrcamentos, resumoDoDia, proximoExpediente, sinalQuente } = require('./server');

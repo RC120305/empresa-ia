@@ -669,6 +669,13 @@ async function alertaAtendimento(tipo, conversa, info, buscar = fetch, titulo = 
   console.log(JSON.stringify({ evento: 'alerta_atendimento', tipo }));
 }
 // Motivos com que o Gilberto passa um caso para a equipe (ferramenta abrir_alerta)
+// Número de WhatsApp sem o 9 extra do celular e sem o 55: DDD + 8 dígitos (a Meta às vezes manda sem o 9)
+function chaveNumero(n) {
+  let d = String(n || '').replace(/\D/g, '');
+  if (d.startsWith('55') && d.length >= 12) d = d.slice(2);
+  if (d.length === 11 && d[2] === '9') d = d.slice(0, 2) + d.slice(3);
+  return /^[1-9]{2}\d{8}$/.test(d) ? d : null;
+}
 const MOTIVOS_ALERTA = { alteracao: 'Pedido de alteração', fora_da_base: 'Pergunta fora da base', excecao_politica: 'Exceção de política', acessibilidade: 'Acessibilidade',
   desconto_insistente: 'Pede desconto', problema_pagamento: 'Problema no pagamento', dado_sensivel_recebido: 'Dado sensível recebido', pedido_especial_outro: 'Pedido especial',
   comprovante_recebido: 'Comprovante recebido', reserva_urgente: 'Reserva urgente (check-in em até 3 dias)', atividade_escolhida: 'Atividade escolhida', seguranca: 'Segurança' };
@@ -1725,6 +1732,37 @@ const API_EQUIPE = {
     const negocio = await negocioDaConversa(corpo.conversa_id);
     if (negocio) await eventoNegocio(negocio, corpo.pausado ? 'A equipe assumiu o atendimento (Gilberto pausado)' : 'Conversa devolvida ao Gilberto', eu.id);
     return { ok: true, pausado: !!corpo.pausado };
+  },
+  // Números de teste da equipe (Ajustes do agente): só eles podem ter a conversa recomeçada
+  'POST /api/numeros-teste': async (corpo, eu) => {
+    const nums = [...new Set((Array.isArray(corpo.numeros) ? corpo.numeros : []).map(n => chaveNumero(n)).filter(Boolean))].slice(0, 20);
+    if ((corpo.numeros || []).length && nums.length !== new Set(corpo.numeros.map(String)).size) throw new ErroEnvio(400, 'Algum número está incompleto: use DDD + número (ex.: 67 99999-0000).');
+    const r = await gravarConfig('numeros_teste', { numeros: nums }, fetch, eu.id);
+    if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar agora.');
+    return { ok: true, numeros: nums };
+  },
+  // Recomeçar conversa de teste: apaga a conversa (mensagens, sugestões, alertas), o negócio (tarefas, histórico),
+  // orçamentos, Pix, reservas de teste e vendas. Só para números de teste da equipe (conferido aqui, no servidor).
+  'POST /api/recomecar-conversa': async (corpo, eu) => {
+    if (!uuidOk(corpo.conversa_id)) throw new ErroEnvio(400, 'Conversa inválida.');
+    const c = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${corpo.conversa_id}&select=id,contato_id,contato:contatos(contato_identificadores(tipo,valor))`, fetch))[0];
+    if (!c) throw new ErroEnvio(404, 'Conversa não encontrada.');
+    const wa = ((c.contato && c.contato.contato_identificadores) || []).find(i => i.tipo === 'whatsapp');
+    const teste = ((await lerConfig('numeros_teste', fetch)) || {}).numeros || [];
+    if (!wa || !teste.includes(chaveNumero(wa.valor))) throw new ErroEnvio(403, 'Só dá para recomeçar conversas de números de teste da equipe (Ajustes do agente).');
+    const apagar = async (tabela, filtro, opcional) => {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/${tabela}?${filtro}`, { method: 'DELETE', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(8000) });
+      if (!r.ok && !(opcional && r.status === 404)) throw new ErroEnvio(502, 'Não deu para apagar ' + tabela + ' (' + r.status + '). Nada mais foi apagado depois disso.');
+    };
+    const cid = c.id;
+    await apagar('reservas', `conversa_id=eq.${cid}`, true);
+    await apagar('cobrancas', `conversa_id=eq.${cid}`, true);
+    await apagar('vendas', `conversa_id=eq.${cid}`, true);
+    await apagar('orcamentos', `conversa_id=eq.${cid}`);
+    await apagar('negocios', `or=(conversa_id.eq.${cid},contato_id.eq.${c.contato_id})`);
+    await apagar('conversas', `id=eq.${cid}`);
+    console.log(JSON.stringify({ evento: 'conversa_recomecada' }));
+    return { ok: true };
   },
   'POST /api/plantao': async (corpo, eu) => {
     const id = corpo.usuario_id || null;
