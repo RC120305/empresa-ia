@@ -544,3 +544,8 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
   .cx.aberta .cx-chat{flex:none;height:calc(100dvh - 112px);min-height:380px}
   .cx.aberta .cx-lateral{flex:none;max-height:none}
 }
+/* iPhone com o CRM instalado: o topo não fica por baixo da hora e da bateria */
+@media (max-width:900px){
+  .lateral{padding-top:calc(8px + env(safe-area-inset-top,0px))}
+  .topo{top:calc(8px + env(safe-area-inset-top,0px))}
+}

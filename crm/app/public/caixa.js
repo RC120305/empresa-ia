@@ -202,11 +202,20 @@
   $('bt-tema').addEventListener('click', () => { tema = TEMAS[(TEMAS.findIndex(x => x[0] === tema) + 1) % 3][0]; guardar('crm-tema', tema); aplicarTema(tema); });
 
   // ---------- Atualização (tempo real + rede de segurança) ----------
+  // Versão nova publicada: recarrega sozinho (o app instalado no celular fica aberto em segundo plano e não recarregaria).
+  // Não recarrega com resposta sendo digitada.
+  const minhaVersao = ((document.querySelector('script[src*="caixa.js"]') || {}).src || '').split('v=')[1] || null;
+  async function conferirVersao() {
+    if (!minhaVersao || minhaVersao === 'local') return;
+    const v = await fetch('/saude', { cache: 'no-store' }).then(r => r.json()).then(j => j.versao).catch(() => null);
+    if (v && v !== minhaVersao && !($('resposta') && $('resposta').value.trim())) location.reload();
+  }
   let aoVivo = false;
   async function atualizarTudo() { await carregarConversas(); await carregarFunil(); if (aberta) await recarregarAberta(); carregarAlertas(); carregarVendasResumo(); }
   function vigiar() {
     setInterval(() => { if (!aoVivo && !document.hidden) atualizarTudo(); }, 15000);
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) atualizarTudo(); });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) { atualizarTudo(); conferirVersao(); } });
+    setInterval(conferirVersao, 10 * 60e3);
   }
 
   // ---------- Lista de conversas ----------
