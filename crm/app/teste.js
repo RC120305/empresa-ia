@@ -1161,7 +1161,16 @@ falso.listen(0, () => {
 
     // Oportunidades (sem sino): tarefa de retomar orçamento parado e o resumo do dia às 8h
     {
-      const { retomarOrcamentos, resumoDoDia, proximoExpediente } = require('./server');
+      const { retomarOrcamentos, resumoDoDia, proximoExpediente, sinalQuente } = require('./server');
+      { // Quente = interesse real, não a abertura logo após o envio
+        const A = Date.parse('2026-10-05T15:00:00Z'), t = h => new Date(A - h * 3600e3).toISOString();
+        assert.equal(sinalQuente({ aberto_primeira_vez_em: t(1), ultima_abertura_em: t(0.5), aberturas: 3 }, null, A), null, 'abriu várias vezes logo após o envio');
+        assert.equal(sinalQuente({ aberto_primeira_vez_em: t(20), ultima_abertura_em: t(1), aberturas: 2 }, null, A), 'voltou', 'voltou horas depois');
+        assert.equal(sinalQuente({ aberto_primeira_vez_em: t(20), ultima_abertura_em: t(1), aberturas: 2 }, t(0.5), A), null, 'já escreveu depois: está na conversa');
+        assert.equal(sinalQuente({ aberto_primeira_vez_em: t(30), ultima_abertura_em: t(26), aberturas: 2 }, null, A), null, 'mais de 24 h: esfriou');
+        assert.equal(sinalQuente({ aberto_primeira_vez_em: t(1), ultima_abertura_em: t(1), escolhida_em: t(0.8) }, null, A), 'quero_reservar', 'tocou em Quero reservar e não mandou');
+        assert.equal(sinalQuente({ escolhida_em: t(0.8) }, t(0.7), A), null, 'tocou e mandou a mensagem');
+      }
       assert.equal(proximoExpediente(new Date('2026-10-05T14:00:00Z')).toISOString(), '2026-10-05T14:00:00.000Z', '10h em Bonito: agora');
       assert.equal(proximoExpediente(new Date('2026-10-05T23:00:00Z')).toISOString(), '2026-10-06T11:30:00.000Z', '19h: amanhã 7h30');
       assert.equal(proximoExpediente(new Date('2026-10-05T09:00:00Z')).toISOString(), '2026-10-05T11:30:00.000Z', '5h da manhã: hoje 7h30');
@@ -1169,8 +1178,9 @@ falso.listen(0, () => {
       const iso = t => new Date(t).toISOString();
       // C1: orçamento de 30 h sem resposta → tarefa; C2: cliente respondeu → nada; C3: reservado → nada; C4: 10 h → cedo
       const ORC = [{ id: 'o1', conversa_id: 'C1', criado_em: iso(agora - 30 * H), aberturas: 2 }, { id: 'o2', conversa_id: 'C2', criado_em: iso(agora - 30 * H), aberturas: 1 },
-        { id: 'o3', conversa_id: 'C3', criado_em: iso(agora - 40 * H), aberturas: 0 }, { id: 'o4', conversa_id: 'C4', criado_em: iso(agora - 10 * H), aberturas: 0, ultima_abertura_em: iso(agora - 2 * H) }];
-      const NEG = { C1: { id: 'N1', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C1' }, C2: { id: 'N2', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C2' }, C3: { id: 'N3', etapa: 'res', responsavel_id: 'U1', conversa_id: 'C3' }, C4: { id: 'N4', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C4' } };
+        { id: 'o3', conversa_id: 'C3', criado_em: iso(agora - 40 * H), aberturas: 0 }, { id: 'o4', conversa_id: 'C4', criado_em: iso(agora - 10 * H), aberturas: 3, aberto_primeira_vez_em: iso(agora - 9 * H), ultima_abertura_em: iso(agora - 2 * H) },
+        { id: 'o5', conversa_id: 'C5', criado_em: iso(agora - 5 * H), aberturas: 4, aberto_primeira_vez_em: iso(agora - 4 * H), ultima_abertura_em: iso(agora - 3.5 * H) }]; // C5: abriu várias vezes logo após o envio → não é quente
+      const NEG = { C1: { id: 'N1', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C1' }, C2: { id: 'N2', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C2' }, C3: { id: 'N3', etapa: 'res', responsavel_id: 'U1', conversa_id: 'C3' }, C4: { id: 'N4', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C4' }, C5: { id: 'N5', etapa: 'orc', responsavel_id: 'U2', conversa_id: 'C5' } };
       const MSG = [{ conversa_id: 'C2', direcao: 'entrada', enviada_em: iso(agora - 20 * H) }];
       const TAR = [], CFG = {}, PUSH = [];
       const q = (u, k) => decodeURIComponent((u.searchParams.getAll(k).map(v => v.replace(/^(eq|gte|lte|gt|in)\.\(?/, '').replace(/\)$/, ''))[0]) || '');
@@ -1178,7 +1188,8 @@ falso.listen(0, () => {
       const fb = async (url, o = {}) => {
         const u = new URL(url), p = u.pathname.replace('/rest/v1/', ''), m = o.method || 'GET', body = o.body && typeof o.body === 'string' ? JSON.parse(o.body) : null;
         if (url.startsWith('https://fcm.googleapis.com/')) { PUSH.push(o); return resp(null, 201); }
-        if (p === 'orcamentos') return resp(u.searchParams.get('ultima_abertura_em') ? ORC.filter(x => x.ultima_abertura_em && x.ultima_abertura_em >= q(u, 'ultima_abertura_em'))
+        if (p === 'conversas') return resp([{ ultima_msg_cliente_em: null }]);
+        if (p === 'orcamentos') return resp(u.searchParams.get('or') ? ORC.filter(x => (x.ultima_abertura_em || '') >= u.searchParams.get('or').split('gte.')[1].split(',')[0] || (x.escolhida_em || '') >= u.searchParams.get('or').split('gte.')[1].split(',')[0])
           : u.searchParams.get('conversa_id') ? ORC.filter(x => x.conversa_id === q(u, 'conversa_id') && x.criado_em > q(u, 'criado_em'))
           : ORC.filter(x => x.criado_em >= u.searchParams.getAll('criado_em')[0].slice(4) && x.criado_em <= u.searchParams.getAll('criado_em')[1].slice(4)).sort((a, b) => b.criado_em.localeCompare(a.criado_em)));
         if (p === 'negocios') return resp(u.searchParams.get('conversa_id') ? [NEG[q(u, 'conversa_id')]].filter(Boolean) : Object.values(NEG).filter(n => n.id === q(u, 'id')));
@@ -1212,7 +1223,7 @@ falso.listen(0, () => {
       const fetchReal = globalThis.fetch;
       try {
         assert.equal(await resumoDoDia(fb, new Date(Date.parse('2026-10-05T18:00:00Z'))), 0, '14h: fora da hora do resumo');
-        assert.equal(await resumoDoDia(fb, new Date(agora)), 1, 'U1 recebe; U2 não tem nada');
+        assert.equal(await resumoDoDia(fb, new Date(agora)), 1, 'U1 recebe; U2 só tem o C5, que abriu logo após o envio (não é quente)');
         assert.equal(PUSH.length, 1);
         assert.equal(await resumoDoDia(fb, new Date(agora + 30 * 60e3)), 0, 'uma vez por dia');
         CFG.resumo_dia_enviado = null; CFG.resumo_dia_desligado = { usuarios: ['U1'] };

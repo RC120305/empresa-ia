@@ -821,6 +821,14 @@ async function retomarOrcamentos(buscar = fetch, agora = Date.now()) {
 async function lerConfig(chave, buscar) { return ((await getJson(`${SUPABASE_URL}/rest/v1/config?chave=eq.${chave}&select=valor`, buscar))[0] || {}).valor || null; }
 const gravarConfig = (chave, valor, buscar, por = null) => buscar(`${SUPABASE_URL}/rest/v1/config?on_conflict=chave`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'resolution=merge-duplicates,return=minimal' },
   body: JSON.stringify({ chave, valor, atualizado_por: por, atualizado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) });
+// Quente = interesse real: voltou ao orçamento 2 h ou mais depois da 1ª abertura, ou tocou em "Quero reservar" e não
+// mandou a mensagem; e o cliente não escreveu depois disso (mesma regra da lista no CRM)
+function sinalQuente(o, ultimaDoCliente, agora = Date.now()) {
+  const t = x => x ? Date.parse(x) : 0, dia = agora - 864e5, calado = x => t(ultimaDoCliente) < t(x);
+  if (t(o.escolhida_em) > dia && calado(o.escolhida_em)) return 'quero_reservar';
+  if (t(o.ultima_abertura_em) > dia && t(o.ultima_abertura_em) - t(o.aberto_primeira_vez_em) >= 2 * 3600e3 && calado(o.ultima_abertura_em)) return 'voltou';
+  return null;
+}
 async function resumoDoDia(buscar = fetch, agora = new Date()) {
   const m = minutosBonito(agora), dia = diaBonito(agora);
   if (m < 480 || m >= 600) return 0;                                   // das 8h às 10h (se o agendador falhar às 8h, sai depois)
@@ -832,9 +840,13 @@ async function resumoDoDia(buscar = fetch, agora = new Date()) {
   const desligados = ((await lerConfig('resumo_dia_desligado', buscar)) || {}).usuarios || [];
   const fimDoDia = new Date(`${dia}T23:59:59-04:00`).toISOString();
   const tarefas = await getJson(`${SUPABASE_URL}/rest/v1/tarefas?feita=eq.false&quando=lte.${fimDoDia}&select=responsavel_id,tipo&limit=1000`, buscar);
-  const quentes = await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?ultima_abertura_em=gte.${new Date(agora - 864e5).toISOString()}&select=conversa_id&limit=300`, buscar);
+  const dia24 = new Date(agora - 864e5).toISOString();
+  const recentes = await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?or=(ultima_abertura_em.gte.${dia24},escolhida_em.gte.${dia24})&select=conversa_id,criado_em,ultima_abertura_em,aberto_primeira_vez_em,aberturas,escolhida_em&order=criado_em.desc&limit=300`, buscar);
+  const porConversa = {}; for (const o of recentes) if (o.conversa_id && !porConversa[o.conversa_id]) porConversa[o.conversa_id] = o;
   const donoQuente = {};
-  for (const cid of [...new Set(quentes.map(q => q.conversa_id).filter(Boolean))]) {
+  for (const [cid, o] of Object.entries(porConversa)) {
+    const conv = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${cid}&select=ultima_msg_cliente_em`, buscar))[0] || {};
+    if (!sinalQuente(o, conv.ultima_msg_cliente_em, +agora)) continue;
     const n = await negocioDaConversa(cid, 'responsavel_id', buscar).catch(() => null);
     if (n && !['res', 'perd'].includes(n.etapa) && n.responsavel_id) donoQuente[n.responsavel_id] = (donoQuente[n.responsavel_id] || 0) + 1;
   }
@@ -2122,4 +2134,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => { console.log('CRM Cabanas ouvindo na porta ' + porta); conferirIpSaida(); });
-module.exports = { servidor, retomarOrcamentos, resumoDoDia, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca };
+module.exports = { servidor, retomarOrcamentos, resumoDoDia, sinalQuente, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca };

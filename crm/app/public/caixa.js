@@ -257,7 +257,7 @@
     if (filtro === 'janela') ls = ls.filter(c => !janelaAberta(c));
     if (filtro === 'quentes') ls = ls.filter(c => quente(c));
     // Quem abriu o orçamento há pouco sobe na lista (sem som e sem sino: é oportunidade, não urgência)
-    const chave = c => { const q = quente(c); return q && (q.ultima_abertura_em || '') > (c.ultima_msg_em || '') ? q.ultima_abertura_em : (c.ultima_msg_em || ''); };
+    const chave = c => { const q = quente(c); return q && Date.parse(q.quando) > Date.parse(c.ultima_msg_em || 0) ? new Date(q.quando).toISOString() : (c.ultima_msg_em ? new Date(c.ultima_msg_em).toISOString() : ''); };
     ls.sort((a, b) => chave(b).localeCompare(chave(a)));
     if (!ls.length) ul.append(el('div', { class: 'vazio', text: conversas.length ? 'Nenhuma conversa aqui.' : 'Nenhuma conversa ainda. Quando alguém mandar mensagem para o número do hotel, ela aparece aqui na hora.' }));
     ls.forEach(c => {
@@ -273,23 +273,34 @@
           n ? el('span', { class: 'pilula o-' + n.origem, title: 'Origem do lead', text: ORIGENS[n.origem] || n.origem }) : null,
           et ? el('span', { class: 'pilula ' + et[2], title: 'Etapa no funil', text: et[1] }) : null,
           etiquetaProdutos(vd), ...((n && n.etiquetas) || []).map(t => el('span', { class: 'tipo t-mkt', text: t }))) : null,
-        quente(c) ? el('div', { class: 'cx-quente', text: '🔥 abriu o orçamento ' + desde(quente(c).ultima_abertura_em) + (quente(c).aberturas > 1 ? ' · ' + quente(c).aberturas + 'x' : '') }) : null,
+        quente(c) ? el('div', { class: 'cx-quente', text: '🔥 ' + quente(c).txt + ' · ' + desde(quente(c).quando) }) : null,
         !janelaAberta(c) && c.status === 'aberta' ? el('div', { class: 'cx-janela', text: 'A janela de 24 h expirou' }) : null,
         el('div', { class: 'cx-l3' }, el('span', { class: 'resp', text: resp ? iniciais(resp) : '–' }), el('span', { text: resp ? resp : 'Sem responsável' }))));
     });
   }
-  // ---------- Clientes quentes: abriram o orçamento nas últimas 24 h ----------
-  let quentes = {}; // conversa_id -> orçamento aberto mais recente
+  // ---------- Clientes quentes: sinal de interesse real nas últimas 24 h (dono, 04/10/2026) ----------
+  // Abrir o link logo depois do envio é o normal e não conta. Conta: voltou ao orçamento 2 h ou mais depois da
+  // 1ª abertura, ou tocou em "Quero reservar" e não mandou a mensagem; e não escreveu depois disso.
+  let quentes = {}; // conversa_id -> orçamento mais recente com atividade
   async function carregarQuentes() {
-    const { data, error } = await sb.from('orcamentos').select('conversa_id,ultima_abertura_em,aberturas').gte('ultima_abertura_em', new Date(Date.now() - 864e5).toISOString()).order('ultima_abertura_em', { ascending: false }).limit(300);
+    const dia = new Date(Date.now() - 864e5).toISOString();
+    const { data, error } = await sb.from('orcamentos').select('conversa_id,criado_em,ultima_abertura_em,aberto_primeira_vez_em,aberturas,escolhida_em')
+      .or(`ultima_abertura_em.gte.${dia},escolhida_em.gte.${dia}`).order('criado_em', { ascending: false }).limit(300);
     if (error) return;
     const q = {}; (data || []).forEach(o => { if (o.conversa_id && !q[o.conversa_id]) q[o.conversa_id] = o; });
     quentes = q; pintarLista();
   }
+  function sinalQuente(o, ultimaDoCliente, agora = Date.now()) {
+    const t = x => x ? Date.parse(x) : 0, dia = agora - 864e5, calado = x => t(ultimaDoCliente) < t(x);
+    if (t(o.escolhida_em) > dia && calado(o.escolhida_em)) return { quando: o.escolhida_em, txt: 'tocou em "Quero reservar" e não mandou a mensagem' };
+    if (t(o.ultima_abertura_em) > dia && t(o.ultima_abertura_em) - t(o.aberto_primeira_vez_em) >= 2 * 3600e3 && calado(o.ultima_abertura_em))
+      return { quando: o.ultima_abertura_em, txt: 'voltou ao orçamento' + (o.aberturas > 1 ? ' (' + o.aberturas + 'ª vez)' : '') };
+    return null;
+  }
   function quente(c) {
     const o = quentes[c.id]; if (!o || c.status !== 'aberta') return null;
     const n = negocioDaConversa(c.id);
-    return n && ['res', 'perd'].includes(n.etapa) ? null : o;
+    return n && ['res', 'perd'].includes(n.etapa) ? null : sinalQuente(o, c.ultima_msg_cliente_em);
   }
   $('cx-busca').addEventListener('input', pintarLista);
   document.querySelector('.cx-abas').addEventListener('click', e => {
