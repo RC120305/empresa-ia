@@ -770,6 +770,89 @@ async function linkDeEntrada(email, buscar = fetch) {
   return j.hashed_token || (j.properties || {}).hashed_token || null;
 }
 
+// ---------- Oportunidades (sem sino): retomar orçamentos parados e o resumo do dia ----------
+// Dono, 04/10/2026: o sino é só para urgência. Orçamento sem resposta em 24 h vira tarefa para o responsável;
+// às 8h, um único aviso no celular com o que há para hoje (quem quiser, desliga no sino).
+const TIPO_RETOMAR = 'Retomar orçamento';
+const minutosBonito = d => { const [h, m] = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Campo_Grande', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(d).split(':').map(Number); return h * 60 + m; };
+const diaBonito = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Campo_Grande' }).format(d);
+function proximoExpediente(d = new Date()) {
+  const m = minutosBonito(d);
+  if (m >= 450 && m < 1020) return d;                      // 7h30 às 17h
+  const n = new Date(`${diaBonito(d)}T07:30:00-04:00`);
+  if (m >= 1020) n.setUTCDate(n.getUTCDate() + 1);
+  return n;
+}
+const getJson = async (url, buscar) => { const r = await buscar(url, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null); return r && r.ok ? r.json().catch(() => []) : []; };
+let ultimaRetomada = 0;
+async function retomarOrcamentos(buscar = fetch, agora = Date.now()) {
+  if (agora - ultimaRetomada < Number(process.env.RETOMAR_INTERVALO_MS || 15 * 60e3)) return { criadas: 0, fechadas: 0 };
+  ultimaRetomada = agora;
+  let criadas = 0, fechadas = 0;
+  const de = new Date(agora - 7 * 864e5).toISOString(), ate = new Date(agora - 864e5).toISOString();
+  const lista = await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?criado_em=gte.${de}&criado_em=lte.${ate}&select=id,conversa_id,criado_em,aberturas&order=criado_em.desc&limit=100`, buscar);
+  const vistas = new Set();
+  for (const o of lista) {
+    if (!o.conversa_id || vistas.has(o.conversa_id)) continue;
+    vistas.add(o.conversa_id); // só o orçamento mais recente da conversa
+    if ((await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?conversa_id=eq.${o.conversa_id}&criado_em=gt.${o.criado_em}&select=id&limit=1`, buscar)).length) continue; // há um mais novo (< 24 h)
+    const neg = await negocioDaConversa(o.conversa_id, 'id,responsavel_id', buscar).catch(() => null);
+    if (!neg || neg.etapa !== 'orc') continue;
+    if ((await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${o.conversa_id}&direcao=eq.entrada&enviada_em=gt.${o.criado_em}&select=id&limit=1`, buscar)).length) continue; // o cliente respondeu
+    if ((await getJson(`${SUPABASE_URL}/rest/v1/tarefas?negocio_id=eq.${neg.id}&tipo=eq.${encodeURIComponent(TIPO_RETOMAR)}&criado_em=gte.${o.criado_em}&select=id&limit=1`, buscar)).length) continue; // já tem
+    const vezes = o.aberturas ? `abriu ${o.aberturas}x` : 'ainda não abriu o link';
+    const r = await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ negocio_id: neg.id, responsavel_id: neg.responsavel_id || null, criado_por: 'CRM', tipo: TIPO_RETOMAR, quando: proximoExpediente(new Date(agora)).toISOString(),
+        descricao: `Orçamento de ${o.criado_em.slice(8, 10)}/${o.criado_em.slice(5, 7)} sem resposta há mais de 24 h (${vezes}). Retome com algo novo: uma foto real, uma data de domingo a quinta com vaga ou a programação inclusa. Use ✨ Sugerir resposta na conversa.` }) }).catch(() => null);
+    if (r && r.ok) { criadas++; await eventoNegocio(neg.id, 'Tarefa: retomar o orçamento (24 h sem resposta)', 'CRM', buscar).catch(() => {}); }
+  }
+  // Tarefas de retomar que perderam o sentido (o cliente respondeu, reservou ou foi perdido) fecham sozinhas
+  for (const t of await getJson(`${SUPABASE_URL}/rest/v1/tarefas?tipo=eq.${encodeURIComponent(TIPO_RETOMAR)}&feita=eq.false&select=id,negocio_id,criado_em&limit=200`, buscar)) {
+    const n = (await getJson(`${SUPABASE_URL}/rest/v1/negocios?id=eq.${t.negocio_id}&select=etapa,conversa_id`, buscar))[0];
+    const respondeu = n && n.conversa_id && (await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${n.conversa_id}&direcao=eq.entrada&enviada_em=gt.${t.criado_em}&select=id&limit=1`, buscar)).length;
+    if (!n || n.etapa !== 'orc' || respondeu) {
+      await buscar(`${SUPABASE_URL}/rest/v1/tarefas?id=eq.${t.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000), body: JSON.stringify({ feita: true, feita_em: new Date(agora).toISOString() }) }).catch(() => null);
+      fechadas++;
+    }
+  }
+  return { criadas, fechadas };
+}
+// Resumo do dia: às 8h (horário de Bonito), um aviso por pessoa com tarefas de hoje e clientes quentes
+async function lerConfig(chave, buscar) { return ((await getJson(`${SUPABASE_URL}/rest/v1/config?chave=eq.${chave}&select=valor`, buscar))[0] || {}).valor || null; }
+const gravarConfig = (chave, valor, buscar, por = null) => buscar(`${SUPABASE_URL}/rest/v1/config?on_conflict=chave`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'resolution=merge-duplicates,return=minimal' },
+  body: JSON.stringify({ chave, valor, atualizado_por: por, atualizado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) });
+async function resumoDoDia(buscar = fetch, agora = new Date()) {
+  const m = minutosBonito(agora), dia = diaBonito(agora);
+  if (m < 480 || m >= 600) return 0;                                   // das 8h às 10h (se o agendador falhar às 8h, sai depois)
+  const env = await lerConfig('resumo_dia_enviado', buscar);
+  if (env && env.dia === dia) return 0;
+  if (!(await chaveAvisos(buscar))) return 0;
+  const g = await gravarConfig('resumo_dia_enviado', { dia }, buscar).catch(() => null);
+  if (!g || !g.ok) return 0;
+  const desligados = ((await lerConfig('resumo_dia_desligado', buscar)) || {}).usuarios || [];
+  const fimDoDia = new Date(`${dia}T23:59:59-04:00`).toISOString();
+  const tarefas = await getJson(`${SUPABASE_URL}/rest/v1/tarefas?feita=eq.false&quando=lte.${fimDoDia}&select=responsavel_id,tipo&limit=1000`, buscar);
+  const quentes = await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?ultima_abertura_em=gte.${new Date(agora - 864e5).toISOString()}&select=conversa_id&limit=300`, buscar);
+  const donoQuente = {};
+  for (const cid of [...new Set(quentes.map(q => q.conversa_id).filter(Boolean))]) {
+    const n = await negocioDaConversa(cid, 'responsavel_id', buscar).catch(() => null);
+    if (n && !['res', 'perd'].includes(n.etapa) && n.responsavel_id) donoQuente[n.responsavel_id] = (donoQuente[n.responsavel_id] || 0) + 1;
+  }
+  let enviados = 0;
+  for (const u of await getJson(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&select=id,nome`, buscar)) {
+    if (desligados.includes(u.id)) continue;
+    const minhas = tarefas.filter(t => t.responsavel_id === u.id), ret = minhas.filter(t => t.tipo === TIPO_RETOMAR).length, q = donoQuente[u.id] || 0;
+    if (!minhas.length && !q) continue;
+    const partes = [];
+    if (ret) partes.push(ret + (ret === 1 ? ' orçamento para retomar' : ' orçamentos para retomar'));
+    if (minhas.length - ret) partes.push((minhas.length - ret) + ((minhas.length - ret) === 1 ? ' tarefa' : ' tarefas'));
+    if (q) partes.push(q + (q === 1 ? ' cliente quente 🔥' : ' clientes quentes 🔥'));
+    const txt = partes.length > 1 ? partes.slice(0, -1).join(', ') + ' e ' + partes.at(-1) : partes[0];
+    enviados += await avisarCelulares([u.id], { titulo: 'Bom dia, ' + String(u.nome || '').split(' ')[0] + '!', corpo: 'Hoje: ' + txt + '.', url: '/caixa', tag: 'resumo-' + dia }, buscar).catch(() => 0);
+  }
+  return enviados;
+}
+
 // ---------- Login da equipe: criar/confirmar no Supabase Auth quem está liberado em "usuarios" ----------
 async function prepararLogin(email, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&select=email`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
@@ -1415,6 +1498,15 @@ const API_EQUIPE = {
     throw new ErroEnvio(400, 'Ação inválida.');
   },
   // Quem está de plantão (recebe os alertas com som; sem dono em 10 min, vão para todos)
+  // Resumo do dia às 8h no celular: cada pessoa liga ou desliga para si
+  'GET /api/resumo-dia': async (corpo, eu) => { const v = await lerConfig('resumo_dia_desligado', fetch); return { ok: true, ligado: !((v && v.usuarios) || []).includes(eu.id) }; },
+  'POST /api/resumo-dia': async (corpo, eu) => {
+    const lista = new Set(((await lerConfig('resumo_dia_desligado', fetch)) || {}).usuarios || []);
+    if (corpo.ligado) lista.delete(eu.id); else lista.add(eu.id);
+    const r = await gravarConfig('resumo_dia_desligado', { usuarios: [...lista] }, fetch, eu.id);
+    if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar agora.');
+    return { ok: true, ligado: !!corpo.ligado };
+  },
   'POST /api/plantao': async (corpo, eu) => {
     const id = corpo.usuario_id || null;
     if (id && !uuidOk(id)) throw new ErroEnvio(400, 'Pessoa inválida.');
@@ -1681,8 +1773,9 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
           : { ok: false, erro: 'Não há foto na biblioteca para esse pedido. Não prometa foto: ofereça descrever ou avise a equipe nas notas_internas.' };
       },
     };
-    const neg = await negocioDaConversa(conv.id, 'perfil', buscar).catch(() => null);
-    const r = await gilberto.sugerir(historico, { canal: conv.canal, nome, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil }, executores, await catalogo(buscar));
+    const neg = await negocioDaConversa(conv.id, 'id,perfil', buscar).catch(() => null);
+    const retomar = neg && neg.etapa === 'orc' && (await getJson(`${SUPABASE_URL}/rest/v1/tarefas?negocio_id=eq.${neg.id}&tipo=eq.${encodeURIComponent(TIPO_RETOMAR)}&feita=eq.false&select=id&limit=1`, buscar)).length;
+    const r = await gilberto.sugerir(historico, { canal: conv.canal, nome, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, gatilho: retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null }, executores, await catalogo(buscar));
     // Registro para a revisão (Ajustes do agente): o que o cliente perguntou e o que o Gilberto sugeriu
     const ultimaDoCliente = [...historico].reverse().find(m => m.direcao === 'entrada');
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
@@ -1906,7 +1999,8 @@ const servidor = http.createServer((req, res) => {
   // Agendador do Google (a cada 2 min): confere as cobranças Pix ativas. Não devolve dado nenhum, só contagens.
   if (url.pathname === '/cron/pix' && req.method === 'POST') {
     if (!bancoLigado()) return json(res, 503, { ok: false });
-    Promise.all([verificarCobrancas(), escalarAlertas().catch(() => 0)]).then(async ([r, escalados]) => json(res, 200, { ok: true, ...r, escalados, avisos: await notificarAlertas().catch(() => 0) })).catch(() => json(res, 500, { ok: false }));
+    Promise.all([verificarCobrancas(), escalarAlertas().catch(() => 0)]).then(async ([r, escalados]) => json(res, 200, { ok: true, ...r, escalados, avisos: await notificarAlertas().catch(() => 0),
+      retomar: await retomarOrcamentos().catch(() => ({ criadas: 0, fechadas: 0 })), resumo: await resumoDoDia().catch(() => 0) })).catch(() => json(res, 500, { ok: false }));
     return;
   }
 
@@ -2028,4 +2122,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => { console.log('CRM Cabanas ouvindo na porta ' + porta); conferirIpSaida(); });
-module.exports = { servidor, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca };
+module.exports = { servidor, retomarOrcamentos, resumoDoDia, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca };

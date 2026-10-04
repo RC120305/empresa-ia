@@ -137,6 +137,7 @@ section[data-painel]{flex:1;min-height:0;display:flex;flex-direction:column}
 .cx-prev{font-size:13px;color:var(--cor-texto-sec);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cx-l3{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--cor-texto-sec);flex-wrap:wrap}
 .cx-janela{font-size:12px;color:var(--cor-alerta);font-weight:600}
+.cx-quente{font-size:12px;font-weight:600;color:var(--cor-destaque-texto)}
 .canal-ic{font-size:10px;font-weight:700;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;flex:none;color:#fff;background:#2E7D4F}
 .resp{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700;background:var(--cor-primaria-suave);color:var(--cor-primaria-texto);border:1px solid var(--cor-borda);flex:none}
 .vazio{font-size:13px;color:var(--cor-texto-sec);text-align:center;padding:14px 6px;border:1px dashed var(--cor-borda);border-radius:var(--r-md)}
@@ -552,3 +553,5 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
 .op-sug{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--cor-texto-sec);margin:-4px 0 6px 30px;cursor:pointer}
 .aviso-extras{display:flex;flex-direction:column;gap:6px;margin:0 0 6px;padding:10px 12px;border-radius:var(--r-md);background:var(--cor-secundaria-suave);border:1px solid var(--cor-secundaria)}
 .aviso-extras .acoes{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.alertas .al-resumo{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--cor-texto-sec);cursor:pointer}
+.alertas .al-resumo input{margin-top:2px;accent-color:var(--cor-primaria)}

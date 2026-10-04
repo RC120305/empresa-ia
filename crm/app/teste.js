@@ -88,7 +88,8 @@ const falso = http.createServer((req, res) => {
     }
     if (req.url.startsWith('/rest/v1/config')) {
       if (req.method === 'POST') { configF[json.chave] = json.valor; res.writeHead(201); return res.end(); }
-      return responder(200, configF.plantao ? [{ valor: configF.plantao }] : []);
+      const ch = (req.url.match(/chave=eq\.([\w-]+)/) || [])[1] || 'plantao';
+      return responder(200, configF[ch] ? [{ valor: configF[ch] }] : []);
     }
     if (req.url.startsWith('/rest/v1/vitrines')) {
       if (req.method === 'POST') { const v = { id: crypto.randomUUID(), aberturas: 0, pedido: null, pedido_em: null, criado_em: new Date().toISOString(), ...json }; vitrinesF.unshift(v); return responder(201, [v]); }
@@ -656,7 +657,7 @@ falso.listen(0, () => {
     assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'pag'), 'card em Aguardando pagamento');
     assert.equal((await api('/api/cobranca', { conversa_id: conv, valor: '0' })).status, 400);
     r = await fetch(base + '/cron/pix', { method: 'POST' });
-    assert.deepEqual(await r.json(), { ok: true, verificadas: 1, pagas: 0, vencidas: 0, escalados: 0, avisos: 0 });
+    assert.deepEqual(await r.json(), { ok: true, verificadas: 1, pagas: 0, vencidas: 0, escalados: 0, avisos: 0, retomar: { criadas: 0, fechadas: 0 }, resumo: 0 });
     r = await api('/api/cobranca-acao', { id: cobrancasF[0].id, acao: 'simular_pagamento' });
     assert.equal((await r.json()).pagas, 1);
     assert.deepEqual([cobrancasF[0].situacao, cobrancasF[0].valor_pago, cobrancasF[0].pagador], ['paga', 1254.6, 'Cliente de teste']);
@@ -1157,6 +1158,67 @@ falso.listen(0, () => {
     assert.deepEqual(montarMensagens([{ direcao: 'saida', tipo: 'text', corpo: 'oi' }, { direcao: 'entrada', tipo: 'image', corpo: 'essa?' }, { direcao: 'entrada', tipo: 'text', corpo: 'tem vaga?' }]),
       [{ role: 'user', content: '[enviou uma foto: essa?]\ntem vaga?' }]);
 
+
+    // Oportunidades (sem sino): tarefa de retomar orçamento parado e o resumo do dia às 8h
+    {
+      const { retomarOrcamentos, resumoDoDia, proximoExpediente } = require('./server');
+      assert.equal(proximoExpediente(new Date('2026-10-05T14:00:00Z')).toISOString(), '2026-10-05T14:00:00.000Z', '10h em Bonito: agora');
+      assert.equal(proximoExpediente(new Date('2026-10-05T23:00:00Z')).toISOString(), '2026-10-06T11:30:00.000Z', '19h: amanhã 7h30');
+      assert.equal(proximoExpediente(new Date('2026-10-05T09:00:00Z')).toISOString(), '2026-10-05T11:30:00.000Z', '5h da manhã: hoje 7h30');
+      const H = 3600e3, agora = Date.parse('2026-10-05T12:05:00Z'); // 8h05 em Bonito
+      const iso = t => new Date(t).toISOString();
+      // C1: orçamento de 30 h sem resposta → tarefa; C2: cliente respondeu → nada; C3: reservado → nada; C4: 10 h → cedo
+      const ORC = [{ id: 'o1', conversa_id: 'C1', criado_em: iso(agora - 30 * H), aberturas: 2 }, { id: 'o2', conversa_id: 'C2', criado_em: iso(agora - 30 * H), aberturas: 1 },
+        { id: 'o3', conversa_id: 'C3', criado_em: iso(agora - 40 * H), aberturas: 0 }, { id: 'o4', conversa_id: 'C4', criado_em: iso(agora - 10 * H), aberturas: 0, ultima_abertura_em: iso(agora - 2 * H) }];
+      const NEG = { C1: { id: 'N1', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C1' }, C2: { id: 'N2', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C2' }, C3: { id: 'N3', etapa: 'res', responsavel_id: 'U1', conversa_id: 'C3' }, C4: { id: 'N4', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C4' } };
+      const MSG = [{ conversa_id: 'C2', direcao: 'entrada', enviada_em: iso(agora - 20 * H) }];
+      const TAR = [], CFG = {}, PUSH = [];
+      const q = (u, k) => decodeURIComponent((u.searchParams.getAll(k).map(v => v.replace(/^(eq|gte|lte|gt|in)\.\(?/, '').replace(/\)$/, ''))[0]) || '');
+      const resp = (obj, st = 200) => new Response(obj === null ? null : JSON.stringify(obj), { status: st, headers: { 'Content-Type': 'application/json' } });
+      const fb = async (url, o = {}) => {
+        const u = new URL(url), p = u.pathname.replace('/rest/v1/', ''), m = o.method || 'GET', body = o.body && typeof o.body === 'string' ? JSON.parse(o.body) : null;
+        if (url.startsWith('https://fcm.googleapis.com/')) { PUSH.push(o); return resp(null, 201); }
+        if (p === 'orcamentos') return resp(u.searchParams.get('ultima_abertura_em') ? ORC.filter(x => x.ultima_abertura_em && x.ultima_abertura_em >= q(u, 'ultima_abertura_em'))
+          : u.searchParams.get('conversa_id') ? ORC.filter(x => x.conversa_id === q(u, 'conversa_id') && x.criado_em > q(u, 'criado_em'))
+          : ORC.filter(x => x.criado_em >= u.searchParams.getAll('criado_em')[0].slice(4) && x.criado_em <= u.searchParams.getAll('criado_em')[1].slice(4)).sort((a, b) => b.criado_em.localeCompare(a.criado_em)));
+        if (p === 'negocios') return resp(u.searchParams.get('conversa_id') ? [NEG[q(u, 'conversa_id')]].filter(Boolean) : Object.values(NEG).filter(n => n.id === q(u, 'id')));
+        if (p === 'mensagens') return resp(MSG.filter(x => x.conversa_id === q(u, 'conversa_id') && x.direcao === 'entrada' && x.enviada_em > q(u, 'enviada_em')));
+        if (p === 'tarefas' && m === 'POST') { TAR.push({ id: 'T' + (TAR.length + 1), feita: false, criado_em: iso(agora), ...body }); return resp(null, 201); }
+        if (p === 'tarefas' && m === 'PATCH') { Object.assign(TAR.find(t => t.id === q(u, 'id')), body); return resp(null, 204); }
+        if (p === 'tarefas') return resp(TAR.filter(t => (!u.searchParams.get('negocio_id') || t.negocio_id === q(u, 'negocio_id')) && (!u.searchParams.get('tipo') || t.tipo === q(u, 'tipo'))
+          && (!u.searchParams.get('feita') || String(t.feita) === q(u, 'feita')) && (!u.searchParams.get('quando') || t.quando <= q(u, 'quando'))));
+        if (p === 'negocio_eventos') return resp(null, 201);
+        if (p === 'config' && m === 'POST') { CFG[body.chave] = body.valor; return resp(null, 201); }
+        if (p === 'config') return resp(CFG[q(u, 'chave')] ? [{ valor: CFG[q(u, 'chave')] }] : []);
+        if (p === 'usuarios') return resp([{ id: 'U1', nome: 'Jagles Balta' }, { id: 'U2', nome: 'Márcio Toshio' }]);
+        if (p === 'push_inscricoes' && m === 'GET') return resp([{ id: 'P1', usuario_id: 'U1', endpoint: 'https://fcm.googleapis.com/fcm/send/x', ...(() => { const e = crypto.createECDH('prime256v1'); e.generateKeys(); return { p256dh: e.getPublicKey().toString('base64url'), auth: crypto.randomBytes(16).toString('base64url') }; })() }].filter(x => q(u, 'usuario_id').split(',').includes(x.usuario_id)));
+        if (p === 'push_inscricoes') return resp(null, 204);
+        throw new Error('fake sem rota: ' + m + ' ' + url);
+      };
+      process.env.RETOMAR_INTERVALO_MS = '0';
+      let rr = await retomarOrcamentos(fb, agora);
+      assert.deepEqual(rr, { criadas: 1, fechadas: 0 });
+      assert.deepEqual(TAR.map(t => [t.negocio_id, t.responsavel_id, t.tipo]), [['N1', 'U1', 'Retomar orçamento']]);
+      assert.ok(TAR[0].descricao.includes('abriu 2x') && TAR[0].quando === iso(agora), 'no expediente: para agora');
+      rr = await retomarOrcamentos(fb, agora + 60e3);
+      assert.equal(rr.criadas, 0, 'uma tarefa por orçamento');
+      MSG.push({ conversa_id: 'C1', direcao: 'entrada', enviada_em: iso(agora + 30 * 60e3) });
+      rr = await retomarOrcamentos(fb, agora + H);
+      assert.deepEqual(rr, { criadas: 0, fechadas: 1 }); assert.equal(TAR[0].feita, true, 'o cliente respondeu: a tarefa fecha sozinha');
+      // Resumo do dia: só com a chave dos avisos, só uma vez por dia, só para quem tem algo
+      TAR.push({ id: 'T9', negocio_id: 'N4', responsavel_id: 'U1', tipo: 'Retomar orçamento', feita: false, quando: iso(agora - H), criado_em: iso(agora - H) });
+      assert.equal(await resumoDoDia(fb, new Date(agora)), 0, 'sem a chave dos avisos, nada');
+      process.env.VAPID_CHAVE = JSON.stringify(crypto.generateKeyPairSync('ec', { namedCurve: 'prime256v1' }).privateKey.export({ format: 'jwk' }));
+      const fetchReal = globalThis.fetch;
+      try {
+        assert.equal(await resumoDoDia(fb, new Date(Date.parse('2026-10-05T18:00:00Z'))), 0, '14h: fora da hora do resumo');
+        assert.equal(await resumoDoDia(fb, new Date(agora)), 1, 'U1 recebe; U2 não tem nada');
+        assert.equal(PUSH.length, 1);
+        assert.equal(await resumoDoDia(fb, new Date(agora + 30 * 60e3)), 0, 'uma vez por dia');
+        CFG.resumo_dia_enviado = null; CFG.resumo_dia_desligado = { usuarios: ['U1'] };
+        assert.equal(await resumoDoDia(fb, new Date(agora)), 0, 'quem desligou não recebe');
+      } finally { globalThis.fetch = fetchReal; delete process.env.VAPID_CHAVE; }
+    }
     // Todo módulo local usado pelo servidor precisa estar no Dockerfile (senão o Cloud Run não sobe)
     const fsD = require('fs'), docker = fsD.readFileSync(require('path').join(__dirname, 'Dockerfile'), 'utf8');
     const locais = new Set(fsD.readdirSync(__dirname).filter(f => f.endsWith('.js') && f !== 'teste.js').flatMap(f => [...fsD.readFileSync(require('path').join(__dirname, f), 'utf8').matchAll(/require\('\.\/([\w-]+)'\)/g)].map(m => m[1] + '.js')));

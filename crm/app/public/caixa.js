@@ -154,6 +154,7 @@
     await carregarConversas();
     if (abrirAoEntrar) abrirDoAviso('#c=' + abrirAoEntrar);
     await carregarFunil();
+    carregarQuentes();
     carregarRespostas();
     prepararAvisos();
     contarRevisao();
@@ -211,7 +212,7 @@
     if (v && v !== minhaVersao && !($('resposta') && $('resposta').value.trim())) location.reload();
   }
   let aoVivo = false;
-  async function atualizarTudo() { await carregarConversas(); await carregarFunil(); if (aberta) await recarregarAberta(); carregarAlertas(); carregarVendasResumo(); }
+  async function atualizarTudo() { await carregarConversas(); await carregarFunil(); if (aberta) await recarregarAberta(); carregarAlertas(); carregarVendasResumo(); carregarQuentes(); }
   function vigiar() {
     setInterval(() => { if (!aoVivo && !document.hidden) atualizarTudo(); }, 15000);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) { atualizarTudo(); conferirVersao(); } });
@@ -254,7 +255,10 @@
     if (filtro === 'naolidas') ls = ls.filter(c => c.nao_lidas > 0);
     if (filtro === 'minhas') ls = ls.filter(c => eu && c.atribuida_a === eu.id);
     if (filtro === 'janela') ls = ls.filter(c => !janelaAberta(c));
-    ls.sort((a, b) => (b.ultima_msg_em || '').localeCompare(a.ultima_msg_em || ''));
+    if (filtro === 'quentes') ls = ls.filter(c => quente(c));
+    // Quem abriu o orçamento há pouco sobe na lista (sem som e sem sino: é oportunidade, não urgência)
+    const chave = c => { const q = quente(c); return q && (q.ultima_abertura_em || '') > (c.ultima_msg_em || '') ? q.ultima_abertura_em : (c.ultima_msg_em || ''); };
+    ls.sort((a, b) => chave(b).localeCompare(chave(a)));
     if (!ls.length) ul.append(el('div', { class: 'vazio', text: conversas.length ? 'Nenhuma conversa aqui.' : 'Nenhuma conversa ainda. Quando alguém mandar mensagem para o número do hotel, ela aparece aqui na hora.' }));
     ls.forEach(c => {
       const resp = c.atribuida_a ? (equipe[c.atribuida_a] || 'Equipe') : null;
@@ -269,9 +273,23 @@
           n ? el('span', { class: 'pilula o-' + n.origem, title: 'Origem do lead', text: ORIGENS[n.origem] || n.origem }) : null,
           et ? el('span', { class: 'pilula ' + et[2], title: 'Etapa no funil', text: et[1] }) : null,
           etiquetaProdutos(vd), ...((n && n.etiquetas) || []).map(t => el('span', { class: 'tipo t-mkt', text: t }))) : null,
+        quente(c) ? el('div', { class: 'cx-quente', text: '🔥 abriu o orçamento ' + desde(quente(c).ultima_abertura_em) + (quente(c).aberturas > 1 ? ' · ' + quente(c).aberturas + 'x' : '') }) : null,
         !janelaAberta(c) && c.status === 'aberta' ? el('div', { class: 'cx-janela', text: 'A janela de 24 h expirou' }) : null,
         el('div', { class: 'cx-l3' }, el('span', { class: 'resp', text: resp ? iniciais(resp) : '–' }), el('span', { text: resp ? resp : 'Sem responsável' }))));
     });
+  }
+  // ---------- Clientes quentes: abriram o orçamento nas últimas 24 h ----------
+  let quentes = {}; // conversa_id -> orçamento aberto mais recente
+  async function carregarQuentes() {
+    const { data, error } = await sb.from('orcamentos').select('conversa_id,ultima_abertura_em,aberturas').gte('ultima_abertura_em', new Date(Date.now() - 864e5).toISOString()).order('ultima_abertura_em', { ascending: false }).limit(300);
+    if (error) return;
+    const q = {}; (data || []).forEach(o => { if (o.conversa_id && !q[o.conversa_id]) q[o.conversa_id] = o; });
+    quentes = q; pintarLista();
+  }
+  function quente(c) {
+    const o = quentes[c.id]; if (!o || c.status !== 'aberta') return null;
+    const n = negocioDaConversa(c.id);
+    return n && ['res', 'perd'].includes(n.etapa) ? null : o;
   }
   $('cx-busca').addEventListener('input', pintarLista);
   document.querySelector('.cx-abas').addEventListener('click', e => {
@@ -2082,6 +2100,7 @@
       .on('postgres_changes', { event: '*', schema: 'public', table: 'tarefas' }, () => recarregarFunilLogo())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orcamentos' }, ({ new: o }) => {
         if (o && o.conversa_id && o.conversa_id === aberta) pintarOrcamentos(aberta);
+        if (o && o.ultima_abertura_em) carregarQuentes();
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mensagens' }, ({ new: m }) => {
         if (m.transcricao_status) document.querySelectorAll('[data-transcricao="' + m.id + '"]').forEach(x => pintarTranscricao(x, m));
@@ -2406,6 +2425,15 @@
     if (ins) { await chamarApi('/api/push-cancelar', { endpoint: ins.endpoint }).catch(() => {}); await ins.unsubscribe().catch(() => {}); }
     avisos = 'desligado'; pintarAlertas(); toast('Avisos desligados neste aparelho.');
   }
+  let resumoLigado = null; // resumo do dia às 8h no celular (cada pessoa liga ou desliga para si)
+  function linhaResumo() {
+    if (resumoLigado === null) { resumoLigado = 'carregando'; chamarApi('/api/resumo-dia', null, 'GET').then(j => { resumoLigado = j.ligado; if (painelAlertas) pintarAlertas(); }).catch(() => { resumoLigado = null; }); return null; }
+    if (typeof resumoLigado !== 'boolean') return null;
+    return el('label', { class: 'al-resumo' }, el('input', { type: 'checkbox', checked: resumoLigado, onchange: async e => {
+      try { const j = await chamarApi('/api/resumo-dia', { ligado: e.target.checked }); resumoLigado = j.ligado; toast(j.ligado ? 'Resumo do dia ligado: às 8h, um aviso com o que há para hoje.' : 'Resumo do dia desligado.'); }
+      catch (er) { e.target.checked = !e.target.checked; toast(er.message); }
+    } }), 'Resumo do dia às 8h (orçamentos para retomar, tarefas e clientes quentes 🔥)');
+  }
   function rodapeAvisos() {
     const TXT = {
       'sem-suporte': 'Este navegador não recebe avisos com o CRM fechado. No Android, use o Chrome; no iPhone, instale o CRM na tela inicial.',
@@ -2419,7 +2447,8 @@
       avisos === 'desligado' ? el('div', { class: 'al-acoes' }, el('button', { class: 'btn btn-enviar', type: 'button', text: 'Ligar avisos neste aparelho', onclick: e => ativarAvisos(e.currentTarget) })) :
       avisos === 'ligado' ? el('div', { class: 'al-acoes' },
         el('button', { class: 'btn-mini', type: 'button', text: 'Mandar um teste', onclick: () => chamarApi('/api/push-teste', {}).then(t => toast(t.enviados ? 'Teste enviado. Deve chegar em segundos.' : 'Nenhum aparelho recebeu. Tente desligar e ligar de novo.')).catch(e => toast(e.message)) }),
-        el('button', { class: 'btn-mini', type: 'button', text: 'Desligar', onclick: desligarAvisos })) : null);
+        el('button', { class: 'btn-mini', type: 'button', text: 'Desligar', onclick: desligarAvisos })) : null,
+      avisos === 'ligado' ? linhaResumo() : null);
   }
 
   // ---------- Início ----------

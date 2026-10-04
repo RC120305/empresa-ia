@@ -144,7 +144,7 @@ Modo: sugestao
 Gatilho deste turno: a equipe pediu uma sugestão de resposta para a última mensagem do cliente
 Contato (dados já conhecidos): nome do perfil do WhatsApp: ${c.nome || 'não informado'}
 Pendências (reservas, cobranças, alertas abertos): não disponíveis nesta fase
-Reserva: ${c.reservaPaga ? 'PAGA (card em Reservado)' + (c.perfil ? ', perfil ' + c.perfil : '') + '. Se ainda não houve oferta, é o momento de oferecer os extras uma vez (regra 9), com enviar_link_extras no tema certo para o perfil.' : 'ainda não paga. Não ofereça extras pagos por conta própria (só responda se o cliente perguntar).'}
+${c.gatilho ? 'Gatilho: ' + c.gatilho + '\n' : ''}Reserva: ${c.reservaPaga ? 'PAGA (card em Reservado)' + (c.perfil ? ', perfil ' + c.perfil : '') + '. Se ainda não houve oferta, é o momento de oferecer os extras uma vez (regra 9), com enviar_link_extras no tema certo para o perfil.' : 'ainda não paga. Não ofereça extras pagos por conta própria (só responda se o cliente perguntar).'}
 Ofertas de produtos nesta conversa: ${c.ofertas && c.ofertas.length ? c.ofertas.map(o => o.produto_nome + ' (' + ({ oferecido: 'oferecido, sem resposta', aceito: 'aceito', recusado: 'recusado' })[o.situacao] + ', por ' + (o.por === 'gilberto' ? 'você' : 'a equipe') + ')').join('; ') + '. Não ofereça outro produto nesta conversa (no máximo 1 oferta; recusou, não insista), a não ser que o cliente peça.' : 'nenhuma ainda.' + (c.reservaPaga ? ' Ofereça 1 vez, pelo link de extras, e preencha produto_oferecido se oferecer um produto específico.' : '')}
 Resumo das conversas anteriores: não disponível
 </contexto_crm>
