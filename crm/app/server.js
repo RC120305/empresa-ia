@@ -530,7 +530,7 @@ async function criarOrcamento(entrada, ctx, buscar = fetch) {
   }
   const salvo = (await r.json())[0] || {};
   return { ok: true, orcamento_id: salvo.id, link: `${URL_PUBLICA}/o/${token}`, fonte: cot.fonte,
-    opcoes: m.opcoes.map(o => ({ codigo: o.codigo, nome: o.nome, valor_total: o.valor_total, media_por_noite: o.media_por_noite, parcela_6x: o.parcela_6x })),
+    opcoes: m.opcoes.map(o => ({ codigo: o.codigo, nome: o.nome, valor_total: o.valor_total, media_por_noite: o.media_por_noite, parcela_6x: o.parcela_6x, ...(o.sugerida ? { sugerida: true } : {}) })),
     ...(cot.atencao ? { atencao: cot.atencao } : {}) };
 }
 async function lerOrcamento(token, buscar = fetch) {

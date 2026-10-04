@@ -228,7 +228,7 @@ const falso = http.createServer((req, res) => {
       pedidosIA.push(b);
       const jaConsultou = b.messages.some(m => Array.isArray(m.content) && m.content.some(c => c.type === 'tool_result'));
       if (iaOrcamento && !jaConsultou) return responder(200, { id: 'msg_o', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
-        content: [{ type: 'tool_use', id: 'toolu_o', name: 'gerar_orcamento', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], opcoes: [{ acomodacoes: ['BGE'] }, { acomodacoes: ['STD'] }], persona: 'familia', pessoas_aptas_combo: 2, frase_de_abertura: 'Ana, separei as opções para a família curtir os rios' } }],
+        content: [{ type: 'tool_use', id: 'toolu_o', name: 'gerar_orcamento', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], opcoes: [{ acomodacoes: ['BGE'] }, { acomodacoes: ['STD'] }], persona: 'familia', pessoas_aptas_combo: 2, frase_de_abertura: 'Ana, separei as opções para a família curtir os rios', sugerida: 'BGE' } }],
         usage: { input_tokens: 10, output_tokens: 20 } });
       if (iaCota && !jaConsultou) return responder(200, { id: 'msg_0', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_1', name: 'consultar_disponibilidade', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], finalidade: 'cotacao' } }],
@@ -1018,6 +1018,7 @@ falso.listen(0, () => {
     assert.equal(resOrc.ok, true, JSON.stringify(resOrc));
     assert.deepEqual(resOrc.opcoes.map(o => o.codigo), ['STD', 'BGE'], 'da mais em conta para a maior, mesmo pedindo a mais cara primeiro');
     assert.ok(resOrc.opcoes[0].valor_total <= resOrc.opcoes[1].valor_total);
+    assert.deepEqual(resOrc.opcoes.map(o => !!o.sugerida), [false, true], 'a sugestão segue a opção marcada, não a posição');
     assert.ok(/\/o\/[A-Za-z0-9_-]{22}$/.test(resOrc.link));
     assert.equal(sug3.orcamentos.length, 1); assert.equal(sug3.simulador, true);
     const salvo = orcs.at(-1);
@@ -1030,6 +1031,8 @@ falso.listen(0, () => {
     // Benefícios antes das opções; opções da mais em conta para a maior
     assert.ok(html.indexOf('Por que o Cabanas') < html.indexOf('class="op') && html.includes('cercado por dois rios') && html.indexOf('Já está incluso') < html.indexOf('class="op'));
     assert.ok(html.indexOf('<h2>Apartamento Standard') < html.indexOf('<h2>Bangalô Especial'));
+    assert.equal((html.match(/Nossa sugestão para vocês/g) || []).length, 1);
+    assert.ok(html.indexOf('Nossa sugestão para vocês') > html.indexOf('<h2>Apartamento Standard') && html.indexOf('Nossa sugestão para vocês') < html.indexOf('<h2>Bangalô Especial'), 'selo no Bangalô (2ª opção)');
     assert.ok(html.includes('Ana, separei as opções para a família curtir os rios.') && html.includes('noindex'));
     assert.ok(chamadas.some(c => c.url === '/rest/v1/rpc/registrar_abertura_orcamento' && c.corpo.p_token === tok));
     const antesPrevia = chamadas.filter(c => c.url === '/rest/v1/rpc/registrar_abertura_orcamento').length;

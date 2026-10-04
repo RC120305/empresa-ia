@@ -110,6 +110,10 @@
         "frase_de_abertura": {
           "type": "string",
           "description": "Uma frase curta e pessoal para o topo da página (ex.: 'Mariana, separei as opções para os quatro aproveitarem os rios'). Sem preço e sem promessa."
+        },
+        "sugerida": {
+          "type": "string",
+          "description": "Código da opção que mais combina com o perfil do cliente (um dos códigos de opcoes). Ela recebe o selo 'Nossa sugestão para vocês' na página; a ordem continua da mais em conta para a de maior valor."
         }
       },
       "required": [
@@ -120,7 +124,8 @@
         "opcoes",
         "persona",
         "pessoas_aptas_combo",
-        "frase_de_abertura"
+        "frase_de_abertura",
+        "sugerida"
       ],
       "additionalProperties": false
     }

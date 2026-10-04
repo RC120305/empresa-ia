@@ -99,12 +99,12 @@ function montar(entrada, cotacao) {
   const pedidas = (entrada.opcoes || []).slice(0, MAX_OPCOES);
   if (!pedidas.length) return { erro: 'Informe ao menos uma opção.' };
   if (pedidas.some(o => !o.acomodacoes || o.acomodacoes.length !== 1)) return { erro: 'Nesta fase o orçamento tem uma acomodação por opção. Combinações (grupo em mais de uma acomodação): passe para a equipe montar.' };
-  const opcoes = [];
+  const opcoes = [], sugerida = String(entrada.sugerida || '').toUpperCase();
   for (const o of pedidas) {
     const cod = String(o.acomodacoes[0]).toUpperCase();
     const c = (cotacao.opcoes || []).find(x => x.codigo === cod);
     if (!c) return { erro: `${CATALOGO[cod] ? CATALOGO[cod].nome : cod} não tem vaga nessas datas ou não comporta o grupo. Use só códigos que vieram de consultar_disponibilidade.` };
-    if (!opcoes.some(x => x.codigo === cod)) opcoes.push({ codigo: cod, nome: (CATALOGO[cod] && CATALOGO[cod].nome) || c.nome, valor_total: c.valor_total, media_por_noite: c.media_por_noite, parcela_6x: c.parcela_6x, diarias: c.diarias, taxas: c.taxas });
+    if (!opcoes.some(x => x.codigo === cod)) opcoes.push({ codigo: cod, nome: (CATALOGO[cod] && CATALOGO[cod].nome) || c.nome, valor_total: c.valor_total, media_por_noite: c.media_por_noite, parcela_6x: c.parcela_6x, diarias: c.diarias, taxas: c.taxas, ...(cod === sugerida ? { sugerida: true } : {}) });
   }
   // Sempre da mais em conta para a de maior valor (dono, 04/10/2026): nunca abrir com a mais cara
   return { opcoes: emOrdemDeValor(opcoes) };
@@ -122,8 +122,9 @@ function pagina(o, { previa = false, produtos = null } = {}) {
     const galeria = fotos.length ? `<div class="fotos" tabindex="0" aria-label="Fotos: ${esc(cat.nome)}">${fotos.map((f, k) => `<img src="/fotos/${esc(f.arquivo)}" alt="${esc(cat.nome)} · foto ${k + 1}" loading="${k ? 'lazy' : 'eager'}" width="800" height="600">`).join('')}</div>${fotos.length > 1 ? `<div class="pontos" aria-hidden="true">${fotos.map((_, k) => `<i${k ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}` : '';
     const comDeco = fotos.some(f => f.decoracao);
     const nota = comDeco ? '<p class="nota-foto">Algumas fotos mostram a decoração especial (pétalas), opcional e cobrada à parte.</p>' : '';
-    return `<article class="op${i === 0 ? ' rec' : ''}">${galeria}${nota}<div class="corpo">
-${i === 0 ? '<span class="selo">Nossa sugestão para vocês</span>' : ''}<h2>${esc(cat.nome)}</h2><p class="cap">${esc(cat.cap)}</p>
+    // Selo na opção que o Gilberto ou a equipe marcou como a que mais combina (dono, 04/10/2026); a ordem é por valor
+    return `<article class="op${op.sugerida ? ' rec' : ''}">${galeria}${nota}<div class="corpo">
+${op.sugerida ? '<span class="selo">Nossa sugestão para vocês</span>' : ''}<h2>${esc(cat.nome)}</h2><p class="cap">${esc(cat.cap)}</p>
 <ul class="dest">${cat.dest.map(d => `<li>${esc(d)}</li>`).join('')}</ul>
 <div class="preco"><div><small>Total ${n > 1 ? `das ${n} noites` : 'da noite'}</small><b>${brl(op.valor_total)}</b><small>${n > 1 ? `média de ${brl(op.media_por_noite)} por noite · ` : ''}ou 6x de ${brl(op.parcela_6x)} sem juros</small></div></div>
 <button class="btn quero" type="button" data-codigo="${esc(op.codigo)}" data-nome="${esc(cat.nome)}">Quero reservar esta</button></div></article>`;

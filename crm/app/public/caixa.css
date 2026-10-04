@@ -549,3 +549,4 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
   .lateral{padding-top:calc(8px + env(safe-area-inset-top,0px))}
   .topo{top:calc(8px + env(safe-area-inset-top,0px))}
 }
+.op-sug{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--cor-texto-sec);margin:-4px 0 6px 30px;cursor:pointer}
