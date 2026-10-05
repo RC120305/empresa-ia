@@ -32,7 +32,7 @@ const ROTULOS = { INST: 'Institucional (o hotel)', ATIV: 'Atividades inclusas', 
 // Vídeos (dono, 06/10/2026): ficam na mesma biblioteca, com extensão .mp4 (vêm do Drive, pasta "Vídeos do hotel cabanas").
 const ehVideo = a => /\.mp4$/i.test(String(a || ''));
 // Categorias em que a equipe pode pôr fotos (as dos quádruplos usam as do duplo/triplo).
-const GRUPOS = [...new Set([...Object.keys(FOTOS), 'CBD', 'CBT', 'CBM', 'BG', 'BGE', 'CJ', 'SUP', 'STD', ...Object.keys(ROTULOS)])];
+const GRUPOS = [...new Set(['INST', 'ATIV', ...Object.keys(FOTOS), 'CBD', 'CBT', 'CBM', 'BG', 'BGE', 'CJ', 'SUP', 'STD', ...Object.keys(ROTULOS)])];
 const nomeGrupo = g => (CATALOGO[g] && CATALOGO[g].nome) || ROTULOS[g] || g;
 // Ajustes da equipe (tabela fotos_biblioteca): fotos trazidas do Drive e fotos fixas tiradas da biblioteca.
 const FOTOS_FIXAS = new Set(Object.values(FOTOS).flat());
