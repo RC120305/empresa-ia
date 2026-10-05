@@ -1,6 +1,6 @@
 """Kit de vídeo com fala: transcreve (Whisper), corta silêncios, nivela o volume e acelera a fala.
 
-  python3 design/ferramentas/legendar-fala.py limpar <video> <saida.mp4> [--pausa 0.6] [--folga 0.15] [--acelerar 1.0]
+  python3 design/ferramentas/legendar-fala.py limpar <video> <saida.mp4> [--pausa 0.6] [--folga 0.25] [--acelerar 1.0]
       Corta as pausas maiores que --pausa s (usa as palavras do Whisper), deixa --folga s antes e depois da fala,
       nivela o áudio (-16 LUFS, padrão das redes) e, se pedido, acelera até 1,25x (voz sem ficar "esquilo").
   python3 design/ferramentas/legendar-fala.py transcrever <video> <saida.json> [--modelo small]
@@ -12,7 +12,7 @@ Requer: pip install faster-whisper imageio-ffmpeg (o modelo vem do huggingface.c
 import argparse, json, os, subprocess, tempfile
 import imageio_ffmpeg
 FF = imageio_ffmpeg.get_ffmpeg_exe()
-VOCAB = "Hotel Cabanas, Bonito, Mato Grosso do Sul, Rio Formoso, Cabana Master, bangalô, boia cross, arvorismo, tirolesa, flutuação, Gruta do Lago Azul"
+VOCAB = "Hotel Cabanas, Bonito, Mato Grosso do Sul, Rio Formoso, Cabana Master, banheira de hidromassagem, varanda com balanço, bangalô, boia cross, arvorismo, tirolesa, flutuação, Gruta do Lago Azul, Reserve pelo link da bio"
 
 
 def palavras(video, modelo="small"):
@@ -29,7 +29,7 @@ def palavras(video, modelo="small"):
 ap = argparse.ArgumentParser(); sub = ap.add_subparsers(dest="cmd", required=True)
 t = sub.add_parser("transcrever"); t.add_argument("video"); t.add_argument("saida"); t.add_argument("--modelo", default="small")
 l = sub.add_parser("limpar"); l.add_argument("video"); l.add_argument("saida"); l.add_argument("--pausa", type=float, default=0.6)
-l.add_argument("--folga", type=float, default=0.15); l.add_argument("--acelerar", type=float, default=1.0); l.add_argument("--modelo", default="small")
+l.add_argument("--folga", type=float, default=0.25); l.add_argument("--acelerar", type=float, default=1.0); l.add_argument("--modelo", default="small")
 a = ap.parse_args()
 if a.cmd == "transcrever":
     ws, lang = palavras(a.video, a.modelo)

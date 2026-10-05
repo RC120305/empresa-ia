@@ -13,6 +13,19 @@
   "animador": "copy-que-acende"
  },
  {
+  "id": "legenda-fala",
+  "tipo": "video",
+  "nome": "Legenda da fala",
+  "status": "em_teste",
+  "desc": "Vídeo de alguém falando com a legenda palavra por palavra: a palavra dita acende em laranja. Pausas cortadas e volume no padrão das redes.",
+  "quando": "Você ou a equipe apresentando uma acomodação, dicas de Bonito, depoimento de hóspede (com autorização).",
+  "exemplo": {
+   "video": "teste-legenda-fala"
+  },
+  "obs": "Exemplo com voz sintética só para teste; o primeiro de verdade será com o seu vídeo.",
+  "animador": "legenda-fala"
+ },
+ {
   "id": "cinematico",
   "tipo": "video",
   "nome": "Cinemático",

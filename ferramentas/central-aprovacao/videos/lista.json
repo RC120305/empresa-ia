@@ -1,5 +1,14 @@
 [
  {
+  "id": "teste-legenda-fala",
+  "titulo": "Teste: legenda da fala (voz sintética)",
+  "grupo": "Teste: kit de vídeo com fala",
+  "arquivo": "design/videos/2026-10/teste-legenda-fala/REELS-TESTE-LEGENDA-FALA.mp4",
+  "musica": "sem música (só a fala)",
+  "nota": "Voz sintética e fundo de drone só para testar: o Whisper transcreveu 100% (com o vocabulário do hotel), as pausas foram cortadas e a fala acelerada 1,1x. A legenda acende palavra por palavra. O vídeo real será o seu, gravado no celular.",
+  "duracao": "15,4"
+ },
+ {
   "id": "master-casais-animador",
   "titulo": "Cabana Master para dois · Copy que acende",
   "grupo": "Teste da skill editar-vídeo",

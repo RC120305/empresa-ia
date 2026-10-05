@@ -1,0 +1,216 @@
+{
+ "idioma": "pt",
+ "palavras": [
+  {
+   "p": "Olá,",
+   "ini": 0.0,
+   "fim": 0.16
+  },
+  {
+   "p": "aqui",
+   "ini": 0.68,
+   "fim": 1.08
+  },
+  {
+   "p": "é",
+   "ini": 1.08,
+   "fim": 1.36
+  },
+  {
+   "p": "o",
+   "ini": 1.36,
+   "fim": 1.44
+  },
+  {
+   "p": "Hotel",
+   "ini": 1.44,
+   "fim": 1.64
+  },
+  {
+   "p": "Cabanas,",
+   "ini": 1.64,
+   "fim": 2.12
+  },
+  {
+   "p": "em",
+   "ini": 2.28,
+   "fim": 2.34
+  },
+  {
+   "p": "Bonito,",
+   "ini": 2.34,
+   "fim": 2.72
+  },
+  {
+   "p": "Mato",
+   "ini": 2.88,
+   "fim": 3.1
+  },
+  {
+   "p": "Grosso",
+   "ini": 3.1,
+   "fim": 3.48
+  },
+  {
+   "p": "do",
+   "ini": 3.48,
+   "fim": 3.56
+  },
+  {
+   "p": "Sul,",
+   "ini": 3.56,
+   "fim": 3.86
+  },
+  {
+   "p": "hoje",
+   "ini": 4.3,
+   "fim": 4.54
+  },
+  {
+   "p": "eu",
+   "ini": 4.54,
+   "fim": 4.66
+  },
+  {
+   "p": "vou",
+   "ini": 4.66,
+   "fim": 4.76
+  },
+  {
+   "p": "te",
+   "ini": 4.76,
+   "fim": 4.86
+  },
+  {
+   "p": "mostrar",
+   "ini": 4.86,
+   "fim": 5.16
+  },
+  {
+   "p": "a",
+   "ini": 5.16,
+   "fim": 5.32
+  },
+  {
+   "p": "Cabana",
+   "ini": 5.32,
+   "fim": 5.56
+  },
+  {
+   "p": "Master,",
+   "ini": 5.56,
+   "fim": 5.94
+  },
+  {
+   "p": "a",
+   "ini": 6.2,
+   "fim": 6.26
+  },
+  {
+   "p": "maior",
+   "ini": 6.26,
+   "fim": 6.5
+  },
+  {
+   "p": "acomodação",
+   "ini": 6.5,
+   "fim": 7.02
+  },
+  {
+   "p": "do",
+   "ini": 7.02,
+   "fim": 7.18
+  },
+  {
+   "p": "hotel.",
+   "ini": 7.18,
+   "fim": 7.44
+  },
+  {
+   "p": "Ela",
+   "ini": 7.92,
+   "fim": 8.08
+  },
+  {
+   "p": "tem",
+   "ini": 8.08,
+   "fim": 8.22
+  },
+  {
+   "p": "banheira",
+   "ini": 8.22,
+   "fim": 8.6
+  },
+  {
+   "p": "de",
+   "ini": 8.6,
+   "fim": 8.7
+  },
+  {
+   "p": "hidromassagem",
+   "ini": 8.7,
+   "fim": 9.2
+  },
+  {
+   "p": "para",
+   "ini": 9.2,
+   "fim": 9.44
+  },
+  {
+   "p": "dois",
+   "ini": 9.44,
+   "fim": 9.7
+  },
+  {
+   "p": "e",
+   "ini": 9.7,
+   "fim": 9.9
+  },
+  {
+   "p": "uma",
+   "ini": 9.9,
+   "fim": 10.04
+  },
+  {
+   "p": "varanda",
+   "ini": 10.04,
+   "fim": 10.36
+  },
+  {
+   "p": "com",
+   "ini": 10.36,
+   "fim": 10.52
+  },
+  {
+   "p": "balanço.",
+   "ini": 10.52,
+   "fim": 11.1
+  },
+  {
+   "p": "Reserve",
+   "ini": 11.56,
+   "fim": 11.82
+  },
+  {
+   "p": "pelo",
+   "ini": 11.82,
+   "fim": 12.06
+  },
+  {
+   "p": "link",
+   "ini": 12.06,
+   "fim": 12.28
+  },
+  {
+   "p": "da",
+   "ini": 12.28,
+   "fim": 12.42
+  },
+  {
+   "p": "bio",
+   "ini": 12.42,
+   "fim": 12.62
+  }
+ ],
+ "texto": "Olá, aqui é o Hotel Cabanas, em Bonito, Mato Grosso do Sul, hoje eu vou te mostrar a Cabana Master, a maior acomodação do hotel. Ela tem banheira de hidromassagem para dois e uma varanda com balanço. Reserve pelo link da bio"
+}

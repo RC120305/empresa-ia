@@ -1,0 +1,19 @@
+{
+ "modelo": "legenda-fala",
+ "video": "limpo.mp4 (gerado por legendar-fala.py limpar; não versionado)",
+ "transcricao": "transcricao.json",
+ "destaques": [
+  "Cabanas",
+  "Bonito",
+  "Master",
+  "hidromassagem",
+  "balanço"
+ ],
+ "selo": true,
+ "fecho": {
+  "linha1": "BONITO - MS",
+  "linha2": "Reserve pelo link da bio",
+  "seg": 2.5
+ },
+ "saida": "REELS-TESTE-LEGENDA-FALA.mp4"
+}
