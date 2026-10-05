@@ -29,6 +29,7 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 | `020_reservas.sql` | `reservas` (reserva criada pelo CRM no Silbeck: número, item, titular, valor, situação) e `cobrancas.reserva_id` | (pendente: rodar no SQL Editor) |
 | `021_gilberto_automatico.sql` | `conversas.gilberto_pausado` (a equipe assumiu a conversa; o Gilberto automático não responde nela) | (pendente: rodar no SQL Editor) |
 | `022_reserva_combinada.sql` | `reservas.itens` (reserva de grupo em mais de uma acomodação: um item por acomodação; o pagamento é dividido entre eles) | (pendente: rodar no SQL Editor) |
+| `023_documentos_gilberto.sql` | `gilberto_documentos` (documentos que ensinam o Gilberto: a equipe envia, o dono aprova) | (pendente: rodar no SQL Editor) |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.

@@ -141,7 +141,7 @@
   $('sair').addEventListener('click', sair);
   $('sair-bloqueado').addEventListener('click', sair);
 
-  const abrirAoEntrar = (location.hash.match(/^#c=([0-9a-f-]{36})$/i) || [])[1] || null; // veio de um aviso no celular
+  const abrirAoEntrar = location.hash === '#docs' ? 'docs' : (location.hash.match(/^#c=([0-9a-f-]{36})$/i) || [])[1] || null; // veio de um aviso no celular
   async function iniciar(session) {
     if (location.hash || location.search) history.replaceState(null, '', '/caixa');
     if (!session) { mostrarTela('tela-entrar'); return; }
@@ -154,7 +154,8 @@
     await carregarGilAuto();
     carregarNumerosTeste();
     await carregarConversas();
-    if (abrirAoEntrar) abrirDoAviso('#c=' + abrirAoEntrar);
+    if (abrirAoEntrar) abrirDoAviso(abrirAoEntrar === 'docs' ? '#docs' : '#c=' + abrirAoEntrar);
+    carregarDocumentos();
     await carregarFunil();
     carregarQuentes();
     carregarRespostas();
@@ -1383,6 +1384,7 @@
     if (sub === 'rev') carregarRevisao();
     if (sub === 'bib') carregarRespostas().then(pintarBiblioteca);
     if (sub === 'con') carregarQuestionario();
+    if (sub === 'doc') carregarDocumentos();
   }
   document.querySelector('[data-painel="ajustes"] .segmento').addEventListener('click', e => { const b = e.target.closest('[data-sub]'); if (b) abrirSub(b.dataset.sub); });
 
@@ -1519,6 +1521,73 @@
     ], async v => { await chamarApi('/api/resposta', { ...(r.id ? { id: r.id } : {}), ...(r.origem && !r.id ? { origem: r.origem } : {}), ...v }); toast('Resposta salva.'); await carregarRespostas(); if (questionario && subAtual === 'con') pintarQuestionario(); });
   }
   $('bib-novo').addEventListener('click', () => formResposta(null));
+
+  // Documentos que ensinam o Gilberto: qualquer pessoa envia; só o dono aprova (dono, 05/10/2026)
+  let docs = [], docFiltro = 'aguardando';
+  const SIT_DOC = { aguardando: 'Aguardando aprovação', aprovado: 'Em uso pelo Gilberto', recusado: 'Recusado', desligado: 'Desligado' };
+  async function carregarDocumentos() {
+    const { data, error } = await sb.from('gilberto_documentos').select('*').order('criado_em', { ascending: false }).limit(200);
+    if (error) { docs = []; if (subAtual === 'doc') $('doc-lista').replaceChildren(el('div', { class: 'vazio', text: 'Os documentos aparecem aqui depois da migração 023 no banco.' })); return; }
+    docs = data || [];
+    const n = docs.filter(d => d.situacao === 'aguardando').length;
+    $('qtd-doc').hidden = !n; $('qtd-doc').textContent = n;
+    if (subAtual === 'doc') pintarDocumentos();
+  }
+  function pintarDocumentos() {
+    const box = $('doc-lista'); box.textContent = '';
+    const dono = eu && eu.papel === 'dono';
+    const lista = docs.filter(d => docFiltro === 'outros' ? ['recusado', 'desligado'].includes(d.situacao) : d.situacao === docFiltro);
+    if (!lista.length) box.append(el('div', { class: 'vazio', text: docFiltro === 'aguardando' ? 'Nenhum documento esperando aprovação.' : docFiltro === 'aprovado' ? 'O Gilberto ainda não usa nenhum documento.' : 'Nada por aqui.' }));
+    lista.forEach(d => {
+      const acao = async (a, extra = {}) => { try { await chamarApi('/api/gilberto-documento-acao', { id: d.id, acao: a, ...extra }); toast({ aprovar: 'Aprovado: o Gilberto já usa este documento.', recusar: 'Documento recusado.', desligar: 'Desligado: o Gilberto deixou de usar.', religar: 'Religado.', apagar: 'Documento apagado.' }[a] || 'Feito.'); carregarDocumentos(); } catch (e) { toast(e.message); } };
+      const podeEditar = dono || (d.situacao === 'aguardando' && eu && d.enviado_por === eu.id);
+      const botoes = [];
+      if (podeEditar) botoes.push(el('button', { class: 'btn-mini', type: 'button', text: '✎ Editar', onclick: () => abrirForm('Editar documento', [
+        { k: 'titulo', rotulo: 'Título', valor: d.titulo, largo: true },
+        { k: 'conteudo', rotulo: 'O que o Gilberto vai ler', tipo: 'textarea', valor: d.conteudo, largo: true },
+      ], async v => { await chamarApi('/api/gilberto-documento-acao', { id: d.id, acao: 'editar', ...v }); toast('Documento salvo.'); carregarDocumentos(); }) }));
+      if (dono && d.situacao === 'aguardando') botoes.push(
+        el('button', { class: 'btn btn-enviar', type: 'button', text: '✓ Aprovar', onclick: () => { if (!d.conflitos.length || confirm('Este documento tem ' + d.conflitos.length + ' conflito(s) com a base do hotel. Nesses pontos o Gilberto continua seguindo a base. Aprovar assim mesmo?')) acao('aprovar'); } }),
+        el('button', { class: 'btn-mini', type: 'button', text: 'Recusar', onclick: () => { const m = prompt('Motivo da recusa (opcional):'); if (m !== null) acao('recusar', { motivo: m }); } }));
+      if (dono && d.situacao === 'aprovado') botoes.push(el('button', { class: 'btn-mini', type: 'button', text: 'Desligar', onclick: () => acao('desligar') }));
+      if (dono && ['desligado', 'recusado'].includes(d.situacao)) botoes.push(el('button', { class: 'btn-mini', type: 'button', text: 'Aprovar e usar', onclick: () => acao('religar') }));
+      if (dono) botoes.push(el('button', { class: 'btn-mini', type: 'button', text: 'Apagar', onclick: () => { if (confirm('Apagar "' + d.titulo + '" de vez?')) acao('apagar'); } }));
+      box.append(el('div', { class: 'cartao item-cartao' },
+        el('h3', {}, d.titulo, el('small', { text: SIT_DOC[d.situacao] || d.situacao })),
+        el('p', { text: [d.tipo === 'pdf' ? 'PDF' : 'Texto', d.arquivo && d.arquivo !== 'texto colado' ? d.arquivo : '', 'enviado por ' + ((equipe && equipe[d.enviado_por]) || '—') + ' em ' + fmtData(d.criado_em), d.motivo ? 'motivo: ' + d.motivo : ''].filter(Boolean).join(' · ') }),
+        d.resumo ? el('p', { style: 'color:var(--cor-texto)', text: d.resumo }) : null,
+        (d.conflitos || []).length ? el('div', { class: 'aviso-sim' }, el('b', { text: '⚠ Conflitos com a base do hotel (o Gilberto segue a base nesses pontos):' }), el('ul', {}, d.conflitos.map(c => el('li', { text: c })))) : null,
+        (d.alertas || []).length ? el('div', { class: 'aviso-sim' }, el('b', { text: 'Para conferir antes de aprovar:' }), el('ul', {}, d.alertas.map(c => el('li', { text: c })))) : null,
+        el('details', {}, el('summary', { text: 'Ver o que o Gilberto vai ler (' + Math.round((d.conteudo || '').length / 1000) + ' mil caracteres)' }), el('p', { style: 'white-space:pre-wrap;color:var(--cor-texto)', text: d.conteudo })),
+        !dono && d.situacao === 'aguardando' ? el('p', { class: 'dica', text: 'Esperando o dono aprovar.' }) : null,
+        botoes.length ? el('div', { class: 'acoes' }, botoes) : null));
+    });
+  }
+  $('doc-filtros').addEventListener('click', e => { const b = e.target.closest('[data-df]'); if (!b) return; docFiltro = b.dataset.df; $('doc-filtros').querySelectorAll('[data-df]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); pintarDocumentos(); });
+  const lerArquivo = (f, comoTexto) => new Promise((ok, erro) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = () => erro(new Error('Não deu para ler o arquivo.')); comoTexto ? r.readAsText(f) : r.readAsDataURL(f); });
+  $('doc-enviar').addEventListener('click', async () => {
+    const f = $('doc-arquivo').files[0], texto = $('doc-texto').value.trim(), titulo = $('doc-titulo').value.trim();
+    if (!f && !texto) { toast('Escolha um arquivo ou cole um texto.'); return; }
+    const bt = $('doc-enviar'), st = $('doc-status');
+    try {
+      let corpo;
+      if (f) {
+        const pdf = /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
+        if (!pdf && !/\.(txt|md)$/i.test(f.name) && !/^text\//.test(f.type)) { toast('Use PDF, TXT ou MD. Documento do Word: salve como PDF antes.'); return; }
+        if (f.size > 10 * 1024 * 1024) { toast('Arquivo acima de 10 MB: divida em partes menores.'); return; }
+        corpo = pdf ? { tipo: 'pdf', arquivo: f.name, titulo, dados: await lerArquivo(f, false) } : { tipo: 'texto', arquivo: f.name, titulo, texto: await lerArquivo(f, true) };
+      } else corpo = { tipo: 'texto', titulo, texto };
+      bt.setAttribute('disabled', ''); st.textContent = 'Lendo e preparando o documento… pode levar 1 a 2 minutos.';
+      const r = await chamarApi('/api/gilberto-documentos', corpo);
+      $('doc-arquivo').value = ''; $('doc-texto').value = ''; $('doc-titulo').value = '';
+      st.textContent = '';
+      toast(eu && eu.papel === 'dono' ? 'Documento preparado. Confira e aprove abaixo.' : 'Documento enviado. O dono foi avisado para aprovar.');
+      docFiltro = 'aguardando'; $('doc-filtros').querySelectorAll('[data-df]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.df === 'aguardando')));
+      await carregarDocumentos();
+      if (r.documento && (r.documento.conflitos || []).length) toast('Atenção: o documento tem conflitos com a base do hotel. Veja no cartão.');
+    } catch (e) { st.textContent = ''; toast(e.message); }
+    finally { bt.removeAttribute('disabled'); }
+  });
 
   // Testar o agente
   let teste = [];
@@ -2489,6 +2558,7 @@
   }
   const dadosInscricao = ins => { const j = ins.toJSON(); return { endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, aparelho: nomeAparelho() }; };
   function abrirDoAviso(hash) {
+    if (hash === '#docs') { painelAlertas = false; pintarAlertas(); subAtual = 'doc'; irPara('ajustes'); return; }
     const id = (String(hash || '').match(/^#c=([0-9a-f-]{36})$/i) || [])[1];
     if (!id) return;
     painelAlertas = false; pintarAlertas(); irPara('conversas'); abrir(id);

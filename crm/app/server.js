@@ -649,13 +649,16 @@ async function catalogo(buscar = fetch) {
   }
   // As do questionário já estão na base do Gilberto: só as fixas entram de novo
   resp = resp.filter(x => x.origem !== 'questionario' || x.fixa).slice(0, 80);
-  const v = { produtos: p && p.ok ? await p.json().catch(() => []) : [], respostas: resp };
+  // Documentos aprovados pelo dono (Ajustes do agente > Documentos; sem a migração 023, nenhum)
+  const d = await buscar(`${SUPABASE_URL}/rest/v1/gilberto_documentos?situacao=eq.aprovado&select=id,titulo,conteudo&order=aprovado_em.asc&limit=200`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const v = { produtos: p && p.ok ? await p.json().catch(() => []) : [], respostas: resp, documentos: d && d.ok ? await d.json().catch(() => []) : [] };
   catalogoCache = { v, ate: Date.now() + 60000 };
   return v;
 }
 const limparCatalogo = () => { catalogoCache = null; };
 
 // ---------- Ficha, equipe, cotação e orçamento pela caixa (equipe logada) ----------
+const LIMITE_CORPO = { 'POST /api/gilberto-documentos': 15e6 }; // PDF em base64 (até 10 MB)
 async function lerCorpo(req, limite = 64e3) {
   const partes = []; let t = 0;
   for await (const p of req) { t += p.length; if (t > limite) throw new ErroEnvio(413, 'Pedido grande demais.'); partes.push(p); }
@@ -1472,6 +1475,65 @@ const API_EQUIPE = {
       await patchBanco('contatos', `id=eq.${contato}`, { ...ficha, atualizado_em: new Date().toISOString() });
     }
     console.log(JSON.stringify({ evento: 'conversa_atualizada', por: eu.id, campos: [...Object.keys(conv), ...Object.keys(ficha)] }));
+    return { ok: true };
+  },
+  // Documentos que ensinam o Gilberto: qualquer pessoa da equipe envia; só o dono aprova (dono, 05/10/2026)
+  'POST /api/gilberto-documentos': async (corpo, eu) => {
+    const tipo = corpo.tipo === 'pdf' ? 'pdf' : 'texto';
+    const titulo = String(corpo.titulo || corpo.arquivo || '').trim().slice(0, 160);
+    let pdf = null, texto = null;
+    if (tipo === 'pdf') {
+      pdf = String(corpo.dados || '').replace(/^data:[^,]*,/, '').replace(/\s+/g, '');
+      if (!/^[A-Za-z0-9+/]+=*$/.test(pdf) || !Buffer.from(pdf.slice(0, 8), 'base64').toString('latin1').startsWith('%PDF')) throw new ErroEnvio(400, 'O arquivo não parece um PDF.');
+      if (pdf.length > 14e6) throw new ErroEnvio(413, 'PDF grande demais (até 10 MB). Divida em partes menores.');
+    } else {
+      texto = String(corpo.texto || '').trim();
+      if (texto.length < 40) throw new ErroEnvio(400, 'Cole um texto um pouco maior (ao menos algumas frases).');
+      if (texto.length > 400000) throw new ErroEnvio(413, 'Texto grande demais. Divida em partes menores.');
+    }
+    let prep;
+    try { prep = await gilberto.prepararDocumento({ titulo, texto, pdf }); }
+    catch (e) { if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message); throw e; }
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/gilberto_documentos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ titulo: prep.titulo, arquivo: String(corpo.arquivo || (tipo === 'texto' ? 'texto colado' : '')).slice(0, 200) || null, tipo, resumo: prep.resumo, conteudo: prep.conteudo,
+        conflitos: prep.conflitos, alertas: prep.alertas, situacao: 'aguardando', enviado_por: eu.id }) });
+    if (!r.ok) throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para guardar o documento' + (r.status === 404 ? ' (o banco precisa da migração 023).' : '.'));
+    const doc = (await r.json())[0];
+    // Avisa o dono no celular: há documento para aprovar
+    const donos = await getJson(`${SUPABASE_URL}/rest/v1/usuarios?ativo=eq.true&papel=eq.dono&select=id`, fetch);
+    if (donos.length) await avisarCelulares(donos.map(x => x.id), { titulo: '📚 Documento para aprovar', corpo: eu.nome + ' enviou "' + prep.titulo + '" para o Gilberto aprender.', url: '/caixa#docs' }).catch(() => {});
+    console.log(JSON.stringify({ evento: 'documento_enviado', tipo, conflitos: prep.conflitos.length }));
+    return { ok: true, documento: doc };
+  },
+  'POST /api/gilberto-documento-acao': async (corpo, eu) => {
+    if (!uuidOk(corpo.id)) throw new ErroEnvio(400, 'Documento inválido.');
+    const doc = (await getJson(`${SUPABASE_URL}/rest/v1/gilberto_documentos?id=eq.${corpo.id}&select=id,situacao,enviado_por,titulo`, fetch))[0];
+    if (!doc) throw new ErroEnvio(404, 'Documento não encontrado.');
+    const dono = eu.papel === 'dono', agora = new Date().toISOString();
+    const acao = String(corpo.acao || '');
+    let mudar;
+    if (acao === 'editar') {
+      // Quem enviou ajusta o texto enquanto aguarda; depois de aprovado, só o dono (o Gilberto já usa o texto)
+      if (!dono && !(doc.situacao === 'aguardando' && doc.enviado_por === eu.id)) throw new ErroEnvio(403, 'Só o dono edita um documento depois de enviado por outra pessoa ou já aprovado.');
+      const conteudo = String(corpo.conteudo || '').trim(), titulo = String(corpo.titulo || '').trim();
+      if (conteudo.length < 20 || conteudo.length > 200000 || !titulo) throw new ErroEnvio(400, 'Título e conteúdo são obrigatórios.');
+      mudar = { titulo: titulo.slice(0, 160), conteudo };
+    } else {
+      if (!dono) throw new ErroEnvio(403, 'Só o dono aprova, recusa, desliga ou apaga documentos do Gilberto.');
+      if (acao === 'aprovar') mudar = { situacao: 'aprovado', aprovado_por: eu.id, aprovado_em: agora, motivo: null };
+      else if (acao === 'recusar') mudar = { situacao: 'recusado', motivo: String(corpo.motivo || '').slice(0, 300) || null };
+      else if (acao === 'desligar') mudar = { situacao: 'desligado' };
+      else if (acao === 'religar') mudar = { situacao: 'aprovado', aprovado_por: eu.id, aprovado_em: agora };
+      else if (acao === 'apagar') {
+        const d = await fetch(`${SUPABASE_URL}/rest/v1/gilberto_documentos?id=eq.${doc.id}`, { method: 'DELETE', headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+        if (!d.ok) throw new ErroEnvio(502, 'Não deu para apagar agora.');
+        limparCatalogo();
+        return { ok: true };
+      } else throw new ErroEnvio(400, 'Ação inválida.');
+    }
+    await patchBanco('gilberto_documentos', `id=eq.${doc.id}`, { ...mudar, atualizado_em: agora });
+    limparCatalogo(); // o Gilberto passa a usar (ou deixa de usar) na próxima resposta
+    console.log(JSON.stringify({ evento: 'documento_' + acao }));
     return { ok: true };
   },
   // Cotação manual (painel "Montar orçamento")
@@ -2386,7 +2448,7 @@ const servidor = http.createServer((req, res) => {
     (async () => {
       if (!bancoLigado()) throw new ErroEnvio(503, 'O banco ainda não está configurado.');
       const eu = await autenticarEquipe(auth.slice(7));
-      const corpo = req.method === 'POST' ? await lerCorpo(req) : {};
+      const corpo = req.method === 'POST' ? await lerCorpo(req, LIMITE_CORPO[req.method + ' ' + url.pathname] || 64e3) : {};
       return rotaEquipe(corpo, eu, url);
     })().then(r => json(res, 200, r)).catch(e => {
       if (e instanceof bb.ErroBB) e = new ErroEnvio(e.http, e.message);
@@ -2497,4 +2559,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => { console.log('CRM Cabanas ouvindo na porta ' + porta); conferirIpSaida(); });
-module.exports = { servidor, retomarOrcamentos, resumoDoDia, sinalQuente, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca };
+module.exports = { servidor, retomarOrcamentos, resumoDoDia, sinalQuente, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca, catalogoParaTeste: () => { limparCatalogo(); return catalogo(); } };

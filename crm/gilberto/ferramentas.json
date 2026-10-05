@@ -764,5 +764,23 @@
       ],
       "additionalProperties": false
     }
+  },
+  {
+    "name": "consultar_documentos",
+    "description": "Busca nos documentos aprovados pelo dono que não couberam nas suas instruções (a lista dos títulos está no fim de <documentos_aprovados>). Use quando o cliente perguntar de um assunto desses documentos. Devolve os trechos mais ligados à busca. Se não achar, não invente: diga que vai confirmar.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "busca": {
+          "type": "string",
+          "description": "O assunto em poucas palavras (ex.: \"Gruta do Lago Azul horário\")."
+        }
+      },
+      "required": [
+        "busca"
+      ],
+      "additionalProperties": false
+    }
   }
 ]

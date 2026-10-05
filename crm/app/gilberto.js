@@ -64,7 +64,100 @@ function sistemaCom(catalogo) {
   if (correcoes.length) fixas += '\n\nCorreções da equipe ao questionário (valem NO LUGAR do que <base_conhecimento> diz sobre o mesmo assunto; use estas):\n' + correcoes.map(r => `- ${r.pergunta}\n  ${r.resposta}`).join('\n');
   const refs = catalogo && catalogo.respostas ? catalogo.respostas.filter(r => !r.fixa && r.origem !== 'correcao') : [];
   if (refs.length) fixas += '\n\nRespostas de referência aprovadas pela equipe (adapte ao contexto, sem copiar se não couber):\n' + refs.map(r => `- ${r.pergunta}\n  ${r.resposta}`).join('\n');
-  return MODELO_SISTEMA.replace('{{biblioteca_respostas_fixas}}', fixas).replace('{{produtos_ativos}}', prods);
+  return MODELO_SISTEMA.replace('{{biblioteca_respostas_fixas}}', fixas).replace('{{produtos_ativos}}', prods) + blocoDocumentos(catalogo && catalogo.documentos);
+}
+
+// ---------- Documentos que ensinam o Gilberto (aprovados pelo dono; Ajustes do agente > Documentos) ----------
+// Até LIMITE_DOCS caracteres entram inteiros nas instruções; os que passarem disso ficam para consultar_documentos.
+const LIMITE_DOCS = Number(process.env.GILBERTO_LIMITE_DOCS || 60000);
+function dividirDocumentos(docs) {
+  const dentro = [], fora = [];
+  let usado = 0;
+  for (const d of docs || []) {
+    const t = String(d.conteudo || '');
+    if (usado + t.length <= LIMITE_DOCS) { dentro.push(d); usado += t.length; } else fora.push(d);
+  }
+  return { dentro, fora };
+}
+function blocoDocumentos(docs) {
+  if (!docs || !docs.length) return '';
+  const { dentro, fora } = dividirDocumentos(docs);
+  return '\n\n<documentos_aprovados>\nMaterial aprovado pelo dono para você estudar e usar nas conversas. Regras: (1) os fatos do hotel em <base_conhecimento>, <fatos_operacionais>, nas correções da equipe e nas ferramentas valem MAIS que estes documentos; se um documento disser outra coisa sobre o hotel, use a base e avise a equipe nas notas_internas. (2) Informação de terceiros (atrativos, parceiros, a cidade) é referência: não prometa em nome deles; preços e horários de terceiros mudam, diga que confirma. (3) Nunca diga ao cliente que está lendo um documento.\n'
+    + dentro.map(d => `\n<documento titulo="${String(d.titulo || '').replace(/"/g, "'")}">\n${d.conteudo}\n</documento>`).join('\n')
+    + (fora.length ? `\n\nOutros documentos aprovados (consulte com consultar_documentos quando o assunto aparecer): ${fora.map(d => d.titulo).join('; ')}.` : '')
+    + '\n</documentos_aprovados>';
+}
+// Busca simples por palavras nos documentos que não couberam nas instruções (trechos separados por linha em branco)
+const normalizar = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+function consultarDocumentos(docs, busca) {
+  const { fora } = dividirDocumentos(docs);
+  if (!fora.length) return { ok: true, trechos: [], aviso: 'Todos os documentos aprovados já estão nas suas instruções.' };
+  const termos = [...new Set(normalizar(busca).split(/[^a-z0-9]+/).filter(t => t.length > 2))];
+  if (!termos.length) return { ok: false, erro: 'Diga o assunto que procura (ex.: "horário da Gruta do Lago Azul").' };
+  const trechos = [];
+  for (const d of fora) for (const parte of String(d.conteudo || '').split(/\n\s*\n/)) {
+    const n = normalizar(parte), pontos = termos.filter(t => n.includes(t)).length;
+    if (pontos) trechos.push({ documento: d.titulo, texto: parte.trim().slice(0, 1500), pontos });
+  }
+  trechos.sort((a, b) => b.pontos - a.pontos);
+  return { ok: true, trechos: trechos.slice(0, 5).map(({ pontos, ...t }) => t), ...(trechos.length ? {} : { aviso: 'Nada encontrado nos documentos sobre isso: não invente; diga que vai confirmar.' }) };
+}
+
+// Prepara um documento enviado pela equipe: vira fatos e perguntas e respostas para o Gilberto, com os conflitos
+// com a base do hotel apontados. Nada é usado antes de o dono aprovar.
+const FORMATO_DOC = {
+  type: 'json_schema',
+  schema: {
+    type: 'object',
+    properties: {
+      titulo: { type: 'string', description: 'Título curto do assunto (ex.: "Gruta do Lago Azul: regras de visita").' },
+      resumo: { type: 'string', description: 'Uma ou duas frases: do que trata e para que serve no atendimento.' },
+      conteudo: { type: 'string', description: 'O material para o Gilberto, em português do Brasil e em markdown: primeiro os fatos em tópicos curtos, depois perguntas e respostas no formato "- **P:** ...\\n  **R:** ...". Blocos separados por linha em branco, um assunto por bloco. Sem dados pessoais.' },
+      conflitos: { type: 'array', items: { type: 'string' }, description: 'Cada ponto em que o documento contradiz a base do hotel (diga o que o documento diz e o que a base diz). Lista vazia se não houver.' },
+      alertas: { type: 'array', items: { type: 'string' }, description: 'O que o dono deve conferir antes de aprovar: dado pessoal removido, informação que parece velha, preço de terceiro, promessa arriscada, texto ilegível etc. Lista vazia se não houver.' },
+    },
+    required: ['titulo', 'resumo', 'conteudo', 'conflitos', 'alertas'],
+    additionalProperties: false,
+  },
+};
+const INSTRUCAO_DOC = `Você prepara material de estudo para o Gilberto, o consultor de vendas e reservas do Hotel Cabanas (Bonito/MS) no WhatsApp.
+A equipe enviou o documento acima. Transforme-o no que o Gilberto precisa saber para atender clientes:
+- Fique só com o que é útil no atendimento; deixe de fora o que não for. Não invente nada que não esteja no documento.
+- Reescreva em português do Brasil, claro e curto. Fatos primeiro, depois perguntas e respostas que um cliente faria.
+- Tire qualquer dado pessoal (nome de hóspede, telefone, e-mail, documento, endereço de pessoa) e avise em "alertas".
+- Compare com a base do hotel (em <base_do_hotel>): todo ponto que contradiz a base vai em "conflitos". No conteúdo, sobre o hotel, fique com o que a base diz.
+- Se o documento não tiver nada útil para o atendimento, diga isso no resumo e deixe o conteúdo curto.`;
+async function prepararDocumento({ titulo, texto, pdf }) {
+  if (!process.env.ANTHROPIC_API_KEY) throw new ErroSugestao(503, 'A IA do Gilberto ainda não está ligada (falta a chave da Anthropic no cofre).');
+  const base = ler('base-conhecimento.md', '..', 'gilberto', 'base-conhecimento.md') || '';
+  const operacional = ler('hotel-operacional.md', '..', '..', 'contexto', 'hotel-operacional.md') || '';
+  const conteudo = [];
+  if (pdf) conteudo.push({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: pdf }, title: String(titulo || 'Documento').slice(0, 200) });
+  conteudo.push({ type: 'text', text: (texto ? `<documento titulo="${String(titulo || '').replace(/"/g, "'")}">\n${texto}\n</documento>\n\n` : '') + INSTRUCAO_DOC });
+  const pedido = {
+    model: MODELO, max_tokens: 32000,
+    system: [{ type: 'text', text: '<base_do_hotel>\n' + base + '\n\n' + operacional + '\n</base_do_hotel>' }],
+    messages: [{ role: 'user', content: conteudo }],
+    output_config: { effort: 'medium', format: FORMATO_DOC },
+  };
+  let r;
+  try {
+    try { r = await anthropic().beta.messages.stream({ ...pedido, betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' }, { timeout: 240000 }).finalMessage(); }
+    catch (e) { if (!(e instanceof Anthropic.BadRequestError)) throw e; r = await anthropic().messages.stream(pedido, { timeout: 240000 }).finalMessage(); } // sem o beta de reserva: refaz sem ele
+  } catch (e) {
+    if (e instanceof Anthropic.BadRequestError) throw new ErroSugestao(400, 'A IA não conseguiu ler este arquivo (' + String(e.message || '').slice(0, 120) + '). Se for PDF escaneado ou protegido, mande o texto.');
+    if (e instanceof Anthropic.RateLimitError) throw new ErroSugestao(429, 'A IA está ocupada agora. Tente de novo em alguns minutos.');
+    if (e instanceof Anthropic.APIError) throw new ErroSugestao(502, 'A IA não respondeu agora (erro ' + e.status + '). Tente de novo.');
+    throw e;
+  }
+  console.log(JSON.stringify({ evento: 'documento_preparado', modelo: r.model, entrada: (r.usage || {}).input_tokens, saida: (r.usage || {}).output_tokens, parada: r.stop_reason }));
+  if (r.stop_reason === 'refusal') throw new ErroSugestao(422, 'A IA recusou preparar este documento.');
+  if (r.stop_reason === 'max_tokens') throw new ErroSugestao(413, 'O documento é grande demais para preparar de uma vez. Divida em partes menores.');
+  const txt = (r.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  let out;
+  try { out = JSON.parse(txt); } catch (e) { throw new ErroSugestao(502, 'A preparação veio num formato inesperado. Tente de novo.'); }
+  return { titulo: String(out.titulo || titulo || 'Documento').slice(0, 160), resumo: String(out.resumo || '').slice(0, 600), conteudo: String(out.conteudo || '').slice(0, 200000),
+    conflitos: (out.conflitos || []).map(String).slice(0, 30), alertas: (out.alertas || []).map(String).slice(0, 30) };
 }
 
 const FORMATO = {
@@ -83,7 +176,7 @@ const FORMATO = {
 };
 
 // Ferramentas ligadas nesta fase: só a cotação no Silbeck (definição em crm/gilberto/ferramentas.json).
-const LIGADAS = ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'enviar_link_extras', 'abrir_alerta'];
+const LIGADAS = ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'enviar_link_extras', 'abrir_alerta', 'consultar_documentos'];
 const FERRAMENTAS = (() => {
   try { return JSON.parse(ler('ferramentas.json', '..', 'gilberto', 'ferramentas.json')).filter(t => LIGADAS.includes(t.name)); } catch (e) { return []; }
 })();
@@ -211,7 +304,8 @@ async function sugerir(historico, conversa, executores = {}, catalogo = null) {
     if (rodada + 1 >= MAX_RODADAS) throw new ErroSugestao(502, 'O Gilberto fez consultas demais nesta resposta.');
     const resultados = [];
     for (const b of r.content.filter(b => b.type === 'tool_use')) {
-      const res = await executarFerramenta(b.name, b.input, executores, conversa && conversa.modo);
+      const res = b.name === 'consultar_documentos' && !executores.consultar_documentos ? consultarDocumentos(catalogo && catalogo.documentos, b.input && b.input.busca)
+        : await executarFerramenta(b.name, b.input, executores, conversa && conversa.modo);
       if (b.name === 'consultar_disponibilidade') cotacoes.push({ pedido: b.input, ok: !!res.ok, fonte: res.fonte || null, opcoes: (res.opcoes || []).length, erro: res.erro || null });
       if (b.name === 'gerar_orcamento' && res.ok) orcamentos.push({ id: res.orcamento_id, link: res.link, fonte: res.fonte });
       if (b.name === 'enviar_link_extras' && res.ok && res.vitrine_id) vitrines.push(res.vitrine_id);
@@ -253,4 +347,4 @@ function questionario() {
     .map(x => ({ titulo: x.titulo, itens: x.itens.map(i => ({ p: limpar(i.p), r: limpar(i.r) })).filter(i => i.r) }));
 }
 
-module.exports = { questionario, sugerir, montarMensagens, ErroSugestao, sistemaPronto: () => !!SISTEMA, MODELO, ferramentas: () => FERRAMENTAS.map(t => t.name) };
+module.exports = { questionario, sugerir, prepararDocumento, blocoDocumentos, consultarDocumentos, montarMensagens, ErroSugestao, sistemaPronto: () => !!SISTEMA, MODELO, ferramentas: () => FERRAMENTAS.map(t => t.name) };

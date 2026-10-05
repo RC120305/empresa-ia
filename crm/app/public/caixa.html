@@ -198,6 +198,7 @@
         <button role="tab" type="button" aria-selected="true" data-sub="rev">Revisão das sugestões</button>
         <button role="tab" type="button" aria-selected="false" data-sub="con">Questionário</button>
         <button role="tab" type="button" aria-selected="false" data-sub="bib">Biblioteca de respostas</button>
+        <button role="tab" type="button" aria-selected="false" data-sub="doc">📚 Documentos <span class="qtd" id="qtd-doc" hidden>0</span></button>
         <button role="tab" type="button" aria-selected="false" data-sub="tes">✦ Testar o agente</button>
         <button role="tab" type="button" aria-selected="false" data-sub="reg">Regras</button>
       </div>
@@ -218,6 +219,20 @@
       <div class="sub" data-sub="bib" hidden>
         <div class="barra-ferr"><button class="btn btn-enviar" type="button" id="bib-novo">+ Nova resposta</button><input type="search" id="bib-busca" placeholder="Buscar na biblioteca" aria-label="Buscar na biblioteca"><span class="dica">Com atalho, a equipe usa digitando / na conversa. Fixa: o Gilberto manda o texto exato. As outras servem de referência para ele.</span></div>
         <div class="lista-cartoes" id="bib-lista"></div>
+      </div>
+      <div class="sub" data-sub="doc" hidden>
+        <div class="cartao bloco">
+          <strong>Ensinar o Gilberto com documentos</strong>
+          <p>Envie um PDF ou cole um texto (ex.: regras de um atrativo, roteiro de passeios, política de grupos). O CRM transforma em fatos e perguntas e respostas e aponta o que contradiz a base do hotel. <b>O Gilberto só usa depois que o dono aprovar.</b> O arquivo original não fica guardado.</p>
+          <div class="grade2">
+            <label class="campo">Título (opcional)<input id="doc-titulo" maxlength="160" placeholder="Ex.: Gruta do Lago Azul"></label>
+            <label class="campo">Arquivo (PDF, TXT ou MD, até 10 MB)<input id="doc-arquivo" type="file" accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown"></label>
+          </div>
+          <label class="campo">Ou cole o texto aqui<textarea id="doc-texto" rows="4" placeholder="Cole o conteúdo…"></textarea></label>
+          <div class="acoes"><button class="btn btn-enviar" type="button" id="doc-enviar">Enviar para o Gilberto aprender</button><span class="dica" id="doc-status"></span></div>
+        </div>
+        <div class="filtros" id="doc-filtros"><button class="chip" type="button" aria-pressed="true" data-df="aguardando">Aguardando aprovação</button><button class="chip" type="button" aria-pressed="false" data-df="aprovado">Em uso</button><button class="chip" type="button" aria-pressed="false" data-df="outros">Recusados e desligados</button></div>
+        <div class="lista-cartoes" id="doc-lista"></div>
       </div>
       <div class="sub" data-sub="tes" hidden>
         <div class="cartao teste">

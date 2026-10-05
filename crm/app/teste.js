@@ -14,7 +14,8 @@ let iaCota = false, iaOrcamento = false, iaPix = false, iaAuto = null, autoUltim
 const orcs = [];
 const FAKE = {
   '/auth/v1/user': req => req.headers.authorization === 'Bearer token-equipe' ? { email: 'equipe@teste.com' }
-    : req.headers.authorization === 'Bearer token-estranho' ? { email: 'estranho@teste.com' } : null,
+    : req.headers.authorization === 'Bearer token-estranho' ? { email: 'estranho@teste.com' }
+    : req.headers.authorization === 'Bearer token-dono' ? { email: 'dono@teste.com' } : null,
 };
 const guardados = new Map(); // "Storage" falso: caminho -> {dados, mime}
 const MSG_MIDIA = '33333333-3333-3333-3333-333333333333';
@@ -32,6 +33,7 @@ const PRODS = [
 const ofertasF = [], vendasF = [], alertasF = [], vitrinesF = [];
 let iaVitrines = null;
 const cobrancasF = [], reservasF = [];
+const docsF = [];
 let bbPago = false;
 const configF = {};
 const pushF = [], pushRecebidos = []; // inscrições de avisos no celular e o que o "serviço de push" recebeu
@@ -78,6 +80,13 @@ const falso = http.createServer((req, res) => {
       if (req.method === 'PUT') return responder(201, { txid: tx, status: 'ATIVA', pixCopiaECola: '00020126BB' + tx, valor: json.valor, chave: json.chave, calendario: json.calendario });
       if (req.method === 'PATCH') return responder(200, { txid: tx, status: json.status });
       return responder(200, bbPago ? { txid: tx, status: 'CONCLUIDA', pix: [{ endToEndId: 'E123', valor: '500.00', horario: '2026-10-02T20:00:00Z', pagador: { nome: 'ANA SOUZA' } }] } : { txid: tx, status: 'ATIVA' });
+    }
+    if (req.url.startsWith('/rest/v1/gilberto_documentos')) {
+      const u = new URL(req.url, 'http://x'), q = k => (u.searchParams.get(k) || '').replace(/^eq\./, '');
+      if (req.method === 'POST') { const d = { id: crypto.randomUUID(), criado_em: new Date().toISOString(), ...json }; docsF.push(d); return responder(201, [d]); }
+      if (req.method === 'PATCH') { Object.assign(docsF.find(d => d.id === q('id')), json); res.writeHead(204); return res.end(); }
+      if (req.method === 'DELETE') { docsF.splice(docsF.findIndex(d => d.id === q('id')), 1); res.writeHead(204); return res.end(); }
+      return responder(200, docsF.filter(d => (!q('id') || d.id === q('id')) && (!q('situacao') || d.situacao === q('situacao'))));
     }
     if (req.url.startsWith('/rest/v1/reservas')) {
       const u = new URL(req.url, 'http://x'), q = k => (u.searchParams.get(k) || '').replace(/^eq\./, '');
@@ -198,7 +207,7 @@ const falso = http.createServer((req, res) => {
     if (req.url.startsWith('/silbeck/v1/Liberar?')) return req.url.includes('client_secret=sec-ok') ? responder(200, { access_token: 'tok-silbeck', token_type: 'Bearer', expires_in: 30 }) : responder(400, { erro: 'invalido' });
     if (req.url === '/silbeck/v1/TipoApartamento') return req.headers.authorization === 'Bearer tok-silbeck' ? responder(200, { listaTipoApartamento: [{ id: 1 }, { id: 2 }, { id: 3 }] }) : responder(401, {});
     if (req.url === '/auth/v1/user') { const u = FAKE['/auth/v1/user'](req); return u ? responder(200, u) : responder(401, { msg: 'invalid' }); }
-    if (req.url === '/rest/v1/rpc/equipe_por_email') { const b = JSON.parse(corpo); return responder(200, b.p_email === 'equipe@teste.com' ? [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }] : []); }
+    if (req.url === '/rest/v1/rpc/equipe_por_email') { const b = JSON.parse(corpo); return responder(200, b.p_email === 'equipe@teste.com' ? [{ id: 'u-1', nome: 'Equipe', papel: 'atendente' }] : b.p_email === 'dono@teste.com' ? [{ id: 'u-dono', nome: 'Ricardo', papel: 'dono' }] : []); }
     if (req.method === 'PATCH' && (req.url.startsWith('/rest/v1/conversas?') || req.url.startsWith('/rest/v1/contatos?'))) { res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/rest/v1/negocios?id=eq.') && req.method === 'GET') return responder(200, req.url.includes('NEG-NAO') ? [] : [{ id: req.url.split('id=eq.')[1].split('&')[0], etapa: 'novo', responsavel_id: null, contato_id: 'k-2' }]);
     if (req.url.startsWith('/rest/v1/negocios?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
@@ -236,6 +245,18 @@ const falso = http.createServer((req, res) => {
       const b = JSON.parse(corpo);
       ultimoPedidoIA = { corpo: b, beta: req.headers['anthropic-beta'] || '' };
       pedidosIA.push(b);
+      if (b.stream && JSON.stringify(b.system || '').includes('<base_do_hotel>')) { // preparação de documento (streaming)
+        const txt = JSON.stringify({ titulo: 'Gruta do Lago Azul', resumo: 'Regras de visita da gruta.', conteudo: '- A visita é contemplativa.\n\n- **P:** Pode nadar?\n  **R:** Não, só contemplar.', conflitos: ['O documento diz check-in às 14h; a base diz 15h.'], alertas: [] });
+        res.writeHead(200, { 'Content-Type': 'text/event-stream' });
+        const ev = (t, d) => res.write(`event: ${t}\ndata: ${JSON.stringify({ type: t, ...d })}\n\n`);
+        ev('message_start', { message: { id: 'msg_d', type: 'message', role: 'assistant', model: b.model, content: [], stop_reason: null, stop_sequence: null, usage: { input_tokens: 10, output_tokens: 0 } } });
+        ev('content_block_start', { index: 0, content_block: { type: 'text', text: '' } });
+        ev('content_block_delta', { index: 0, delta: { type: 'text_delta', text: txt } });
+        ev('content_block_stop', { index: 0 });
+        ev('message_delta', { delta: { stop_reason: 'end_turn', stop_sequence: null }, usage: { output_tokens: 20 } });
+        ev('message_stop', {});
+        return res.end();
+      }
       const jaConsultou = b.messages.some(m => Array.isArray(m.content) && m.content.some(c => c.type === 'tool_result'));
       if (iaOrcamento && !jaConsultou) return responder(200, { id: 'msg_o', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_o', name: 'gerar_orcamento', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], opcoes: [{ acomodacoes: ['BGE'] }, { acomodacoes: ['STD'] }], persona: 'familia', pessoas_aptas_combo: 2, frase_de_abertura: 'Ana, separei as opções para a família curtir os rios', sugerida: 'BGE' } }],
@@ -1025,7 +1046,7 @@ falso.listen(0, () => {
     assert.ok(pi.messages[3].content.includes('Modo: sugestao'));
     assert.equal(pi.output_config.format.type, 'json_schema');
     assert.equal(pi.fallbacks, 'default'); assert.ok(ultimoPedidoIA.beta.includes('server-side-fallback-2026-07-01'));
-    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'abrir_alerta', 'enviar_link_extras']);
+    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'abrir_alerta', 'enviar_link_extras', 'consultar_documentos']);
     assert.ok(pi.messages[3].content.includes('SIMULADOR'));
     // Cotação: o Gilberto pede, o CRM consulta o simulador do Silbeck e devolve o resultado na 2ª rodada
     iaCota = true; pedidosIA.length = 0;
@@ -1298,6 +1319,44 @@ falso.listen(0, () => {
     if (emDias(0) < '2026-12-29') { // o simulador traz o Réveillon 2026 com as Cabanas Casal esgotadas
       const reveillon = await cotar({ data_entrada: '2026-12-29', data_saida: '2027-01-02', adultos: 2, idades_criancas: [] });
       assert.ok(reveillon.esgotados_no_periodo.includes('Cabana Casal') && !reveillon.opcoes.some(o => o.codigo === 'CBD'));
+    }
+    // Documentos que ensinam o Gilberto: qualquer pessoa envia, só o dono aprova; aprovado entra nas instruções
+    {
+      const g = require('./gilberto');
+      r = await api('/api/gilberto-documentos', { tipo: 'texto', titulo: 'Gruta', texto: 'curto' });
+      assert.equal(r.status, 400, 'texto curto demais');
+      r = await api('/api/gilberto-documentos', { tipo: 'pdf', arquivo: 'x.pdf', dados: Buffer.from('não é pdf').toString('base64') });
+      assert.equal(r.status, 400, 'PDF falso');
+      const nIA = pedidosIA.length;
+      r = await api('/api/gilberto-documentos', { tipo: 'pdf', arquivo: 'gruta.pdf', dados: 'data:application/pdf;base64,' + Buffer.from('%PDF-1.4 teste da gruta').toString('base64') });
+      const dj = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(dj));
+      const pd = pedidosIA.at(-1);
+      assert.equal(pedidosIA.length, nIA + 1); assert.equal(pd.messages[0].content[0].type, 'document'); assert.equal(pd.messages[0].content[0].source.media_type, 'application/pdf');
+      const doc = docsF.at(-1);
+      assert.deepEqual([doc.titulo, doc.situacao, doc.tipo, doc.enviado_por, doc.conflitos.length], ['Gruta do Lago Azul', 'aguardando', 'pdf', 'u-1', 1]);
+      assert.ok(!('dados' in doc), 'o arquivo original não é guardado');
+      // Antes de aprovar, o Gilberto não usa
+      const { catalogoParaTeste } = require('./server');
+      assert.ok(!(await catalogoParaTeste()).documentos.length);
+      assert.equal((await api('/api/gilberto-documento-acao', { id: doc.id, acao: 'aprovar' })).status, 403, 'só o dono aprova');
+      assert.equal((await api('/api/gilberto-documento-acao', { id: doc.id, acao: 'editar', titulo: 'Gruta do Lago Azul (regras)', conteudo: doc.conteudo + '\n\n- Leve tênis.' })).status, 200, 'quem enviou ajusta enquanto aguarda');
+      assert.equal((await api('/api/gilberto-documento-acao', { id: doc.id, acao: 'aprovar' }, 'token-dono')).status, 200);
+      assert.equal(doc.situacao, 'aprovado'); assert.equal(doc.aprovado_por, 'u-dono');
+      const cat = await catalogoParaTeste();
+      assert.equal(cat.documentos.length, 1);
+      const bloco = g.blocoDocumentos(cat.documentos);
+      assert.ok(bloco.includes('<documentos_aprovados>') && bloco.includes('Leve tênis') && bloco.includes('valem MAIS que estes documentos'));
+      assert.equal((await api('/api/gilberto-documento-acao', { id: doc.id, acao: 'editar', titulo: 'x', conteudo: 'mudança depois de aprovado' })).status, 403, 'aprovado: só o dono edita');
+      // Biblioteca grande: o que não cabe fica para a busca
+      const muitos = [{ titulo: 'A', conteudo: 'x'.repeat(59990) }, { titulo: 'Passeios', conteudo: 'Rio da Prata: flutuação de 2 horas.\n\nBuraco das Araras: trilha leve.' }];
+      assert.ok(g.blocoDocumentos(muitos).includes('Outros documentos aprovados (consulte com consultar_documentos quando o assunto aparecer): Passeios'));
+      const busca = g.consultarDocumentos(muitos, 'flutuação no Rio da Prata');
+      assert.equal(busca.trechos[0].documento, 'Passeios'); assert.ok(busca.trechos[0].texto.startsWith('Rio da Prata'));
+      assert.equal((await api('/api/gilberto-documento-acao', { id: doc.id, acao: 'desligar' }, 'token-dono')).status, 200);
+      assert.ok(!(await catalogoParaTeste()).documentos.length, 'desligado: o Gilberto deixa de usar');
+      assert.equal((await api('/api/gilberto-documento-acao', { id: doc.id, acao: 'apagar' }, 'token-dono')).status, 200);
+      assert.equal(docsF.length, 0);
     }
     // Combinações (grupo em mais de uma acomodação; dono, 05/10/2026)
     {
