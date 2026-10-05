@@ -52,15 +52,28 @@ function biblioteca({ todas = false } = {}) {
   }).filter(g => todas || g.fotos.length);
 }
 // Escolhe fotos para o Gilberto: pelo código da acomodação e/ou etiquetas (até 5).
+// Acomodação (dono, 06/10/2026): primeiro uma foto de FORA (fachada/área externa, senão a varanda) e uma do QUARTO
+// (de preferência sem a decoração especial); banheiro nunca, a não ser que o cliente peça.
+const tem = (f, ...ts) => ts.some(t => f.etiquetas.some(e => e.toLowerCase() === t));
 function escolherFotos({ codigo_acomodacao, etiquetas, quantidade }) {
-  const n = Math.min(5, Math.max(1, Number(quantidade) || 3));
+  const n = Math.min(5, Math.max(1, Number(quantidade) || 2));
   const tudo = biblioteca().flatMap(g => g.fotos.map(f => ({ ...f, grupo: g.grupo })));
-  const cod = String(codigo_acomodacao || '').toUpperCase();
+  const cod = String(codigo_acomodacao || '').toUpperCase().split('+')[0];
   const termos = (etiquetas || []).map(t => String(t).toLowerCase()).filter(Boolean);
+  const querBanheiro = termos.some(t => t.includes('banheiro'));
+  const pode = f => querBanheiro || !tem(f, 'banheiro');
   // Fotos de apartamento quádruplo usam a pasta do duplo/triplo correspondente.
   const grupoDe = { QES: 'SUP', QST: 'STD', CST: 'STD' }[cod] || cod;
   const pontos = f => (f.grupo === grupoDe ? 10 : 0) + termos.filter(t => f.etiquetas.some(e => e.toLowerCase().includes(t)) || f.descricao.toLowerCase().includes(t)).length;
-  return tudo.map(f => ({ f, p: pontos(f) })).filter(x => x.p > 0).sort((a, b) => b.p - a.p).slice(0, n).map(x => x.f);
+  const escolhidas = tudo.map(f => ({ f, p: pontos(f) })).filter(x => x.p > 0 && pode(x.f)).sort((a, b) => b.p - a.p).map(x => x.f);
+  if (grupoDe && !termos.length) {
+    const da = tudo.filter(f => f.grupo === grupoDe);
+    const fora = da.find(f => tem(f, 'fachada', 'área externa')) || da.find(f => tem(f, 'varanda'));
+    const quarto = da.find(f => tem(f, 'quarto') && !f.decoracao) || da.find(f => tem(f, 'quarto'));
+    const primeiro = [fora, quarto].filter(Boolean);
+    return [...primeiro, ...escolhidas.filter(f => !primeiro.includes(f))].slice(0, n);
+  }
+  return escolhidas.slice(0, n);
 }
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

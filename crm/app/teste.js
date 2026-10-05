@@ -1324,6 +1324,21 @@ falso.listen(0, () => {
     assert.deepEqual(escolherFotos({ codigo_acomodacao: 'BGE', etiquetas: [], quantidade: 5 }).map(f => f.arquivo), ['BGE-1.jpg', 'BGE-2.jpg']);
     assert.deepEqual(escolherFotos({ codigo_acomodacao: '', etiquetas: ['boia cross'], quantidade: 2 }).map(f => f.arquivo), ['BOIA-1.jpg']);
     assert.deepEqual(escolherFotos({ codigo_acomodacao: 'CBM', etiquetas: [], quantidade: 2 }), []);
+    { // Fotos de acomodação (dono, 06/10/2026): uma de fora e uma do quarto; banheiro só se o cliente pedir (banco real)
+      const k = require.resolve('./orcamento'), velho = require.cache[k], dirAntes = process.env.FOTOS_DIR;
+      process.env.FOTOS_DIR = require('path').join(__dirname, 'public', 'fotos'); delete require.cache[k];
+      const real = require('./orcamento');
+      const desc = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, 'public', 'fotos', 'descricoes.json'), 'utf8'));
+      const et = a => (desc[a] || {}).etiquetas || [];
+      for (const c of ['CBD', 'CBT', 'CBM', 'BG', 'BGE', 'CJ', 'SUP', 'STD', 'QST']) {
+        const [fora, dentro] = real.escolherFotos({ codigo_acomodacao: c, etiquetas: [], quantidade: 2 }).map(f => f.arquivo);
+        assert.ok(['fachada', 'área externa', 'varanda'].some(t => et(fora).includes(t)), c + ': 1ª foto de fora (' + fora + ')');
+        assert.ok(et(dentro).includes('quarto'), c + ': 2ª foto do quarto (' + dentro + ')');
+        assert.ok(!real.escolherFotos({ codigo_acomodacao: c, etiquetas: [], quantidade: 5 }).some(f => et(f.arquivo).includes('banheiro')), c + ': sem banheiro');
+      }
+      assert.ok(real.escolherFotos({ codigo_acomodacao: 'CBD', etiquetas: ['banheiro'], quantidade: 1 }).some(f => et(f.arquivo).includes('banheiro')), 'banheiro quando o cliente pede');
+      require.cache[k] = velho; process.env.FOTOS_DIR = dirAntes;
+    }
     const { pagina } = require('./orcamento');
     assert.ok(!pagina({ ...salvo, primeiro_nome: '<script>' }).includes('<script>alert') && pagina({ ...salvo, frase_de_abertura: '<b>x</b>' }).includes('&lt;b&gt;'));
     const { cotar } = require('./silbeck');

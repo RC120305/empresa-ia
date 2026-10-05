@@ -267,7 +267,7 @@
   },
   {
     "name": "enviar_fotos",
-    "description": "Envia ao cliente fotos ou vídeos reais do banco de imagens do hotel (nunca imagens de fora). Escolha pelo código da acomodação e/ou por etiquetas do que o cliente quer ver. O CRM envia no máximo 5 arquivos por vez e devolve o que foi enviado (com a descrição de cada foto). Não descreva uma foto como se você a tivesse tirado ou visto ao vivo.",
+    "description": "Envia ao cliente fotos ou vídeos reais do banco de imagens do hotel (nunca imagens de fora). Escolha pelo código da acomodação e/ou por etiquetas do que o cliente quer ver. O CRM envia no máximo 5 arquivos por vez e devolve o que foi enviado (com a descrição de cada foto). Não descreva uma foto como se você a tivesse tirado ou visto ao vivo. Para mostrar uma acomodação (por exemplo, a sugerida, logo depois do orçamento): só o código, etiquetas vazias e quantidade 2; o CRM manda uma foto de fora e uma do quarto. Banheiro só se o cliente pedir (etiqueta \"banheiro\").",
     "strict": true,
     "input_schema": {
       "type": "object",
@@ -285,7 +285,7 @@
         },
         "quantidade": {
           "type": "integer",
-          "description": "De 1 a 5."
+          "description": "De 1 a 5. Para mostrar uma acomodação, 2 (uma de fora e uma do quarto)."
         }
       },
       "required": [
