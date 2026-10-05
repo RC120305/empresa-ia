@@ -1,8 +1,17 @@
 [
  {
+  "id": "piloto-animador",
+  "titulo": "Cabana Master · animador do Cabanas",
+  "grupo": "Piloto: legendas de copy (compare os três)",
+  "arquivo": "design/videos/2026-10/piloto-legendas/REELS-COPY-MASTER-animador.mp4",
+  "musica": "Calm piano (Pixabay)",
+  "nota": "Mesmo roteiro do piloto Remotion, feito no nosso animador próprio (sem licença paga): copy palavra por palavra, destaque em laranja, contador 0→85 m², zoom e deslize.",
+  "duracao": "15"
+ },
+ {
   "id": "piloto-remotion",
   "titulo": "Cabana Master · Remotion (piloto)",
-  "grupo": "Piloto: legendas de copy (compare os dois)",
+  "grupo": "Piloto: legendas de copy (compare os três)",
   "arquivo": "design/videos/2026-10/piloto-legendas/REELS-COPY-MASTER-remotion.mp4",
   "musica": "Calm piano (Pixabay)",
   "nota": "Copy animada palavra por palavra, palavra de destaque em laranja, contador 0→85 m², zoom e deslize nas fotos. Feito no Remotion.",
@@ -11,7 +20,7 @@
  {
   "id": "piloto-kit-atual",
   "titulo": "Cabana Master · kit atual",
-  "grupo": "Piloto: legendas de copy (compare os dois)",
+  "grupo": "Piloto: legendas de copy (compare os três)",
   "arquivo": "design/videos/2026-10/piloto-legendas/REELS-COPY-MASTER-kit-atual.mp4",
   "musica": "Calm piano (Pixabay)",
   "nota": "Mesmas fotos, textos e música, no nosso kit de hoje: letreiro fixo com moldura e logo, zoom lento e fusão.",

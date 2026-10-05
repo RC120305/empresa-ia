@@ -1,0 +1,17 @@
+{
+ "modelo": "copy-que-acende",
+ "saida": "REELS-COPY-MASTER-animador.mp4",
+ "formato": {"w": 1080, "h": 1920, "fps": 30},
+ "segundosPorTela": 2.4,
+ "fusao": 10,
+ "fechoSeg": 3,
+ "telas": [
+  {"foto": "../../remotion-piloto/public/fotos/externa.jpg", "texto": "Cabana Master", "destaque": "Master", "apoio": "a maior acomodação do Cabanas", "mover": "zoom"},
+  {"foto": "../../remotion-piloto/public/fotos/casal.jpg", "texto": "dois ambientes", "contador": {"de": 0, "ate": 85, "sufixo": " m²"}, "mover": "esquerda"},
+  {"foto": "../../remotion-piloto/public/fotos/banheira.jpg", "texto": "banheira de hidromassagem para 2", "destaque": "hidromassagem", "apoio": "pétalas: decoração especial (opcional)", "mover": "zoom"},
+  {"foto": "../../remotion-piloto/public/fotos/solteiro.jpg", "texto": "para 2 a 5 pessoas", "destaque": "a 5", "mover": "direita"},
+  {"foto": "../../remotion-piloto/public/fotos/balanco.jpg", "texto": "varanda com balanço", "destaque": "balanço", "mover": "esquerda"}
+ ],
+ "fecho": {"linha1": "BONITO - MS", "linha2": "Reserve pelo link da bio"},
+ "musica": {"arquivo": "../../musicas/alex-morgan-calm-piano-541028.mp3", "inicioSeg": 98, "volume": 0.8}
+}

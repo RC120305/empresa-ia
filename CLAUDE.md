@@ -14,7 +14,7 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
 - **Banco de imagens (Google Drive):** pasta "Imagens do hotel cabanas" (dentro de "Hotel Cabanas"), https://drive.google.com/drive/folders/1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5 (ID `1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5`). Só fotos reais do hotel. Mapa das subpastas: `contexto/banco-de-imagens.md`.
 - `contexto/social-e-trafego.md`: base técnica de Instagram, Meta Ads e Google para hotéis (com fontes e data; revisar a cada 3 meses).
 - `marketing/`: rascunhos produzidos pelo Especialista em Marketing e Anúncios.
-- `design/`: kit do Designer de Criativos (`modelos/`, `ferramentas/`) e peças prontas em `pecas/`.
+- `design/`: kit do Designer de Criativos (`modelos/`, `ferramentas/`) e peças prontas em `pecas/`. **Animador Cabanas** (nosso "Remotion": roteiro JSON → Reels MP4) em `design/ferramentas/animador/`.
 - `social/`: planos e análises do Estrategista de Social Media e Tráfego.
 - `.claude/skills/aprender-youtube/`: skill que lê as transcrições de vídeos/canais do YouTube (`ferramentas/youtube/transcrever.py`) e gera cadernos em `contexto/aprendizados/` para a RH aplicar nos funcionários. Acione com `/aprender-youtube <link>`. Requer `www.youtube.com` liberado na rede do ambiente.
 - **Produção de conteúdo do Instagram (skills que orquestram a equipe):**
