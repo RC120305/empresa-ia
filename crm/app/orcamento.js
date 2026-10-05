@@ -28,7 +28,9 @@ const PASTA_FOTOS = process.env.FOTOS_DIR || path.join(__dirname, 'public', 'fot
 let FOTOS = {}, DESCRICOES = {};
 try { FOTOS = JSON.parse(fs.readFileSync(path.join(PASTA_FOTOS, 'fotos.json'), 'utf8')); } catch (e) { /* sem fotos ainda */ }
 try { DESCRICOES = JSON.parse(fs.readFileSync(path.join(PASTA_FOTOS, 'descricoes.json'), 'utf8')); } catch (e) { /* sem descrições */ }
-const ROTULOS = { BOIA: 'Boia cross', ARVO: 'Arvorismo', RIO: 'Rios e decks', PISCINA: 'Piscina e hidromassagem', CAFE: 'Café da manhã', DECO: 'Decoração especial (opcional)', MASS: 'Massagem', EXTRAS: 'Outros extras' };
+const ROTULOS = { INST: 'Institucional (o hotel)', ATIV: 'Atividades inclusas', BOIA: 'Boia cross', ARVO: 'Arvorismo', RIO: 'Rios e decks', PISCINA: 'Piscina e hidromassagem', CAFE: 'Café da manhã', DECO: 'Decoração especial (opcional)', MASS: 'Massagem', EXTRAS: 'Outros extras' };
+// Vídeos (dono, 06/10/2026): ficam na mesma biblioteca, com extensão .mp4 (vêm do Drive, pasta "Vídeos do hotel cabanas").
+const ehVideo = a => /\.mp4$/i.test(String(a || ''));
 // Categorias em que a equipe pode pôr fotos (as dos quádruplos usam as do duplo/triplo).
 const GRUPOS = [...new Set([...Object.keys(FOTOS), 'CBD', 'CBT', 'CBM', 'BG', 'BGE', 'CJ', 'SUP', 'STD', ...Object.keys(ROTULOS)])];
 const nomeGrupo = g => (CATALOGO[g] && CATALOGO[g].nome) || ROTULOS[g] || g;
@@ -42,7 +44,7 @@ function biblioteca({ todas = false } = {}) {
   const ajuste = new Map(VIVAS.map(v => [v.arquivo, v]));
   const fixa = a => ({ arquivo: a, descricao: (DESCRICOES[a] && DESCRICOES[a].descricao) || '', etiquetas: (DESCRICOES[a] && DESCRICOES[a].etiquetas) || [],
     decoracao: !!(DESCRICOES[a] && DESCRICOES[a].decoracao), origem: 'base', drive_id: (DESCRICOES[a] && DESCRICOES[a].drive_id) || null, ativo: !(ajuste.get(a) && ajuste.get(a).ativo === false) });
-  const nova = v => ({ arquivo: v.arquivo, descricao: v.descricao || '', etiquetas: v.etiquetas || [], decoracao: !!v.decoracao, origem: 'drive', drive_id: v.drive_id || null, ativo: v.ativo !== false });
+  const nova = v => ({ arquivo: v.arquivo, descricao: v.descricao || '', etiquetas: v.etiquetas || [], decoracao: !!v.decoracao, origem: 'drive', drive_id: v.drive_id || null, ativo: v.ativo !== false, ...(ehVideo(v.arquivo) ? { video: true } : {}) });
   const novas = VIVAS.filter(v => v.origem === 'drive' && !FOTOS_FIXAS.has(v.arquivo)).sort((a, b) => (a.ordem || 0) - (b.ordem || 0) || String(a.criado_em || '').localeCompare(String(b.criado_em || '')));
   return GRUPOS.map(grupo => {
     const lista = [...(FOTOS[grupo] || []).map(fixa), ...novas.filter(v => v.grupo === grupo).map(nova)];
@@ -57,7 +59,7 @@ function biblioteca({ todas = false } = {}) {
 const tem = (f, ...ts) => ts.some(t => f.etiquetas.some(e => e.toLowerCase() === t));
 function escolherFotos({ codigo_acomodacao, etiquetas, quantidade }) {
   const n = Math.min(5, Math.max(1, Number(quantidade) || 2));
-  const tudo = biblioteca().flatMap(g => g.fotos.map(f => ({ ...f, grupo: g.grupo })));
+  const tudo = biblioteca().flatMap(g => g.fotos.filter(f => !f.video).map(f => ({ ...f, grupo: g.grupo })));
   const cod = String(codigo_acomodacao || '').toUpperCase().split('+')[0];
   const termos = (etiquetas || []).map(t => String(t).toLowerCase()).filter(Boolean);
   const querBanheiro = termos.some(t => t.includes('banheiro'));
@@ -74,6 +76,20 @@ function escolherFotos({ codigo_acomodacao, etiquetas, quantidade }) {
     return [...primeiro, ...escolhidas.filter(f => !primeiro.includes(f))].slice(0, n);
   }
   return escolhidas.slice(0, n);
+}
+
+// Vídeo para o Gilberto usar como argumento de venda: um por vez, sem repetir o que a conversa já recebeu.
+// Pelo código da acomodação e/ou etiquetas; sem nada que combine, o institucional.
+function videos() { return biblioteca().flatMap(g => g.fotos.filter(f => f.video).map(f => ({ ...f, grupo: g.grupo, nome_grupo: g.nome }))); }
+function escolherVideo({ codigo_acomodacao, etiquetas }, ja = []) {
+  const cod = String(codigo_acomodacao || '').toUpperCase().split('+')[0];
+  const grupoDe = { QES: 'SUP', QST: 'STD', CST: 'STD' }[cod] || cod;
+  const termos = (etiquetas || []).map(t => String(t).toLowerCase()).filter(Boolean);
+  const lista = videos().filter(v => !ja.includes(v.arquivo));
+  const pontos = v => (grupoDe && v.grupo === grupoDe ? 10 : 0) + termos.filter(t => v.grupo.toLowerCase() === t || v.nome_grupo.toLowerCase().includes(t) || v.etiquetas.some(e => e.toLowerCase().includes(t)) || v.descricao.toLowerCase().includes(t)).length;
+  const melhor = lista.map(v => ({ v, p: pontos(v) })).filter(x => x.p > 0).sort((a, b) => b.p - a.p)[0];
+  if (melhor) return melhor.v;
+  return (grupoDe || termos.length) ? null : lista.find(v => v.grupo === 'INST') || null;
 }
 
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -140,7 +156,7 @@ function pagina(o, { previa = false, produtos = null } = {}) {
   const n = noites(o.data_entrada, o.data_saida);
   const nome = o.primeiro_nome ? esc(o.primeiro_nome) : '';
   const bib = biblioteca();
-  const fotosDe = cod => ((bib.find(g => g.grupo === cod) || bib.find(g => g.grupo === { QES: 'SUP', QST: 'STD', CST: 'STD' }[cod]) || { fotos: [] }).fotos).slice(0, 5);
+  const fotosDe = cod => ((bib.find(g => g.grupo === cod) || bib.find(g => g.grupo === { QES: 'SUP', QST: 'STD', CST: 'STD' }[cod]) || { fotos: [] }).fotos).filter(f => !f.video).slice(0, 5);
   const cards = emOrdemDeValor(o.opcoes).map((op, i) => {
     const acs = op.combinacao ? op.acomodacoes || [] : null;
     const cat = acs ? { nome: op.nome, cap: `${acs.length} acomodações para o grupo`, dest: [] }
@@ -190,4 +206,4 @@ ${cards}
 <script src="/o/orcamento.js?v=${VERSAO}"></script></body></html>`;
 }
 
-module.exports = { resumo, resumoGrupo, MAX_OPCOES, montar, codigosDe, chaveCombinacao, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };
+module.exports = { ehVideo, videos, escolherVideo, resumo, resumoGrupo, MAX_OPCOES, montar, codigosDe, chaveCombinacao, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };

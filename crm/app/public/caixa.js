@@ -812,6 +812,11 @@
     finally { travar(false); }
   }
   let biblioteca = null;
+  const ehVideo = a => /\.mp4$/i.test(a || '');
+  // Foto ou vídeo da biblioteca para as telas (vídeo: primeiro quadro, sem som, com ▶)
+  const midiaBib = (arquivo, alt) => ehVideo(arquivo)
+    ? el('span', { class: 'gal-video' }, el('video', { src: '/videos/' + arquivo + '#t=0.5', preload: 'metadata', muted: true, playsinline: true, 'aria-label': alt }), el('span', { class: 'gal-play', 'aria-hidden': 'true', text: '▶' }))
+    : el('img', { src: '/fotos/' + arquivo, alt, loading: 'lazy' });
   // modo: 'enviar' (escolher e mandar), 'gerenciar' (tirar/devolver fotos), 'drive' (trazer do banco de imagens)
   const gal = { cat: '', sel: [], modo: 'enviar', pasta: null, drive: null };
   async function carregarBiblioteca() { biblioteca = (await chamarApi('/api/fotos', null, 'GET')).grupos; }
@@ -830,7 +835,7 @@
     const cats = $('gal-cats'), grade = $('gal-grade'), gerenciar = gal.modo === 'gerenciar';
     cats.textContent = ''; grade.textContent = '';
     $('gal-gerenciar').textContent = gerenciar ? '✓ Concluir' : '⚙ Gerenciar';
-    $('gal-cont').textContent = gerenciar ? 'Tire fotos da categoria ou traga outras do Drive.' : 'Fotos reais do hotel. Toque para escolher (até 5).';
+    $('gal-cont').textContent = gerenciar ? 'Tire fotos e vídeos da categoria ou traga outros do Drive.' : 'Fotos e vídeos reais do hotel. Toque para escolher (até 5).';
     $('gal-enviar').hidden = gerenciar;
     const grupos = gruposVisiveis();
     if (!grupos.length) { grade.append(el('p', { class: 'lat-txt', text: 'A biblioteca de fotos ainda está vazia.' })); $('gal-sel').textContent = ''; return; }
@@ -839,10 +844,10 @@
     const g = grupos.find(x => x.grupo === gal.cat);
     if (gerenciar) {
       grade.append(el('button', { class: 'gal-item gal-novo', type: 'button', onclick: () => abrirDrive(null) }, el('span', { class: 'gal-mais', text: '+' }), el('span', { class: 'gal-nome', text: 'Trazer do Drive' })));
-      g.fotos.forEach(f => grade.append(el('div', { class: 'gal-item' }, el('img', { src: '/fotos/' + f.arquivo, alt: f.descricao || g.nome, loading: 'lazy' }),
+      g.fotos.forEach(f => grade.append(el('div', { class: 'gal-item' }, midiaBib(f.arquivo, f.descricao || g.nome),
         el('span', { class: 'gal-nome', text: f.descricao || g.nome }),
         el('button', { class: 'btn-mini gal-tirar', type: 'button', text: '✕ Tirar', onclick: () => mudarFoto(f, false) }))));
-      (g.removidas || []).forEach(f => grade.append(el('div', { class: 'gal-item fora' }, el('img', { src: '/fotos/' + f.arquivo, alt: f.descricao || g.nome, loading: 'lazy' }),
+      (g.removidas || []).forEach(f => grade.append(el('div', { class: 'gal-item fora' }, midiaBib(f.arquivo, f.descricao || g.nome),
         el('span', { class: 'gal-nome', text: 'Fora da biblioteca · ' + (f.descricao || g.nome) }),
         el('button', { class: 'btn-mini gal-tirar', type: 'button', text: '↩ Devolver', onclick: () => mudarFoto(f, true) }))));
       $('gal-sel').textContent = g.fotos.length + ' foto(s) em ' + g.nome + '. A página do orçamento mostra as 5 primeiras.';
@@ -853,12 +858,12 @@
       grade.append(el('button', { class: 'gal-item', type: 'button', 'aria-pressed': String(on), title: f.descricao || g.nome, onclick: () => {
         if (on) gal.sel = gal.sel.filter(x => x !== f.arquivo); else if (gal.sel.length < 5) gal.sel.push(f.arquivo); else toast('Máximo de 5 fotos por envio.');
         pintarGaleria();
-      } }, el('img', { src: '/fotos/' + f.arquivo, alt: f.descricao || g.nome, loading: 'lazy' }), on ? el('span', { class: 'gal-n', text: String(gal.sel.indexOf(f.arquivo) + 1) }) : null,
+      } }, midiaBib(f.arquivo, f.descricao || g.nome), on ? el('span', { class: 'gal-n', text: String(gal.sel.indexOf(f.arquivo) + 1) }) : null,
       el('span', { class: 'gal-nome', text: f.descricao || g.nome })));
     });
     $('gal-sel').textContent = gal.sel.length ? gal.sel.length + ' selecionada(s)' : 'Nenhuma selecionada';
     $('gal-enviar').toggleAttribute('disabled', !gal.sel.length);
-    $('gal-enviar').textContent = gal.sel.length > 1 ? 'Enviar ' + gal.sel.length + ' fotos' : 'Enviar';
+    $('gal-enviar').textContent = gal.sel.length > 1 ? 'Enviar ' + gal.sel.length + ' arquivos' : 'Enviar';
   }
   async function mudarFoto(f, ativo) {
     if (!ativo && !confirm('Tirar esta foto da biblioteca? Ela deixa de aparecer no envio, na página do orçamento e para o Gilberto. Dá para devolver depois.')) return;
@@ -891,33 +896,39 @@
     const cat = biblioteca.find(g => g.grupo === gal.cat);
     cats.textContent = ''; grade.textContent = '';
     $('gal-gerenciar').textContent = '← Voltar';
-    $('gal-cont').textContent = 'Banco de imagens (Drive) → ' + (cat ? cat.nome : '') + '. Toque na foto para trazer.';
+    $('gal-cont').textContent = 'Banco de imagens (Drive) → ' + (cat ? cat.nome : '') + '. Toque na foto ou no vídeo para trazer (vídeo: MP4 até 16 MB).';
     $('gal-enviar').hidden = true; $('gal-sel').textContent = '';
     if (!d) { grade.textContent = 'Abrindo o Drive…'; return; }
     if (d.erro) { grade.append(el('p', { class: 'lat-txt', text: d.erro })); return; }
     if (!d.pasta.raiz) cats.append(el('button', { class: 'chip', type: 'button', text: '↑ ' + (d.pasta.pai ? 'Pasta de cima' : 'Início'), onclick: () => abrirDrive(d.pasta.pai) }));
+    if (d.raizes) { // as duas pastas do Drive: imagens e vídeos do hotel
+      cats.append(el('button', { class: 'chip', type: 'button', 'aria-pressed': String(d.pasta.id === d.raizes.fotos), text: '🖼 Imagens', onclick: () => abrirDrive(null) }));
+      cats.append(el('button', { class: 'chip', type: 'button', 'aria-pressed': String(d.pasta.id === d.raizes.videos), text: '🎬 Vídeos', onclick: () => abrirDrive(d.raizes.videos) }));
+    }
     cats.append(el('span', { class: 'gal-pasta', text: '📁 ' + d.pasta.nome }));
     d.pastas.forEach(p => grade.append(el('button', { class: 'gal-item gal-novo', type: 'button', onclick: () => abrirDrive(p.id) }, el('span', { class: 'gal-mais', text: '📁' }), el('span', { class: 'gal-nome', text: p.nome }))));
     d.fotos.forEach(f => {
       const img = el('img', { alt: f.nome, loading: 'lazy' });
       miniatura(f.id).then(u => { img.src = u; }).catch(() => { img.alt = 'Sem miniatura: ' + f.nome; });
-      grade.append(el('button', { class: 'gal-item', type: 'button', title: f.nome, onclick: () => formTrazer(f) }, img,
-        el('span', { class: 'gal-nome', text: f.na_biblioteca.length ? 'Já na biblioteca: ' + f.na_biblioteca.join(', ') : f.nome })));
+      const grande = f.video && f.mb > 16;
+      grade.append(el('button', { class: 'gal-item' + (grande ? ' fora' : ''), type: 'button', title: f.nome, onclick: () => grande ? toast('Este vídeo tem ' + f.mb + ' MB e o WhatsApp aceita até 16 MB. Peça à produtora uma versão para WhatsApp (MP4, 720p, até uns 60 segundos).') : formTrazer(f) },
+        f.video ? el('span', { class: 'gal-video' }, img, el('span', { class: 'gal-play', 'aria-hidden': 'true', text: '▶' })) : img,
+        el('span', { class: 'gal-nome', text: f.na_biblioteca.length ? 'Já na biblioteca: ' + f.na_biblioteca.join(', ') : (f.video ? '🎬 ' + f.mb + ' MB · ' : '') + f.nome })));
     });
     if (!d.pastas.length && !d.fotos.length) grade.append(el('p', { class: 'lat-txt', text: 'Pasta vazia.' }));
   }
   function formTrazer(f) {
-    abrirForm('Trazer foto do Drive', [
+    abrirForm(f.video ? 'Trazer vídeo do Drive' : 'Trazer foto do Drive', [
       { k: 'grupo', rotulo: 'Categoria', tipo: 'select', valor: gal.cat, opcoes: biblioteca.map(g => [g.grupo, g.nome]) },
-      { k: 'descricao', rotulo: 'O que aparece na foto', tipo: 'textarea', largo: true, dica: 'Ex.: Varanda da Cabana Casal com rede, vista para a mata. O Gilberto usa esta descrição para escolher o que mandar.' },
+      { k: 'descricao', rotulo: f.video ? 'O que o vídeo mostra' : 'O que aparece na foto', tipo: 'textarea', largo: true, dica: f.video ? 'Ex.: Vídeo institucional: os dois rios, as cabanas e as atividades com monitor. O Gilberto usa esta descrição para escolher o que mandar.' : 'Ex.: Varanda da Cabana Casal com rede, vista para a mata. O Gilberto usa esta descrição para escolher o que mandar.' },
       { k: 'etiquetas', rotulo: 'Palavras-chave (separadas por vírgula)', dica: 'varanda, rede, mata', largo: true },
       { k: 'decoracao', rotulo: 'Mostra a decoração especial (pétalas, balões): opcional e cobrada à parte', tipo: 'check' },
     ], async v => {
-      toast('Trazendo a foto do Drive…');
-      const j = await chamarApi('/api/foto', { drive_id: f.id, grupo: v.grupo, descricao: v.descricao, etiquetas: v.etiquetas.split(','), decoracao: v.decoracao });
+      toast(f.video ? 'Trazendo o vídeo do Drive… pode levar até 1 minuto.' : 'Trazendo a foto do Drive…');
+      const j = await chamarApi('/api/foto', { drive_id: f.id, grupo: v.grupo, descricao: v.descricao, etiquetas: v.etiquetas.split(','), decoracao: v.decoracao, video: !!f.video });
       await carregarBiblioteca();
       gal.cat = j.foto.grupo; gal.modo = 'gerenciar'; pintarGaleria();
-      toast('Foto adicionada em ' + ((biblioteca.find(g => g.grupo === j.foto.grupo) || {}).nome || 'categoria') + '.');
+      toast((j.foto.video ? 'Vídeo adicionado em ' : 'Foto adicionada em ') + ((biblioteca.find(g => g.grupo === j.foto.grupo) || {}).nome || 'categoria') + '.');
     });
   }
   $('gal-gerenciar').addEventListener('click', () => { gal.modo = gal.modo === 'enviar' ? 'gerenciar' : (gal.modo === 'drive' ? 'gerenciar' : 'enviar'); gal.sel = []; pintarGaleria(); });
@@ -955,11 +966,12 @@
       $('sugestao').dataset.sugestao = j.sugestao_id || '';
       $('sug-motivos').hidden = true;
       const fl = $('sug-fotos-lista'); fl.textContent = '';
-      (j.fotos || []).forEach(f => fl.append(el('img', { src: '/fotos/' + f.arquivo, alt: f.descricao || 'Foto do hotel', title: f.descricao || '' })));
+      (j.fotos || []).forEach(f => fl.append(midiaBib(f.arquivo, f.descricao || 'Foto do hotel')));
       $('sug-fotos').hidden = !(j.fotos && j.fotos.length);
       $('sug-fotos').dataset.fotos = JSON.stringify((j.fotos || []).map(f => f.arquivo));
       $('sug-fotos-enviar').removeAttribute('disabled');
-      $('sug-fotos-enviar').textContent = (j.fotos || []).length > 1 ? 'Enviar estas ' + j.fotos.length + ' fotos' : 'Enviar esta foto';
+      const temVideo = (j.fotos || []).some(f => ehVideo(f.arquivo));
+      $('sug-fotos-enviar').textContent = (j.fotos || []).length > 1 ? 'Enviar estes ' + j.fotos.length + ' arquivos' : temVideo ? 'Enviar este vídeo' : 'Enviar esta foto';
       $('sugestao').hidden = false;
       if (j.orcamentos && j.orcamentos.length) pintarOrcamentos(id);
     } catch (e) { aviso(e.message); }

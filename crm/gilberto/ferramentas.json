@@ -297,6 +297,32 @@
     }
   },
   {
+    "name": "enviar_video",
+    "description": "Envia ao cliente UM vídeo real do banco do hotel, como argumento de venda: o institucional (o hotel e os dois rios), o de uma acomodação ou o das atividades. O CRM nunca repete um vídeo que a conversa já recebeu e manda no máximo um por resposta. Use quando o vídeo ajudar a decidir: depois de o cliente mostrar interesse no hotel, junto do orçamento (o da acomodação sugerida, se houver) ou quando perguntar das atividades. Não use no primeiro cumprimento nem a cada mensagem. A lista do que existe está em <contexto_crm> (Vídeos no banco). Apresente o vídeo em uma frase na sua mensagem.",
+    "strict": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "codigo_acomodacao": {
+          "type": "string",
+          "description": "Código da acomodação (ex.: CBM, BGE) para o vídeo dela, ou string vazia."
+        },
+        "etiquetas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Assunto do vídeo, ex.: [\"institucional\"], [\"atividades\"], [\"boia cross\"], [\"rio\"]. Lista vazia com código vazio: o institucional."
+        }
+      },
+      "required": [
+        "codigo_acomodacao",
+        "etiquetas"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
     "name": "usar_resposta_fixa",
     "description": "Envia, exatamente como está cadastrada na Biblioteca de respostas, uma resposta marcada como fixa (o CRM troca {nome} pelo primeiro nome do cliente). Use quando a pergunta do cliente corresponder, pelo sentido, a uma resposta fixa listada em <biblioteca_respostas_fixas>. O CRM envia o texto como um balão ANTES dos seus; não o repita na sua mensagem e conte-o no limite de 3 balões.",
     "strict": true,

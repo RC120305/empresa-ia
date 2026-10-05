@@ -362,15 +362,15 @@ async function baixarDaMeta(midiaId, buscar) {
   if (!arq.ok) throw new Error('meta download ' + arq.status);
   return { dados: Buffer.from(await arq.arrayBuffer()), mime: mimeBase(j.mime_type || arq.headers.get('content-type')) || 'application/octet-stream' };
 }
-async function gravarNoStorage(caminho, dados, mime, buscar) {
+async function gravarNoStorage(caminho, dados, mime, buscar, tempo = 20000) {
   const h = cabecalhosBanco(); delete h['Content-Type'];
   const r = await buscar(`${SUPABASE_URL}/storage/v1/object/midias/${caminho}`, {
-    method: 'POST', headers: { ...h, 'Content-Type': mime, 'x-upsert': 'true' }, body: dados, signal: AbortSignal.timeout(20000) });
+    method: 'POST', headers: { ...h, 'Content-Type': mime, 'x-upsert': 'true' }, body: dados, signal: AbortSignal.timeout(tempo) });
   if (!r.ok) throw new Error('storage ' + r.status + ' ' + (await r.text().catch(() => '')).slice(0, 150));
 }
-async function lerDoStorage(caminho, buscar) {
+async function lerDoStorage(caminho, buscar, tempo = 20000) {
   const h = cabecalhosBanco(); delete h['Content-Type'];
-  const r = await buscar(`${SUPABASE_URL}/storage/v1/object/authenticated/midias/${caminho}`, { headers: h, signal: AbortSignal.timeout(20000) });
+  const r = await buscar(`${SUPABASE_URL}/storage/v1/object/authenticated/midias/${caminho}`, { headers: h, signal: AbortSignal.timeout(tempo) });
   if (!r.ok) throw new Error('storage ' + r.status);
   return Buffer.from(await r.arrayBuffer());
 }
@@ -396,8 +396,8 @@ async function midiaParaEquipe(tokenUsuario, mensagemId, buscar = fetch) {
   if (!msg || (!msg.midia_caminho && !msg.midia_id)) throw new ErroEnvio(404, 'Arquivo não encontrado.');
   if (msg.midia_caminho && msg.midia_caminho.startsWith('biblioteca/')) { // foto da biblioteca do hotel, enviada pelo CRM
     const f = await bytesDaFoto(msg.midia_caminho.slice('biblioteca/'.length), buscar);
-    if (!f) throw new ErroEnvio(404, 'Foto não encontrada.');
-    return { dados: f, mime: 'image/jpeg', nome: msg.midia_caminho.slice(11) };
+    if (!f) throw new ErroEnvio(404, 'Arquivo não encontrado.');
+    return { dados: f, mime: orcamento.ehVideo(msg.midia_caminho) ? 'video/mp4' : 'image/jpeg', nome: msg.midia_caminho.slice(11) };
   }
   if (msg.midia_caminho) return { dados: await lerDoStorage(msg.midia_caminho, buscar), mime: msg.midia_mime, nome: msg.midia_nome };
   if (!WA_TOKEN) throw new ErroEnvio(503, 'O WhatsApp ainda não está configurado.');
@@ -572,9 +572,9 @@ function limiteExcedido(req) {
 async function enviarFotosPelaEquipe(tokenUsuario, corpo, buscar = fetch) {
   if (!WA_TOKEN || !bancoLigado()) throw new ErroEnvio(503, 'O envio ainda não está configurado no servidor.');
   const fotos = Array.isArray(corpo.fotos) ? [...new Set(corpo.fotos.map(String))] : [];
-  if (!fotos.length || fotos.length > 5) throw new ErroEnvio(400, 'Escolha de 1 a 5 fotos.');
+  if (!fotos.length || fotos.length > 5) throw new ErroEnvio(400, 'Escolha de 1 a 5 fotos ou vídeos.');
   await atualizarFotos(buscar);
-  if (fotos.some(f => !/^[\w.-]+\.jpg$/.test(f) || !fotoAtiva(f))) throw new ErroEnvio(400, 'Foto fora da biblioteca do hotel.');
+  if (fotos.some(f => !/^[\w.-]+\.(jpg|mp4)$/.test(f) || !fotoAtiva(f))) throw new ErroEnvio(400, 'Arquivo fora da biblioteca do hotel.');
   const legenda = String(corpo.legenda || '').trim().slice(0, 1024);
   const equipe = await autenticarEquipe(tokenUsuario, buscar);
   const { conv, para } = await carregarConversaParaEnvio(corpo.conversa_id, buscar);
@@ -584,16 +584,17 @@ async function enviarFotos(conv, para, fotos, legenda, autor, buscar = fetch) {
   const enviadas = [];
   for (const [i, f] of fotos.entries()) {
     if (i) await esperar(1500 * FATOR_DIGITACAO);
-    const image = { link: `${URL_PUBLICA}/fotos/${f}`, ...(i === 0 && legenda ? { caption: legenda } : {}) };
-    const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: para, type: 'image', image }, buscar);
+    const video = orcamento.ehVideo(f), tipo = video ? 'video' : 'image';
+    const midia = { link: `${URL_PUBLICA}/${video ? 'videos' : 'fotos'}/${f}`, ...(i === 0 && legenda ? { caption: legenda } : {}) };
+    const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: para, type: tipo, [tipo]: midia }, buscar);
     if (!r.ok || !r.json.messages || !r.json.messages[0]) {
       const e = r.json.error || {};
       ultimoErroMeta = { quando: new Date().toISOString(), http: r.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
-      const err = new ErroEnvio(502, 'A Meta não aceitou a foto' + (e.code ? ` (código ${e.code})` : '') + '.');
+      const err = new ErroEnvio(502, 'A Meta não aceitou ' + (video ? 'o vídeo' : 'a foto') + (e.code ? ` (código ${e.code})` : '') + '.');
       err.enviadas = enviadas;
       throw err;
     }
-    const id = await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: r.json.messages[0].id, p_tipo: 'image', p_legenda: i === 0 ? legenda : '', p_caminho: 'biblioteca/' + f, p_mime: 'image/jpeg', p_nome: null, p_autor: autor }, buscar);
+    const id = await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: r.json.messages[0].id, p_tipo: tipo, p_legenda: i === 0 ? legenda : '', p_caminho: 'biblioteca/' + f, p_mime: video ? 'video/mp4' : 'image/jpeg', p_nome: null, p_autor: autor }, buscar);
     enviadas.push({ id, arquivo: f, corpo: i === 0 ? legenda : '', enviada_em: new Date().toISOString() });
   }
   return enviadas;
@@ -613,14 +614,16 @@ async function atualizarFotos(buscar = fetch, forcar = false) {
 const fotoDoDrive = f => fotosCache.linhas.find(v => v.arquivo === f && v.origem === 'drive');
 const fotoAtiva = f => orcamento.biblioteca().some(g => g.fotos.some(x => x.arquivo === f));
 const bytesFotos = new Map();
+const bytesVideos = new Map(); // poucos na memória (até 16 MB cada)
 async function bytesDaFoto(f, buscar = fetch) {
   if (ESTATICOS['/fotos/' + f]) return ESTATICOS['/fotos/' + f].corpo;
-  if (!/^[\w.-]+\.jpg$/.test(f)) return null;
-  if (bytesFotos.has(f)) return bytesFotos.get(f);
+  if (!/^[\w.-]+\.(jpg|mp4)$/.test(f)) return null;
+  const video = orcamento.ehVideo(f), cache = video ? bytesVideos : bytesFotos, max = video ? 3 : 80;
+  if (cache.has(f)) return cache.get(f);
   await atualizarFotos(buscar);
   if (!fotoDoDrive(f)) return null;
-  const dados = await lerDoStorage('biblioteca/' + f, buscar).catch(() => null);
-  if (dados) { if (bytesFotos.size > 80) bytesFotos.delete(bytesFotos.keys().next().value); bytesFotos.set(f, dados); }
+  const dados = await lerDoStorage('biblioteca/' + f, buscar, video ? 60000 : 20000).catch(() => null);
+  if (dados) { if (cache.size >= max) cache.delete(cache.keys().next().value); cache.set(f, dados); }
   return dados;
 }
 async function gravarFotoAjuste(linha, buscar = fetch) {
@@ -2051,6 +2054,7 @@ const API_EQUIPE = {
     const executores = {
       gerar_orcamento: async e => { const c = await cotacaoParaOrcamento(e); if (!c.ok) return c; const m = orcamento.montar(e, c); return m.erro ? { ok: false, erro: m.erro } : { ok: true, link: URL_PUBLICA + '/o/TESTE-sem-link-real', fonte: c.fonte, opcoes: m.opcoes, aviso: 'Teste: nenhum orçamento foi gravado.' }; },
       enviar_fotos: async e => { const f = orcamento.escolherFotos(e); return f.length ? { ok: true, modo: 'sugestao', fotos: f.map(x => ({ arquivo: x.arquivo, descricao: x.descricao })) } : { ok: false, erro: 'Sem foto na biblioteca para esse pedido.' }; },
+      enviar_video: async e => { const v = orcamento.escolherVideo(e, []); return v ? { ok: true, video: { arquivo: v.arquivo, descricao: v.descricao, categoria: v.nome_grupo }, aviso: 'Teste: o vídeo não é enviado aqui.' } : { ok: false, erro: 'Ainda não há vídeo no banco sobre isso. Siga sem vídeo.' }; },
       enviar_link_extras: async e => vitrine.TEMAS[e.tema] ? { ok: true, link: URL_PUBLICA + '/e/TESTE-sem-link-real', tema: vitrine.TEMAS[e.tema].nome, aviso: 'Teste: nenhum link foi criado.' } : { ok: false, erro: 'Tema inválido.' },
       criar_reserva: async () => ({ ok: true, pendente_aprovacao: true, aviso: 'Teste: nenhuma reserva foi criada. Chame gerar_cobranca na forma escolhida.' }),
       gerar_cobranca: async e => ({ ok: true, marcador: e.forma === 'cartao' ? '[[link do cartão]]' : '[[PIX]]', aviso: 'Teste: nada foi criado. Escreva o marcador sozinho num balão.' }),
@@ -2073,19 +2077,26 @@ const API_EQUIPE = {
     if (!orcamento.GRUPOS.includes(grupo)) throw new ErroEnvio(400, 'Escolha a categoria.');
     if (!drive.idValido(corpo.drive_id)) throw new ErroEnvio(400, 'Escolha a foto do Drive.');
     const descricao = String(corpo.descricao || '').trim().slice(0, 300);
-    if (descricao.length < 8) throw new ErroEnvio(400, 'Descreva a foto (o Gilberto usa a descrição para escolher o que mandar).');
+    if (descricao.length < 8) throw new ErroEnvio(400, 'Descreva ' + (corpo.video ? 'o vídeo' : 'a foto') + ' (o Gilberto usa a descrição para escolher o que mandar).');
     const etiquetas = [...new Set([orcamento.nomeGrupo(grupo).toLowerCase(), ...(Array.isArray(corpo.etiquetas) ? corpo.etiquetas : [])
       .map(t => String(t).trim().toLowerCase().slice(0, 40)).filter(Boolean)])].slice(0, 10);
     await atualizarFotos(fetch, true);
     const g = orcamento.biblioteca().find(x => x.grupo === grupo);
-    if (g && g.fotos.some(f => f.drive_id === corpo.drive_id)) throw new ErroEnvio(409, 'Essa foto já está em ' + g.nome + '.');
-    const { jpg } = await drive.prepararFoto(corpo.drive_id);
-    const arquivo = `${grupo}-d${crypto.randomBytes(4).toString('hex')}.jpg`;
-    await gravarNoStorage('biblioteca/' + arquivo, jpg, 'image/jpeg', fetch);
+    if (g && g.fotos.some(f => f.drive_id === corpo.drive_id)) throw new ErroEnvio(409, 'Esse arquivo já está em ' + g.nome + '.');
+    let arquivo;
+    if (corpo.video) { // vídeo (MP4 até 16 MB): vai inteiro para o Storage e sai por /videos/<arquivo>
+      const { mp4 } = await drive.prepararVideo(corpo.drive_id);
+      arquivo = `${grupo}-v${crypto.randomBytes(4).toString('hex')}.mp4`;
+      await gravarNoStorage('biblioteca/' + arquivo, mp4, 'video/mp4', fetch, 120000);
+    } else {
+      const { jpg } = await drive.prepararFoto(corpo.drive_id);
+      arquivo = `${grupo}-d${crypto.randomBytes(4).toString('hex')}.jpg`;
+      await gravarNoStorage('biblioteca/' + arquivo, jpg, 'image/jpeg', fetch);
+      bytesFotos.set(arquivo, jpg);
+    }
     await gravarFotoAjuste({ arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao, drive_id: corpo.drive_id, origem: 'drive', ativo: true, criado_por: eu.id });
-    bytesFotos.set(arquivo, jpg);
     await atualizarFotos(fetch, true);
-    return { ok: true, foto: { arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao } };
+    return { ok: true, foto: { arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao, video: orcamento.ehVideo(arquivo) } };
   }),
   // Tira uma foto da biblioteca (ou devolve). Nada é apagado: some do envio, da página do orçamento e do Gilberto.
   'POST /api/foto-status': async corpo => {
@@ -2191,7 +2202,7 @@ async function gerarResposta(id, { modo, eu, mensagemId = null }, buscar = fetch
     const pendentes = historico.filter(m => m.tipo === 'audio' && m.direcao === 'entrada' && m.id && (!m.transcricao_status || m.transcricao_status === 'falhou')).slice(-3);
     await Promise.all(pendentes.map(m => transcreverMensagem(m, buscar).then(r => { m.transcricao = r.texto; m.transcricao_status = r.status; }).catch(() => {})));
     const nome = conv.contato && conv.contato.nome;
-    let reservaPendente = null, reservaCriada = null, cobrancaGerada = null;
+    let reservaPendente = null, reservaCriada = null, cobrancaGerada = null, videoNoTurno = null;
     const executores = {
       gerar_orcamento: entrada => criarOrcamento(entrada, { conversa_id: conv.id, numero_id: conv.numero_id, primeiro_nome: nome, criado_por: 'gilberto' }, buscar),
       // Link de extras: criado agora, mas só conta como oferta quando a equipe enviar a sugestão
@@ -2262,6 +2273,15 @@ async function gerarResposta(id, { modo, eu, mensagemId = null }, buscar = fetch
         return { ok: true, aviso: 'A equipe foi avisada (quem está de plantão primeiro). Continue a conversa: diga ao cliente que vai ver com o pessoal, sem prometer o resultado.' };
       },
       // Modo sugestão: o Gilberto escolhe as fotos; quem envia é a equipe, pelo painel da sugestão.
+      // Vídeo do banco do hotel: um por resposta e nunca o mesmo duas vezes na conversa
+      enviar_video: async entrada => {
+        if (videoNoTurno) return { ok: false, erro: 'Já há um vídeo nesta resposta: um por vez.' };
+        const ja = historico.filter(m => m.midia_caminho && orcamento.ehVideo(m.midia_caminho)).map(m => m.midia_caminho.slice('biblioteca/'.length));
+        const v = orcamento.escolherVideo(entrada, ja);
+        if (!v) return { ok: false, erro: orcamento.videos().length ? 'Não há vídeo novo sobre isso no banco (ou ele já foi enviado nesta conversa). Siga sem vídeo.' : 'Ainda não há vídeos no banco do hotel. Siga sem vídeo.' };
+        videoNoTurno = v.arquivo;
+        return { ok: true, video: { arquivo: v.arquivo, descricao: v.descricao, categoria: v.nome_grupo }, aviso: auto ? 'O vídeo vai logo depois da sua mensagem: apresente-o em uma frase (o que ele mostra e por que vale ver), sem descrevê-lo como se você o tivesse gravado.' : 'Nesta fase a equipe envia o vídeo junto com a sua mensagem: apresente-o em uma frase.' };
+      },
       enviar_fotos: async entrada => {
         const fotos = orcamento.escolherFotos(entrada);
         return fotos.length
@@ -2271,7 +2291,9 @@ async function gerarResposta(id, { modo, eu, mensagemId = null }, buscar = fetch
     };
     const neg = await negocioDaConversa(conv.id, 'id,perfil', buscar).catch(() => null);
     const retomar = neg && neg.etapa === 'orc' && (await getJson(`${SUPABASE_URL}/rest/v1/tarefas?negocio_id=eq.${neg.id}&tipo=eq.${encodeURIComponent(TIPO_RETOMAR)}&feita=eq.false&select=id&limit=1`, buscar)).length;
-    const r = await gilberto.sugerir(historico, { modo: auto ? 'automatico' : 'sugestao', canal: conv.canal, nome, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, gatilho: retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null }, executores, await catalogo(buscar));
+    const jaVideos = historico.filter(m => m.midia_caminho && orcamento.ehVideo(m.midia_caminho)).map(m => m.midia_caminho.slice('biblioteca/'.length));
+    const listaVideos = orcamento.videos().map(v => ({ categoria: v.nome_grupo, descricao: v.descricao, enviado: jaVideos.includes(v.arquivo) }));
+    const r = await gilberto.sugerir(historico, { modo: auto ? 'automatico' : 'sugestao', canal: conv.canal, nome, videos: listaVideos, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, gatilho: retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null }, executores, await catalogo(buscar));
     // Registro para a revisão (Ajustes do agente): o que o cliente perguntou e o que o Gilberto sugeriu
     const ultimaDoCliente = [...historico].reverse().find(m => m.direcao === 'entrada');
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
@@ -2596,6 +2618,24 @@ const servidor = http.createServer((req, res) => {
       res.writeHead(200, { 'Content-Type': 'image/jpeg', 'Cache-Control': 'private, max-age=3600', ...cabecalhosSeguranca() });
       res.end(dados);
     }).catch(e => json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio || e instanceof drive.ErroDrive ? e.message : 'Não deu agora.' }));
+    return;
+  }
+  const mv = req.method === 'GET' && url.pathname.match(/^\/videos\/([\w.-]+\.mp4)$/);
+  if (mv) { // vídeo da biblioteca (Storage); a Meta baixa por este link
+    bytesDaFoto(mv[1]).then(dados => {
+      if (!dados) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('Vídeo não encontrado.'); }
+      const faixa = String(req.headers.range || '').match(/^bytes=(\d*)-(\d*)$/);
+      const base = { 'Content-Type': 'video/mp4', 'Accept-Ranges': 'bytes', 'Cache-Control': 'public, max-age=300', ...cabecalhosSeguranca() };
+      if (faixa && (faixa[1] || faixa[2])) {
+        let ini = faixa[1] ? Number(faixa[1]) : Math.max(0, dados.length - Number(faixa[2]));
+        let fim = faixa[1] && faixa[2] ? Math.min(Number(faixa[2]), dados.length - 1) : dados.length - 1;
+        if (ini >= dados.length || ini > fim) { res.writeHead(416, { 'Content-Range': 'bytes */' + dados.length }); return res.end(); }
+        res.writeHead(206, { ...base, 'Content-Range': `bytes ${ini}-${fim}/${dados.length}`, 'Content-Length': fim - ini + 1 });
+        return res.end(dados.subarray(ini, fim + 1));
+      }
+      res.writeHead(200, { ...base, 'Content-Length': dados.length });
+      res.end(dados);
+    }).catch(() => { res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Indisponível agora.'); });
     return;
   }
   const mf = req.method === 'GET' && !ESTATICOS[url.pathname] && url.pathname.match(/^\/fotos\/([\w.-]+\.jpg)$/);

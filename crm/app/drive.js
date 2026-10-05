@@ -9,6 +9,8 @@ const path = require('path');
 
 const API = (process.env.DRIVE_URL || 'https://www.googleapis.com').replace(/\/$/, '');
 const RAIZ = process.env.DRIVE_PASTA_FOTOS || '1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5';
+const RAIZ_VIDEOS = process.env.DRIVE_PASTA_VIDEOS || '1n6gPXQ1_dBkvIizIyWsPFsrTnH4k2QZw'; // "Vídeos do hotel cabanas"
+const LIMITE_VIDEO = 16 * 1024 * 1024; // o WhatsApp aceita vídeo de até 16 MB
 const CONTA = 'crm-runtime@cabanas-crm.iam.gserviceaccount.com';
 const METADADOS = 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token?scopes=https://www.googleapis.com/auth/drive.readonly';
 const FFMPEG = process.env.FFMPEG || 'ffmpeg';
@@ -34,7 +36,7 @@ async function chamar(caminho, buscar, tempo = 10000) {
   if (r.ok) return r;
   const t = await r.text().catch(() => '');
   if (/accessNotConfigured|SERVICE_DISABLED|has not been used/.test(t)) throw new ErroDrive(503, 'A API do Google Drive ainda não está ligada no projeto (rodar crm/infra/ligar-drive.txt no Cloud Shell).');
-  if (r.status === 404 || r.status === 403) throw new ErroDrive(403, `O CRM não tem acesso a esta pasta. No Drive, compartilhe a pasta "Imagens do hotel cabanas" com ${CONTA} como Leitor.`);
+  if (r.status === 404 || r.status === 403) throw new ErroDrive(403, `O CRM não tem acesso a esta pasta. No Drive, compartilhe a pasta "Imagens do hotel cabanas" (e a "Vídeos do hotel cabanas") com ${CONTA} como Leitor.`);
   throw new ErroDrive(502, 'O Drive não respondeu agora (' + r.status + ').');
 }
 
@@ -47,16 +49,17 @@ async function listar(pastaId, buscar = fetch) {
   const itens = [];
   let pagina = '';
   for (let i = 0; i < 5; i++) {
-    const q = encodeURIComponent(`'${id}' in parents and trashed = false and (mimeType = '${PASTA}' or mimeType contains 'image/')`);
-    const j = await (await chamar(`/drive/v3/files?q=${q}&fields=nextPageToken,files(id,name,mimeType)&orderBy=folder,name&pageSize=200&supportsAllDrives=true&includeItemsFromAllDrives=true${pagina ? '&pageToken=' + encodeURIComponent(pagina) : ''}`, buscar)).json();
+    const q = encodeURIComponent(`'${id}' in parents and trashed = false and (mimeType = '${PASTA}' or mimeType contains 'image/' or mimeType contains 'video/')`);
+    const j = await (await chamar(`/drive/v3/files?q=${q}&fields=nextPageToken,files(id,name,mimeType,size)&orderBy=folder,name&pageSize=200&supportsAllDrives=true&includeItemsFromAllDrives=true${pagina ? '&pageToken=' + encodeURIComponent(pagina) : ''}`, buscar)).json();
     itens.push(...(j.files || []));
     if (!j.nextPageToken) break;
     pagina = j.nextPageToken;
   }
   return {
-    pasta: { id: info.id, nome: info.name, raiz: id === RAIZ, pai: id === RAIZ ? null : ((info.parents || [])[0] || null) },
+    pasta: { id: info.id, nome: info.name, raiz: id === RAIZ || id === RAIZ_VIDEOS, pai: id === RAIZ || id === RAIZ_VIDEOS ? null : ((info.parents || [])[0] || null) },
+    raizes: { fotos: RAIZ, videos: RAIZ_VIDEOS },
     pastas: itens.filter(f => f.mimeType === PASTA).map(f => ({ id: f.id, nome: f.name })),
-    fotos: itens.filter(f => f.mimeType !== PASTA).map(f => ({ id: f.id, nome: f.name })),
+    fotos: itens.filter(f => f.mimeType !== PASTA).map(f => ({ id: f.id, nome: f.name, ...(String(f.mimeType).startsWith('video/') ? { video: true, mb: Math.round(Number(f.size || 0) / 1048576 * 10) / 10 } : {}) })),
   };
 }
 
@@ -135,4 +138,16 @@ async function prepararFoto(id, buscar = fetch) {
   return { jpg: await recortar(dados), nome: info.name };
 }
 
-module.exports = { listar, miniatura, prepararFoto, recortar, orientacaoExif, ErroDrive, RAIZ, CONTA, idValido };
+// Vídeo do Drive para a biblioteca: MP4 de até 16 MB (limite do WhatsApp), sem conversão.
+async function prepararVideo(id, buscar = fetch) {
+  if (!idValido(id)) throw new ErroDrive(400, 'Vídeo inválido.');
+  const info = await (await chamar(`/drive/v3/files/${id}?fields=id,name,mimeType,size&supportsAllDrives=true`, buscar)).json();
+  if (info.mimeType !== 'video/mp4') throw new ErroDrive(400, 'O WhatsApp só aceita vídeo em MP4. Peça à produtora a versão em MP4 (H.264).');
+  const mb = Math.round(Number(info.size || 0) / 1048576 * 10) / 10;
+  if (Number(info.size) > LIMITE_VIDEO) throw new ErroDrive(413, `Este vídeo tem ${mb} MB e o WhatsApp aceita até 16 MB. Peça à produtora uma versão para WhatsApp (MP4, 720p, até uns 60 segundos).`);
+  const dados = Buffer.from(await (await chamar(`/drive/v3/files/${id}?alt=media&supportsAllDrives=true`, buscar, 90000)).arrayBuffer());
+  if (dados.length > LIMITE_VIDEO) throw new ErroDrive(413, 'Vídeo acima de 16 MB.');
+  return { mp4: dados, nome: info.name, mb };
+}
+
+module.exports = { listar, miniatura, prepararFoto, prepararVideo, RAIZ_VIDEOS, recortar, orientacaoExif, ErroDrive, RAIZ, CONTA, idValido };

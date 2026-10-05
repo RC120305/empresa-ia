@@ -34,6 +34,7 @@ const ofertasF = [], vendasF = [], alertasF = [], vitrinesF = [];
 let iaVitrines = null;
 const cobrancasF = [], reservasF = [];
 const docsF = [];
+const MP4_DRIVE = Buffer.concat([Buffer.from('\x00\x00\x00\x18ftypmp42'), Buffer.alloc(3000, 7)]);
 let bbPago = false;
 const configF = {};
 const pushF = [], pushRecebidos = []; // inscrições de avisos no celular e o que o "serviço de push" recebeu
@@ -60,6 +61,9 @@ const falso = http.createServer((req, res) => {
       if (u.pathname === '/drive/v3/files') return responder(200, u.searchParams.get('q').includes(RAIZ_DRIVE)
         ? { files: [{ id: 'PASTA-BANGALO-1', name: 'Bangalô', mimeType: 'application/vnd.google-apps.folder' }, { id: 'FOTO-DRIVE-01', name: 'IMG_1.jpg', mimeType: 'image/jpeg' }] } : { files: [] });
       if (u.pathname === '/drive/v3/files/FOTO-DRIVE-01') return responder(200, { id: 'FOTO-DRIVE-01', name: 'IMG_1.jpg', mimeType: 'image/jpeg', size: '900000', thumbnailLink: process.env.DRIVE_URL + '/thumb/FOTO-DRIVE-01=s220' });
+      if (u.pathname === '/drive/v3/files/VIDEO-DRIVE-01') return u.searchParams.get('alt') === 'media' ? (res.writeHead(200, { 'Content-Type': 'video/mp4' }), res.end(MP4_DRIVE)) : responder(200, { id: 'VIDEO-DRIVE-01', name: 'institucional.mp4', mimeType: 'video/mp4', size: String(MP4_DRIVE.length) });
+      if (u.pathname === '/drive/v3/files/VIDEO-GRANDE') return responder(200, { id: 'VIDEO-GRANDE', name: 'bruto.mp4', mimeType: 'video/mp4', size: String(40 * 1048576) });
+      if (u.pathname === '/drive/v3/files/VIDEO-MOV') return responder(200, { id: 'VIDEO-MOV', name: 'iphone.mov', mimeType: 'video/quicktime', size: '1000' });
       if (u.pathname.startsWith('/thumb/FOTO-DRIVE-01=s')) { res.writeHead(200, { 'Content-Type': 'image/jpeg' }); return res.end(JPG_DRIVE); }
       return responder(404, { error: { message: 'File not found' } });
     }
@@ -1046,7 +1050,7 @@ falso.listen(0, () => {
     assert.ok(pi.messages[3].content.includes('Modo: sugestao'));
     assert.equal(pi.output_config.format.type, 'json_schema');
     assert.equal(pi.fallbacks, 'default'); assert.ok(ultimoPedidoIA.beta.includes('server-side-fallback-2026-07-01'));
-    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'abrir_alerta', 'enviar_link_extras', 'consultar_documentos']);
+    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'enviar_video', 'abrir_alerta', 'enviar_link_extras', 'consultar_documentos']);
     assert.ok(pi.messages[3].content.includes('SIMULADOR'));
     // Cotação: o Gilberto pede, o CRM consulta o simulador do Silbeck e devolve o resultado na 2ª rodada
     iaCota = true; pedidosIA.length = 0;
@@ -1303,6 +1307,32 @@ falso.listen(0, () => {
     r = await fetch(base + '/api/drive', { headers: eq });
     assert.deepEqual((await r.json()).fotos[0].na_biblioteca, ['Bangalô Especial']);
     assert.equal((await envF({ conversa_id: conv, fotos: [tz.foto.arquivo] })).status, 200);
+    // Vídeos (dono, 06/10/2026): do Drive para a biblioteca (MP4 até 16 MB), link público com Range e envio como vídeo
+    {
+      assert.equal((await trazer({ drive_id: 'VIDEO-GRANDE', grupo: 'INST', descricao: 'Vídeo institucional bruto', video: true })).status, 413, 'acima de 16 MB: o WhatsApp não aceita');
+      assert.equal((await trazer({ drive_id: 'VIDEO-MOV', grupo: 'INST', descricao: 'Vídeo do iPhone em MOV', video: true })).status, 400, 'só MP4');
+      r = await trazer({ drive_id: 'VIDEO-DRIVE-01', grupo: 'INST', descricao: 'Vídeo institucional: os dois rios, as cabanas e as atividades', etiquetas: ['institucional', 'rios'], video: true });
+      const tv = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(tv));
+      assert.match(tv.foto.arquivo, /^INST-v[0-9a-f]{8}\.mp4$/); assert.equal(tv.foto.video, true);
+      const sv = guardados.get('biblioteca/' + tv.foto.arquivo);
+      assert.ok(sv && sv.mime === 'video/mp4' && sv.dados.length === MP4_DRIVE.length, 'vídeo inteiro no Storage');
+      r = await fetch(base + '/videos/' + tv.foto.arquivo);
+      assert.equal(r.status, 200); assert.equal(r.headers.get('content-type'), 'video/mp4'); assert.equal(Buffer.from(await r.arrayBuffer()).length, MP4_DRIVE.length);
+      r = await fetch(base + '/videos/' + tv.foto.arquivo, { headers: { Range: 'bytes=0-9' } });
+      assert.equal(r.status, 206); assert.equal(r.headers.get('content-range'), 'bytes 0-9/' + MP4_DRIVE.length); assert.equal(Buffer.from(await r.arrayBuffer()).length, 10);
+      assert.equal((await fetch(base + '/videos/INST-v00000000.mp4')).status, 404);
+      const orc = require('./orcamento');
+      assert.ok(!orc.escolherFotos({ codigo_acomodacao: '', etiquetas: ['institucional'], quantidade: 5 }).some(f => orc.ehVideo(f.arquivo)), 'vídeo não entra como foto');
+      assert.equal(orc.escolherVideo({ codigo_acomodacao: '', etiquetas: [] }).arquivo, tv.foto.arquivo, 'sem assunto: o institucional');
+      assert.equal(orc.escolherVideo({ codigo_acomodacao: '', etiquetas: [] }, [tv.foto.arquivo]), null, 'nunca repete o que a conversa já recebeu');
+      assert.equal(orc.escolherVideo({ codigo_acomodacao: 'CBM', etiquetas: [] }), null, 'sem vídeo da Cabana Master: nada (não manda outro qualquer)');
+      const nMeta = chamadas.filter(c => c.url === '/graph/111/messages').length;
+      assert.equal((await envF({ conversa_id: conv, fotos: [tv.foto.arquivo] })).status, 200);
+      const mv = chamadas.filter(c => c.url === '/graph/111/messages').slice(nMeta)[0].corpo;
+      assert.equal(mv.type, 'video'); assert.ok(mv.video.link.endsWith('/videos/' + tv.foto.arquivo));
+      assert.ok(chamadas.some(c => c.url === '/rest/v1/rpc/registrar_saida_midia' && c.corpo.p_tipo === 'video' && c.corpo.p_mime === 'video/mp4'));
+    }
     // Tirar uma foto da curadoria: some do envio e da lista; devolver traz de volta
     const statusF = c => fetch(base + '/api/foto-status', { method: 'POST', headers: eq, body: JSON.stringify(c) });
     assert.equal((await statusF({ arquivo: 'BGE-1.jpg', ativo: false })).status, 200);
