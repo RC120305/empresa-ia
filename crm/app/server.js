@@ -841,6 +841,17 @@ const quandoBR = d => new Date(d).toLocaleString('pt-BR', { timeZone: 'America/C
 const textoPix = cob => 'Segue o Pix ' + (cob.tipo === 'sinal' ? 'do sinal (50%)' : cob.tipo === 'total' ? 'do valor total' : '') + ' de ' + produtos.brl(cob.valor) + ', válido até ' + quandoBR(cob.expira_em)
   + '. É só copiar o código abaixo e colar no app do seu banco, em Pix Copia e Cola.\n\n' + RECEBEDOR_PIX + '\n\nAssim que o pagamento cair, eu confirmo sua reserva por aqui 🌿\n---\n' + (cob.copia_e_cola || '');
 const respondendo = new Set();
+// Quando o Gilberto não consegue responder sozinho: avisa o cliente (nada de silêncio), pausa e chama a equipe
+const AVISO_ESPERA = { aberto: 'Só um instante: vou confirmar um detalhe com a equipe e já te respondo, tá? 🌿', fechado: 'Vou confirmar um detalhe com a equipe e te respondo assim que possível, tá? 🌿' };
+async function segurarCliente(conversa, info, titulo, buscar = fetch) {
+  await pausarGilberto(conversa, true, null, buscar).catch(() => {});
+  const m = minutosBonito(new Date());
+  try {
+    const { conv, para } = await carregarConversaParaEnvio(conversa, buscar);
+    await enviarTexto(conv, para, m >= 7 * 60 + 30 && m < 22 * 60 ? AVISO_ESPERA.aberto : AVISO_ESPERA.fechado, 'gilberto', buscar);
+  } catch (e) { console.warn(JSON.stringify({ evento: 'gilberto_aviso_espera', erro: String(e.message || e).slice(0, 200) })); }
+  await alertaAtendimento('gilberto_passou', conversa, info, buscar, titulo).catch(() => {});
+}
 async function responderSozinho(conversa, mensagemId, buscar = fetch) {
   await esperar(Number(process.env.GILBERTO_ESPERA_MS ?? 15000)); // o cliente costuma mandar várias mensagens seguidas
   const ultima = (await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${conversa}&direcao=eq.entrada&select=id&order=enviada_em.desc&limit=1`, buscar))[0];
@@ -858,11 +869,17 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
   respondendo.add(conversa);
   try {
     let r;
-    try { r = await gerarResposta(conversa, { modo: 'automatico', eu: null }, buscar); }
-    catch (e) {
-      if (e instanceof ErroEnvio && [409, 429].includes(e.http)) return { pulou: e.message };
-      await alertaAtendimento('gilberto_passou', conversa, 'O Gilberto não conseguiu responder (' + String(e.message || e).slice(0, 150) + '). Responda o cliente.', buscar, 'Gilberto não conseguiu responder').catch(() => {});
-      return { erro: String(e.message || e).slice(0, 200) };
+    for (let tentativa = 0; !r; tentativa++) {
+      try { r = await gerarResposta(conversa, { modo: 'automatico', eu: null }, buscar); }
+      catch (e) {
+        // Só pula calado quando não há nada a responder ou alguém da equipe já está pedindo a sugestão desta conversa
+        if (e instanceof ErroEnvio && (e.http === 409 || (e.http === 429 && /preparando/.test(e.message)))) return { pulou: e.message };
+        if (tentativa === 0 && e instanceof ErroEnvio && [429, 502].includes(e.http)) { await esperar(Number(process.env.GILBERTO_REPETIR_MS ?? 8000)); continue; } // IA ocupada ou instável: tenta mais uma vez
+        const motivo = String(e.message || e).slice(0, 150);
+        console.warn(JSON.stringify({ evento: 'gilberto_auto_falha', erro: motivo }));
+        await segurarCliente(conversa, 'O Gilberto não conseguiu responder (' + motivo + '). Ele avisou o cliente que vai confirmar com a equipe e ficou pausado nesta conversa: responda e, se quiser, devolva a ele.', 'Gilberto não conseguiu responder', buscar);
+        return { erro: motivo };
+      }
     }
     // Mensagem nova do cliente enquanto o Gilberto pensava: a resposta pode estar velha; a mais nova responde
     const depois = (await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${conversa}&direcao=eq.entrada&select=id&order=enviada_em.desc&limit=1`, buscar))[0];
@@ -872,8 +889,8 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
     const baloes = texto.split(/\n\s*[-–—]{3,}\s*\n/).map(t => t.trim()).filter(Boolean);
     const alterado = linkAlterado(texto);
     if (!baloes.length || baloes.length > 6 || /\[\[[^\]]*\]\]/.test(texto) || alterado) {
-      await pausarGilberto(conversa, true, null, buscar).catch(() => {});
-      await alertaAtendimento('gilberto_passou', conversa, 'O Gilberto preparou uma resposta que precisa de alguém (dado a completar ou link estranho). Ela está em ✨ Sugerir resposta/Revisão.', buscar, 'Gilberto: resposta para revisar').catch(() => {});
+      const porque = alterado ? 'link estranho' : /\[\[[^\]]*\]\]/.test(texto) ? 'dado a completar' : 'formato da mensagem';
+      await segurarCliente(conversa, 'O Gilberto preparou uma resposta que precisa de alguém (' + porque + '). Ela está em Revisão; o cliente foi avisado de que você responde. ' + (r.notas_internas ? 'Notas: ' + r.notas_internas : ''), 'Gilberto: resposta para revisar', buscar);
       return { pulou: 'revisar' };
     }
     const { conv, para, wamidCliente } = await carregarConversaParaEnvio(conversa, buscar);

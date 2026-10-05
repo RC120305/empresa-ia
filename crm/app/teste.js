@@ -240,6 +240,12 @@ const falso = http.createServer((req, res) => {
       if (iaOrcamento && !jaConsultou) return responder(200, { id: 'msg_o', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_o', name: 'gerar_orcamento', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], opcoes: [{ acomodacoes: ['BGE'] }, { acomodacoes: ['STD'] }], persona: 'familia', pessoas_aptas_combo: 2, frase_de_abertura: 'Ana, separei as opções para a família curtir os rios', sugerida: 'BGE' } }],
         usage: { input_tokens: 10, output_tokens: 20 } });
+      if (iaAuto === 'erro') return responder(400, { type: 'error', error: { type: 'invalid_request_error', message: 'falha de teste' } });
+      if (iaAuto === 'laco' && !(b.tool_choice && b.tool_choice.type === 'none')) return responder(200, { id: 'msg_l', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
+        content: [{ type: 'tool_use', id: 'toolu_l' + b.messages.length, name: 'consultar_disponibilidade', input: { data_entrada: emDias(40), data_saida: emDias(43), adultos: 2, idades_criancas: [] } }], usage: { input_tokens: 10, output_tokens: 20 } });
+      if (iaAuto === 'laco' || iaAuto === 'marcador') return responder(200, { id: 'msg_m', type: 'message', role: 'assistant', model: b.model, stop_reason: 'end_turn', stop_sequence: null,
+        content: [{ type: 'text', text: JSON.stringify({ mensagem: iaAuto === 'laco' ? 'Separei as opções para novembro! Qual semana fica melhor?' : 'Segue o orçamento: [[ORCAMENTO_COMBINADO]]', notas_internas: 'Combinação de duas cabanas.', precisa_equipe: false, produto_oferecido: '' }) }],
+        usage: { input_tokens: 10, output_tokens: 20 } });
       if (iaAuto && !jaConsultou) return responder(200, { id: 'msg_a', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: iaAuto === 'pix' ? [{ type: 'tool_use', id: 'toolu_a1', name: 'criar_reserva', input: { opcao_codigo: 'STD', aceite_cliente_literal: 'tem vaga de 14 a 16/11', titular_nome_completo: 'Ana Souza Lima', email: 'ana@exemplo.com', acompanhantes: [] } },
           { type: 'tool_use', id: 'toolu_a2', name: 'gerar_cobranca', input: { forma: 'pix', percentual: 50 } }]
@@ -1120,6 +1126,28 @@ falso.listen(0, () => {
       assert.equal(cobrancasF.length, nCob, 'sem reserva, nenhum Pix');
       const resTrava = JSON.parse(pedidosIA.at(-1).messages.at(-1).content[0].content);
       assert.equal(resTrava.ok, false); assert.ok(resTrava.erro.includes('depois da reserva'));
+      // 2b) muitas consultas: na última rodada a IA responde sem ferramentas (o cliente não fica sem resposta)
+      iaAuto = 'laco'; const nIAl = pedidosIA.length, nl = enviosMeta().length;
+      await postar(msgCliente('wamid.AUTO2B', 'Faz um orçamento para 3 diárias em novembro'));
+      assert.ok(await aguardar(() => enviosMeta().length >= nl + 1), 'respondeu mesmo depois de muitas consultas');
+      assert.equal(pedidosIA.length - nIAl, 6); assert.deepEqual(pedidosIA.at(-1).tool_choice, { type: 'none' });
+      assert.equal(enviosMeta().at(-1).corpo.text.body, 'Separei as opções para novembro! Qual semana fica melhor?');
+      // 2c) resposta com dado a completar: o cliente recebe um aviso (nada de silêncio), o Gilberto pausa e a equipe é chamada
+      iaAuto = 'marcador'; alertasF.length = 0; const nm = enviosMeta().length;
+      await postar(msgCliente('wamid.AUTO2C', 'Quero para 8 pessoas'));
+      assert.ok(await aguardar(() => enviosMeta().length >= nm + 1));
+      assert.ok(/vou confirmar um detalhe com a equipe/i.test(enviosMeta().at(-1).corpo.text.body), 'aviso de espera ao cliente');
+      assert.ok(!enviosMeta().slice(nm).some(c => c.corpo.text.body.includes('[[')), 'o marcador nunca vai ao cliente');
+      assert.ok(chamadas.findLast(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/conversas?id=eq.' + conv)).corpo.gilberto_pausado === true);
+      assert.ok(await aguardar(() => alertasF.length > 0)); assert.equal(alertasF.at(-1).titulo, 'Gilberto: resposta para revisar'); assert.ok(alertasF.at(-1).info.includes('Combinação'));
+      // 2d) a IA falha (mesmo tentando de novo): aviso ao cliente, pausa e alerta
+      iaAuto = 'erro'; alertasF.length = 0; process.env.GILBERTO_REPETIR_MS = '0'; const nIAe = pedidosIA.length, ne = enviosMeta().length;
+      await postar(msgCliente('wamid.AUTO2D', 'Oi'));
+      assert.ok(await aguardar(() => enviosMeta().length >= ne + 1));
+      assert.ok(pedidosIA.length - nIAe >= 2, 'tentou de novo antes de desistir');
+      assert.ok(/vou confirmar um detalhe com a equipe/i.test(enviosMeta().at(-1).corpo.text.body));
+      assert.ok(await aguardar(() => alertasF.length > 0)); assert.equal(alertasF.at(-1).titulo, 'Gilberto não conseguiu responder');
+      iaAuto = 'sem_reserva'; alertasF.length = 0;
       // 3) conversa assumida pela equipe: o Gilberto não responde
       autoPausado = true; const nIA3 = pedidosIA.length, n3 = enviosMeta().length;
       await postar(msgCliente('wamid.AUTO3', 'Oi?'));

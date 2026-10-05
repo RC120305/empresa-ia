@@ -87,22 +87,25 @@ const LIGADAS = ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva'
 const FERRAMENTAS = (() => {
   try { return JSON.parse(ler('ferramentas.json', '..', 'gilberto', 'ferramentas.json')).filter(t => LIGADAS.includes(t.name)); } catch (e) { return []; }
 })();
-const MAX_RODADAS = 4;
+const MAX_RODADAS = 6; // na última rodada a IA responde sem ferramentas (nunca fica sem resposta)
 
-async function executarFerramenta(nome, entrada, executores = {}) {
+async function executarFerramenta(nome, entrada, executores = {}, modo = 'sugestao') {
+  const semDado = modo === 'automatico'
+    ? 'Não invente o dado e não use marcadores [[...]]: diga ao cliente que vai confirmar esse ponto com a equipe e chame abrir_alerta com o resumo.'
+    : 'Não invente o dado: use [[...]] e avise a equipe nas notas_internas.';
   if (executores[nome]) {
     try { return await executores[nome](entrada); } catch (e) {
       console.warn(JSON.stringify({ evento: 'ferramenta_falhou', nome, erro: String(e.message || e).slice(0, 200) }));
-      return { ok: false, erro: 'A ferramenta falhou agora. Não invente o dado: use [[...]] e avise a equipe nas notas_internas.' };
+      return { ok: false, erro: 'A ferramenta falhou agora (' + String(e.message || e).slice(0, 160) + '). ' + semDado };
     }
   }
   if (nome === 'consultar_disponibilidade') {
     try { return await silbeck.cotar(entrada); } catch (e) {
       console.warn(JSON.stringify({ evento: 'silbeck_falhou', erro: String(e.message || e).slice(0, 200) }));
-      return { ok: false, erro: 'O Silbeck não respondeu agora. Não informe preço nem vaga: diga que vai conferir e avise a equipe nas notas_internas.' };
+      return { ok: false, erro: 'O Silbeck não respondeu agora. Não informe preço nem vaga: diga que vai conferir' + (modo === 'automatico' ? ' e chame abrir_alerta.' : ' e avise a equipe nas notas_internas.') };
     }
   }
-  return { ok: false, erro: 'Ferramenta não ligada nesta fase: use [[...]] e notas_internas.' };
+  return { ok: false, erro: 'Ferramenta não ligada nesta fase. ' + semDado };
 }
 
 const ROTULO = { image: 'uma foto', audio: 'um áudio', video: 'um vídeo', document: 'um documento', sticker: 'uma figurinha', location: 'uma localização', contacts: 'um contato', reaction: 'uma reação' };
@@ -148,7 +151,7 @@ ${c.modo === 'automatico' ? 'MODO AUTOMÁTICO: as ferramentas executam na hora. 
 Ofertas de produtos nesta conversa: ${c.ofertas && c.ofertas.length ? c.ofertas.map(o => o.produto_nome + ' (' + ({ oferecido: 'oferecido, sem resposta', aceito: 'aceito', recusado: 'recusado' })[o.situacao] + ', por ' + (o.por === 'gilberto' ? 'você' : 'a equipe') + ')').join('; ') + '. Não ofereça outro produto nesta conversa (no máximo 1 oferta; recusou, não insista), a não ser que o cliente peça.' : 'nenhuma ainda.' + (c.reservaPaga ? ' Ofereça 1 vez, pelo link de extras, e preencha produto_oferecido se oferecer um produto específico.' : '')}
 Resumo das conversas anteriores: não disponível
 </contexto_crm>
-Ferramentas ligadas nesta fase: consultar_disponibilidade (vagas e valores do Silbeck), gerar_orcamento (cria a página do orçamento e devolve o link; nesta fase, uma acomodação por opção), enviar_fotos (escolhe fotos reais da biblioteca; a equipe envia junto com a sua mensagem) e enviar_link_extras (link da página de extras: 'aventuras' ou 'momentos'; é assim que você oferece os produtos pagos, com o link na mensagem, só depois da reserva paga). Use consultar_disponibilidade sempre que for falar de preço ou vaga e já tiver datas e pessoas (com a idade de cada criança); se faltar algum dado, pergunte ao cliente em vez de chamar. Ao mandar o orçamento, chame gerar_orcamento com as opções escolhidas e coloque o link devolvido na mensagem, exatamente como veio. Também ligadas: criar_reserva e gerar_cobranca (no aceite, depois de o cliente escolher a acomodação e a forma de pagamento: confirme nome completo do titular, e-mail e acompanhantes, chame criar_reserva e, na mesma resposta, gerar_cobranca; Pix: escreva [[PIX]] sozinho num balão; cartão: [[link do cartão]] sozinho num balão; não repita valor, prazo nem dados da conta; a reserva e o Pix são criados quando a equipe aprova o envio) e abrir_alerta (quando o caso precisa da equipe: alteração, fora da base, exceção, acessibilidade, desconto insistente, problema de pagamento, comprovante, reserva urgente etc.; escreva um resumo útil para a equipe e continue a conversa normalmente, dizendo ao cliente que vai ver com o pessoal). As outras ferramentas ainda não estão ligadas: não tente chamá-las (quando uma resposta fixa da biblioteca couber, escreva o texto exato dela na mensagem, no lugar de usar_resposta_fixa). Onde precisaria delas, escreva a mensagem com marcadores [[...]] no lugar do dado (ex.: [[link do cartão]]) e diga em notas_internas o que a equipe precisa fazer. Nunca invente preço nem disponibilidade: só use os valores que a ferramenta devolveu.${silbeck.MODO() === 'simulador' ? ' Nesta fase de testes a ferramenta usa o SIMULADOR do Silbeck: os valores são fictícios; use-os normalmente na mensagem e lembre isso em notas_internas.' : ''}`;
+Ferramentas ligadas nesta fase: consultar_disponibilidade (vagas e valores do Silbeck), gerar_orcamento (cria a página do orçamento e devolve o link; nesta fase, uma acomodação por opção), enviar_fotos (escolhe fotos reais da biblioteca; a equipe envia junto com a sua mensagem) e enviar_link_extras (link da página de extras: 'aventuras' ou 'momentos'; é assim que você oferece os produtos pagos, com o link na mensagem, só depois da reserva paga). Use consultar_disponibilidade sempre que for falar de preço ou vaga e já tiver datas e pessoas (com a idade de cada criança); se faltar algum dado, pergunte ao cliente em vez de chamar. Ao mandar o orçamento, chame gerar_orcamento com as opções escolhidas e coloque o link devolvido na mensagem, exatamente como veio. Também ligadas: criar_reserva e gerar_cobranca (no aceite, depois de o cliente escolher a acomodação e a forma de pagamento: confirme nome completo do titular, e-mail e acompanhantes, chame criar_reserva e, na mesma resposta, gerar_cobranca; Pix: escreva [[PIX]] sozinho num balão; ${c.modo === 'automatico' ? 'cartão: diga que o link do cartão chega em instantes pela equipe' : 'cartão: [[link do cartão]] sozinho num balão'}; não repita valor, prazo nem dados da conta${c.modo === 'automatico' ? '' : '; a reserva e o Pix são criados quando a equipe aprova o envio'}) e abrir_alerta (quando o caso precisa da equipe: alteração, fora da base, exceção, acessibilidade, desconto insistente, problema de pagamento, comprovante, reserva urgente etc.; escreva um resumo útil para a equipe e continue a conversa normalmente, dizendo ao cliente que vai ver com o pessoal). As outras ferramentas ainda não estão ligadas: não tente chamá-las (quando uma resposta fixa da biblioteca couber, escreva o texto exato dela na mensagem, no lugar de usar_resposta_fixa). ${c.modo === 'automatico' ? 'Onde precisaria delas (ou se o pedido não couber nas ferramentas, como uma combinação de várias acomodações para um grupo grande), não use marcadores: responda o que já dá, diga ao cliente que vai montar isso com a equipe e chame abrir_alerta com o resumo do pedido.' : 'Onde precisaria delas, escreva a mensagem com marcadores [[...]] no lugar do dado (ex.: [[link do cartão]]) e diga em notas_internas o que a equipe precisa fazer.'} Nunca invente preço nem disponibilidade: só use os valores que a ferramenta devolveu.${silbeck.MODO() === 'simulador' ? ' Nesta fase de testes a ferramenta usa o SIMULADOR do Silbeck: os valores são fictícios; use-os normalmente na mensagem e lembre isso em notas_internas.' : ''}`;
 }
 
 let cliente = null;
@@ -200,14 +203,15 @@ async function sugerir(historico, conversa, executores = {}, catalogo = null) {
   let reserva = null, pagamento = null, alertou = false;
   let r;
   for (let rodada = 0; ; rodada++) {
+    if (rodada + 1 >= MAX_RODADAS) pedido.tool_choice = { type: 'none' }; // última rodada: responde com o que já tem
     r = await chamarIA();
     const u = r.usage || {};
     console.log(JSON.stringify({ evento: 'gilberto_sugestao', modelo: r.model, rodada, entrada: u.input_tokens, cache_lido: u.cache_read_input_tokens, cache_gravado: u.cache_creation_input_tokens, saida: u.output_tokens, parada: r.stop_reason }));
     if (r.stop_reason !== 'tool_use') break;
-    if (rodada + 1 >= MAX_RODADAS) throw new ErroSugestao(502, 'O Gilberto fez consultas demais nesta sugestão. Tente de novo.');
+    if (rodada + 1 >= MAX_RODADAS) throw new ErroSugestao(502, 'O Gilberto fez consultas demais nesta resposta.');
     const resultados = [];
     for (const b of r.content.filter(b => b.type === 'tool_use')) {
-      const res = await executarFerramenta(b.name, b.input, executores);
+      const res = await executarFerramenta(b.name, b.input, executores, conversa && conversa.modo);
       if (b.name === 'consultar_disponibilidade') cotacoes.push({ pedido: b.input, ok: !!res.ok, fonte: res.fonte || null, opcoes: (res.opcoes || []).length, erro: res.erro || null });
       if (b.name === 'gerar_orcamento' && res.ok) orcamentos.push({ id: res.orcamento_id, link: res.link, fonte: res.fonte });
       if (b.name === 'enviar_link_extras' && res.ok && res.vitrine_id) vitrines.push(res.vitrine_id);
