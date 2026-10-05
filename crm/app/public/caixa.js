@@ -896,7 +896,7 @@
     const cat = biblioteca.find(g => g.grupo === gal.cat);
     cats.textContent = ''; grade.textContent = '';
     $('gal-gerenciar').textContent = '← Voltar';
-    $('gal-cont').textContent = 'Banco de imagens (Drive) → ' + (cat ? cat.nome : '') + '. Toque na foto ou no vídeo para trazer (vídeo: MP4 até 16 MB).';
+    $('gal-cont').textContent = 'Banco de imagens (Drive) → ' + (cat ? cat.nome : '') + '. Toque na foto ou no vídeo para trazer (vídeo acima de 16 MB é reduzido para o WhatsApp).';
     $('gal-enviar').hidden = true; $('gal-sel').textContent = '';
     if (!d) { grade.textContent = 'Abrindo o Drive…'; return; }
     if (d.erro) { grade.append(el('p', { class: 'lat-txt', text: d.erro })); return; }
@@ -911,9 +911,9 @@
       const img = el('img', { alt: f.nome, loading: 'lazy' });
       miniatura(f.id).then(u => { img.src = u; }).catch(() => { img.alt = 'Sem miniatura: ' + f.nome; });
       const grande = f.video && f.mb > 16;
-      grade.append(el('button', { class: 'gal-item' + (grande ? ' fora' : ''), type: 'button', title: f.nome, onclick: () => grande ? toast('Este vídeo tem ' + f.mb + ' MB e o WhatsApp aceita até 16 MB. Peça à produtora uma versão para WhatsApp (MP4, 720p, até uns 60 segundos).') : formTrazer(f) },
+      grade.append(el('button', { class: 'gal-item', type: 'button', title: f.nome + (grande ? ' · o CRM reduz para caber no WhatsApp' : ''), onclick: () => formTrazer(f) },
         f.video ? el('span', { class: 'gal-video' }, img, el('span', { class: 'gal-play', 'aria-hidden': 'true', text: '▶' })) : img,
-        el('span', { class: 'gal-nome', text: f.na_biblioteca.length ? 'Já na biblioteca: ' + f.na_biblioteca.join(', ') : (f.video ? '🎬 ' + f.mb + ' MB · ' : '') + f.nome })));
+        el('span', { class: 'gal-nome', text: f.na_biblioteca.length ? 'Já na biblioteca: ' + f.na_biblioteca.join(', ') : (f.video ? '🎬 ' + f.mb + ' MB' + (grande ? ' (será reduzido)' : '') + ' · ' : '') + f.nome })));
     });
     if (!d.pastas.length && !d.fotos.length) grade.append(el('p', { class: 'lat-txt', text: 'Pasta vazia.' }));
   }
@@ -924,11 +924,11 @@
       { k: 'etiquetas', rotulo: 'Palavras-chave (separadas por vírgula)', dica: 'varanda, rede, mata', largo: true },
       { k: 'decoracao', rotulo: 'Mostra a decoração especial (pétalas, balões): opcional e cobrada à parte', tipo: 'check' },
     ], async v => {
-      toast(f.video ? 'Trazendo o vídeo do Drive… pode levar até 1 minuto.' : 'Trazendo a foto do Drive…');
+      toast(f.video ? (f.mb > 16 ? 'Trazendo e reduzindo o vídeo para o WhatsApp… pode levar uns minutos.' : 'Trazendo o vídeo do Drive… pode levar até 1 minuto.') : 'Trazendo a foto do Drive…');
       const j = await chamarApi('/api/foto', { drive_id: f.id, grupo: v.grupo, descricao: v.descricao, etiquetas: v.etiquetas.split(','), decoracao: v.decoracao, video: !!f.video });
       await carregarBiblioteca();
       gal.cat = j.foto.grupo; gal.modo = 'gerenciar'; pintarGaleria();
-      toast((j.foto.video ? 'Vídeo adicionado em ' : 'Foto adicionada em ') + ((biblioteca.find(g => g.grupo === j.foto.grupo) || {}).nome || 'categoria') + '.');
+      toast((j.foto.video ? 'Vídeo adicionado em ' : 'Foto adicionada em ') + ((biblioteca.find(g => g.grupo === j.foto.grupo) || {}).nome || 'categoria') + (j.reduzido ? ' (reduzido de ' + j.reduzido.de + ' MB para ' + j.reduzido.para + ' MB)' : '') + '.');
     });
   }
   $('gal-gerenciar').addEventListener('click', () => { gal.modo = gal.modo === 'enviar' ? 'gerenciar' : (gal.modo === 'drive' ? 'gerenciar' : 'enviar'); gal.sel = []; pintarGaleria(); });

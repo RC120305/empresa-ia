@@ -6,11 +6,13 @@ const { execFile } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { Readable } = require('stream');
+const { pipeline } = require('stream/promises');
 
 const API = (process.env.DRIVE_URL || 'https://www.googleapis.com').replace(/\/$/, '');
 const RAIZ = process.env.DRIVE_PASTA_FOTOS || '1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5';
 const RAIZ_VIDEOS = process.env.DRIVE_PASTA_VIDEOS || '1n6gPXQ1_dBkvIizIyWsPFsrTnH4k2QZw'; // "Vídeos do hotel cabanas"
-const LIMITE_VIDEO = 16 * 1024 * 1024; // o WhatsApp aceita vídeo de até 16 MB
+const LIMITE_VIDEO = Number(process.env.VIDEO_LIMITE || 16 * 1024 * 1024); // o WhatsApp aceita vídeo de até 16 MB
 const CONTA = 'crm-runtime@cabanas-crm.iam.gserviceaccount.com';
 const METADADOS = 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token?scopes=https://www.googleapis.com/auth/drive.readonly';
 const FFMPEG = process.env.FFMPEG || 'ffmpeg';
@@ -138,16 +140,53 @@ async function prepararFoto(id, buscar = fetch) {
   return { jpg: await recortar(dados), nome: info.name };
 }
 
-// Vídeo do Drive para a biblioteca: MP4 de até 16 MB (limite do WhatsApp), sem conversão.
+// Vídeo do Drive para a biblioteca. Até 16 MB (limite do WhatsApp) vai como está; acima disso o CRM reduz com o
+// ffmpeg para uma versão leve (até 720p, H.264 + AAC, ~15 MB), calculando a qualidade pela duração (dono, 06/10/2026).
+// O original no Drive não muda. Vídeo longo demais para caber com boa qualidade é recusado.
+const LIMITE_ORIGINAL = Number(process.env.VIDEO_ORIGINAL_MAX || 300 * 1024 * 1024);
+const DURACAO_MAX = Number(process.env.VIDEO_DURACAO_MAX || 240);      // segundos
+const VIDEO_MIN_KBPS = Number(process.env.VIDEO_MIN_KBPS || 450);       // abaixo disso a imagem fica ruim
+const FFPROBE = process.env.FFPROBE || 'ffprobe';
+const rodar = (bin, args, tempo) => new Promise((ok, falha) => execFile(bin, args, { timeout: tempo, maxBuffer: 1024 * 1024 }, (e, out, err) => e ? falha(new Error(String(err || e.message).slice(-300))) : ok(String(out))));
+async function reduzirVideo(entrada, alvo) {
+  const dur = Number((await rodar(FFPROBE, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nw=1:nk=1', entrada], 30000)).trim());
+  if (!(dur > 0)) throw new ErroDrive(400, 'Não consegui ler a duração do vídeo.');
+  if (dur > DURACAO_MAX) throw new ErroDrive(413, `Este vídeo tem ${Math.round(dur)} segundos: longo demais para caber em 16 MB com boa imagem. Use um trecho de até ${Math.round(DURACAO_MAX / 60)} minutos.`);
+  const saida = entrada + '-whatsapp.mp4';
+  for (const fator of [0.92, 0.75]) { // segunda tentativa, mais leve, se a primeira passar do limite
+    const kbps = Math.floor((alvo * 8 * fator) / dur / 1000) - 96; // 96 kbps para o som
+    if (kbps < VIDEO_MIN_KBPS) throw new ErroDrive(413, `Este vídeo é longo demais (${Math.round(dur)} s) para caber em 16 MB com boa imagem. Use um trecho mais curto.`);
+    await rodar(FFMPEG, ['-hide_banner', '-loglevel', 'error', '-y', '-i', entrada,
+      '-vf', "scale='if(gt(iw,ih),-2,min(720,iw))':'if(gt(iw,ih),min(720,ih),-2)'",
+      '-c:v', 'libx264', '-preset', 'veryfast', '-profile:v', 'main', '-pix_fmt', 'yuv420p', '-b:v', kbps + 'k', '-maxrate', Math.floor(kbps * 1.3) + 'k', '-bufsize', kbps * 2 + 'k',
+      '-c:a', 'aac', '-b:a', '96k', '-ac', '2', '-movflags', '+faststart', saida], 280000);
+    const mp4 = fs.readFileSync(saida);
+    if (mp4.length <= alvo) return mp4;
+  }
+  throw new ErroDrive(413, 'Não consegui deixar o vídeo abaixo de 16 MB. Use um trecho mais curto.');
+}
 async function prepararVideo(id, buscar = fetch) {
   if (!idValido(id)) throw new ErroDrive(400, 'Vídeo inválido.');
   const info = await (await chamar(`/drive/v3/files/${id}?fields=id,name,mimeType,size&supportsAllDrives=true`, buscar)).json();
-  if (info.mimeType !== 'video/mp4') throw new ErroDrive(400, 'O WhatsApp só aceita vídeo em MP4. Peça à produtora a versão em MP4 (H.264).');
+  if (!String(info.mimeType || '').startsWith('video/')) throw new ErroDrive(400, 'Isso não é um vídeo.');
   const mb = Math.round(Number(info.size || 0) / 1048576 * 10) / 10;
-  if (Number(info.size) > LIMITE_VIDEO) throw new ErroDrive(413, `Este vídeo tem ${mb} MB e o WhatsApp aceita até 16 MB. Peça à produtora uma versão para WhatsApp (MP4, 720p, até uns 60 segundos).`);
-  const dados = Buffer.from(await (await chamar(`/drive/v3/files/${id}?alt=media&supportsAllDrives=true`, buscar, 90000)).arrayBuffer());
-  if (dados.length > LIMITE_VIDEO) throw new ErroDrive(413, 'Vídeo acima de 16 MB.');
-  return { mp4: dados, nome: info.name, mb };
+  if (info.mimeType === 'video/mp4' && Number(info.size) <= LIMITE_VIDEO) { // já cabe: vai como está
+    const dados = Buffer.from(await (await chamar(`/drive/v3/files/${id}?alt=media&supportsAllDrives=true`, buscar, 90000)).arrayBuffer());
+    if (dados.length > LIMITE_VIDEO) throw new ErroDrive(413, 'Vídeo acima de 16 MB.');
+    return { mp4: dados, nome: info.name, mb };
+  }
+  if (Number(info.size) > LIMITE_ORIGINAL) throw new ErroDrive(413, `Este vídeo tem ${mb} MB: grande demais para o CRM converter. Peça à produtora uma versão mais curta ou para WhatsApp (MP4, 720p).`);
+  // Grande (ou em outro formato, como o MOV do iPhone): baixa para um arquivo temporário e reduz
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'video-'));
+  try {
+    const entrada = path.join(dir, 'original');
+    const r = await chamar(`/drive/v3/files/${id}?alt=media&supportsAllDrives=true`, buscar, 180000);
+    await pipeline(Readable.fromWeb(r.body), fs.createWriteStream(entrada));
+    let mp4;
+    try { mp4 = await reduzirVideo(entrada, LIMITE_VIDEO - 512 * 1024); }
+    catch (e) { if (e instanceof ErroDrive) throw e; throw new ErroDrive(502, 'Não consegui converter o vídeo (' + String(e.message).slice(0, 120) + ').'); }
+    return { mp4, nome: info.name, mb, convertido: true, mb_final: Math.round(mp4.length / 1048576 * 10) / 10 };
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 }
 
 module.exports = { listar, miniatura, prepararFoto, prepararVideo, RAIZ_VIDEOS, recortar, orientacaoExif, ErroDrive, RAIZ, CONTA, idValido };

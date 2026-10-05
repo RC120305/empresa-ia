@@ -2089,9 +2089,10 @@ const API_EQUIPE = {
     await atualizarFotos(fetch, true);
     const g = orcamento.biblioteca().find(x => x.grupo === grupo);
     if (g && g.fotos.some(f => f.drive_id === corpo.drive_id)) throw new ErroEnvio(409, 'Esse arquivo já está em ' + g.nome + '.');
-    let arquivo;
+    let arquivo, reduzido = null;
     if (corpo.video) { // vídeo (MP4 até 16 MB): vai inteiro para o Storage e sai por /videos/<arquivo>
-      const { mp4 } = await drive.prepararVideo(corpo.drive_id);
+      const v = await drive.prepararVideo(corpo.drive_id), mp4 = v.mp4;
+      if (v.convertido) reduzido = { de: v.mb, para: v.mb_final };
       arquivo = `${grupo}-v${crypto.randomBytes(4).toString('hex')}.mp4`;
       await gravarNoStorage('biblioteca/' + arquivo, mp4, 'video/mp4', fetch, 120000);
     } else {
@@ -2102,7 +2103,7 @@ const API_EQUIPE = {
     }
     await gravarFotoAjuste({ arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao, drive_id: corpo.drive_id, origem: 'drive', ativo: true, criado_por: eu.id });
     await atualizarFotos(fetch, true);
-    return { ok: true, foto: { arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao, video: orcamento.ehVideo(arquivo) } };
+    return { ok: true, foto: { arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao, video: orcamento.ehVideo(arquivo) }, ...(reduzido ? { reduzido } : {}) };
   }),
   // Tira uma foto da biblioteca (ou devolve). Nada é apagado: some do envio, da página do orçamento e do Gilberto.
   'POST /api/foto-status': async corpo => {

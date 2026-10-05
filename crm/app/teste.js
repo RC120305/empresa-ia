@@ -34,6 +34,12 @@ const ofertasF = [], vendasF = [], alertasF = [], vitrinesF = [];
 let iaVitrines = null;
 const cobrancasF = [], reservasF = [];
 const docsF = [];
+const VIDEO_GRANDE = (() => { // vídeo de 4 s com imagem pesada (~2 MB), para testar a redução
+  const f = require('path').join(require('os').tmpdir(), 'teste-video-grande.mp4');
+  require('child_process').execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=1280x720:rate=30:duration=4', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=4',
+    '-c:v', 'libx264', '-preset', 'ultrafast', '-b:v', '5M', '-c:a', 'aac', '-shortest', f]);
+  return require('fs').readFileSync(f);
+})();
 const MP4_DRIVE = Buffer.concat([Buffer.from('\x00\x00\x00\x18ftypmp42'), Buffer.alloc(3000, 7)]);
 let bbPago = false;
 const configF = {};
@@ -62,8 +68,9 @@ const falso = http.createServer((req, res) => {
         ? { files: [{ id: 'PASTA-BANGALO-1', name: 'Bangalô', mimeType: 'application/vnd.google-apps.folder' }, { id: 'FOTO-DRIVE-01', name: 'IMG_1.jpg', mimeType: 'image/jpeg' }] } : { files: [] });
       if (u.pathname === '/drive/v3/files/FOTO-DRIVE-01') return responder(200, { id: 'FOTO-DRIVE-01', name: 'IMG_1.jpg', mimeType: 'image/jpeg', size: '900000', thumbnailLink: process.env.DRIVE_URL + '/thumb/FOTO-DRIVE-01=s220' });
       if (u.pathname === '/drive/v3/files/VIDEO-DRIVE-01') return u.searchParams.get('alt') === 'media' ? (res.writeHead(200, { 'Content-Type': 'video/mp4' }), res.end(MP4_DRIVE)) : responder(200, { id: 'VIDEO-DRIVE-01', name: 'institucional.mp4', mimeType: 'video/mp4', size: String(MP4_DRIVE.length) });
-      if (u.pathname === '/drive/v3/files/VIDEO-GRANDE') return responder(200, { id: 'VIDEO-GRANDE', name: 'bruto.mp4', mimeType: 'video/mp4', size: String(40 * 1048576) });
-      if (u.pathname === '/drive/v3/files/VIDEO-MOV') return responder(200, { id: 'VIDEO-MOV', name: 'iphone.mov', mimeType: 'video/quicktime', size: '1000' });
+      if (u.pathname === '/drive/v3/files/VIDEO-GRANDE') return responder(200, { id: 'VIDEO-GRANDE', name: 'bruto.mp4', mimeType: 'video/mp4', size: String(400 * 1048576) });
+      if (u.pathname === '/drive/v3/files/VIDEO-REDUZIR') return u.searchParams.get('alt') === 'media' ? (res.writeHead(200, { 'Content-Type': 'video/mp4' }), res.end(VIDEO_GRANDE)) : responder(200, { id: 'VIDEO-REDUZIR', name: 'master.mp4', mimeType: 'video/mp4', size: String(VIDEO_GRANDE.length) });
+      if (u.pathname === '/drive/v3/files/PDF-DRIVE') return responder(200, { id: 'PDF-DRIVE', name: 'x.pdf', mimeType: 'application/pdf', size: '1000' });
       if (u.pathname.startsWith('/thumb/FOTO-DRIVE-01=s')) { res.writeHead(200, { 'Content-Type': 'image/jpeg' }); return res.end(JPG_DRIVE); }
       return responder(404, { error: { message: 'File not found' } });
     }
@@ -327,6 +334,7 @@ falso.listen(0, () => {
   process.env.META_GRAPH_URL = 'http://127.0.0.1:' + falso.address().port + '/graph';
   process.env.DRIVE_URL = 'http://127.0.0.1:' + falso.address().port;
   process.env.DRIVE_TOKEN = 'tok-drive';
+  process.env.VIDEO_LIMITE = String(1024 * 1024); process.env.VIDEO_MIN_KBPS = '100'; // nos testes, o "limite do WhatsApp" é 1 MB
   process.env.PIX_INTERVALO_MS = '0';
   const { servidor } = require('./server');
 
@@ -1311,8 +1319,20 @@ falso.listen(0, () => {
     assert.equal((await envF({ conversa_id: conv, fotos: [tz.foto.arquivo] })).status, 200);
     // Vídeos (dono, 06/10/2026): do Drive para a biblioteca (MP4 até 16 MB), link público com Range e envio como vídeo
     {
-      assert.equal((await trazer({ drive_id: 'VIDEO-GRANDE', grupo: 'INST', descricao: 'Vídeo institucional bruto', video: true })).status, 413, 'acima de 16 MB: o WhatsApp não aceita');
-      assert.equal((await trazer({ drive_id: 'VIDEO-MOV', grupo: 'INST', descricao: 'Vídeo do iPhone em MOV', video: true })).status, 400, 'só MP4');
+      assert.equal((await trazer({ drive_id: 'VIDEO-GRANDE', grupo: 'INST', descricao: 'Vídeo institucional bruto', video: true })).status, 413, 'grande demais até para converter');
+      assert.equal((await trazer({ drive_id: 'PDF-DRIVE', grupo: 'INST', descricao: 'Arquivo que não é vídeo', video: true })).status, 400, 'só vídeo');
+      // Acima do limite do WhatsApp: o CRM reduz (ffmpeg) e guarda a versão leve
+      assert.ok(VIDEO_GRANDE.length > 1024 * 1024, 'o vídeo de teste passa do limite');
+      r = await trazer({ drive_id: 'VIDEO-REDUZIR', grupo: 'CBM', descricao: 'Vídeo da Cabana Master por dentro e por fora', video: true });
+      const tr = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(tr));
+      assert.ok(tr.reduzido && tr.reduzido.para < tr.reduzido.de, JSON.stringify(tr.reduzido));
+      const sr = guardados.get('biblioteca/' + tr.foto.arquivo);
+      assert.ok(sr.dados.length <= 1024 * 1024 && sr.dados.subarray(4, 8).toString() === 'ftyp', 'MP4 abaixo do limite');
+      const fr = require('path').join(require('os').tmpdir(), 'teste-video-reduzido.mp4'); require('fs').writeFileSync(fr, sr.dados);
+      const prob = JSON.parse(require('child_process').execFileSync('ffprobe', ['-v', 'error', '-show_streams', '-of', 'json', fr]).toString());
+      const vs = prob.streams.find(x => x.codec_type === 'video');
+      assert.deepEqual([vs.codec_name, vs.height, prob.streams.some(x => x.codec_type === 'audio')], ['h264', 720, true], 'H.264 em 720p, com som');
       r = await trazer({ drive_id: 'VIDEO-DRIVE-01', grupo: 'INST', descricao: 'Vídeo institucional: os dois rios, as cabanas e as atividades', etiquetas: ['institucional', 'rios'], video: true });
       const tv = await r.json();
       assert.equal(r.status, 200, JSON.stringify(tv));
@@ -1328,7 +1348,8 @@ falso.listen(0, () => {
       assert.ok(!orc.escolherFotos({ codigo_acomodacao: '', etiquetas: ['institucional'], quantidade: 5 }).some(f => orc.ehVideo(f.arquivo)), 'vídeo não entra como foto');
       assert.equal(orc.escolherVideo({ codigo_acomodacao: '', etiquetas: [] }).arquivo, tv.foto.arquivo, 'sem assunto: o institucional');
       assert.equal(orc.escolherVideo({ codigo_acomodacao: '', etiquetas: [] }, [tv.foto.arquivo]), null, 'nunca repete o que a conversa já recebeu');
-      assert.equal(orc.escolherVideo({ codigo_acomodacao: 'CBM', etiquetas: [] }), null, 'sem vídeo da Cabana Master: nada (não manda outro qualquer)');
+      assert.equal(orc.escolherVideo({ codigo_acomodacao: 'CBM', etiquetas: [] }).arquivo, tr.foto.arquivo, 'o vídeo da Cabana Master');
+      assert.equal(orc.escolherVideo({ codigo_acomodacao: 'BGE', etiquetas: [] }), null, 'sem vídeo do Bangalô Especial: nada (não manda outro qualquer)');
       const nMeta = chamadas.filter(c => c.url === '/graph/111/messages').length;
       assert.equal((await envF({ conversa_id: conv, fotos: [tv.foto.arquivo] })).status, 200);
       const mv = chamadas.filter(c => c.url === '/graph/111/messages').slice(nMeta)[0].corpo;
