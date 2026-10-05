@@ -4,6 +4,7 @@ Fonte: imagens do cardápio enviadas pelo dono em 06/10/2026. Preços em reais, 
 ### Horário da lanchonete e do bar
 - Segunda a sábado, das 11h às 21h; domingo, das 11h às 17h.
 - Aviso do cardápio: "É proibida a entrada de bebidas no Hotel Cabanas e Cabanas Aventura. Sujeito a taxas."
+- Regra informada pelo dono (06/10/2026), **A CONFIRMAR, não usar ainda com o cliente**: bebida trazida de fora paga taxa de rolha de R$ 100,00 por dia. Garrafa de tereré está liberada (confirmado).
 
 ### Pratos executivos (jantar, das 19h às 21h)
 Todos os pratos acompanham 3 guarnições, à escolha: arroz, batata frita, salada, farofa, polenta frita ou mandioca frita.
