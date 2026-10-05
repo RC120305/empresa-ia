@@ -45,6 +45,6 @@ select 'Taxa ambiental de Bonito (TCA)', 'Acqua Viagens, blog (jan/2026) + busca
   **R:** Não: é uma taxa por pessoa por dia de passeio, mesmo que você faça mais de um passeio naquele dia.
 $doc$,
   '["As fontes divergem sobre a data de início da taxa (2021 ou dezembro de 2025): a data ficou de fora."]'::jsonb,
-  '["CONFIRMAR: a taxa vale para hóspede que fica só no hotel ou faz só a boia cross e o arvorismo do hotel? Até a resposta, o Gilberto diz que a equipe confirma.", "A Acqua cita um seguro contra acidentes de até R$ 20 mil incluído na taxa; só uma fonte traz isso, então ficou de fora.", "Valor e regras são da Prefeitura e podem mudar: conferir a cada 6 meses."]'::jsonb,
+  '["CONFIRMAR: o documento diz que o hotel não cobra a taxa e que ela não entra na diária (ela é paga no portal da Prefeitura). Se o hotel cobrar ou ajudar a cobrar, edite antes de aprovar.", "CONFIRMAR: a taxa vale para hóspede que fica só no hotel ou faz só a boia cross e o arvorismo do hotel? Até a resposta, o Gilberto diz que a equipe confirma.", "A Acqua cita um seguro contra acidentes de até R$ 20 mil incluído na taxa; só uma fonte traz isso, então ficou de fora.", "Valor e regras são da Prefeitura e podem mudar: conferir a cada 6 meses."]'::jsonb,
   'aguardando'
 where not exists (select 1 from gilberto_documentos where titulo = 'Taxa ambiental de Bonito (TCA)');
