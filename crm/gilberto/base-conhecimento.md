@@ -86,6 +86,8 @@
   R: Com monitor exclusivo: arco e flecha, trilhas pela mata ciliar com banho de rio, tirolesa, stand up paddle e caiaque no Rio Formoso. Valem para todos os hóspedes, inclusive para quem fica só uma diária. **A tirolesa da trilha é a partir de 8 anos**; as demais atividades da programação não têm idade mínima. *(P68b, dono 01/10.)*
 - **P:** Tem lugar raso no rio para criança pequena?
   R: Tem, sim: no Rio Formosinho, perto da recepção, há uma área rasa. Sempre com um adulto junto. *(P68c, dono 01/10.)*
+- **P:** Um dia é suficiente para aproveitar tudo no hotel? Quantos dias preciso para aproveitar o hotel?
+  R: Um dia só não dá para aproveitar tudo. O ideal é deixar pelo menos 2 dias no hotel: assim dá tempo para a programação inclusa com monitor (arco e flecha, trilhas com banho de rio, tirolesa, stand up e caiaque), a piscina, a hidromassagem e a sauna, e também para as atividades opcionais aqui dentro, a boia cross e o arvorismo (pagas à parte). *(Dono, 05/10/2026.)*
 - **P:** Quais atividades são pagas à parte?
   R: **Boia cross** (1 h, 1.200 m de corredeiras e cachoeiras do Rio Formoso): R$ 100 por pessoa. **Arvorismo** (18 obstáculos e 2 tirolesas, a última aquática no Rio Formoso): R$ 120 por pessoa. **Combo boia cross + arvorismo:** R$ 170 por pessoa. As duas a partir de 5 anos e 1,15 m; não recomendadas para gestantes nem para quem ingeriu álcool. Há vários horários por dia, mas as **vagas são limitadas**: sempre consultar a vaga antes de prometer horário. Posso ver os horários para você? *(P71a, dono 01/10: o Gilberto reserva quando o cliente escolhe, e o CRM abre um alerta para a equipe.)*
 - **P:** Quem não está hospedado pode fazer boia cross ou arvorismo?

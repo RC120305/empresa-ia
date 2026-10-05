@@ -47,6 +47,8 @@
 
 **Combo boia cross + arvorismo: R$ 170/pessoa** (dono, 29/09/2026). Boia cross e arvorismo são a **prioridade de venda** (upsell).
 
+**Quanto tempo ficar para aproveitar o hotel (dono, 05/10/2026):** 1 dia **não** basta para aproveitar tudo. O ideal é deixar **pelo menos 2 dias** no hotel para fazer a programação inclusa **e** as atividades opcionais (boia cross e arvorismo). Quem pergunta se dá para "aproveitar tudo" em 1 dia ouve isso, com as opcionais citadas junto com as inclusas.
+
 **Idade mínima (dono, 2026-09-27):** boia cross e arvorismo: **a partir de 5 anos e com pelo menos 1,15 m**. Na **programação inclusa**, a **tirolesa da trilha é a partir de 8 anos** (dono, 01/10/2026, P68b); arco e flecha, trilhas, caiaque e SUP não têm idade mínima. Há **área rasa no Rio Formosinho, perto da recepção** (P68c).
 
 \* Valores do documento: em anúncios, use "[confirmar valor vigente]". Boia cross e arvorismo também atendem não hóspedes, que compram o voucher numa agência oficial de Bonito (ex.: Ecotrip), de preferência com antecedência (não há day use; P71b). Há vários horários por dia, com vagas limitadas (P71a).
