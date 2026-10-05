@@ -1,5 +1,23 @@
 [
  {
+  "id": "piloto-remotion",
+  "titulo": "Cabana Master · Remotion (piloto)",
+  "grupo": "Piloto: legendas de copy (compare os dois)",
+  "arquivo": "design/videos/2026-10/piloto-legendas/REELS-COPY-MASTER-remotion.mp4",
+  "musica": "Calm piano (Pixabay)",
+  "nota": "Copy animada palavra por palavra, palavra de destaque em laranja, contador 0→85 m², zoom e deslize nas fotos. Feito no Remotion.",
+  "duracao": "15"
+ },
+ {
+  "id": "piloto-kit-atual",
+  "titulo": "Cabana Master · kit atual",
+  "grupo": "Piloto: legendas de copy (compare os dois)",
+  "arquivo": "design/videos/2026-10/piloto-legendas/REELS-COPY-MASTER-kit-atual.mp4",
+  "musica": "Calm piano (Pixabay)",
+  "nota": "Mesmas fotos, textos e música, no nosso kit de hoje: letreiro fixo com moldura e logo, zoom lento e fusão.",
+  "duracao": "15"
+ },
+ {
   "id": "drone-cinematico-ambient",
   "titulo": "Cânion do Salobra · cinemático",
   "grupo": "Testes com drone (Ecotrip)",

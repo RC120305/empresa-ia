@@ -1,0 +1,45 @@
+{
+ "saida": "REELS-COPY-MASTER-kit-atual.mp4",
+ "tempo_tela": 2.4,
+ "fusao": 0.33,
+ "zoom": 0.06,
+ "moldura": true,
+ "telas": [
+  {
+   "foto": "fotos/externa.jpg",
+   "pos": "50% center",
+   "texto": "Cabana Master · a maior do Cabanas"
+  },
+  {
+   "foto": "fotos/casal.jpg",
+   "pos": "50% center",
+   "texto": "85 m², dois ambientes"
+  },
+  {
+   "foto": "fotos/banheira.jpg",
+   "pos": "55% center",
+   "texto": "Hidromassagem para 2 (pétalas: decoração opcional)"
+  },
+  {
+   "foto": "fotos/solteiro.jpg",
+   "pos": "40% center",
+   "texto": "Para 2 a 5 pessoas"
+  },
+  {
+   "foto": "fotos/balanco.jpg",
+   "pos": "60% center",
+   "texto": "Varanda com balanço"
+  }
+ ],
+ "fim": {
+  "foto": "fotos/externa.jpg",
+  "linha1": "BONITO - MS",
+  "linha2": "Reserve pelo link da bio",
+  "tempo": 3.0
+ },
+ "musica": {
+  "arquivo": "../../musicas/alex-morgan-calm-piano-541028.mp3",
+  "volume": 0.8,
+  "inicio": 98
+ }
+}
