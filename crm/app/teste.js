@@ -1371,6 +1371,20 @@ falso.listen(0, () => {
       assert.equal((await api('/api/gilberto-documento-acao', { id: doc.id, acao: 'apagar' }, 'token-dono')).status, 200);
       assert.equal(docsF.length, 0);
     }
+    // Mensagem que chega enquanto o Gilberto ainda manda a resposta anterior: ele lê no fim, como pendente
+    {
+      const { emOrdemDeLeitura } = require('./server');
+      const m = (id, direcao, t, corpo) => ({ id, direcao, enviada_em: '2026-10-05T03:37:' + t + '+00:00', corpo });
+      const h1 = [m('a', 'entrada', '01', 'Oi'), m('b', 'entrada', '20', 'Quero reservar de 15 a 20/12'), m('c', 'saida', '25', 'Oi! Aqui é o Gilberto')];
+      assert.deepEqual(emOrdemDeLeitura(h1, 'b', h1[0].enviada_em).map(x => x.id), ['a', 'c', 'b'], 'a resposta ao Oi vem antes do pedido que ela não leu');
+      assert.deepEqual(emOrdemDeLeitura(h1, 'b', null).map(x => x.id), ['a', 'c', 'b'], 'sem memória (servidor reiniciou): pelo menos a mensagem que disparou');
+      const { montarMensagens } = require('./gilberto');
+      assert.equal(montarMensagens(emOrdemDeLeitura(h1, 'b', h1[0].enviada_em)).at(-1).role, 'user', 'a última mensagem volta a ser do cliente: o Gilberto responde');
+      const h2 = [m('a', 'entrada', '01', 'Oi'), m('b', 'entrada', '10', 'tudo bem?'), m('c', 'saida', '25', 'Oi!'), m('d', 'entrada', '30', 'quero reservar')];
+      assert.deepEqual(emOrdemDeLeitura(h2, 'd', h2[0].enviada_em).map(x => x.id), ['a', 'c', 'b', 'd'], 'duas mensagens não lidas, na ordem');
+      const h3 = [m('a', 'entrada', '01', 'Oi'), m('c', 'saida', '05', 'Oi!'), m('d', 'entrada', '30', 'quero reservar')];
+      assert.deepEqual(emOrdemDeLeitura(h3, 'd', h3[0].enviada_em).map(x => x.id), ['a', 'c', 'd'], 'ordem normal: nada muda');
+    }
     // Combinações (grupo em mais de uma acomodação; dono, 05/10/2026)
     {
       const { distribuir } = require('./silbeck');

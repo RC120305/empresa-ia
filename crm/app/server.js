@@ -889,7 +889,7 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
   try {
     let r;
     for (let tentativa = 0; !r; tentativa++) {
-      try { r = await gerarResposta(conversa, { modo: 'automatico', eu: null }, buscar); }
+      try { r = await gerarResposta(conversa, { modo: 'automatico', eu: null, mensagemId }, buscar); }
       catch (e) {
         // Só pula calado quando não há nada a responder ou alguém da equipe já está pedindo a sugestão desta conversa
         if (e instanceof ErroEnvio && (e.http === 409 || (e.http === 429 && /preparando/.test(e.message)))) return { pulou: e.message };
@@ -913,6 +913,7 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
       return { pulou: 'revisar' };
     }
     const { conv, para, wamidCliente } = await carregarConversaParaEnvio(conversa, buscar);
+    if (r.lido_ate) vistoAte.set(conversa, r.lido_ate); // o que chegar daqui em diante, esta resposta não leu
     const enviadas = [];
     for (const b of baloes) {
       await mostrarDigitando(conv, wamidCliente, buscar);
@@ -2158,7 +2159,22 @@ async function sugerirParaEquipe(tokenUsuario, corpo, buscar = fetch) {
 // Núcleo do Gilberto: lê a conversa, chama a IA com as ferramentas e registra a sugestão.
 // modo 'sugestao': nada que grave fora do CRM acontece antes de a equipe aprovar.
 // modo 'automatico': as ferramentas executam na hora (reserva no Silbeck, Pix) e quem envia é responderSozinho.
-async function gerarResposta(id, { modo, eu }, buscar = fetch) {
+// Mensagem do cliente que chegou enquanto o Gilberto ainda mandava a resposta anterior (que não a leu): no
+// histórico ela fica antes dessa resposta e a conversa parece respondida. Para o Gilberto, as mensagens do cliente
+// que a resposta anterior não leu vão para o fim, depois das respostas que já estavam saindo.
+// vistoAte: horário da última mensagem do cliente que a resposta anterior leu (guardado ao enviar).
+const vistoAte = new Map();
+function emOrdemDeLeitura(historico, mensagemId, visto = null) {
+  const i = mensagemId ? historico.findIndex(m => m.id === mensagemId) : -1;
+  if (i < 0) return historico;
+  const naoLida = (m, k) => m.direcao === 'entrada' && (visto ? String(m.enviada_em) > visto : k >= i);
+  const pendentes = historico.filter(naoLida);
+  if (!pendentes.length) return historico;
+  const primeira = historico.findIndex(naoLida);
+  if (!historico.slice(primeira).some(m => m.direcao !== 'entrada')) return historico; // nada saiu depois: ordem já certa
+  return [...historico.filter((m, k) => !naoLida(m, k)), ...pendentes];
+}
+async function gerarResposta(id, { modo, eu, mensagemId = null }, buscar = fetch) {
   const auto = modo === 'automatico';
   await atualizarFotos(buscar).catch(() => {});
   if (sugerindo.has(id)) throw new ErroEnvio(429, 'Já estou preparando uma sugestão para esta conversa.');
@@ -2170,7 +2186,7 @@ async function gerarResposta(id, { modo, eu }, buscar = fetch) {
     const url = campos => `${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${id}&select=${campos}&order=enviada_em.desc&limit=40`;
     let h = await buscar(url('id,conversa_id,direcao,tipo,corpo,enviada_em,midia_id,midia_caminho,transcricao,transcricao_status'), { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
     if (!h.ok) h = await buscar(url('direcao,tipo,corpo,enviada_em'), { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }); // banco sem a migração 005
-    const historico = h.ok ? (await h.json()).reverse() : [];
+    const historico = emOrdemDeLeitura(h.ok ? (await h.json()).reverse() : [], mensagemId, mensagemId ? vistoAte.get(id) : null);
     // Áudios do cliente ainda sem texto: transcreve os 3 mais recentes antes de o Gilberto ler.
     const pendentes = historico.filter(m => m.tipo === 'audio' && m.direcao === 'entrada' && m.id && (!m.transcricao_status || m.transcricao_status === 'falhou')).slice(-3);
     await Promise.all(pendentes.map(m => transcreverMensagem(m, buscar).then(r => { m.transcricao = r.texto; m.transcricao_status = r.status; }).catch(() => {})));
@@ -2270,7 +2286,8 @@ async function gerarResposta(id, { modo, eu }, buscar = fetch) {
       console.warn(JSON.stringify({ evento: 'sugestao_nao_registrada', http: reg && reg.status, erro: det }));
       avisoRevisao = 'A sugestão não entrou na Revisão (' + (reg ? 'erro ' + reg.status : 'banco fora') + (reg && reg.status === 404 ? ': falta a migração 009' : '') + ').';
     }
-    return { ok: true, ...r, sugestao_id: sugestaoId || null, aviso_revisao: avisoRevisao, cobranca: cobrancaGerada, reserva_criada: reservaCriada };
+    const lidoAte = historico.filter(m => m.direcao === 'entrada' && m.enviada_em).map(m => String(m.enviada_em)).sort().pop() || null;
+    return { ok: true, ...r, sugestao_id: sugestaoId || null, aviso_revisao: avisoRevisao, cobranca: cobrancaGerada, reserva_criada: reservaCriada, lido_ate: lidoAte };
   } catch (e) {
     if (e instanceof gilberto.ErroSugestao) throw new ErroEnvio(e.http, e.message);
     throw e;
@@ -2609,4 +2626,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => { console.log('CRM Cabanas ouvindo na porta ' + porta); conferirIpSaida(); });
-module.exports = { servidor, retomarOrcamentos, resumoDoDia, sinalQuente, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca, catalogoParaTeste: () => { limparCatalogo(); return catalogo(); } };
+module.exports = { emOrdemDeLeitura, servidor, retomarOrcamentos, resumoDoDia, sinalQuente, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca, catalogoParaTeste: () => { limparCatalogo(); return catalogo(); } };
