@@ -8,7 +8,7 @@ select 'Taxa ambiental de Bonito (TCA)', 'Acqua Viagens, blog (jan/2026) + busca
   $doc$## O que é
 - A Taxa de Conservação Ambiental (TCA), também chamada de "taxa de turismo de Bonito", é uma taxa da Prefeitura de Bonito para quem visita a cidade.
 - O dinheiro vai para a conservação ambiental do município: gestão de resíduos, reflorestamento, monitoramento dos rios, manutenção de estradas e educação ambiental.
-- É da Prefeitura, não do hotel: o Hotel Cabanas não cobra nem recebe essa taxa.
+- É da Prefeitura, não do hotel: o Hotel Cabanas não cobra nem recebe essa taxa (confirmado pelo dono, 06/10/2026), e ela não entra na diária.
 
 ## Valor e quando é cobrada
 - R$ 15 por pessoa, por dia de passeio turístico (não por dia de hospedagem).
@@ -25,8 +25,10 @@ select 'Taxa ambiental de Bonito (TCA)', 'Acqua Viagens, blog (jan/2026) + busca
 - No portal, a pessoa faz o cadastro, informa o período e os dias de passeio, e paga por Pix ou cartão de crédito ou débito (sem parcelamento).
 - O ideal é pagar antes de chegar, para não atrasar a saída para os passeios. A agência de turismo também orienta na hora de reservar.
 
-## Atividades dentro do hotel
-- Se a taxa vale para quem fica só no hotel ou faz só a boia cross e o arvorismo daqui, a equipe confirma: não afirme ao cliente. Diga que a taxa é da Prefeitura, cobrada nos dias de passeio turístico, e que a equipe confirma o caso dele.
+## Atividades dentro do hotel (vantagem do Cabanas)
+- As atividades feitas dentro do hotel (boia cross, arvorismo, trilhas, banhos de rio e decks) não pagam a taxa ambiental (confirmado pelo dono, 06/10/2026). A taxa só entra nos dias em que o hóspede fizer passeios fora do hotel.
+- Use isso como argumento de venda: no Cabanas dá para curtir dias inteiros de natureza, com boia cross e arvorismo inclusos, sem pagar taxa ambiental e sem a taxa entrar na diária.
+- Para os passeios fora do hotel, a nossa agência parceira, a Ecotrip, ajuda a montar o roteiro, reservar os passeios e orientar sobre a taxa: https://biolink-cabanas-bonito.ai.studio/
 
 ## Perguntas e respostas
 - **P:** Tem taxa de turismo em Bonito?
@@ -38,6 +40,9 @@ select 'Taxa ambiental de Bonito (TCA)', 'Acqua Viagens, blog (jan/2026) + busca
 - **P:** O hotel cobra essa taxa? Ela já vem na diária?
   **R:** Não: a taxa é da Prefeitura e não entra no valor da hospedagem. Ela é paga pelo portal Turista por Natureza, nos dias em que você fizer passeios.
 
+- **P:** Vou ficar só no hotel (ou fazer só a boia cross e o arvorismo). Preciso pagar a taxa?
+  **R:** Não! As atividades dentro do hotel, como a boia cross e o arvorismo, não pagam a taxa ambiental. Ela só é cobrada nos dias em que você fizer passeios fora do hotel. E, se quiser fazer passeios pela região, a nossa agência parceira Ecotrip te ajuda com o roteiro e as reservas: https://biolink-cabanas-bonito.ai.studio/
+
 - **P:** Criança paga a taxa?
   **R:** Crianças até 6 anos não pagam. Moradores de Bonito também são isentos.
 
@@ -45,6 +50,6 @@ select 'Taxa ambiental de Bonito (TCA)', 'Acqua Viagens, blog (jan/2026) + busca
   **R:** Não: é uma taxa por pessoa por dia de passeio, mesmo que você faça mais de um passeio naquele dia.
 $doc$,
   '["As fontes divergem sobre a data de início da taxa (2021 ou dezembro de 2025): a data ficou de fora."]'::jsonb,
-  '["CONFIRMAR: o documento diz que o hotel não cobra a taxa e que ela não entra na diária (ela é paga no portal da Prefeitura). Se o hotel cobrar ou ajudar a cobrar, edite antes de aprovar.", "CONFIRMAR: a taxa vale para hóspede que fica só no hotel ou faz só a boia cross e o arvorismo do hotel? Até a resposta, o Gilberto diz que a equipe confirma.", "A Acqua cita um seguro contra acidentes de até R$ 20 mil incluído na taxa; só uma fonte traz isso, então ficou de fora.", "Valor e regras são da Prefeitura e podem mudar: conferir a cada 6 meses."]'::jsonb,
+  '["A Acqua cita um seguro contra acidentes de até R$ 20 mil incluído na taxa; só uma fonte traz isso, então ficou de fora.", "Valor e regras são da Prefeitura e podem mudar: conferir a cada 6 meses."]'::jsonb,
   'aguardando'
 where not exists (select 1 from gilberto_documentos where titulo = 'Taxa ambiental de Bonito (TCA)');

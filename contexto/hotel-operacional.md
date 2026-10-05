@@ -86,7 +86,9 @@
 
 ## 9. Políticas
 - **Pets:** não são permitidos, por causa dos animais silvestres.
-- **Bebidas:** o documento traz duas versões (ver a seção 12). **Alimentos:** podem ser trazidos.
+- **Bebidas (dono, 30/09 e 06/10/2026):** só as que não temos no cardápio, para consumo na acomodação; as demais bebidas trazidas de fora pagam **taxa de rolha de R$ 100/dia**; garrafa de tereré liberada; caixa térmica com bebida não pode nas áreas sociais. **Alimentos:** podem ser trazidos.
+- **Pesca:** não é permitido pescar no hotel, nem no Rio Formoso nem no Formosinho (dono, 06/10/2026).
+- **Taxa ambiental de Bonito (TCA, da Prefeitura):** o hotel **não cobra** e ela não entra na diária. As **atividades dentro do hotel não pagam** a taxa; ela só vale nos dias de passeio fora do hotel, e a Ecotrip ajuda com esses passeios (dono, 06/10/2026). É uma vantagem competitiva do Cabanas.
 - **Pagamento:** 50% antecipado; **Pix ou cartão de crédito (até 6x)**; no hotel também débito. **Não aceita depósito bancário** (dono, 30/09/2026) **nem boleto.**
 - **Estadia mínima / pacotes (confirmado pelo dono em 2026-09-27):** só nos **pacotes de Réveillon e de Carnaval, com 4 noites**. Pacote de Réveillon 2026/27: **29/12 a 02/01** (dono, na Central, 27/09). Nos demais feriados não há estadia mínima. Valores e o que o pacote inclui: [a confirmar com o dono].
 - **Cancelamento:** reembolso integral com 30 dias ou mais de antecedência; 50% do valor pago de 15 a 29 dias; sem reembolso com menos de 15 dias (dono, 01/10/2026, P63a).

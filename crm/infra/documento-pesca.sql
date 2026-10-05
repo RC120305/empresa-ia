@@ -7,7 +7,7 @@ select 'Pesca em Bonito e no Rio Miranda', 'Acqua Viagens, blog (set/2025) + Ima
   'Pesca proibida nos rios turísticos de Bonito e no hotel; pesca esportiva no Rio Miranda (Pantanal), licença do Imasul, piracema e a regra do dourado.',
   $doc$## Resumo
 - Em Bonito, a pesca é proibida nos rios de água cristalina usados no turismo, como o Rio Formoso, o Rio da Prata, o Rio Sucuri e o Rio Olho D'Água. Isso protege os peixes e a água transparente que faz de Bonito o que é.
-- No Hotel Cabanas não se pesca: o Rio Formoso, que passa dentro do hotel, é de pesca proibida. Aqui o programa é ver os peixes de perto, nos banhos de rio, nas trilhas e nos decks.
+- No Hotel Cabanas não é permitido pescar, nem no Rio Formoso nem no Rio Formosinho (confirmado pelo dono, 06/10/2026). Aqui o programa é ver os peixes de perto, nos banhos de rio, nas trilhas e nos decks.
 - Quem quer pescar costuma ir ao Rio Miranda, já no Pantanal, um dos poucos lugares da região com pesca esportiva permitida, em trechos específicos e com regras.
 
 ## Rio Miranda (pesca esportiva)
@@ -27,7 +27,7 @@ select 'Pesca em Bonito e no Rio Miranda', 'Acqua Viagens, blog (set/2025) + Ima
   **R:** Nos rios de Bonito usados no turismo, como o Formoso e o da Prata, a pesca é proibida, para proteger os peixes e a água cristalina. Quem quer pescar costuma ir ao Rio Miranda, no Pantanal, onde a pesca esportiva é permitida em trechos específicos, com licença.
 
 - **P:** Dá para pescar no hotel?
-  **R:** Aqui não: o Rio Formoso, que passa dentro do hotel, é de pesca proibida. Mas dá para ver muitos peixes de perto nos banhos de rio e nos decks.
+  **R:** Aqui não: no hotel não é permitido pescar, nem no Rio Formoso nem no Formosinho. Mas dá para ver muitos peixes de perto nos banhos de rio e nos decks.
 
 - **P:** Onde dá para pescar perto de Bonito?
   **R:** O mais procurado é o Rio Miranda, no Pantanal, com pintado, pacu, jaú e dourado (no pesque e solte). A temporada vai de março a outubro, fora da piracema, e precisa de licença de pesca amadora.
@@ -39,6 +39,6 @@ select 'Pesca em Bonito e no Rio Miranda', 'Acqua Viagens, blog (set/2025) + Ima
   **R:** Em Mato Grosso do Sul, a piracema normalmente vai de 5 de novembro a 28 de fevereiro, e nesse período a pesca fica proibida, inclusive o pesque e solte. Vale conferir as datas do ano no site do Imasul.
 $doc$,
   '[]'::jsonb,
-  '["CONFIRMAR: o documento diz que no hotel não se pesca. A fonte só cita o Rio Formoso como de pesca proibida; o Rio Formosinho não aparece. Se o hotel tiver outra regra, edite antes de aprovar.", "Piracema (5/11 a 28/02) e a proibição de levar o dourado vêm da imprensa de MS e do Imasul em 2026, não do blog da Acqua. As datas mudam a cada ano: conferir no Imasul antes de cada temporada.", "Distância de Bonito até o Rio Miranda ficou de fora: as fontes não trazem."]'::jsonb,
+  '["Piracema (5/11 a 28/02) e a proibição de levar o dourado vêm da imprensa de MS e do Imasul em 2026, não do blog da Acqua. As datas mudam a cada ano: conferir no Imasul antes de cada temporada.", "Distância de Bonito até o Rio Miranda ficou de fora: as fontes não trazem."]'::jsonb,
   'aguardando'
 where not exists (select 1 from gilberto_documentos where titulo = 'Pesca em Bonito e no Rio Miranda');

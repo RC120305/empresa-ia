@@ -79,7 +79,7 @@
 - **P:** Quais bebidas vocês têm?
   R: O bar funciona o dia todo, com sucos, refrigerantes, cervejas, vinhos e drinks. O frigobar é abastecido conforme o pedido do hóspede.
 - **P:** Posso levar comida e bebida?
-  R: Alimentos que não temos no cardápio ou de restrição alimentar, sim. Bebidas, só as que não temos no cardápio, para consumo na acomodação; não é permitido levar caixa térmica com bebida para as áreas sociais (recepção, piscina e decks). Garrafa de tereré pode, sem problema.
+  R: Alimentos que não temos no cardápio ou de restrição alimentar, sim. Bebidas, só as que não temos no cardápio, para consumo na acomodação; as demais bebidas trazidas de fora pagam taxa de rolha de R$ 100 por dia. Não é permitido levar caixa térmica com bebida para as áreas sociais (recepção, piscina e decks). Garrafa de tereré pode, sem problema.
 
 ## 6. Atividades e lazer
 - **P:** Quais atividades estão incluídas na diária?

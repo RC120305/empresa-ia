@@ -6,7 +6,7 @@
 - Cardápio do hotel: cabanasaventura.com.br/cardapio
 - Dietas: há opções sem glúten e sem lactose no café e no restaurante, pedidas na reserva.
 - Levar comida: alimentos que não temos no cardápio ou de restrição alimentar, pode.
-- Levar bebida: a garrafa de tereré está liberada. Para outras bebidas trazidas de fora, a regra está sendo confirmada pela equipe: não afirme nada; diga que a equipe confirma.
+- Levar bebida: a garrafa de tereré está liberada. Bebidas que não temos no cardápio podem, para consumo na acomodação. Outras bebidas trazidas de fora pagam taxa de rolha de R$ 100,00 por dia (valor informado pelo dono em 06/10/2026). Caixa térmica com bebida não pode nas áreas sociais (recepção, piscina e decks).
 
 ## Cardápio do hotel (preços, pagos à parte)
 #### Horário da lanchonete e do bar
@@ -102,7 +102,7 @@ Todos os pratos acompanham 3 guarnições, à escolha: arroz, batata frita, sala
   **R:** Sanduíches como o Cabanas Burguer (R$ 30) e o Cabanas Mignon (R$ 45), misto quente e bauru, e porções como batata, mandioca ou polenta fritas, costelinha de pacu, filé de tilápia, filé mignon e picanha. Ela funciona das 11h às 21h (domingo até as 17h) e entrega no quarto, na piscina e nos decks do rio.
 
 - **P:** Posso levar bebida para o hotel?
-  **R:** Garrafa de tereré pode, sem problema! Para outras bebidas, deixa eu confirmar a regra com a equipe e já te falo.
+  **R:** Garrafa de tereré pode, sem problema! Bebidas que não temos no cardápio também podem, para consumo na acomodação. As demais bebidas trazidas de fora pagam taxa de rolha de R$ 100 por dia. E o nosso bar tem sucos, refrigerantes, cervejas, vinhos e drinks.
 
 - **P:** Tem cardápio do restaurante?
   **R:** Tem: cabanasaventura.com.br/cardapio
