@@ -175,6 +175,109 @@ function categoriasDoGrupo(categorias, adultos, idades) {
   return { lista, pequenos, pagantesCriancas };
 }
 
+// ---------- Combinações (grupo em mais de uma acomodação; dono, 05/10/2026) ----------
+// Regras: toda acomodação tem ao menos 1 adulto; até 4 anos fica com um adulto e não vai para Cabana Casal/Tripla;
+// automático até 4 acomodações e 16 pessoas (acima disso, a equipe, que pode negociar condição de grupo).
+const LIMITE_ACOMODACOES = 4, LIMITE_PESSOAS = 16;
+const cabe = (t, adultos, idades) => adultos >= 1 && adultos + idades.length <= t.maximoOcupantes && !(idades.some(i => i <= 4) && SEM_MENORES_DE_5.has(t.codigo));
+// Código único da combinação: maiores primeiro (ex.: CBM+STD, BGE+BGE)
+const ordemQuartos = (a, b) => b.maximoOcupantes - a.maximoOcupantes || a.codigo.localeCompare(b.codigo);
+const codigoCombinacao = codigos => codigos.join('+');
+function nomeCombinacao(quartos) {
+  const vistos = [];
+  for (const q of quartos) { const v = vistos.find(x => x.codigo === q.codigo); if (v) v.n++; else vistos.push({ codigo: q.codigo, nome: q.nome, n: 1 }); }
+  return vistos.map(v => (v.n > 1 ? v.n + ' × ' : '') + v.nome).join(' + ');
+}
+// Distribui o grupo: 1 adulto em cada; depois as crianças (as menores primeiro) e os outros adultos onde sobra mais lugar
+function distribuir(tipos, adultos, idades) {
+  if (adultos < tipos.length) return null;
+  const quartos = tipos.map(t => ({ t, adultos: 1, idades: [] }));
+  const livre = q => q.t.maximoOcupantes - q.adultos - q.idades.length;
+  const poe = (fn, pode) => { const alvo = quartos.filter(q => livre(q) > 0 && pode(q)).sort((a, b) => livre(b) - livre(a))[0]; if (!alvo) return false; fn(alvo); return true; };
+  for (const i of [...idades].sort((a, b) => a - b)) if (!poe(q => q.idades.push(i), q => !(i <= 4 && SEM_MENORES_DE_5.has(q.t.codigo)))) return null;
+  for (let a = tipos.length; a < adultos; a++) if (!poe(q => q.adultos++, () => true)) return null;
+  return quartos.map(q => ({ t: q.t, adultos: q.adultos, idades: q.idades }));
+}
+// Preço de uma acomodação para uma ocupação (Tarifario/Valor), com cache dentro da mesma consulta
+async function precoQuarto(t, ini, fim, adultos, idades, categorias, cache, buscar) {
+  const { lista } = categoriasDoGrupo(categorias, adultos, idades);
+  const chave = t.codigo + '|' + JSON.stringify(lista);
+  if (!cache.has(chave)) cache.set(chave, chamar('POST', '/v1/Tarifario/Valor', { dataEntrada: ini, dataSaida: fim, idTipoApartamento: t.id, listaCategoriaHospede: lista }, buscar).then(p => {
+    const dias = p && Array.isArray(p.dados) ? p.dados : [];
+    if (!dias.length) return null;
+    const diarias = reais(dias.reduce((s, d) => s + Number(d.valor || 0), 0));
+    const taxas = reais(dias.reduce((s, d) => s + Number(d.valorTaxaServico || 0) + Number(d.valorTaxaISS || 0), 0));
+    return { diarias, taxas, valor_total: reais(diarias + taxas), dias };
+  }).catch(() => null));
+  return cache.get(chave);
+}
+// Monta a opção de combinação (preço exato de cada acomodação pela ocupação dela)
+async function precificar(quartos, ini, fim, noites, categorias, cache, buscar) {
+  const precos = await emFila(quartos, q => precoQuarto(q.t, ini, fim, q.adultos, q.idades, categorias, cache, buscar));
+  if (precos.some(p => !p)) return null;
+  const acomodacoes = quartos.map((q, i) => ({ codigo: q.t.codigo, nome: q.t.nome, adultos: q.adultos, idades_criancas: q.idades, valor_total: precos[i].valor_total, diarias: precos[i].diarias, taxas: precos[i].taxas }));
+  const total = reais(acomodacoes.reduce((s, a) => s + a.valor_total, 0));
+  return { codigo: codigoCombinacao(quartos.map(q => q.t).sort(ordemQuartos).map(t => t.codigo)), nome: nomeCombinacao(acomodacoes), combinacao: true, acomodacoes,
+    capacidade: quartos.reduce((s, q) => s + q.t.maximoOcupantes, 0), valor_total: total, media_por_noite: reais(total / noites), parcela_6x: reais(total / 6),
+    diarias: reais(acomodacoes.reduce((s, a) => s + a.diarias, 0)), taxas: reais(acomodacoes.reduce((s, a) => s + a.taxas, 0)) };
+}
+const temVagas = (tipos, vagas) => { const n = {}; for (const t of tipos) n[t.codigo] = (n[t.codigo] || 0) + 1; return Object.entries(n).every(([c, q]) => (vagas[c] || 0) >= q); };
+// Grupos pedidos pelo cliente ("os avós num quarto separado"): confere se somam o grupo todo
+function gruposValidos(grupos, adultos, idades) {
+  if (!Array.isArray(grupos) || grupos.length < 2) return null;
+  const gs = grupos.map(g => ({ adultos: Number(g && g.adultos), idades: Array.isArray(g && g.idades_criancas) ? g.idades_criancas.map(Number) : [] }));
+  if (gs.some(g => !Number.isInteger(g.adultos) || g.adultos < 1)) return { erro: 'Cada acomodação precisa de pelo menos 1 adulto (grupos_por_acomodacao).' };
+  const soma = gs.reduce((s, g) => s + g.adultos, 0), todas = gs.flatMap(g => g.idades).sort((a, b) => a - b).join(',');
+  if (soma !== adultos || todas !== [...idades].sort((a, b) => a - b).join(',')) return { erro: 'grupos_por_acomodacao não soma o grupo todo (adultos e idades das crianças).' };
+  return { grupos: gs };
+}
+// Lista as combinações possíveis com vaga e devolve até 5 variadas (da mais em conta à de mais conforto)
+async function combinacoes({ tipos, vagas, categorias, ini, fim, noites, adultos, idades, grupos }, buscar) {
+  const cache = new Map(), livres = tipos.filter(t => vagas[t.codigo] > 0);
+  let candidatas = []; // [{ quartos: [{t, adultos, idades}], estimativa }]
+  if (grupos) {
+    // Cada grupo numa acomodação em que caiba; preço exato de cada (tipo, grupo)
+    const porGrupo = grupos.map(g => livres.filter(t => cabe(t, g.adultos, g.idades)));
+    if (porGrupo.some(l => !l.length)) return { combinacoes: [], erro: 'Algum dos grupos pedidos não cabe em nenhuma acomodação com vaga.' };
+    const precos = new Map();
+    await emFila(porGrupo.flatMap((l, gi) => l.map(t => ({ t, gi }))), async ({ t, gi }) => precos.set(t.codigo + '|' + gi, await precoQuarto(t, ini, fim, grupos[gi].adultos, grupos[gi].idades, categorias, cache, buscar)));
+    const visitar = (gi, escolha) => {
+      if (candidatas.length > 5000) return;
+      if (gi === grupos.length) { if (temVagas(escolha, vagas) && escolha.every((t, i) => precos.get(t.codigo + '|' + i))) candidatas.push({ quartos: escolha.map((t, i) => ({ t, adultos: grupos[i].adultos, idades: grupos[i].idades })), estimativa: escolha.reduce((s, t, i) => s + precos.get(t.codigo + '|' + i).valor_total, 0) }); return; }
+      for (const t of porGrupo[gi]) visitar(gi + 1, [...escolha, t]);
+    };
+    visitar(0, []);
+  } else {
+    // Menor número de acomodações em que o grupo cabe; distribuição automática
+    const base = new Map();
+    await emFila(livres, async t => base.set(t.codigo, await precoQuarto(t, ini, fim, Math.min(2, t.maximoOcupantes), [], categorias, cache, buscar)));
+    const ordenados = [...livres].sort(ordemQuartos);
+    for (let k = 2; k <= LIMITE_ACOMODACOES && !candidatas.length; k++) {
+      const multi = (de, escolha) => {
+        if (escolha.length === k) {
+          if (!temVagas(escolha, vagas)) return;
+          const q = distribuir(escolha, adultos, idades);
+          if (q && escolha.every(t => base.get(t.codigo))) candidatas.push({ quartos: q, estimativa: escolha.reduce((s, t) => s + base.get(t.codigo).valor_total, 0) });
+          return;
+        }
+        for (let i = de; i < ordenados.length; i++) multi(i, [...escolha, ordenados[i]]);
+      };
+      multi(0, []);
+    }
+  }
+  // Uma combinação por código (a mais barata), escolhendo 5 variadas pela estimativa
+  const porCodigo = new Map();
+  for (const c of candidatas.sort((a, b) => a.estimativa - b.estimativa)) {
+    const cod = codigoCombinacao([...c.quartos].map(q => q.t).sort(ordemQuartos).map(t => t.codigo));
+    if (!porCodigo.has(cod)) porCodigo.set(cod, c);
+  }
+  const lista = [...porCodigo.values()], n = lista.length;
+  const escolhidas = [...new Set([0, 1, Math.floor(n / 2), n - 2, n - 1].filter(i => i >= 0 && i < n))].map(i => lista[i]);
+  const opcoes = (await emFila(escolhidas, c => precificar(grupos ? c.quartos : [...c.quartos].sort((a, b) => ordemQuartos(a.t, b.t)), ini, fim, noites, categorias, cache, buscar))).filter(Boolean);
+  opcoes.sort((a, b) => a.valor_total - b.valor_total);
+  return { combinacoes: opcoes };
+}
+
 // consultar_disponibilidade (crm/gilberto/ferramentas.json): vagas e valores de hoje para um período e um grupo.
 async function cotar(entrada, buscar = fetch) {
   const { data_entrada: ini, data_saida: fim } = entrada;
@@ -205,9 +308,11 @@ async function cotar(entrada, buscar = fetch) {
     if (!(vagas[t.codigo] > 0)) { semVaga.push(t.nome); continue; }
     candidatos.push(t);
   }
-  const precos = await emFila(candidatos, t => chamar('POST', '/v1/Tarifario/Valor', { dataEntrada: ini, dataSaida: fim, idTipoApartamento: t.id, listaCategoriaHospede: lista }, buscar));
+  const pedidos = gruposValidos(entrada.grupos_por_acomodacao, adultos, idades);
+  if (pedidos && pedidos.erro) return erro(pedidos.erro);
+  const precos = pedidos ? [] : await emFila(candidatos, t => chamar('POST', '/v1/Tarifario/Valor', { dataEntrada: ini, dataSaida: fim, idTipoApartamento: t.id, listaCategoriaHospede: lista }, buscar));
   const opcoes = [];
-  candidatos.forEach((t, i) => {
+  if (!pedidos) candidatos.forEach((t, i) => {
     const p = precos[i];
     if (!p || p.erro || !Array.isArray(p.dados)) return;
     const diarias = p.dados.reduce((s, d) => s + Number(d.valor || 0), 0);
@@ -219,7 +324,16 @@ async function cotar(entrada, buscar = fetch) {
   opcoes.sort((a, b) => a.valor_total - b.valor_total);
   const r = { ok: true, fonte: disp.fonte, periodo: { entrada: ini, saida: fim, noites }, grupo: { adultos, idades_criancas: idades, pagantes: adultos + pagantesCriancas },
     opcoes, esgotados_no_periodo: semVaga, nao_comportam_o_grupo: naoComporta };
-  if (!opcoes.length && pessoas > Math.max(0, ...tipos.map(t => t.maximoOcupantes))) r.aviso = 'O grupo não cabe em uma acomodação: a combinação (ex.: 2 acomodações) é montada pela equipe nesta fase.';
+  // Combinação: quando o cliente pede acomodações separadas ou quando o grupo não cabe (ou não há vaga) numa acomodação só
+  if (pedidos || !opcoes.length) {
+    if (pessoas > LIMITE_PESSOAS || (pedidos && pedidos.grupos.length > LIMITE_ACOMODACOES)) r.aviso = `Grupo grande (mais de ${LIMITE_PESSOAS} pessoas ou de ${LIMITE_ACOMODACOES} acomodações): quem monta é a equipe, que pode negociar uma condição de grupo. Use abrir_alerta.`;
+    else if (adultos >= 2 || pedidos) {
+      const cb = await combinacoes({ tipos, vagas, categorias, ini, fim, noites, adultos, idades, grupos: pedidos && pedidos.grupos }, buscar);
+      r.opcoes = cb.combinacoes;
+      if (cb.combinacoes.length) r.aviso = 'Combinações de acomodações' + (pedidos ? ' na divisão que o cliente pediu' : ' (o grupo não cabe ou não há vaga numa acomodação só)') + ': cada opção traz quem fica em cada acomodação. Use o código da combinação (ex.: CBM+STD) em gerar_orcamento e em criar_reserva.';
+      else r.aviso = cb.erro || 'Não há combinação de acomodações com vaga para esse grupo nessas datas.';
+    }
+  }
   if (disp.fonte === 'simulador') r.atencao = 'VALORES FICTÍCIOS DO SIMULADOR (teste): não são preços reais do hotel.';
   return r;
 }
@@ -240,44 +354,102 @@ async function vagas(inicio, dias, buscar = fetch) {
 // O preço vai sempre do Tarifario/Valor (nunca digitado). Se mudou em relação ao orçamento, não cria (o cliente precisa
 // de um novo OK). A reserva confirma sozinha quando o adiantamento (pagamento) é lançado (regra da Silbeck, P46).
 async function reservar(e, buscar = fetch) {
-  const codigo = String(e.codigo || '').toUpperCase(), ini = e.data_entrada, fim = e.data_saida;
-  const adultos = Number(e.adultos), idades = (e.idades_criancas || []).map(Number);
+  const ini = e.data_entrada, fim = e.data_saida;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(ini || '') || !/^\d{4}-\d{2}-\d{2}$/.test(fim || '') || fim <= ini) return { ok: false, erro: 'Datas inválidas.' };
   if (ini < hojeBonito()) return { ok: false, erro: 'A data de entrada já passou.' };
   const titular = String(e.titular || '').trim();
   if (titular.split(/\s+/).length < 2) return { ok: false, erro: 'Falta o nome completo do titular.' };
+  // Uma acomodação (codigo + grupo) ou uma combinação (quartos: [{codigo, adultos, idades_criancas}], um item por acomodação)
+  const pedidos = Array.isArray(e.quartos) && e.quartos.length ? e.quartos : [{ codigo: e.codigo, adultos: e.adultos, idades_criancas: e.idades_criancas }];
+  if (pedidos.length > LIMITE_ACOMODACOES) return { ok: false, erro: `Mais de ${LIMITE_ACOMODACOES} acomodações: a equipe monta.` };
   const [tipos, categorias] = await Promise.all([cadastro('/v1/TipoApartamento', 'listaTipoApartamento', buscar), cadastro('/v1/CategoriaHospede', 'listaCategoriaHospede', buscar)]);
-  const tipo = tipos.find(t => t.codigo === codigo);
-  if (!tipo) return { ok: false, erro: 'Acomodação ' + codigo + ' não encontrada no Silbeck.' };
-  if (adultos + idades.length > tipo.maximoOcupantes) return { ok: false, erro: tipo.nome + ' não comporta o grupo.' };
-  const { lista } = categoriasDoGrupo(categorias, adultos, idades);
+  const qs = [];
+  for (const q of pedidos) {
+    const codigo = String(q.codigo || '').toUpperCase(), tipo = tipos.find(t => t.codigo === codigo);
+    if (!tipo) return { ok: false, erro: 'Acomodação ' + codigo + ' não encontrada no Silbeck.' };
+    const adultos = Number(q.adultos), idades = (q.idades_criancas || []).map(Number);
+    if (!cabe(tipo, adultos, idades)) return { ok: false, erro: tipo.nome + ' não comporta o grupo.' };
+    qs.push({ t: tipo, adultos, idades });
+  }
   const disp = await chamar('GET', `/v1/Disponibilidade?dataInicial=${ini}&DataFinal=${somarDias(fim, -1)}&DetalharDiaADia=true`, null, buscar);
-  const t = ((disp.dados && disp.dados.listaTipoApto) || []).find(x => x.codigo === codigo);
-  const vagas = t && (t.listaSituacaoTipoApto || []).length ? Math.min(...t.listaSituacaoTipoApto.map(d => d.qtdeDisponivel)) : 0;
-  if (!(vagas > 0)) return { ok: false, sem_vaga: true, erro: tipo.nome + ' não tem mais vaga nessas datas.' };
-  const preco = await chamar('POST', '/v1/Tarifario/Valor', { dataEntrada: ini, dataSaida: fim, idTipoApartamento: tipo.id, listaCategoriaHospede: lista }, buscar);
-  const dias = Array.isArray(preco.dados) ? preco.dados : [];
-  if (!dias.length) return { ok: false, erro: 'O Silbeck não devolveu a tarifa.' };
-  const diarias = reais(dias.reduce((s, d) => s + Number(d.valor || 0), 0));
-  const total = reais(diarias + dias.reduce((s, d) => s + Number(d.valorTaxaServico || 0) + Number(d.valorTaxaISS || 0), 0));
+  const vagas = {};
+  for (const t of (disp.dados && disp.dados.listaTipoApto) || []) vagas[t.codigo] = (t.listaSituacaoTipoApto || []).length ? Math.min(...t.listaSituacaoTipoApto.map(d => d.qtdeDisponivel)) : 0;
+  if (!temVagas(qs.map(q => q.t), vagas)) {
+    const falta = qs.find(q => !temVagas(qs.filter(x => x.t.codigo === q.t.codigo).map(x => x.t), vagas));
+    return { ok: false, sem_vaga: true, erro: (falta ? falta.t.nome : 'A acomodação') + ' não tem mais vaga nessas datas.' };
+  }
+  const cache = new Map();
+  const precos = await emFila(qs, q => precoQuarto(q.t, ini, fim, q.adultos, q.idades, categorias, cache, buscar));
+  if (precos.some(p => !p)) return { ok: false, erro: 'O Silbeck não devolveu a tarifa.' };
+  const total = reais(precos.reduce((s, p) => s + p.valor_total, 0));
   if (e.valor_esperado != null && Math.abs(total - Number(e.valor_esperado)) > 0.5) return { ok: false, preco_mudou: true, valor_novo: total, erro: 'O valor mudou desde o orçamento.' };
-  const hospedes = [{ nome: titular, adulto: true }, ...(e.acompanhantes || []).map(String).filter(Boolean).slice(0, 10).map((n, i) => ({ nome: n, adulto: i < adultos - 1 }))];
+  // Hóspedes: o titular e os acompanhantes, na ordem, preenchendo as acomodações (os primeiros de cada uma são os adultos)
+  const nomes = [titular, ...(e.acompanhantes || []).map(String).map(n => n.trim()).filter(Boolean).slice(0, 20)];
+  let k = 0;
+  const itens = qs.map((q, i) => {
+    const lugares = q.adultos + q.idades.length, hospedes = [];
+    for (let h = 0; h < lugares && k < nomes.length; h++, k++) hospedes.push({ nome: nomes[k], adulto: h < q.adultos });
+    return { idTipoApartamento: q.t.id, quantidadeAdulto: q.adultos, quantidadeCrianca: q.idades.length, dataEntrada: ini, dataSaida: fim, qtdeApartamento: 1,
+      valorTotalDiaria: precos[i].diarias, listaHospede: hospedes,
+      listaData: precos[i].dias.map(d => ({ data: d.data, valorDiaria: Number(d.valor), ...(d.idTarifario != null ? { idTarifario: d.idTarifario } : {}), ...(d.idTipoPensao != null ? { idTipoPensao: d.idTipoPensao } : {}) })) };
+  });
   const corpo = {
     titular, email: e.email || undefined, telefone: e.telefone || undefined,
-    observacao: ('Reserva feita pelo CRM (WhatsApp)' + (e.observacao ? '. ' + e.observacao : '')).slice(0, 250),
-    listaReservaItem: [{ idTipoApartamento: tipo.id, quantidadeAdulto: adultos, quantidadeCrianca: idades.length, dataEntrada: ini, dataSaida: fim, qtdeApartamento: 1,
-      valorTotalDiaria: diarias, listaHospede: hospedes,
-      listaData: dias.map(d => ({ data: d.data, valorDiaria: Number(d.valor), ...(d.idTarifario != null ? { idTarifario: d.idTarifario } : {}), ...(d.idTipoPensao != null ? { idTipoPensao: d.idTipoPensao } : {}) })) }],
+    observacao: ('Reserva feita pelo CRM (WhatsApp)' + (qs.length > 1 ? ` · ${qs.length} acomodações` : '') + (e.observacao ? '. ' + e.observacao : '')).slice(0, 250),
+    listaReservaItem: itens,
   };
   const r = await chamar('POST', '/v1/reserva', corpo, buscar);
   const id = r.dados && r.dados.id;
   if (!id) throw new ErroSilbeck('o Silbeck não devolveu o número da reserva');
-  // O item da reserva (idConta) é o que recebe o pagamento depois
+  // Cada item da reserva (idConta) recebe a sua parte do pagamento depois
   const hoje = hojeBonito();
   const lr = await chamar('GET', `/v1/ListaReserva?dataInicial=${hoje}&dataFinal=${hoje}&tipoData=cadastro&idReserva=${id}`, null, buscar).catch(() => null);
   const res = ((lr && lr.dados && (lr.dados.listaReserva || lr.dados)) || []);
-  const item = ((Array.isArray(res) ? res : []).find(x => String(x.id) === String(id)) || {}).listaReservaItem;
-  return { ok: true, fonte: r.fonte, reserva_id: String(id), item_id: item && item[0] ? String(item[0].id) : null, acomodacao: tipo.nome, codigo, valor_total: total };
+  const doSilbeck = [...((((Array.isArray(res) ? res : []).find(x => String(x.id) === String(id)) || {}).listaReservaItem) || [])];
+  const saida = qs.map((q, i) => {
+    const pos = doSilbeck.findIndex(x => Number(x.idTipoApartamento) === Number(q.t.id) && (x.quantidadeAdulto == null || Number(x.quantidadeAdulto) === q.adultos));
+    const it = pos >= 0 ? doSilbeck.splice(pos, 1)[0] : null;
+    return { codigo: q.t.codigo, nome: q.t.nome, adultos: q.adultos, idades_criancas: q.idades, valor_total: precos[i].valor_total, item_id: it ? String(it.id) : null };
+  });
+  const combinada = qs.length > 1;
+  return { ok: true, fonte: r.fonte, reserva_id: String(id), item_id: saida[0].item_id, itens: saida,
+    acomodacao: combinada ? nomeCombinacao(saida) : qs[0].t.nome, codigo: combinada ? codigoCombinacao(qs.map(q => q.t).sort(ordemQuartos).map(t => t.codigo)) : qs[0].t.codigo, valor_total: total };
+}
+// Preço e vaga de uma combinação escolhida pelo código (ex.: ["CBM","STD"]), com a distribuição automática
+// ou com a divisão pedida pelo cliente (grupos_por_acomodacao). Usada quando o orçamento pede uma combinação
+// que não veio na lista da consulta.
+async function cotarCombinacao(entrada, codigos, buscar = fetch) {
+  const { data_entrada: ini, data_saida: fim } = entrada;
+  const adultos = Number(entrada.adultos), idades = (entrada.idades_criancas || []).map(Number);
+  const erro = m => ({ ok: false, erro: m });
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(ini || '') || !/^\d{4}-\d{2}-\d{2}$/.test(fim || '') || fim <= ini) return erro('Datas inválidas.');
+  if (!Array.isArray(codigos) || codigos.length < 2 || codigos.length > LIMITE_ACOMODACOES) return erro(`Uma combinação tem de 2 a ${LIMITE_ACOMODACOES} acomodações.`);
+  if (adultos + idades.length > LIMITE_PESSOAS) return erro(`Grupo acima de ${LIMITE_PESSOAS} pessoas: a equipe monta.`);
+  const [tipos, categorias] = await Promise.all([cadastro('/v1/TipoApartamento', 'listaTipoApartamento', buscar), cadastro('/v1/CategoriaHospede', 'listaCategoriaHospede', buscar)]);
+  const ts = codigos.map(c => tipos.find(t => t.codigo === String(c).toUpperCase()));
+  if (ts.some(t => !t)) return erro('Código de acomodação desconhecido na combinação.');
+  const disp = await chamar('GET', `/v1/Disponibilidade?dataInicial=${ini}&DataFinal=${somarDias(fim, -1)}&DetalharDiaADia=true`, null, buscar);
+  const vagas = {};
+  for (const t of (disp.dados && disp.dados.listaTipoApto) || []) vagas[t.codigo] = (t.listaSituacaoTipoApto || []).length ? Math.min(...t.listaSituacaoTipoApto.map(d => d.qtdeDisponivel)) : 0;
+  if (!temVagas(ts, vagas)) return { ok: false, sem_vaga: true, erro: 'Não há vagas para essa combinação nessas datas.' };
+  const pedidos = gruposValidos(entrada.grupos_por_acomodacao, adultos, idades);
+  if (pedidos && pedidos.erro) return erro(pedidos.erro);
+  let quartos = null;
+  if (pedidos) {
+    if (pedidos.grupos.length !== ts.length) return erro('A combinação precisa ter uma acomodação para cada grupo pedido.');
+    const perm = (resto, feitos) => { // acha uma acomodação para cada grupo
+      if (!resto.length) return feitos;
+      const g = pedidos.grupos[feitos.length];
+      for (let i = 0; i < resto.length; i++) if (cabe(resto[i], g.adultos, g.idades)) { const r = perm(resto.filter((_, j) => j !== i), [...feitos, { t: resto[i], adultos: g.adultos, idades: g.idades }]); if (r) return r; }
+      return null;
+    };
+    quartos = perm(ts, []);
+  } else quartos = distribuir([...ts].sort(ordemQuartos), adultos, idades);
+  if (!quartos) return erro('O grupo não cabe nessa combinação (lembrando: 1 adulto em cada acomodação; menores de 5 anos não ficam na Cabana Casal nem na Tripla).');
+  const noites = Math.round((new Date(fim) - new Date(ini)) / 864e5);
+  const op = await precificar(quartos, ini, fim, noites, categorias, new Map(), buscar);
+  if (!op) return erro('O Silbeck não devolveu a tarifa.');
+  return { ok: true, fonte: disp.fonte, opcao: op };
 }
 // Pagamento recebido: lança o adiantamento no item da reserva (Pix = tipo 8). A reserva confirma sozinha.
 async function lancarAdiantamento({ item_id, valor, observacao }, buscar = fetch) {
@@ -285,4 +457,4 @@ async function lancarAdiantamento({ item_id, valor, observacao }, buscar = fetch
   return { ok: true, id: r.dados && r.dados.id, confirmado: !!(r.dados && r.dados.confirmado), fonte: r.fonte };
 }
 
-module.exports = { diagnostico, diagnosticoCache, segredo, cotar, vagas, reservar, lancarAdiantamento, MODO, ErroSilbeck };
+module.exports = { diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };

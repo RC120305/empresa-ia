@@ -1299,6 +1299,61 @@ falso.listen(0, () => {
       const reveillon = await cotar({ data_entrada: '2026-12-29', data_saida: '2027-01-02', adultos: 2, idades_criancas: [] });
       assert.ok(reveillon.esgotados_no_periodo.includes('Cabana Casal') && !reveillon.opcoes.some(o => o.codigo === 'CBD'));
     }
+    // Combinações (grupo em mais de uma acomodação; dono, 05/10/2026)
+    {
+      const { distribuir } = require('./silbeck');
+      const g8 = await cotar({ data_entrada: emDias(50), data_saida: emDias(53), adultos: 8, idades_criancas: [] });
+      assert.equal(g8.ok, true, JSON.stringify(g8));
+      assert.ok(g8.opcoes.length >= 2 && g8.opcoes.length <= 5 && g8.opcoes.every(o => o.combinacao && o.acomodacoes.length >= 2));
+      assert.ok(g8.opcoes.every(o => o.acomodacoes.every(a => a.adultos >= 1) && o.acomodacoes.reduce((s, a) => s + a.adultos, 0) === 8), 'todo mundo distribuído, 1 adulto ao menos em cada');
+      assert.ok(g8.opcoes.every((o, i, l) => !i || l[i - 1].valor_total <= o.valor_total), 'da mais em conta para a maior');
+      assert.ok(g8.opcoes.every(o => Math.abs(o.valor_total - o.acomodacoes.reduce((s, a) => s + a.valor_total, 0)) < 0.02), 'total = soma das acomodações');
+      // Família com criança pequena: ela nunca vai para Cabana Casal/Tripla
+      const fam = await cotar({ data_entrada: emDias(50), data_saida: emDias(53), adultos: 4, idades_criancas: [2, 7, 10] });
+      assert.ok(fam.opcoes.length && fam.opcoes.every(o => o.acomodacoes.every(a => !(a.idades_criancas.some(i => i <= 4) && ['CBD', 'CBT'].includes(a.codigo)))));
+      assert.equal(distribuir([{ codigo: 'CBD', maximoOcupantes: 2 }, { codigo: 'CBD', maximoOcupantes: 2 }], 2, [3]), null);
+      assert.equal(distribuir([{ codigo: 'STD', maximoOcupantes: 3 }, { codigo: 'STD', maximoOcupantes: 3 }], 1, [8]), null, 'sem adulto para a segunda acomodação');
+      // Divisão pedida pelo cliente: dois casais, cada um no seu
+      const casais = await cotar({ data_entrada: emDias(50), data_saida: emDias(53), adultos: 4, idades_criancas: [], grupos_por_acomodacao: [{ adultos: 2, idades_criancas: [] }, { adultos: 2, idades_criancas: [] }] });
+      assert.ok(casais.opcoes.length && casais.opcoes.every(o => o.combinacao && o.acomodacoes.length === 2 && o.acomodacoes.every(a => a.adultos === 2)));
+      assert.equal((await cotar({ data_entrada: emDias(50), data_saida: emDias(53), adultos: 4, idades_criancas: [], grupos_por_acomodacao: [{ adultos: 2, idades_criancas: [] }, { adultos: 1, idades_criancas: [] }] })).ok, false, 'divisão que não soma o grupo');
+      // Grupo grande: com a equipe
+      const grande = await cotar({ data_entrada: emDias(50), data_saida: emDias(53), adultos: 18, idades_criancas: [] });
+      assert.ok(!grande.opcoes.length && /equipe/.test(grande.aviso));
+      // Orçamento com 2 combinações (uma delas fora da lista, recotada na hora) e a página
+      const [c1] = g8.opcoes;
+      r = await api('/api/orcamento', { conversa_id: conv, data_entrada: emDias(50), data_saida: emDias(53), adultos: 8, idades_criancas: [], opcoes: [{ acomodacoes: c1.codigo.split('+').reverse() }, { acomodacoes: ['BG', 'BG'] }], sugerida: c1.codigo });
+      const oc = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(oc));
+      const so = orcs.at(-1);
+      assert.ok(so.opcoes.every(o => o.combinacao) && so.opcoes.some(o => o.codigo === 'BG+BG' && o.nome === '2 × Bangalô'));
+      assert.ok(so.opcoes.find(o => o.codigo === c1.codigo).sugerida, 'selo na combinação sugerida (em qualquer ordem)');
+      const hp = await (await fetch(base + '/o/' + so.token + '?previa=1')).text();
+      assert.ok(hp.includes('class="quartos"') && hp.includes('2 × Bangalô') && hp.includes('4 adultos') && hp.includes('data-codigo="BG+BG"'));
+      assert.equal((await api('/api/orcamento', { conversa_id: conv, data_entrada: emDias(50), data_saida: emDias(53), adultos: 8, idades_criancas: [], opcoes: [{ acomodacoes: ['CBD', 'CBD'] }] })).status, 400, 'combinação em que o grupo não cabe');
+      { // conferência no aceite (criar_reserva): mesma combinação, mesma divisão, mesmo valor
+        const bgOp = so.opcoes.find(o => o.codigo === 'BG+BG');
+        const rec = await require('./silbeck').cotarCombinacao({ data_entrada: emDias(50), data_saida: emDias(53), adultos: 8, idades_criancas: [], grupos_por_acomodacao: bgOp.acomodacoes.map(x => ({ adultos: x.adultos, idades_criancas: x.idades_criancas })) }, bgOp.acomodacoes.map(x => x.codigo));
+        assert.equal(rec.ok, true, JSON.stringify(rec)); assert.equal(rec.opcao.valor_total, bgOp.valor_total); assert.equal(rec.opcao.codigo, 'BG+BG');
+      }
+      // Reserva da combinação: uma reserva no Silbeck, um item por acomodação, um Pix só; o pagamento é dividido entre os itens
+      reservasF.length = 0;
+      r = await api('/api/fechar-reserva', { conversa_id: conv, opcao_codigo: 'BG+BG', titular: 'Ana Souza Lima', email: 'ana@exemplo.com', acompanhantes: ['Bruno Lima', 'Carla Dias'], forma: 'pix', percentual: 50 });
+      const fcb = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(fcb));
+      const rc = reservasF.at(-1);
+      assert.deepEqual([rc.codigo, rc.acomodacao, rc.itens.length], ['BG+BG', '2 × Bangalô', 2]);
+      assert.ok(rc.itens.every(i => /^\d+$/.test(i.item_id)) && rc.itens[0].item_id !== rc.itens[1].item_id, 'um item do Silbeck por acomodação');
+      const totalBG = so.opcoes.find(o => o.codigo === 'BG+BG').valor_total;
+      assert.equal(rc.valor_total, totalBG); assert.equal(fcb.cobranca.valor, Math.round(totalBG * 50) / 100);
+      assert.equal((await api('/api/fechar-reserva', { conversa_id: conv, opcao_codigo: 'BG+BG', titular: 'Ana Souza Lima', email: 'ana@exemplo.com', forma: 'pix', percentual: 50 })).status, 409, 'não duplica a reserva combinada');
+      r = await api('/api/cobranca-acao', { id: fcb.cobranca.id, acao: 'simular_pagamento' });
+      assert.equal((await r.json()).pagas, 1);
+      assert.equal(rc.situacao, 'confirmada');
+      const tcb = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.descricao;
+      assert.ok(tcb.includes('dividido entre as 2 acomodações') && tcb.includes('confirmada automaticamente'), tcb);
+      reservasF.length = 0;
+    }
     assert.equal((await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-estranho' }, body: JSON.stringify({ conversa_id: conv }) })).status, 403);
     const { montarMensagens } = require('./gilberto');
     assert.deepEqual(montarMensagens([{ direcao: 'entrada', tipo: 'audio', transcricao: 'quero 2 noites', transcricao_status: 'ok' }]),

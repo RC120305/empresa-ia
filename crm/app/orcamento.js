@@ -83,21 +83,40 @@ function grupo(o) {
   if (c.length) p.push(`${c.length} ${c.length > 1 ? 'crianças' : 'criança'} (${c.map(i => i + (i === 1 ? ' ano' : ' anos')).join(', ')})`);
   return p.join(' e ');
 }
+const resumoGrupo = a => grupo({ adultos: a.adultos, criancas_idades: a.idades_criancas || [] });
 const novoToken = () => crypto.randomBytes(16).toString('base64url'); // 128 bits
 const tokenValido = t => /^[A-Za-z0-9_-]{22}$/.test(t || '');
 
 // Monta o registro do orçamento a partir da cotação (já feita no Silbeck, na hora).
-// Nesta fase: uma acomodação por opção (combinações para grupos grandes ficam com a equipe).
+// Cada opção é uma acomodação ou uma combinação (grupo em mais de uma acomodação; dono, 05/10/2026).
+const codigosDe = o => (o.acomodacoes || []).flatMap(c => String(c).toUpperCase().split('+')).map(c => c.trim()).filter(Boolean);
+const chaveCombinacao = cods => [...cods].sort().join('+'); // mesma combinação, qualquer ordem
+const nomeCat = c => (CATALOGO[c.codigo] && CATALOGO[c.codigo].nome) || c.nome;
+function nomeDaCombinacao(acs) {
+  const vistos = [];
+  for (const a of acs) { const v = vistos.find(x => x.codigo === a.codigo); if (v) v.n++; else vistos.push({ codigo: a.codigo, nome: nomeCat(a), n: 1 }); }
+  return vistos.map(v => (v.n > 1 ? v.n + ' × ' : '') + v.nome).join(' + ');
+}
 function montar(entrada, cotacao) {
   const pedidas = (entrada.opcoes || []).slice(0, MAX_OPCOES);
   if (!pedidas.length) return { erro: 'Informe ao menos uma opção.' };
-  if (pedidas.some(o => !o.acomodacoes || o.acomodacoes.length !== 1)) return { erro: 'Nesta fase o orçamento tem uma acomodação por opção. Combinações (grupo em mais de uma acomodação): passe para a equipe montar.' };
-  const opcoes = [], sugerida = String(entrada.sugerida || '').toUpperCase();
+  const opcoes = [], sug = String(entrada.sugerida || '').toUpperCase().split('+').filter(Boolean), chaveSug = chaveCombinacao(sug);
   for (const o of pedidas) {
-    const cod = String(o.acomodacoes[0]).toUpperCase();
-    const c = (cotacao.opcoes || []).find(x => x.codigo === cod);
-    if (!c) return { erro: `${CATALOGO[cod] ? CATALOGO[cod].nome : cod} não tem vaga nessas datas ou não comporta o grupo. Use só códigos que vieram de consultar_disponibilidade.` };
-    if (!opcoes.some(x => x.codigo === cod)) opcoes.push({ codigo: cod, nome: (CATALOGO[cod] && CATALOGO[cod].nome) || c.nome, valor_total: c.valor_total, media_por_noite: c.media_por_noite, parcela_6x: c.parcela_6x, diarias: c.diarias, taxas: c.taxas, ...(cod === sugerida ? { sugerida: true } : {}) });
+    const cods = codigosDe(o);
+    if (!cods.length) return { erro: 'Opção sem acomodação.' };
+    if (cods.length === 1) {
+      const cod = cods[0];
+      const c = (cotacao.opcoes || []).find(x => x.codigo === cod && !x.combinacao);
+      if (!c) return { erro: `${CATALOGO[cod] ? CATALOGO[cod].nome : cod} não tem vaga nessas datas ou não comporta o grupo. Use só códigos que vieram de consultar_disponibilidade.` };
+      if (!opcoes.some(x => x.codigo === cod)) opcoes.push({ codigo: cod, nome: nomeCat(c), valor_total: c.valor_total, media_por_noite: c.media_por_noite, parcela_6x: c.parcela_6x, diarias: c.diarias, taxas: c.taxas, ...(sug.length === 1 && cod === sug[0] ? { sugerida: true } : {}) });
+      continue;
+    }
+    const chave = chaveCombinacao(cods);
+    const c = (cotacao.opcoes || []).find(x => x.combinacao && chaveCombinacao(x.codigo.split('+')) === chave);
+    if (!c) return { erro: `A combinação ${cods.join('+')} não tem vaga ou não comporta o grupo nessas datas. Use uma das combinações de consultar_disponibilidade.` };
+    if (!opcoes.some(x => x.codigo === c.codigo)) opcoes.push({ codigo: c.codigo, nome: nomeDaCombinacao(c.acomodacoes), combinacao: true,
+      acomodacoes: c.acomodacoes.map(a => ({ codigo: a.codigo, nome: nomeCat(a), adultos: a.adultos, idades_criancas: a.idades_criancas || [], valor_total: a.valor_total })),
+      valor_total: c.valor_total, media_por_noite: c.media_por_noite, parcela_6x: c.parcela_6x, diarias: c.diarias, taxas: c.taxas, ...(sug.length > 1 && chave === chaveSug ? { sugerida: true } : {}) });
   }
   // Sempre da mais em conta para a de maior valor (dono, 04/10/2026): nunca abrir com a mais cara
   return { opcoes: emOrdemDeValor(opcoes) };
@@ -110,15 +129,18 @@ function pagina(o, { previa = false, produtos = null } = {}) {
   const bib = biblioteca();
   const fotosDe = cod => ((bib.find(g => g.grupo === cod) || bib.find(g => g.grupo === { QES: 'SUP', QST: 'STD', CST: 'STD' }[cod]) || { fotos: [] }).fotos).slice(0, 5);
   const cards = emOrdemDeValor(o.opcoes).map((op, i) => {
-    const cat = CATALOGO[op.codigo] || { nome: op.nome, cap: '', dest: [] };
-    const fotos = fotosDe(op.codigo);
+    const acs = op.combinacao ? op.acomodacoes || [] : null;
+    const cat = acs ? { nome: op.nome, cap: `${acs.length} acomodações para o grupo`, dest: [] }
+      : CATALOGO[op.codigo] || { nome: op.nome, cap: '', dest: [] };
+    const fotos = acs ? [...new Set(acs.map(a => a.codigo))].flatMap(c => fotosDe(c).slice(0, 2)).slice(0, 5) : fotosDe(op.codigo);
+    const quem = acs ? `<ul class="quartos">${acs.map(a => `<li><b>${esc(nomeCat(a))}</b><span>${esc(grupo({ adultos: a.adultos, criancas_idades: a.idades_criancas }))}</span></li>`).join('')}</ul>` : '';
     const galeria = fotos.length ? `<div class="fotos" tabindex="0" aria-label="Fotos: ${esc(cat.nome)}">${fotos.map((f, k) => `<img src="/fotos/${esc(f.arquivo)}" alt="${esc(cat.nome)} · foto ${k + 1}" loading="${k ? 'lazy' : 'eager'}" width="800" height="600">`).join('')}</div>${fotos.length > 1 ? `<div class="pontos" aria-hidden="true">${fotos.map((_, k) => `<i${k ? '' : ' class="on"'}></i>`).join('')}</div>` : ''}` : '';
     const comDeco = fotos.some(f => f.decoracao);
     const nota = comDeco ? '<p class="nota-foto">Algumas fotos mostram a decoração especial (pétalas), opcional e cobrada à parte.</p>' : '';
     // Selo na opção que o Gilberto ou a equipe marcou como a que mais combina (dono, 04/10/2026); a ordem é por valor
     return `<article class="op${op.sugerida ? ' rec' : ''}">${galeria}${nota}<div class="corpo">
 ${op.sugerida ? '<span class="selo">Nossa sugestão para vocês</span>' : ''}<h2>${esc(cat.nome)}</h2><p class="cap">${esc(cat.cap)}</p>
-<ul class="dest">${cat.dest.map(d => `<li>${esc(d)}</li>`).join('')}</ul>
+${quem}<ul class="dest">${cat.dest.map(d => `<li>${esc(d)}</li>`).join('')}</ul>
 <div class="preco"><div><small>Total ${n > 1 ? `das ${n} noites` : 'da noite'}</small><b>${brl(op.valor_total)}</b><small>${n > 1 ? `média de ${brl(op.media_por_noite)} por noite · ` : ''}ou 6x de ${brl(op.parcela_6x)} sem juros</small></div></div>
 <button class="btn quero" type="button" data-codigo="${esc(op.codigo)}" data-nome="${esc(cat.nome)}">Quero reservar esta</button></div></article>`;
   }).join('\n');
@@ -155,4 +177,4 @@ ${cards}
 <script src="/o/orcamento.js?v=${VERSAO}"></script></body></html>`;
 }
 
-module.exports = { resumo, MAX_OPCOES, montar, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };
+module.exports = { resumo, resumoGrupo, MAX_OPCOES, montar, codigosDe, chaveCombinacao, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };

@@ -1,7 +1,7 @@
 [
   {
     "name": "consultar_disponibilidade",
-    "description": "Consulta no Silbeck (Disponibilidade + Tarifario/Valor) as vagas e os valores de hoje para um período e um grupo. Use antes de falar de qualquer preço ou vaga, e também para conferir as novas datas de um pedido de alteração (só para informar a equipe). Devolve apenas os tipos de acomodação que comportam o grupo pela capacidade do Silbeck e pelas regras de criança (Cabana Casal e Tripla não recebem menores de 5 anos), com: código, nome, vagas no período, valor total, média por noite, valor da parcela em 6x e regras de venda do período (estadia mínima, pacote fechado). Se o grupo não couber em uma acomodação, devolve combinações (ex.: 2 x Apartamento Standard). O CRM recusa datas no passado, saída antes da entrada e criança sem idade: nesses casos devolve um erro explicando o que falta. Nunca invente valor: se a ferramenta falhar, diga ao cliente que vai conferir e use abrir_alerta.",
+    "description": "Consulta no Silbeck (Disponibilidade + Tarifario/Valor) as vagas e os valores de hoje para um período e um grupo. Use antes de falar de qualquer preço ou vaga, e também para conferir as novas datas de um pedido de alteração (só para informar a equipe). Devolve os tipos de acomodação que comportam o grupo pela capacidade do Silbeck e pelas regras de criança (Cabana Casal e Tripla não recebem menores de 5 anos), com: código, nome, vagas no período, valor total, média por noite, valor da parcela em 6x. Quando o grupo não cabe (ou não há vaga) numa acomodação só, ou quando você manda grupos_por_acomodacao, devolve COMBINAÇÕES (até 5, da mais em conta à de mais conforto): cada uma com código (ex.: CBM+STD ou QST+QST), nome, quem fica em cada acomodação e o valor total. Regras das combinações: 1 adulto ao menos em cada acomodação; até 4 acomodações e 16 pessoas (acima disso, aviso para passar à equipe com abrir_alerta). O CRM recusa datas no passado, saída antes da entrada e criança sem idade: nesses casos devolve um erro explicando o que falta. Nunca invente valor: se a ferramenta falhar, diga ao cliente que vai conferir e use abrir_alerta.",
     "strict": true,
     "input_schema": {
       "type": "object",
@@ -35,6 +35,29 @@
             "upsell_ou_estadia"
           ],
           "description": "cotacao: novo orçamento. alteracao_informar_equipe: conferir datas novas de uma reserva existente (o resultado NÃO é confirmado ao cliente). upsell_ou_estadia: conferir algo para quem já tem reserva."
+        },
+        "grupos_por_acomodacao": {
+          "type": "array",
+          "description": "Só quando o cliente disser como quer dividir o grupo (ex.: 'os avós num quarto separado', 'dois casais, cada um no seu'): uma entrada por acomodação, com os adultos e as idades das crianças de cada uma (a soma tem de dar o grupo todo). Lista vazia: o CRM distribui sozinho quando o grupo não cabe numa acomodação.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "adultos": {
+                "type": "integer"
+              },
+              "idades_criancas": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            },
+            "required": [
+              "adultos",
+              "idades_criancas"
+            ],
+            "additionalProperties": false
+          }
         }
       },
       "required": [
@@ -42,14 +65,15 @@
         "data_saida",
         "adultos",
         "idades_criancas",
-        "finalidade"
+        "finalidade",
+        "grupos_por_acomodacao"
       ],
       "additionalProperties": false
     }
   },
   {
     "name": "gerar_orcamento",
-    "description": "Monta o orçamento com até 3 opções e cria a página do orçamento (link único com fotos reais, incluso, condições e botão 'Quero reservar'). O CRM recota no Silbeck na hora, salva a versão no card e devolve: orcamento_id, link da página e, para cada opção, valor total, média por noite e parcela em 6x. Use só depois de consultar_disponibilidade e só com acomodações que comportam o grupo. Ordene da opção de mais valor para o perfil até a mais econômica. Coloque o link devolvido na sua mensagem exatamente como veio. O orçamento não tem validade: os valores são os de hoje, sujeitos à disponibilidade.",
+    "description": "Monta o orçamento com até 3 opções e cria a página do orçamento (link único com fotos reais, incluso, condições e botão 'Quero reservar'). O CRM recota no Silbeck na hora, salva a versão no card e devolve: orcamento_id, link da página e, para cada opção, valor total, média por noite e parcela em 6x. Use só depois de consultar_disponibilidade e só com acomodações ou combinações que vieram dela (para uma combinação, a lista de códigos dela, ex.: [\"CBM\", \"STD\"], e o mesmo grupos_por_acomodacao da consulta). A página mostra, em cada combinação, quem fica em cada acomodação. Ordene da opção de mais valor para o perfil até a mais econômica. Coloque o link devolvido na sua mensagem exatamente como veio. O orçamento não tem validade: os valores são os de hoje, sujeitos à disponibilidade.",
     "strict": true,
     "input_schema": {
       "type": "object",
@@ -113,7 +137,30 @@
         },
         "sugerida": {
           "type": "string",
-          "description": "Código da opção que mais combina com o perfil do cliente (um dos códigos de opcoes). Ela recebe o selo 'Nossa sugestão para vocês' na página; a ordem continua da mais em conta para a de maior valor."
+          "description": "Código da opção que mais combina com o perfil do cliente (ex.: BGE ou, numa combinação, CBM+STD). Ela recebe o selo 'Nossa sugestão para vocês' na página; a ordem continua da mais em conta para a de maior valor."
+        },
+        "grupos_por_acomodacao": {
+          "type": "array",
+          "description": "Só quando o cliente disser como quer dividir o grupo (ex.: 'os avós num quarto separado', 'dois casais, cada um no seu'): uma entrada por acomodação, com os adultos e as idades das crianças de cada uma (a soma tem de dar o grupo todo). Lista vazia: o CRM distribui sozinho quando o grupo não cabe numa acomodação.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "adultos": {
+                "type": "integer"
+              },
+              "idades_criancas": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            },
+            "required": [
+              "adultos",
+              "idades_criancas"
+            ],
+            "additionalProperties": false
+          }
         }
       },
       "required": [
@@ -125,21 +172,22 @@
         "persona",
         "pessoas_aptas_combo",
         "frase_de_abertura",
-        "sugerida"
+        "sugerida",
+        "grupos_por_acomodacao"
       ],
       "additionalProperties": false
     }
   },
   {
     "name": "criar_reserva",
-    "description": "Reserva a acomodação que o cliente escolheu, no Silbeck, como 'não confirmada' (ela confirma sozinha quando o pagamento cai). Use SOMENTE depois de um aceite explícito do cliente na conversa ('pode reservar', 'quero o Bangalô', 'fechado') E de ele escolher a forma de pagamento (Pix ou cartão). Antes, confirme o nome completo do titular, o e-mail e os nomes dos acompanhantes (se não souber, deixe a lista vazia). Nesta fase, uma acomodação por reserva (combinações: abrir_alerta para a equipe). O CRM confere a vaga e o preço de novo: sem vaga ou preço mudado, NÃO reserva e você avisa o cliente (preço novo precisa de novo OK). O CRM também recusa se a frase de aceite não estiver nas mensagens do cliente. Logo depois, na mesma resposta, chame gerar_cobranca na forma escolhida. Não diga 'reserva confirmada': ela está garantida aguardando o pagamento.",
+    "description": "Reserva a acomodação que o cliente escolheu, no Silbeck, como 'não confirmada' (ela confirma sozinha quando o pagamento cai). Use SOMENTE depois de um aceite explícito do cliente na conversa ('pode reservar', 'quero o Bangalô', 'fechado') E de ele escolher a forma de pagamento (Pix ou cartão). Antes, confirme o nome completo do titular, o e-mail e os nomes dos acompanhantes (se não souber, deixe a lista vazia). Combinação (grupo em mais de uma acomodação): use o código da combinação do orçamento (ex.: CBM+STD); o CRM faz uma reserva só, com uma acomodação por item, e um pagamento só para o total. O CRM confere a vaga e o preço de novo: sem vaga ou preço mudado, NÃO reserva e você avisa o cliente (preço novo precisa de novo OK). O CRM também recusa se a frase de aceite não estiver nas mensagens do cliente. Logo depois, na mesma resposta, chame gerar_cobranca na forma escolhida. Não diga 'reserva confirmada': ela está garantida aguardando o pagamento.",
     "strict": true,
     "input_schema": {
       "type": "object",
       "properties": {
         "opcao_codigo": {
           "type": "string",
-          "description": "Código da acomodação escolhida, de uma das opções do último orçamento (ex.: \"BGE\")."
+          "description": "Código da opção escolhida, de uma das opções do último orçamento: uma acomodação (ex.: \"BGE\") ou uma combinação (ex.: \"CBM+STD\")."
         },
         "aceite_cliente_literal": {
           "type": "string",
@@ -157,7 +205,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Nomes dos acompanhantes; lista vazia se o cliente ainda não informou."
+          "description": "Nomes dos acompanhantes (em combinação, de todas as acomodações); lista vazia se o cliente ainda não informou."
         }
       },
       "required": [

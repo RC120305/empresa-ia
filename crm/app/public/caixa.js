@@ -1059,7 +1059,7 @@
   function painelOrcamento(lat, c) {
     const hoje = new Date().toISOString().slice(0, 10);
     const ent = el('input', { type: 'date', min: hoje, value: orcForm.entrada }), sai = el('input', { type: 'date', min: hoje, value: orcForm.saida });
-    const ad = el('input', { type: 'number', min: '1', max: '10', value: orcForm.adultos });
+    const ad = el('input', { type: 'number', min: '1', max: '16', value: orcForm.adultos });
     const idd = el('input', { type: 'text', inputmode: 'numeric', placeholder: 'ex.: 3, 7', value: orcForm.idades });
     const res = el('div', { class: 'acoes', style: 'flex-direction:column;gap:6px' });
     const ler = () => ({ data_entrada: ent.value, data_saida: sai.value, adultos: Number(ad.value), idades_criancas: idd.value.split(/[,;\s]+/).filter(Boolean).map(Number) });
@@ -1074,6 +1074,7 @@
         res.textContent = '';
         if (r.atencao) res.append(el('div', { class: 'aviso-sim', text: '⚠ ' + r.atencao }));
         if (!r.opcoes.length) { res.append(el('p', { class: 'lat-txt', text: 'Sem vaga para esse grupo nessas datas.' + (r.aviso ? ' ' + r.aviso : '') })); return; }
+        if (r.opcoes.some(o => o.combinacao)) res.append(el('p', { class: 'lat-txt', text: 'O grupo vai em mais de uma acomodação: estas são as combinações com vaga (a divisão de quem fica onde aparece na página do orçamento).' }));
         const marcadas = []; let sugerida = '';
         r.opcoes.slice().sort((a, b) => Number(a.valor_total) - Number(b.valor_total)).forEach(o => { // da mais em conta para a maior
           const cb = el('input', { type: 'checkbox', onchange: ev => {
@@ -1082,7 +1083,7 @@
             criar.textContent = marcadas.length ? 'Criar orçamento com ' + marcadas.length + (marcadas.length > 1 ? ' opções' : ' opção') : 'Marque as opções do orçamento';
           } });
           const sug = el('label', { class: 'op-sug', title: 'Recebe o selo "Nossa sugestão para vocês" na página' }, el('input', { type: 'radio', name: 'sug-' + c.id, onchange: () => { sugerida = o.codigo; if (!cb.checked) cb.click(); } }), '⭐ sugestão');
-          res.append(el('label', { class: 'op-cot' }, cb, el('span', {}, el('b', { text: o.nome }), el('small', { text: o.vagas_no_periodo + ' vaga(s) · até ' + o.capacidade + ' pessoas' })), el('span', { class: 'pr' }, brl(o.valor_total), el('small', { text: brl(o.media_por_noite) + '/noite' }))), sug);
+          res.append(el('label', { class: 'op-cot' }, cb, el('span', {}, el('b', { text: o.nome }), el('small', { text: o.combinacao ? o.acomodacoes.map(x => x.nome + ': ' + x.adultos + ' ad.' + ((x.idades_criancas || []).length ? ' + ' + x.idades_criancas.length + ' cr.' : '')).join(' · ') : o.vagas_no_periodo + ' vaga(s) · até ' + o.capacidade + ' pessoas' })), el('span', { class: 'pr' }, brl(o.valor_total), el('small', { text: brl(o.media_por_noite) + '/noite' }))), sug);
         });
         if (r.esgotados_no_periodo.length) res.append(el('p', { class: 'lat-txt', text: 'Esgotados: ' + r.esgotados_no_periodo.join(', ') + '.' }));
         if (r.nao_comportam_o_grupo.length) res.append(el('p', { class: 'lat-txt', text: 'Não comportam o grupo: ' + r.nao_comportam_o_grupo.join(', ') + '.' }));
