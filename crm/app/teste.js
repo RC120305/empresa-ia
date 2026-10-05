@@ -1139,6 +1139,19 @@ falso.listen(0, () => {
       assert.equal(cobrancasF.at(-1).reserva_id, rv.id, 'o Pix é da reserva criada antes');
       assert.ok(chamadas.some(c => c.url === '/rest/v1/rpc/registrar_saida_whatsapp' && c.corpo.p_autor === 'gilberto'));
       assert.ok(JSON.stringify(pedidosIA.at(-1).messages).includes('MODO AUTOMÁTICO'));
+      // 1b) o Pix cai: card em Reserva concluída e o Gilberto confirma ao cliente no WhatsApp, sem ninguém da equipe
+      {
+        process.env.GILBERTO_ESPERA_EXTRAS_MS = '0';
+        const nConf = enviosMeta().length;
+        const rp = await api('/api/cobranca-acao', { id: cobrancasF.at(-1).id, acao: 'simular_pagamento' });
+        assert.equal((await rp.json()).pagas, 1);
+        assert.equal(rv.situacao, 'confirmada');
+        const conf = enviosMeta().slice(nConf).map(c => c.corpo.text.body);
+        assert.ok(conf[0] && conf[0].startsWith('Pagamento recebido, Ana! ✅ Sua reserva no Hotel Cabanas está confirmada') && conf[0].includes('Reserva nº ' + rv.silbeck_id) && conf[0].includes('é pago no check-out'), JSON.stringify(conf));
+        const tf = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.descricao;
+        assert.ok(tf.includes('O Gilberto já mandou a confirmação ao cliente no WhatsApp') && !tf.includes('mandar a confirmação'), tf);
+        assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'res'), 'card em Reserva concluída');
+      }
       // 2) trava: sem reserva no Silbeck, o Pix não sai
       reservasF.length = 0; iaAuto = 'sem_reserva';
       const nCob = cobrancasF.length, n2 = enviosMeta().length;

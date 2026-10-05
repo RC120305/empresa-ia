@@ -1159,6 +1159,51 @@ function verificarCobrancas(buscar = fetch) {
   })().finally(() => { verificandoPix = null; });
   return verificandoPix;
 }
+// Pagamento recebido: o Gilberto confirma ao cliente no WhatsApp (e oferece os extras, uma vez) quando o
+// automático está ligado e a equipe não assumiu a conversa (dono, 05/10/2026). Senão, fica a tarefa da equipe.
+const TEXTO_EXTRAS = { aventuras: 'Para aproveitar ainda mais o Rio Formoso, separei as aventuras do hotel: boia cross, arvorismo ou o combo das duas, com guias. As vagas são limitadas, então vale garantir o horário já. É só escolher na página 🌿',
+  momentos: 'Se quiserem deixar a estadia ainda mais especial, dá para incluir decoração no quarto ou uma massagem para relaxar. É só escolher na página a opção e o dia 🌿' };
+async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch) {
+  if (!cob.conversa_id || !WA_TOKEN || !(await gilbertoAutoLigado(buscar))) return null;
+  const c = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${cob.conversa_id}&select=status,gilberto_pausado,contato:contatos(nome)`, buscar))[0];
+  if (!c || c.gilberto_pausado !== false) return null; // a equipe está atendendo: ela confirma
+  const primeiro = String((res && res.titular) || (c.contato && c.contato.nome) || '').trim().split(/\s+/)[0];
+  const ola = 'Pagamento recebido' + (primeiro ? ', ' + primeiro : '') + '! ✅';
+  let texto;
+  if (res && confirmada) {
+    const n = Math.round((new Date(res.data_saida) - new Date(res.data_entrada)) / 864e5);
+    const resto = Math.round((Number(res.valor_total) - valor) * 100) / 100;
+    texto = [ola + ' Sua reserva no Hotel Cabanas está confirmada:', '',
+      '🏡 ' + res.acomodacao, '📅 ' + orcamento.periodo(res.data_entrada, res.data_saida) + ' (' + n + (n > 1 ? ' noites)' : ' noite)'),
+      '👥 ' + orcamento.resumoGrupo({ adultos: res.adultos, idades_criancas: res.criancas_idades || [] }), '🔖 Reserva nº ' + res.silbeck_id,
+      '💳 Valor pago: ' + produtos.brl(valor) + (resto >= 1 ? '\nO restante, ' + produtos.brl(resto) + ', é pago no check-out.' : ''), '',
+      'Check-in a partir das 15h e check-out até as 13h (a estrutura fica à disposição antes e depois). Qualquer dúvida, é só chamar aqui 🌿',
+      ...(res.fonte === 'simulador' ? ['', '⚠ Teste: reserva do SIMULADOR do Silbeck.'] : [])].join('\n');
+  } else texto = ola + ' Obrigado. A equipe está finalizando a confirmação da sua reserva no sistema e te manda os detalhes em instantes 🌿';
+  try {
+    const { conv, para } = await carregarConversaParaEnvio(cob.conversa_id, buscar);
+    await enviarTexto(conv, para, texto, 'gilberto', buscar);
+    let extras = null;
+    if (res && confirmada) { // extras uma vez só, com o link certo para o perfil
+      const ja = await ofertasDaConversa(cob.conversa_id, buscar).catch(() => [{}]);
+      const neg = await negocioDaConversa(cob.conversa_id, 'id,perfil', buscar).catch(() => null);
+      const tema = ['Casal', '55+'].includes(neg && neg.perfil) ? 'momentos' : 'aventuras';
+      const cat = await catalogo(buscar).catch(() => null);
+      const tem = ((cat || {}).produtos || []).some(p => p.vitrine === tema);
+      if (!ja.length && tem) {
+        const v = await criarVitrine(cob.conversa_id, tema, { por: 'gilberto', enviada: true }, buscar);
+        await esperar(Number(process.env.GILBERTO_ESPERA_EXTRAS_MS ?? 4000));
+        await enviarTexto(conv, para, TEXTO_EXTRAS[tema] + '\n' + v.link, 'gilberto', buscar);
+        extras = vitrine.TEMAS[tema].nome;
+      }
+    }
+    console.log(JSON.stringify({ evento: 'confirmacao_enviada', confirmada: !!confirmada, extras: !!extras }));
+    return { enviada: true, extras };
+  } catch (e) {
+    console.warn(JSON.stringify({ evento: 'confirmacao_falhou', erro: String(e.message || e).slice(0, 200) }));
+    return null; // janela de 24 h fechada ou erro de envio: a tarefa da equipe continua valendo
+  }
+}
 // Divide um pagamento entre os itens da reserva (proporcional ao valor de cada acomodação; o último leva o arredondamento)
 function partesDoPagamento(res, valor) {
   const itens = Array.isArray(res.itens) && res.itens.length ? res.itens : [{ item_id: res.silbeck_item_id, nome: res.acomodacao, valor_total: Number(res.valor_total) }];
@@ -1179,24 +1224,29 @@ async function baixaCobranca(cob, pg, buscar = fetch) {
   const res = cob.reserva_id ? (await getJson(`${SUPABASE_URL}/rest/v1/reservas?id=eq.${cob.reserva_id}&select=*`, buscar))[0] : null;
   // Combinação: um item por acomodação; cada um recebe a sua parte do pagamento (proporcional ao valor dele)
   const partes = res ? partesDoPagamento(res, valor) : [];
+  let confirmada = false;
   if (res && partes.length && partes.every(p => p.item_id)) {
     const feitas = [];
     try {
       for (const p of partes) { await silbeck.lancarAdiantamento({ item_id: p.item_id, valor: p.valor, observacao: 'Pix BB ' + cob.txid + (pg.e2e ? ' · ' + pg.e2e : '') + (partes.length > 1 ? ' · ' + p.nome : '') }, buscar); feitas.push(p); }
       await patchBanco('reservas', `id=eq.${res.id}`, { situacao: 'confirmada', confirmada_em: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
+      confirmada = true;
       silb = `Pagamento lançado no Silbeck${partes.length > 1 ? ' (dividido entre as ' + partes.length + ' acomodações: ' + partes.map(p => p.nome + ' ' + produtos.brl(p.valor)).join(', ') + ')' : ''} e reserva ${res.silbeck_id} confirmada automaticamente. Mandar a confirmação ao cliente.`;
     } catch (e) {
       const falta = partes.filter(p => !feitas.includes(p));
       silb = `O CRM NÃO conseguiu lançar ${feitas.length ? 'todo o pagamento' : 'o pagamento'} no Silbeck (${String(e.message || e).slice(0, 120)}): lançar o adiantamento na reserva ${res.silbeck_id}${partes.length > 1 ? ' (falta: ' + falta.map(p => p.nome + ' ' + produtos.brl(p.valor)).join(', ') + ')' : ''} e mandar a confirmação ao cliente.`;
     }
   } else if (res && partes.length > 1) silb = `Reserva ${res.silbeck_id} com ${partes.length} acomodações: lançar o adiantamento no Silbeck dividido entre elas (${partes.map(p => p.nome + ' ' + produtos.brl(p.valor)).join(', ')}) e mandar a confirmação ao cliente.`;
+  // Card em "Reserva concluída" antes de avisar o cliente (o Gilberto já sabe que a reserva está paga)
+  if (cob.negocio_id) await patchBanco('negocios', `id=eq.${cob.negocio_id}`, { etapa: 'res', etapa_desde: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
+  const aviso = await confirmarAoCliente(cob, res, confirmada, valor, buscar);
+  if (aviso) silb = silb.replace(/ e mandar a confirmação ao cliente\.| Mandar a confirmação ao cliente\./, '.') + ' O Gilberto já mandou a confirmação ao cliente no WhatsApp' + (aviso.extras ? ' e o link de extras (' + aviso.extras + ')' : '') + '.';
   if (cob.negocio_id) {
-    await patchBanco('negocios', `id=eq.${cob.negocio_id}`, { etapa: 'res', etapa_desde: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
-    await eventoNegocio(cob.negocio_id, txt + ' · card em Reservado', 'CRM', buscar);
+    await eventoNegocio(cob.negocio_id, txt + ' · card em Reserva concluída' + (aviso ? ' · confirmação enviada pelo Gilberto' : ''), 'CRM', buscar);
     await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
       body: JSON.stringify({ negocio_id: cob.negocio_id, responsavel_id: cob.criado_por || null, criado_por: 'CRM', tipo: 'Confirmar a reserva', descricao: txt + '. ' + silb, quando: new Date().toISOString() }) }).catch(() => null);
   }
-  await criarAlerta({ tipo: 'pagamento_recebido', titulo: 'Pagamento recebido', info: txt + '. Hora de oferecer os extras: abra a conversa (aviso 🎉).', conversa_id: cob.conversa_id, negocio_id: cob.negocio_id, cobranca_id: cob.id }, buscar);
+  await criarAlerta({ tipo: 'pagamento_recebido', titulo: 'Pagamento recebido', info: txt + (aviso ? '. O Gilberto já confirmou ao cliente' + (aviso.extras ? ' e ofereceu os extras.' : '.') : '. Mande a confirmação ao cliente e ofereça os extras: abra a conversa (aviso 🎉).'), conversa_id: cob.conversa_id, negocio_id: cob.negocio_id, cobranca_id: cob.id }, buscar);
 }
 async function cobrancaVencida(cob, buscar = fetch) {
   await patchBanco('cobrancas', `id=eq.${cob.id}`, { situacao: 'expirada', atualizado_em: new Date().toISOString() });
@@ -1555,7 +1605,7 @@ const API_EQUIPE = {
   },
   // Funil: cria ou atualiza um negócio (etapa, responsável, dados da estadia); registra no histórico
   'POST /api/negocio': async (corpo, eu) => {
-    const ETAPAS = { novo: 'Novo', atend: 'Em atendimento', orc: 'Orçamento enviado', pag: 'Aguardando pagamento', res: 'Reservado', perd: 'Perdido' };
+    const ETAPAS = { novo: 'Novo', atend: 'Em atendimento', orc: 'Orçamento enviado', pag: 'Aguardando pagamento', res: 'Reserva concluída', perd: 'Perdido' };
     const ORIGENS = ['whatsapp', 'meta', 'insta', 'google', 'site', 'ret', 'ind', 'ag', 'ota', 'ativo'];
     const uuid = v => /^[0-9a-f-]{36}$/i.test(String(v || ''));
     const dados = {}, eventos = [];

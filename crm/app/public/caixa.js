@@ -1616,7 +1616,7 @@
 
   // ================= Funil, ficha do negócio e tarefas (etapa B) =================
   const ETAPAS = [['novo', 'Novo', 'p-novo', '--cat-novo'], ['atend', 'Em atendimento', 'p-atend', '--cat-atend'], ['orc', 'Orçamento enviado', 'p-orc', '--cat-orc'],
-    ['pag', 'Aguardando pagamento', 'p-pag', '--cor-alerta'], ['res', 'Reservado', 'p-res', '--cat-res'], ['perd', 'Perdido', 'p-perd', '--cat-perd']];
+    ['pag', 'Aguardando pagamento', 'p-pag', '--cor-alerta'], ['res', 'Reserva concluída', 'p-res', '--cat-res'], ['perd', 'Perdido', 'p-perd', '--cat-perd']];
   const ETAPA = Object.fromEntries(ETAPAS.map(e => [e[0], e]));
   const ORIGENS = { whatsapp: 'WhatsApp', meta: 'Anúncio Meta', insta: 'Instagram', google: 'Google', site: 'Site', ret: 'Hóspede que volta', ind: 'Indicação', ag: 'Agência', ota: 'Booking', ativo: 'Contato ativo' };
   const PERFIS = ['Casal', 'Família com filhos', 'Grupo de amigos', '55+', 'Observador de aves', 'Ciclista', 'Agência'];
@@ -1915,7 +1915,7 @@
           pintarPainel();
         } catch (err) { toast(err.message); b.disabled = false; b.textContent = 'Gerar Pix'; }
       } }),
-      el('p', { class: 'lat-txt', text: 'Prazo: 48 h (2 h se o check-in for em até 3 dias). Quando o Pix cair, o CRM dá baixa sozinho: o card vai para Reservado e o sino avisa.' }));
+      el('p', { class: 'lat-txt', text: 'Prazo: 48 h (2 h se o check-in for em até 3 dias). Quando o Pix cair, o CRM dá baixa sozinho: o card vai para Reserva concluída, o Gilberto confirma ao cliente (no automático) e o sino avisa.' }));
     if ((data || []).length) {
       lat.append(el('span', { class: 'rotulo', text: 'Cobranças desta conversa' }));
       data.forEach(cob => {
@@ -1943,7 +1943,7 @@
   async function acaoCobranca(cob, acao) {
     try {
       const j = await chamarApi('/api/cobranca-acao', { id: cob.id, acao });
-      toast(acao === 'cancelar' ? 'Pix cancelado.' : j.pagas ? 'Pagamento recebido! O card foi para Reservado.' : j.cedo ? 'Conferido há poucos segundos. Tente de novo já já.' : 'Ainda não pago.');
+      toast(acao === 'cancelar' ? 'Pix cancelado.' : j.pagas ? 'Pagamento recebido! O card foi para Reserva concluída.' : j.cedo ? 'Conferido há poucos segundos. Tente de novo já já.' : 'Ainda não pago.');
       pintarPainel(); if (vistaAtual() === 'pagamentos') carregarPagamentos();
     } catch (e) { toast(e.message); }
   }
@@ -2361,7 +2361,7 @@
           cob.fonte === 'simulador' ? el('button', { class: 'btn-mini', type: 'button', text: '🧪 Simular pagamento', onclick: () => acaoCobranca(cob, 'simular_pagamento') }) : null,
           el('button', { class: 'btn-mini', type: 'button', text: 'Cancelar', onclick: () => { if (confirm('Cancelar este Pix? O cliente não vai mais conseguir pagar por ele.')) acaoCobranca(cob, 'cancelar'); } })].filter(Boolean) : []))));
     });
-    corpo.append(pnBloco('Cobranças por Pix', 'O Pix é gerado na conversa (painel 💳). Quando cai, o CRM dá baixa sozinho: o card vai para Reservado e o sino avisa.',
+    corpo.append(pnBloco('Cobranças por Pix', 'O Pix é gerado na conversa (painel 💳). Quando cai, o CRM dá baixa sozinho: o card vai para Reserva concluída, o Gilberto confirma ao cliente (no automático) e o sino avisa.',
       linhas.length ? el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela pg-tabela' },
         el('thead', {}, el('tr', {}, ...['Cliente', 'Cobrança', 'Valor', 'Situação', ''].map((t, i) => el('th', { class: i === 2 ? 'n' : '', text: t })))),
         el('tbody', {}, ...linhas))) : el('div', { class: 'vazio', text: pgCob.length ? 'Nenhuma cobrança com esse filtro.' : 'Nenhum Pix gerado no período.' })));
