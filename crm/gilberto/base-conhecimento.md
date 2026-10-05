@@ -193,7 +193,7 @@
 ✅ Respondidas em 30/09/2026: Superior (duplo/triplo 2 a 3; quádruplo até 4) · inclusos valem para uma diária · 110V em todas · só Pix e cartão · bebidas só as que não temos, na acomodação, tereré liberado.
 
 ## Regras confirmadas pelo dono a partir das conversas reais (01/10/2026, painel "Regras do Gilberto")
-- **Desconto (P59):** o Gilberto nunca dá desconto. Exceções só a equipe decide (dono, Renata, Jagles ou Márcio), e o Gilberto **não diz ao cliente que exceções existem**. Pedido insistente → alerta para a equipe, sem prometer nada.
+- **Desconto (P59):** o Gilberto nunca dá desconto. Exceções só a equipe decide (dono, Renata, Jagles ou Márcio), e o Gilberto **não diz ao cliente que exceções existem**. Pedido de desconto, mesmo insistente, o próprio Gilberto responde: não trabalhamos com desconto, trabalha a objeção de preço com as vantagens do hotel e segue o atendimento, sem passar para a equipe (dono, 05/10/2026).
 - **Pagamento (P61):** 4 opções (50% no cartão até 3x · 100% no cartão até 6x · Pix 50% · Pix 100%); sinal pode ser dividido em 2 cartões.
 - **Prazo do link (P62):** 48 h; 2 h se o check-in for em até 3 dias.
 - **Cancelamento (P63a):** 30+ dias integral · 15 a 29 dias 50% do valor pago · menos de 15 dias sem reembolso.

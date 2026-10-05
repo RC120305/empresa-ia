@@ -623,7 +623,7 @@
   },
   {
     "name": "abrir_alerta",
-    "description": "Avisa a equipe (Jagles, Márcio e Ricardo; quem está de plantão primeiro) com card em destaque, sino e notificação no celular, e você CONTINUA na conversa. Use para: pedido de alteração de reserva (depois de conferir a vaga com consultar_disponibilidade), pergunta fora da base, exceção de política, acessibilidade, pedido de desconto insistente, problema de pagamento, dado sensível recebido. O CRM define a prioridade final pelo motivo (o valor que você envia é só uma sugestão). Fora do expediente, o alerta fica no topo da fila das 7h30.",
+    "description": "Avisa a equipe (Jagles, Márcio e Ricardo; quem está de plantão primeiro) com card em destaque, sino e notificação no celular, e você CONTINUA na conversa. Use para: pedido de alteração de reserva (depois de conferir a vaga com consultar_disponibilidade), pergunta fora da base, exceção de política, acessibilidade, problema de pagamento, dado sensível recebido. O CRM define a prioridade final pelo motivo (o valor que você envia é só uma sugestão). Fora do expediente, o alerta fica no topo da fila das 7h30. Não use para pedido de desconto: você mesmo responde, trabalha a objeção de preço e segue o atendimento.",
     "strict": true,
     "input_schema": {
       "type": "object",
@@ -635,7 +635,6 @@
             "fora_da_base",
             "excecao_politica",
             "acessibilidade",
-            "desconto_insistente",
             "problema_pagamento",
             "dado_sensivel_recebido",
             "pedido_especial_outro",
@@ -647,7 +646,7 @@
         },
         "prioridade": {
           "type": "integer",
-          "description": "1 (mais alta) a 5. Referência: 4 para fora da base, exceção, acessibilidade, desconto insistente e pedido especial; 5 para alteração. Reserva urgente (check-in em até 3 dias): 3. Comprovante recebido: 4. Atividade escolhida: 5 (o CRM já cria sozinho ao agendar)."
+          "description": "1 (mais alta) a 5. Referência: 4 para fora da base, exceção, acessibilidade e pedido especial; 5 para alteração. Reserva urgente (check-in em até 3 dias): 3. Comprovante recebido: 4. Atividade escolhida: 5 (o CRM já cria sozinho ao agendar)."
         },
         "resumo": {
           "type": "string",
