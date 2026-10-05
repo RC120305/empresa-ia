@@ -107,7 +107,7 @@
 ## 11. Links e contatos oficiais
 - **Reservas (motor):** https://sbreserva.silbeck.com.br/hotelcabanas (conferido pelo dono no celular em 28/09/2026)
 - **Site oficial (usar em anúncios):** **https://hotelcabanas.com.br/** (confirmado pelo dono em 2026-09-26) · Outro endereço informado, que **não** deve ser usado em anúncios: hotelcabanasbonito.ai.studio
-- **WhatsApp de reservas:** +55 67 99117-1648 · **Telefone:** +55 67 99110-7635 (recebe **ligação comum de telefone**, não ligação pelo WhatsApp; dono, 01/10/2026) · **E-mail:** contato@hotelcabanas.com.br
+- **WhatsApp de reservas:** +55 67 99117-1648 · **Telefone:** +55 67 99110-7635 (recebe **ligação comum de telefone**, não ligação pelo WhatsApp; dono, 01/10/2026). **Canais oficiais para o cliente conferir se uma mensagem é do hotel (dono, 06/10/2026):** este telefone e o WhatsApp em que o Gilberto atende · **E-mail:** contato@hotelcabanas.com.br
   - ⚠️ **(dono, 29/09/2026):** o 99117-1648 é um **WhatsApp Business comum, fora da Asksuite**; o número oficial na Asksuite (API da Meta) é o **99110-7635**. Qual número os materiais devem divulgar está em decisão no projeto do CRM (`crm/entrevista.md`); até lá, manter o 99117-1648.
 - **Instagram:** https://www.instagram.com/hotelcabanasbonito/ · **Facebook:** https://www.facebook.com/hotelcabanasms · **YouTube:** https://www.youtube.com/@hotelcabanasbonitoms
 - **Bio do Instagram (dono, 28/09/2026):** um **Linktree** com site, motor de reservas, WhatsApp, tour virtual e acomodações. Nas legendas, "link na bio" leva a ele. Link clicável dentro do Instagram orgânico só existe na bio, na figurinha de link dos stories e no botão de WhatsApp do perfil.

@@ -149,6 +149,6 @@ select 'Segurança: como evitar golpes', 'canais oficiais da base do hotel + dad
   **R:** Não pague nada fora dos nossos canais oficiais: site hotelcabanas.com.br, Instagram @hotelcabanasbonito, telefone (67) 99110-7635 e este WhatsApp. Me conta o que te mandaram que eu verifico com a equipe.
 $doc$,
   '[]'::jsonb,
-  '["CONFIRMAR: o telefone (67) 99110-7635 é o canal certo para o cliente ligar e conferir? E \"este WhatsApp\" vale como oficial (o número do Gilberto)? A decisão de qual WhatsApp divulgar ainda está em aberto na base.", "Os dados do Pix (Hotel Cabanas Ltda, BB ag. 1031-6, c/c 8583-9) são os mesmos que o CRM já manda junto de cada Pix."]'::jsonb,
+  '["Canais oficiais confirmados pelo dono em 06/10/2026: telefone (67) 99110-7635 para ligação comum e este WhatsApp (o número do Gilberto).", "Os dados do Pix (Hotel Cabanas Ltda, BB ag. 1031-6, c/c 8583-9) são os mesmos que o CRM já manda junto de cada Pix."]'::jsonb,
   'aguardando'
 where not exists (select 1 from gilberto_documentos where titulo = 'Segurança: como evitar golpes');
