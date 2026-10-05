@@ -153,6 +153,9 @@ cat = json.load(open("design/videos/catalogo/catalogo.json", encoding="utf-8")) 
 for v in cat["videos"]:
     v["quadros"] = urls.get("quadros:" + os.path.basename(v.get("folha_quadros", "")), {}).get("capa", "")
     v.pop("arquivo_local", None)
+# aba Modelos e passo "Estilo" do "+ Novo pedido": mostruário de modelos (modelos.json)
+mj = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modelos.json")
+modelos = json.load(open(mj, encoding="utf-8")) if os.path.exists(mj) else []
 J = lambda x: json.dumps(x, ensure_ascii=False).replace("</", "<\\/")
-open(f"{out}/index.html", "w").write(tpl.replace("__BANCO__", bjs).replace("__DATA__", data).replace("__MES__", mes).replace("__ANUNCIOS__", anuncios).replace("__VIDEOS__", J(videos)).replace("__CATALOGO__", J(cat)).replace("__MUSICAS__", J(musicas)).replace("__ENQUETES__", json.dumps(enq, ensure_ascii=False).replace("</", "<\\/")))
+open(f"{out}/index.html", "w").write(tpl.replace("__BANCO__", bjs).replace("__DATA__", data).replace("__MES__", mes).replace("__ANUNCIOS__", anuncios).replace("__VIDEOS__", J(videos)).replace("__CATALOGO__", J(cat)).replace("__MUSICAS__", J(musicas)).replace("__MODELOS__", J(modelos)).replace("__ENQUETES__", json.dumps(enq, ensure_ascii=False).replace("</", "<\\/")))
 print(f"{len(posts)} posts, {len(enq)} stories com enquete -> {out}/index.html")

@@ -273,6 +273,19 @@ details summary{cursor:pointer;padding:4px 0}
 .ped .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
 .st.novo{background:var(--wait-soft);color:var(--wait)}.st.producao{background:var(--chip);color:var(--ink)}.st.pronto{background:var(--green-soft);color:var(--green)}
 /* ---------- abas Vídeos e Acervo ---------- */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:22px;align-items:start}
+.mcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.mcard.aprovado{border-color:var(--green)}
+.mcard video,.mcard .mimg{width:100%;aspect-ratio:9/16;max-height:460px;background:#000;display:block;object-fit:contain}
+.mcard .mimg{aspect-ratio:3/4;object-fit:cover;background:var(--chip)}
+.mthread{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto}
+.mthread .bub{max-width:100%}
+.mform{display:flex;flex-direction:column;gap:8px}
+.mform textarea,.mform input,.mform select{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:5px;padding:8px 10px;background:var(--surface);color:var(--ink);width:100%;box-sizing:border-box}
+.refs{display:flex;flex-direction:column;gap:12px;max-width:820px}
+.ref{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.ref .rmid{display:flex;gap:8px;flex-wrap:wrap}
+.ref .rmid video,.ref .rmid img{width:120px;aspect-ratio:9/16;object-fit:cover;border-radius:5px;background:#000}
 .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:22px;align-items:start}
 .vcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
 .vcard.aprovado{border-color:var(--green)}.vcard.corrigir{border-color:var(--fix)}
@@ -346,6 +359,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
     <button type="button" role="tab" id="tab-vid" aria-selected="false">Vídeos</button>
     <button type="button" role="tab" id="tab-acervo" aria-selected="false">Acervo</button>
     <button type="button" role="tab" id="tab-mus" aria-selected="false">Músicas</button>
+    <button type="button" role="tab" id="tab-mod" aria-selected="false">Modelos</button>
     <button type="button" role="tab" id="tab-chat" aria-selected="false">Conversa <span class="dot" id="chat-dot" hidden></span></button>
   </nav>
   <p class="banner" id="offline" hidden>Os botões de aprovação não estão disponíveis nesta visualização. Abra a página pelo claude.ai com a sua conta para aprovar e pedir correções.</p>
@@ -370,6 +384,31 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
     </div>
     <p class="note" id="mus-n" aria-live="polite"></p>
     <div class="mlist" id="mus-list"></div>
+  </section>
+  <section id="sec-mod" hidden aria-labelledby="mod-t" style="flex-direction:column;gap:26px">
+    <div><h2 id="mod-t">Modelos de vídeo e de criativo</h2><p class="note">Os modelos são as "receitas" que a equipe repete: cada um tem um exemplo pronto. Aprove o modelo quando ele estiver do seu jeito e use o campo <b>Sugerir alteração</b> de cada modelo para pedir ajustes (cor, ritmo, fonte, tamanho do texto). No <b>+ Novo pedido</b> você escolhe um destes modelos no passo "Estilo". Para criar um modelo novo, suba uma referência abaixo.</p></div>
+    <section style="display:flex;flex-direction:column;gap:12px" aria-labelledby="ref-t">
+      <div class="week-head"><h2 id="ref-t">Referências</h2></div>
+      <p class="note">Viu um vídeo ou uma arte que gostou? Suba o arquivo (print ou vídeo curto, até 20 MB) ou cole o link (Instagram, TikTok, YouTube, Drive) e anote o que chamou a atenção. A equipe analisa e responde aqui; a referência pode virar um modelo novo ou ajustar um que já existe.</p>
+      <form class="ref mform" id="ref-form">
+        <label class="note" for="ref-nota"><b>O que você gostou nesta referência?</b></label>
+        <textarea id="ref-nota" rows="3" placeholder="Ex.: o texto entra palavra por palavra no ritmo da música; gostei da fonte grande e do zoom lento"></textarea>
+        <label class="note" for="ref-link">Link (opcional)</label>
+        <input type="url" id="ref-link" placeholder="https://www.instagram.com/reel/…">
+        <label class="note" for="ref-mod">Para qual modelo?</label>
+        <select id="ref-mod"></select>
+        <div data-ref-up><label class="note" for="ref-file">Arquivo (opcional): print ou vídeo até 20 MB. Vídeo maior: coloque na pasta do Drive "Referências de vídeo" e cite o nome na anotação.</label>
+        <input type="file" id="ref-file" accept="image/*,video/*" multiple><span class="note" id="ref-upn"></span></div>
+        <div class="vacts"><button class="btn ok" type="submit" id="ref-send">Enviar referência</button></div>
+        <p class="msg" id="ref-msg"></p>
+      </form>
+      <div class="refs" id="ref-list"></div>
+    </section>
+    <section style="display:flex;flex-direction:column;gap:14px" aria-labelledby="mos-t">
+      <div class="week-head"><h2 id="mos-t">Mostruário de modelos</h2></div>
+      <div class="subtabs" role="group" aria-label="Tipo de modelo"><button type="button" data-mtipo="video" aria-pressed="true">Vídeo</button><button type="button" data-mtipo="criativo" aria-pressed="false">Criativo (arte)</button></div>
+      <div class="mgrid" id="mod-list"></div>
+    </section>
   </section>
   <section id="sec-chat" class="chat" hidden aria-labelledby="chat-t">
     <div>
@@ -450,6 +489,7 @@ const ESTILOS_ENQ = [{k:"1",n:"sem faixa",d:"Pergunta direto sobre a foto"},{k:"
 const VIDEOS = __VIDEOS__;
 const CATALOGO = __CATALOGO__;
 const MUSICAS = __MUSICAS__;
+const MODELOS = __MODELOS__;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const byId = Object.fromEntries(POSTS.map(p => [p.n, p]));
 const ADCARDS = (ANUNCIOS && ANUNCIOS.cards) || [];
@@ -910,10 +950,10 @@ function paint(n){
 }
 
 // ---------- aba Anúncios ----------
-const ABAS = ["org", "ads", "ped", "vid", "acervo", "mus", "chat"];
+const ABAS = ["org", "ads", "ped", "vid", "acervo", "mus", "mod", "chat"];
 function showTab(k){
   if (k === true) k = "ads"; if (k === false) k = "org";
-  ABAS.forEach(a => { const sec = document.getElementById("sec-" + a); sec.hidden = a !== k; if (["vid","acervo","ped","mus"].includes(a) && a === k) sec.style.display = "flex"; document.getElementById("tab-" + a).setAttribute("aria-selected", String(a === k)); });
+  ABAS.forEach(a => { const sec = document.getElementById("sec-" + a); sec.hidden = a !== k; if (["vid","acervo","ped","mus","mod"].includes(a) && a === k) sec.style.display = "flex"; document.getElementById("tab-" + a).setAttribute("aria-selected", String(a === k)); });
   if (k === "chat") { chatVisto(); const m = document.getElementById("chat-msgs"); m.scrollTop = m.scrollHeight; if (showTab.pronto) document.querySelector(".tabsbar").scrollIntoView({block: "start"}); }
   try { localStorage.setItem("central-aba", k); } catch {}
 }
@@ -1400,13 +1440,102 @@ document.getElementById("sec-mus").addEventListener("click", async e => {
 document.getElementById("mf-q").addEventListener("input", renderMusicas);
 document.getElementById("mf-comb").addEventListener("change", renderMusicas);
 mchips(); renderMusicas();
+// ---------- aba Modelos: referências, mostruário e sugestões por modelo ----------
+let modState = {}, modChat = [], refs = [], modTipo = "video", refUps = [];
+function statusModelo(m){ return modState[m.id]?.status || m.status; }
+const ST_MOD = {aprovado: ["aprovado", "aprovado"], em_teste: ["pendente", "em teste"], pausado: ["corrigir", "pausado"]};
+function modCardHtml(m){
+  const ex = m.exemplo?.video ? VIDEOS.find(v => v.id === m.exemplo.video) : null;
+  const midia = ex ? `<video controls playsinline preload="none" poster="${esc(ex.capa)}" src="${esc(ex.video)}"></video>` : exModelo(m) ? `<img class="mimg" src="${esc(exModelo(m))}" alt="Exemplo do modelo ${esc(m.nome)}" loading="lazy">` : "";
+  return `<article class="mcard" id="mod-${esc(m.id)}">${midia}<div class="vbody">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h3>${esc(m.nome)}</h3><span class="st" data-mst></span></div>
+    <p class="note" style="color:var(--ink)">${esc(m.desc)}</p>${m.quando ? `<p class="note"><b>Quando usar:</b> ${esc(m.quando)}</p>` : ""}${m.obs ? `<p class="note">${esc(m.obs)}</p>` : ""}
+    <div class="vacts" data-actions><button class="btn ok" type="button" data-mok>Aprovar modelo</button><button class="btn ghost" type="button" data-mpausa>Pausar</button></div>
+    <details data-mdet><summary class="note"><b>Sugerir alteração</b> <span data-mn></span></summary>
+      <div class="mthread" data-mthread></div>
+      <form class="mform" data-mform data-actions><label class="note" for="mt-${esc(m.id)}">O que mudar neste modelo?</label><textarea id="mt-${esc(m.id)}" rows="2" placeholder="Ex.: texto um pouco menor, laranja mais forte, cortes mais lentos"></textarea><div class="vacts"><button class="btn fix" type="submit">Enviar sugestão</button></div></form>
+    </details></div></article>`;
+}
+function renderModelos(){
+  const box = document.getElementById("mod-list"); if (!box) return;
+  const lista = MODELOS.filter(m => m.tipo === modTipo);
+  box.innerHTML = lista.map(modCardHtml).join("") || '<p class="note">Nenhum modelo ainda.</p>';
+  lista.forEach(m => {
+    const c = document.getElementById("mod-" + m.id);
+    c.querySelector("[data-mok]").addEventListener("click", () => saveModelo(m, statusModelo(m) === "aprovado" ? "em_teste" : "aprovado"));
+    c.querySelector("[data-mpausa]").addEventListener("click", () => saveModelo(m, statusModelo(m) === "pausado" ? "em_teste" : "pausado"));
+    c.querySelector("[data-mform]").addEventListener("submit", async ev => {
+      ev.preventDefault(); if (!db) return; const ta = c.querySelector("textarea"), t = ta.value.trim(); if (!t) return;
+      const id = "mc-" + Date.now().toString(36);
+      try { await db.collection("modelos_chat").doc(id).set({id, modelo: m.id, nomeModelo: m.nome, texto: t, autor: "dono", situacao: "enviado", criadoEm: new Date().toISOString()}); ta.value = ""; } catch { alert("Não consegui enviar. Tente de novo."); }
+    });
+    if (!db) c.querySelectorAll("[data-actions]").forEach(a => a.hidden = true);
+  });
+  paintModelos();
+}
+async function saveModelo(m, status){
+  if (!db) return; modState[m.id] = {...(modState[m.id] || {}), status}; paintModelos();
+  try { await db.collection("modelos").doc(m.id).set({modelo: m.id, nome: m.nome, tipo: m.tipo, status, atualizadoEm: new Date().toISOString()}); } catch {}
+}
+function paintModelos(){
+  MODELOS.forEach(m => {
+    const c = document.getElementById("mod-" + m.id); if (!c) return;
+    const st = statusModelo(m), [cls, txt] = ST_MOD[st] || ST_MOD.em_teste;
+    c.classList.toggle("aprovado", st === "aprovado");
+    const pill = c.querySelector("[data-mst]"); pill.className = "st " + cls; pill.textContent = txt;
+    const b = c.querySelector("[data-mok]"); b.textContent = st === "aprovado" ? "Desfazer aprovação" : "Aprovar modelo"; b.className = st === "aprovado" ? "btn ghost" : "btn ok";
+    c.querySelector("[data-mpausa]").textContent = st === "pausado" ? "Voltar a usar" : "Pausar";
+    const msgs = modChat.filter(x => x.modelo === m.id);
+    c.querySelector("[data-mn]").textContent = msgs.length ? `(${msgs.length})` : "";
+    c.querySelector("[data-mthread]").innerHTML = msgs.map(x => `<div class="bub ${x.autor === "claude" ? "claude" : "dono"}">${fmtTexto(x.texto || "")}<small>${x.autor === "claude" ? "Equipe" : "Você"} · ${fmtHora(x.criadoEm)}</small></div>`).join("")
+      + (msgs.length && msgs[msgs.length - 1].autor !== "claude" ? '<p class="note">A equipe recebeu; a resposta aparece aqui.</p>' : "");
+  });
+}
+function renderRefs(){
+  const sel = document.getElementById("ref-mod");
+  if (sel && !sel.options.length) sel.innerHTML = `<option value="novo">Para um modelo novo</option><option value="">Ainda não sei</option>` + MODELOS.map(m => `<option value="${esc(m.id)}">Ajustar: ${esc(m.nome)} (${m.tipo === "video" ? "vídeo" : "arte"})</option>`).join("");
+  const box = document.getElementById("ref-list"); if (!box) return;
+  const ST = {enviado: ["pendente", "enviada"], analisada: ["aprovado", "analisada"], virou_modelo: ["aprovado", "virou modelo"]};
+  box.innerHTML = refs.map(r => { const [c, t] = ST[r.status] || ST.enviado; const mod = r.modelo === "novo" ? "modelo novo" : (MODELOS.find(m => m.id === r.modelo) || {}).nome || "sem modelo definido";
+    return `<article class="ref"><div class="ped"><div class="top"><b>Referência · ${esc(mod)}</b><span class="st ${c}">${t}</span></div></div>
+      <span class="note">${esc(fmtHora(r.criadoEm))}</span><p style="margin:0">${fmtTexto(r.nota || "")}</p>
+      ${/^https?:\/\//i.test(r.link || "") ? `<a href="${esc(r.link)}" target="_blank" rel="noopener" class="note" style="word-break:break-all">${esc(r.link)}</a>` : ""}
+      ${(r.arquivos || []).length ? `<div class="rmid">${r.arquivos.map(a => (a.tipo || "").startsWith("video") ? `<video controls playsinline preload="metadata" src="/_blob/${esc(a.id)}"></video>` : `<img src="/_blob/${esc(a.id)}" alt="${esc(a.nome || "referência")}">`).join("")}</div>` : ""}
+      ${r.resposta ? `<span class="reply">${fmtTexto(r.resposta)}</span>` : ""}</article>`; }).join("");
+}
+document.querySelectorAll("[data-mtipo]").forEach(b => b.addEventListener("click", () => { modTipo = b.dataset.mtipo; document.querySelectorAll("[data-mtipo]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); renderModelos(); }));
+document.getElementById("ref-file").addEventListener("change", async e => {
+  const n = document.getElementById("ref-upn"); if (!assets) return;
+  for (const f of e.target.files) {
+    if (f.size > 20 * 1024 * 1024) { n.textContent = `"${f.name}" passa de 20 MB: coloque na pasta do Drive "Referências de vídeo" e cite o nome na anotação.`; continue; }
+    n.textContent = `Enviando ${f.name}…`;
+    try { const r = await assets.upload(f); refUps.push({id: r.id, nome: f.name, tipo: f.type}); n.textContent = refUps.length + " arquivo(s) pronto(s) para enviar"; }
+    catch { n.textContent = `Não consegui enviar ${f.name}. Tente de novo.`; }
+  }
+  e.target.value = "";
+});
+document.getElementById("ref-form").addEventListener("submit", async e => {
+  e.preventDefault(); const m = document.getElementById("ref-msg"); if (!db) { m.textContent = "Abra pelo claude.ai com a sua conta para enviar."; return; }
+  const nota = document.getElementById("ref-nota").value.trim(), link = document.getElementById("ref-link").value.trim();
+  if (!nota && !link && !refUps.length) { m.textContent = "Escreva uma anotação, cole um link ou anexe um arquivo."; return; }
+  const id = "ref-" + Date.now().toString(36), btn = document.getElementById("ref-send"); btn.disabled = true;
+  try {
+    await db.collection("referencias").doc(id).set({id, nota, link, modelo: document.getElementById("ref-mod").value, arquivos: refUps, status: "enviado", criadoEm: new Date().toISOString()});
+    refUps = []; document.getElementById("ref-nota").value = ""; document.getElementById("ref-link").value = ""; document.getElementById("ref-upn").textContent = ""; m.textContent = "Referência enviada. A equipe responde aqui.";
+  } catch { m.textContent = "Não consegui enviar. Tente de novo."; }
+  btn.disabled = false;
+});
+renderRefs(); renderModelos();
 // ---------- aba Pedidos: guia passo a passo ----------
 const PED_PERSONAS = [["casais","Casais"],["familias","Famílias"],["aventureiros","Aventureiros"],["eco","Amantes da natureza"],["55","55+ (tranquilidade)"],["equipe","Equipe decide"]];
 const PED_OBJETIVOS = [["alcance","Alcançar gente nova","Reels para quem ainda não conhece"],["reserva","Gerar reservas","Chamada clara para o link da bio"],["salvar","Salvar e compartilhar","Dicas e conteúdo útil"],["equipe","Equipe decide",""]];
 const capaVid = id => (VIDEOS.find(v => v.id === id) || {}).capa || "";
 const exPost = (() => { const p = POSTS.find(p => p.estilos && p.estilos["1"] && p.estilos["2"] && p.estilos["3"]); return k => p ? p.estilos[k][0] : ""; })();
-const ESTILOS_VID = [["cinematico","Cinemático","Poucas cenas longas, movimento suave",()=>capaVid("drone-cinematico-ambient")],["rapido","Ritmo rápido","Cortes de 1 a 1,5 s, energia",()=>capaVid("drone-rapido-violao-1")],["horaahora","Hora a hora","Roteiro do dia com horários",()=>capaVid("um-dia-no-cabanas")],["pause","Pause a tela","Pergunta + telas rápidas",()=>capaVid("pause-a-tela")],["equipe","Equipe decide","O Editor escolhe o melhor",()=>""]];
-const ESTILOS_ART = [["1","Sem faixa","Texto direto sobre a foto",()=>exPost("1")],["2","Caixa central","Título numa caixa no centro",()=>exPost("2")],["3","Faixa embaixo","Faixa marrom na base",()=>exPost("3")],["equipe","Equipe decide","O Designer escolhe o melhor",()=>""]];
+// passo "Estilo": os modelos do mostruário (aba Modelos), filtrados pelo tipo do pedido
+const exModelo = m => m.exemplo?.video ? capaVid(m.exemplo.video) : m.exemplo?.estilo ? exPost(m.exemplo.estilo) : "";
+const estilosPedido = () => { const tipo = ehVideo() ? "video" : "criativo";
+  return [...MODELOS.filter(m => m.tipo === tipo && statusModelo(m) !== "pausado").map(m => [m.id, m.nome, (statusModelo(m) === "aprovado" ? "" : "Em teste · ") + m.desc.split(".")[0], () => exModelo(m)]),
+    ["novo", "Modelo novo", "Explique ou mande a referência no fim", () => ""], ["equipe", "Equipe decide", ehVideo() ? "O Editor escolhe o melhor" : "O Designer escolhe o melhor", () => ""]]; };
 const PNOVO = () => ({tipo:"", formato:"", duracao:"", telas:"", tema:"", objetivo:"", persona:"", data:"", estilo:"", midia:"equipe", fotos:[], trechos:[], uploads:[], copy:"equipe", textoTela:"", legenda:"", letreiro:"sim", transcricao:"nao", musica:"app", faixa:"", obs:""});
 let P = PNOVO(), passo = 0, pedidos = [];
 try { const r = JSON.parse(localStorage.getItem("pedido-rascunho") || "null"); if (r && r.tipo !== undefined) P = {...PNOVO(), ...r}; } catch {}
@@ -1425,7 +1554,7 @@ const PASSOS = [
       <div class="q"><b>Objetivo</b><div class="opts">${PED_OBJETIVOS.map(([v,t,d]) => opt("objetivo",v,t,d)).join("")}</div></div>
       <div class="q"><b>Para quem?</b><div class="opts">${PED_PERSONAS.map(([v,t]) => opt("persona",v,t)).join("")}</div></div>
       <div class="q"><label for="w-data"><b>Para quando? (opcional)</b></label><input type="date" id="w-data" data-txt="data" value="${esc(P.data)}" style="max-width:220px"></div>`},
-  {t: "Estilo", ok: () => !!P.estilo, h: () => `<div class="opts cards${ehVideo() ? "" : " r34"}">${(ehVideo() ? ESTILOS_VID : ESTILOS_ART).map(([v,t,d,img]) => opt("estilo",v,t,d,img())).join("")}</div>`},
+  {t: "Estilo", ok: () => !!P.estilo, h: () => `<div class="opts cards${ehVideo() ? "" : " r34"}">${estilosPedido().map(([v,t,d,img]) => opt("estilo",v,t,d,img())).join("")}</div><p class="note">Veja os exemplos completos e sugira mudanças na aba <b>Modelos</b>.</p>`},
   {t: ehVideoT => "Imagens e vídeos", ok: () => P.midia === "equipe" || P.fotos.length + P.trechos.length + P.uploads.length > 0, h: () => `<div class="opts">${opt("midia","equipe","A equipe escolhe","usa o acervo catalogado")}${opt("midia","eu","Eu escolho","do acervo ou do celular")}</div>
       ${P.midia === "eu" ? `${(CATALOGO.videos||[]).length ? `<div class="q"><b>Trechos de vídeo do acervo</b><div class="trlist">${CATALOGO.videos.flatMap(v => v.trechos.filter(t => !t.uso_sugerido.includes("não usar")).map(t => { const k = v.id_drive + ":" + t.id; return `<button type="button" class="tr" data-trecho="${esc(k)}" aria-pressed="${String(P.trechos.includes(k))}"><b style="white-space:nowrap">${esc(t.id)} · ${fmtS(t.ini)}–${fmtS(t.fim)} s</b><span>${esc(v.local?.nome || v.titulo_drive)}: ${esc(t.descricao)}</span></button>`; })).join("")}</div></div>` : ""}
         <div class="q"><b>Fotos do banco</b> <input type="text" id="w-fq" placeholder="Buscar foto por nome ou pasta" aria-label="Buscar foto"><div class="picker" id="w-fotos"></div></div>
@@ -1440,13 +1569,13 @@ const PASSOS = [
       ${P.musica === "lista" ? `<div class="opts">${[["", "Todas"], ["baixa", "Calma"], ["media", "Média"], ["alta", "Agitada"], ["fav", "★ Preferidas"]].map(([v, t]) => `<button type="button" class="chip" data-wmf="${v}" aria-pressed="${String((P.musFiltro || "") === v)}">${t}</button>`).join("")}</div>
         <div class="mus">${MUSICAS.filter(m => notaDe(m.id) !== 0).sort((a, b) => (notaDe(b.id) ?? 2.5) - (notaDe(a.id) ?? 2.5)).filter(m => { const f = P.musFiltro || "", e = m.medidas.energia; return !f || (f === "fav" ? (notaDe(m.id) ?? -1) >= 4 : f === "baixa" ? e <= 2 : f === "media" ? e === 3 : e >= 4); }).map(m => `<div class="row" aria-pressed="${String(P.faixa === m.id)}"><b style="min-width:150px">${notaDe(m.id) ? "★".repeat(notaDe(m.id)) + " " : ""}${esc(m.nome)}<br><small class="note">${energiaHtml(m.medidas.energia)} ${esc(m.climas.join(", "))}</small></b><audio controls preload="none" src="${esc(m.previa)}"></audio><button type="button" class="sel" data-faixa="${esc(m.id)}">${P.faixa === m.id ? "✓ Escolhida" : "Escolher"}</button></div>`).join("") || '<p class="note">Nenhuma música nesse filtro.</p>'}<p class="note">Prévia: 30 s do melhor trecho. Dê notas na aba Músicas: as mais bem avaliadas aparecem primeiro. Para acrescentar opções, coloque o MP3 na pasta "Trilhas sonoras free" do Drive.</p></div>` : ""}`},
   {t: "Conferir e enviar", ok: () => true, h: () => `<dl class="resumo">${resumo().map(([k,v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
-      <div class="q"><label for="w-obs"><b>Mais alguma coisa? (opcional)</b></label><textarea id="w-obs" rows="3" data-txt="obs" placeholder="Ex.: mostrar o pôr do sol, evitar crianças, usar o logo grande">${esc(P.obs)}</textarea></div>`},
+      <div class="q"><label for="w-obs"><b>Mais alguma coisa? (opcional)</b></label><textarea id="w-obs" rows="3" data-txt="obs" placeholder="${P.estilo === "novo" ? "Descreva o modelo novo ou cole o link da referência" : "Ex.: mostrar o pôr do sol, evitar crianças, usar o logo grande"}">${esc(P.obs)}</textarea></div>`},
 ];
 const nomeDe = (lista, v) => (lista.find(x => x[0] === v) || [, v])[1];
 function resumo(){
   const r = [["Pedido", {video:"Vídeo", criativo:"Criativo", anuncio:"Anúncio"}[P.tipo] || "-"], ["Formato", [P.formato, P.duracao && P.duracao !== "equipe" ? P.duracao + " s" : "", P.telas ? P.telas + " telas" : ""].filter(Boolean).join(" · ") || "-"],
     ["Tema", P.tema || "-"], ["Objetivo", nomeDe(PED_OBJETIVOS, P.objetivo) || "equipe decide"], ["Para quem", nomeDe(PED_PERSONAS, P.persona) || "equipe decide"], ["Data", P.data ? P.data.split("-").reverse().join("/") : "sem data"],
-    ["Estilo", nomeDe(ehVideo() ? ESTILOS_VID : ESTILOS_ART, P.estilo) || "-"], ["Imagens", P.midia === "equipe" ? "a equipe escolhe" : `${P.trechos.length} trecho(s), ${P.fotos.length} foto(s) do banco, ${P.uploads.length} enviada(s)`],
+    ["Modelo", nomeDe(estilosPedido(), P.estilo) || "-"], ["Imagens", P.midia === "equipe" ? "a equipe escolhe" : `${P.trechos.length} trecho(s), ${P.fotos.length} foto(s) do banco, ${P.uploads.length} enviada(s)`],
     ["Texto", {equipe:"a equipe escreve", eu:"eu escrevo", juntos:"eu dou a ideia"}[P.copy] + (P.textoTela ? ` · "${P.textoTela}"` : "")]];
   if (ehVideo()) r.push(["Letreiro", P.letreiro === "sim" ? "sim" : "não"], ["Transcrição", P.transcricao === "sim" ? "sim" : "não"], ["Música", P.musica === "app" ? "sem música (escolho no app)" : P.musica === "equipe" ? "a equipe escolhe" : (MUSICAS.find(m => m.id === P.faixa) || {}).nome || "-"]);
   return r;
@@ -1516,7 +1645,7 @@ function renderPedidos(){
   if (!pedidos.length) { box.innerHTML = '<p class="note">Nenhum pedido ainda.</p>'; return; }
   const ST = {novo: ["novo","recebido"], producao: ["producao","em produção"], pronto: ["pronto","pronto para aprovar"], entregue: ["pronto","entregue"]};
   box.innerHTML = pedidos.map(x => { const [c, t] = ST[x.status] || ST.novo; return `<article class="ped"><div class="top"><b>${esc({video:"Vídeo", criativo:"Criativo", anuncio:"Anúncio"}[x.tipo] || "Pedido")} · ${esc(x.tema || "")}</b><span class="st ${c}">${t}</span></div>
-    <span class="note">${esc(fmtHora(x.criadoEm))} · ${esc([x.formato, x.estilo].filter(Boolean).join(" · "))}</span>${x.resposta ? `<span class="reply">${esc(x.resposta)}</span>` : ""}</article>`; }).join("");
+    <span class="note">${esc(fmtHora(x.criadoEm))} · ${esc([x.formato, (MODELOS.find(m => m.id === x.estilo) || {}).nome || x.estilo].filter(Boolean).join(" · "))}</span>${x.resposta ? `<span class="reply">${esc(x.resposta)}</span>` : ""}</article>`; }).join("");
 }
 renderWiz();
 buildAdCards(); tallyAds();
@@ -1553,6 +1682,11 @@ tally();
   renderAds();
   renderVideos(); renderWiz(); renderMusicas();
   db.collection("pedidos").onSnapshot(snap => { pedidos = snap.docs.map(d => d.data()).filter(x => x && x.id).sort((a, b) => (b.criadoEm || "").localeCompare(a.criadoEm || "")); renderPedidos(); }, () => {});
+  renderModelos();
+  if (!assets) document.querySelector("[data-ref-up]").hidden = true;
+  db.collection("modelos").onSnapshot(snap => { snap.docs.forEach(d => { const b = d.data(); if (b && b.modelo) modState[b.modelo] = b; }); paintModelos(); if (document.getElementById("sec-ped").hidden === false) renderWiz(); }, () => {});
+  db.collection("modelos_chat").onSnapshot(snap => { modChat = snap.docs.map(d => d.data()).filter(x => x && x.texto).sort((a, b) => (a.criadoEm || "").localeCompare(b.criadoEm || "")); paintModelos(); }, () => {});
+  db.collection("referencias").onSnapshot(snap => { refs = snap.docs.map(d => d.data()).filter(x => x && x.id).sort((a, b) => (b.criadoEm || "").localeCompare(a.criadoEm || "")); renderRefs(); }, () => {});
   db.collection("musicas").onSnapshot(snap => { snap.docs.forEach(d => { const b = d.data(); if (b && b.musica) mstate[b.musica] = b; }); renderMusicas(); }, () => {});
   db.collection("videos").onSnapshot(snap => { snap.docs.forEach(d => { const b = d.data(); if (b && b.video) vstate[b.video] = b; }); paintVideos(); }, () => {});
   db.collection("decisoes").where("mes","==",MES).onSnapshot(snap => {
