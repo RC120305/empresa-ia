@@ -1,5 +1,14 @@
 [
  {
+  "id": "master-casais-animador",
+  "titulo": "Cabana Master para dois · Copy que acende",
+  "grupo": "Teste da skill editar-vídeo",
+  "arquivo": "design/videos/2026-10/teste-animador-v13/REELS-MASTER-CASAIS-copy-que-acende.mp4",
+  "musica": "Piano cinematic (Pixabay, sua nota 4)",
+  "nota": "Feito pelo Editor no animador (prévia 540x960). Confirme: as 5 fotos são da Cabana Master? Falta foto da cama king.",
+  "duracao": "12,8"
+ },
+ {
   "id": "piloto-animador",
   "titulo": "Cabana Master · animador do Cabanas",
   "grupo": "Piloto: legendas de copy (compare os três)",
