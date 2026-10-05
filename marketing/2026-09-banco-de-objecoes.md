@@ -234,7 +234,7 @@
 > As atividades do hotel (programação inclusa, boia cross, arvorismo e flutuação) acontecem aqui dentro e são contratadas diretamente conosco. Já os passeios fora do hotel, como os atrativos famosos de Bonito, funcionam com voucher e têm vagas limitadas por dia, por isso vale reservar com antecedência. Para esses, nossa agência parceira é a Portal Ecotrip, que pode te ajudar a montar o roteiro.
 
 **(c) Provas e fatos:**
-- Atividades internas realizadas dentro do hotel e contratadas com o próprio hotel; agência parceira para passeios externos: Portal Ecotrip, bonitoecotrip.com.br, (67) 99341-4734 (`destino-bonito.md`, seção 2; `hotel-operacional.md`, seção 11).
+- Atividades internas realizadas dentro do hotel e contratadas com o próprio hotel; agência parceira para passeios externos: Portal Ecotrip, biolink-cabanas-bonito.ai.studio, (67) 99341-4734 (`destino-bonito.md`, seção 2; `hotel-operacional.md`, seção 11).
 - Voucher único e capacidade de carga nos passeios de Bonito; na alta, reservar com até 2 meses (`destino-bonito.md`, seção 2; fato do destino).
 - Ideal de pelo menos 5 dias para combinar passeios externos com dias de lazer (`destino-bonito.md`, seção 3; fato do destino).
 

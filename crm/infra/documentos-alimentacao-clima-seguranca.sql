@@ -115,7 +115,7 @@ select 'Segurança: como evitar golpes', 'canais oficiais da base do hotel + dad
 - E-mail: contato@hotelcabanas.com.br
 - Instagram: @hotelcabanasbonito
 - WhatsApp: este número, em que você está conversando com o hotel.
-- Agência parceira para passeios fora do hotel: Ecotrip (Portal Ecotrip), bonitoecotrip.com.br, telefone (67) 99341-4734.
+- Agência parceira para passeios fora do hotel: Ecotrip (Portal Ecotrip), biolink-cabanas-bonito.ai.studio, telefone (67) 99341-4734.
 
 ## Como o hotel recebe pagamento
 - O hotel só manda os dados de pagamento depois de a reserva estar feita no sistema, pela própria conversa com o hotel.
@@ -140,7 +140,7 @@ select 'Segurança: como evitar golpes', 'canais oficiais da base do hotel + dad
   **R:** Ótima pergunta, é sempre bom conferir! Os nossos canais oficiais são o site hotelcabanas.com.br, o Instagram @hotelcabanasbonito, o telefone (67) 99110-7635 e este WhatsApp. No Pix, o recebedor que aparece no seu banco é sempre Hotel Cabanas Ltda, Banco do Brasil. Se quiser, pode ligar no nosso telefone para confirmar.
 
 - **P:** O rapaz da Ecotrip é de vocês mesmo?
-  **R:** A Ecotrip é a nossa agência parceira para os passeios fora do hotel: o site oficial é bonitoecotrip.com.br e o telefone é (67) 99341-4734. Se o contato veio de outro número, confira por esse telefone antes de pagar qualquer coisa.
+  **R:** A Ecotrip é a nossa agência parceira para os passeios fora do hotel: o link oficial é biolink-cabanas-bonito.ai.studio e o telefone é (67) 99341-4734. Se o contato veio de outro número, confira por esse telefone antes de pagar qualquer coisa.
 
 - **P:** Posso passar o número do meu cartão por aqui?
   **R:** Por segurança, nunca pedimos dados de cartão por mensagem. Se preferir pagar no cartão, mandamos um link de pagamento seguro.

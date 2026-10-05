@@ -14,7 +14,7 @@
 - **Voucher Único:** os passeios de Bonito só podem ser feitos com voucher, emitido por um sistema centralizado. O voucher define data, horário, número de pessoas e guia. Ele existe desde os anos 1990 e hoje é documento fiscal municipal.
 - **Capacidade de carga:** cada atrativo tem um limite diário de visitantes definido por técnicos. Quando o limite é atingido, não há mais vagas no horário. **Consequência para o marketing:** na alta temporada, os passeios mais procurados esgotam, e **as agências recomendam reservar com até 2 meses de antecedência**.
 - **Preservação como produto:** o controle de visitantes resulta em passeios sem filas nem multidões. É um argumento de qualidade que o turista consciente valoriza.
-- **Hotel Cabanas:** as atividades internas (boia cross, arvorismo, flutuação e a programação inclusa) são realizadas **dentro do hotel** e contratadas com o próprio hotel (ver `hotel-operacional.md`). Para os **passeios externos**, a agência parceira do hotel é a **Portal Ecotrip** (bonitoecotrip.com.br). ⚠️ Se as atividades internas exigem voucher único: **a confirmar com o dono**.
+- **Hotel Cabanas:** as atividades internas (boia cross, arvorismo, flutuação e a programação inclusa) são realizadas **dentro do hotel** e contratadas com o próprio hotel (ver `hotel-operacional.md`). Para os **passeios externos**, a agência parceira do hotel é a **Portal Ecotrip** (biolink-cabanas-bonito.ai.studio). ⚠️ Se as atividades internas exigem voucher único: **a confirmar com o dono**.
 
 ## 3. Sazonalidade (essencial para o calendário de marketing)
 Há **duas réguas diferentes**, e elas não coincidem: **clima e água** × **demanda e preço**.

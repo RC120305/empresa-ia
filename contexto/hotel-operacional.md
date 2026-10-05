@@ -110,7 +110,7 @@
 - **Instagram:** https://www.instagram.com/hotelcabanasbonito/ · **Facebook:** https://www.facebook.com/hotelcabanasms · **YouTube:** https://www.youtube.com/@hotelcabanasbonitoms
 - **Bio do Instagram (dono, 28/09/2026):** um **Linktree** com site, motor de reservas, WhatsApp, tour virtual e acomodações. Nas legendas, "link na bio" leva a ele. Link clicável dentro do Instagram orgânico só existe na bio, na figurinha de link dos stories e no botão de WhatsApp do perfil.
 - **Tour virtual:** https://tourmkr.com/F1pLPbag9x/44517615p&357.7h&29.11t · **Google Maps:** http://bit.ly/2PfI7Am
-- **Agência parceira:** Portal Ecotrip, https://bonitoecotrip.com.br/, telefone 67 99341-4734
+- **Agência parceira:** Portal Ecotrip, https://biolink-cabanas-bonito.ai.studio/, telefone 67 99341-4734 (link atualizado pelo dono em 06/10/2026)
 
 ## 12. Divergências a esclarecer com o dono (até lá, use a forma segura)
 | # | Divergência | Forma segura até confirmar |
