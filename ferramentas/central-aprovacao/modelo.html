@@ -1450,7 +1450,7 @@ function modCardHtml(m){
   return `<article class="mcard" id="mod-${esc(m.id)}">${midia}<div class="vbody">
     <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h3>${esc(m.nome)}</h3><span class="st" data-mst></span></div>
     <p class="note" style="color:var(--ink)">${esc(m.desc)}</p>${m.quando ? `<p class="note"><b>Quando usar:</b> ${esc(m.quando)}</p>` : ""}${m.obs ? `<p class="note">${esc(m.obs)}</p>` : ""}
-    <div class="vacts" data-actions><button class="btn ok" type="button" data-mok>Aprovar modelo</button><button class="btn ghost" type="button" data-mpausa>Pausar</button></div>
+    <div class="vacts" data-actions><button class="btn ok" type="button" data-mok>Aprovar modelo</button><button class="btn ghost" type="button" data-mpausa>Pausar</button><button class="btn fix" type="button" data-mdel>Excluir</button></div>
     <details data-mdet><summary class="note"><b>Sugerir alteração</b> <span data-mn></span></summary>
       <div class="mthread" data-mthread></div>
       <form class="mform" data-mform data-actions><label class="note" for="mt-${esc(m.id)}">O que mudar neste modelo?</label><textarea id="mt-${esc(m.id)}" rows="2" placeholder="Ex.: texto um pouco menor, laranja mais forte, cortes mais lentos"></textarea><div class="vacts"><button class="btn fix" type="submit">Enviar sugestão</button></div></form>
@@ -1458,12 +1458,15 @@ function modCardHtml(m){
 }
 function renderModelos(){
   const box = document.getElementById("mod-list"); if (!box) return;
-  const lista = MODELOS.filter(m => m.tipo === modTipo);
-  box.innerHTML = lista.map(modCardHtml).join("") || '<p class="note">Nenhum modelo ainda.</p>';
+  const lista = MODELOS.filter(m => m.tipo === modTipo && statusModelo(m) !== "excluido"), excl = MODELOS.filter(m => m.tipo === modTipo && statusModelo(m) === "excluido");
+  box.innerHTML = (lista.map(modCardHtml).join("") || '<p class="note">Nenhum modelo ativo deste tipo.</p>')
+    + (excl.length ? `<details class="ped" style="grid-column:1/-1"><summary class="note"><b>Modelos excluídos (${excl.length})</b>: não aparecem no pedido; toque para restaurar</summary>${excl.map(m => `<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding-top:8px"><span>${esc(m.nome)}</span><button class="btn ghost" type="button" data-mrest="${esc(m.id)}">Restaurar</button></div>`).join("")}</details>` : "");
+  box.querySelectorAll("[data-mrest]").forEach(b => b.addEventListener("click", () => { const m = MODELOS.find(x => x.id === b.dataset.mrest); if (m) saveModelo(m, m.status === "aprovado" ? "aprovado" : "em_teste"); }));
   lista.forEach(m => {
     const c = document.getElementById("mod-" + m.id);
     c.querySelector("[data-mok]").addEventListener("click", () => saveModelo(m, statusModelo(m) === "aprovado" ? "em_teste" : "aprovado"));
     c.querySelector("[data-mpausa]").addEventListener("click", () => saveModelo(m, statusModelo(m) === "pausado" ? "em_teste" : "pausado"));
+    c.querySelector("[data-mdel]").addEventListener("click", () => { if (confirm(`Excluir o modelo "${m.nome}"? Ele sai do mostruário e do pedido. Dá para restaurar depois em "Modelos excluídos".`)) saveModelo(m, "excluido"); });
     c.querySelector("[data-mform]").addEventListener("submit", async ev => {
       ev.preventDefault(); if (!db) return; const ta = c.querySelector("textarea"), t = ta.value.trim(); if (!t) return;
       const id = "mc-" + Date.now().toString(36);
@@ -1474,7 +1477,7 @@ function renderModelos(){
   paintModelos();
 }
 async function saveModelo(m, status){
-  if (!db) return; modState[m.id] = {...(modState[m.id] || {}), status}; paintModelos();
+  if (!db) return; modState[m.id] = {...(modState[m.id] || {}), status}; renderModelos();
   try { await db.collection("modelos").doc(m.id).set({modelo: m.id, nome: m.nome, tipo: m.tipo, status, atualizadoEm: new Date().toISOString()}); } catch {}
 }
 function paintModelos(){
@@ -1534,7 +1537,7 @@ const exPost = (() => { const p = POSTS.find(p => p.estilos && p.estilos["1"] &&
 // passo "Estilo": os modelos do mostruário (aba Modelos), filtrados pelo tipo do pedido
 const exModelo = m => m.exemplo?.video ? capaVid(m.exemplo.video) : m.exemplo?.estilo ? exPost(m.exemplo.estilo) : "";
 const estilosPedido = () => { const tipo = ehVideo() ? "video" : "criativo";
-  return [...MODELOS.filter(m => m.tipo === tipo && statusModelo(m) !== "pausado").map(m => [m.id, m.nome, (statusModelo(m) === "aprovado" ? "" : "Em teste · ") + m.desc.split(".")[0], () => exModelo(m)]),
+  return [...MODELOS.filter(m => m.tipo === tipo && !["pausado", "excluido"].includes(statusModelo(m))).map(m => [m.id, m.nome, (statusModelo(m) === "aprovado" ? "" : "Em teste · ") + m.desc.split(".")[0], () => exModelo(m)]),
     ["novo", "Modelo novo", "Explique ou mande a referência no fim", () => ""], ["equipe", "Equipe decide", ehVideo() ? "O Editor escolhe o melhor" : "O Designer escolhe o melhor", () => ""]]; };
 const PNOVO = () => ({tipo:"", formato:"", duracao:"", telas:"", tema:"", objetivo:"", persona:"", data:"", estilo:"", midia:"equipe", fotos:[], trechos:[], uploads:[], copy:"equipe", textoTela:"", legenda:"", letreiro:"sim", transcricao:"nao", musica:"app", faixa:"", obs:""});
 let P = PNOVO(), passo = 0, pedidos = [];
@@ -1684,7 +1687,7 @@ tally();
   db.collection("pedidos").onSnapshot(snap => { pedidos = snap.docs.map(d => d.data()).filter(x => x && x.id).sort((a, b) => (b.criadoEm || "").localeCompare(a.criadoEm || "")); renderPedidos(); }, () => {});
   renderModelos();
   if (!assets) document.querySelector("[data-ref-up]").hidden = true;
-  db.collection("modelos").onSnapshot(snap => { snap.docs.forEach(d => { const b = d.data(); if (b && b.modelo) modState[b.modelo] = b; }); paintModelos(); if (document.getElementById("sec-ped").hidden === false) renderWiz(); }, () => {});
+  db.collection("modelos").onSnapshot(snap => { snap.docs.forEach(d => { const b = d.data(); if (b && b.modelo) modState[b.modelo] = b; }); renderModelos(); if (document.getElementById("sec-ped").hidden === false) renderWiz(); }, () => {});
   db.collection("modelos_chat").onSnapshot(snap => { modChat = snap.docs.map(d => d.data()).filter(x => x && x.texto).sort((a, b) => (a.criadoEm || "").localeCompare(b.criadoEm || "")); paintModelos(); }, () => {});
   db.collection("referencias").onSnapshot(snap => { refs = snap.docs.map(d => d.data()).filter(x => x && x.id).sort((a, b) => (b.criadoEm || "").localeCompare(a.criadoEm || "")); renderRefs(); }, () => {});
   db.collection("musicas").onSnapshot(snap => { snap.docs.forEach(d => { const b = d.data(); if (b && b.musica) mstate[b.musica] = b; }); renderMusicas(); }, () => {});
