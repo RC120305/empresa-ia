@@ -1038,7 +1038,8 @@ function proximoExpediente(d = new Date()) {
 const getJson = async (url, buscar) => { const r = await buscar(url, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null); return r && r.ok ? r.json().catch(() => []) : []; };
 let ultimaRetomada = 0;
 async function retomarOrcamentos(buscar = fetch, agora = Date.now()) {
-  if (agora - ultimaRetomada < Number(process.env.RETOMAR_INTERVALO_MS || 15 * 60e3)) return { criadas: 0, fechadas: 0 };
+  const desde = agora - ultimaRetomada; // no máximo a cada 15 min (relógio voltando, como nos testes, não trava)
+  if (desde >= 0 && desde < Number(process.env.RETOMAR_INTERVALO_MS || 15 * 60e3)) return { criadas: 0, fechadas: 0 };
   ultimaRetomada = agora;
   let criadas = 0, fechadas = 0;
   const de = new Date(agora - 7 * 864e5).toISOString(), ate = new Date(agora - 864e5).toISOString();
