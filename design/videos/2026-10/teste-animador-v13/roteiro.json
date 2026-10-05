@@ -1,0 +1,56 @@
+{
+ "modelo": "copy-que-acende",
+ "saida": "REELS-MASTER-CASAIS-copy-que-acende.mp4",
+ "formato": {
+  "w": 1080,
+  "h": 1920,
+  "fps": 30
+ },
+ "segundosPorTela": 2.25,
+ "fusao": 10,
+ "fechoSeg": 3.75,
+ "telas": [
+  {
+   "foto": "../../remotion-piloto/public/fotos/externa.jpg",
+   "texto": "Cabana Master para dois",
+   "destaque": "dois",
+   "apoio": "elevada do chão, no meio do verde",
+   "mover": "zoom"
+  },
+  {
+   "foto": "../../remotion-piloto/public/fotos/casal.jpg",
+   "texto": "dois ambientes",
+   "contador": {
+    "de": 0,
+    "ate": 85,
+    "sufixo": " m²"
+   },
+   "apoio": "a maior acomodação do hotel",
+   "mover": "esquerda"
+  },
+  {
+   "foto": "../../remotion-piloto/public/fotos/banheira.jpg",
+   "texto": "banheira de hidromassagem",
+   "destaque": "hidromassagem",
+   "apoio": "para 2 · pétalas: decoração especial (opcional)",
+   "mover": "zoom"
+  },
+  {
+   "foto": "../../remotion-piloto/public/fotos/balanco.jpg",
+   "texto": "varanda com balanço",
+   "destaque": "balanço",
+   "apoio": "para desacelerar a dois",
+   "mover": "direita"
+  }
+ ],
+ "fecho": {
+  "linha1": "BONITO - MS",
+  "linha2": "Reserve pelo link da bio",
+  "foto": "../../remotion-piloto/public/fotos/externa.jpg"
+ },
+ "musica": {
+  "arquivo": "../../musicas/nastelbom-piano-cinematic-304999.mp3",
+  "inicioSeg": 56,
+  "volume": 0.8
+ }
+}

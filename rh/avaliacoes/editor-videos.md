@@ -55,5 +55,5 @@ Rodado com um agente `general-purpose` que recebeu o corpo do arquivo do funcion
 
 ## Ajuste v1.3 (05/10/2026, aprovado pelo dono: "sim, pode usar")
 - **Antes → depois:** montava Reels só com `reels-de-fotos.py` → passa a usar o **Animador Cabanas** (`node design/ferramentas/animador/animar.mjs`) nos modelos com animador e a seguir o modelo escolhido no pedido (`ferramentas/central-aprovacao/modelos.json`; nunca pausado/excluído). Não altera os arquivos do animador (propõe a mudança na entrega).
-- **Reteste (simulado):** Reels "Copy que acende" da Cabana Master para casais, em `design/videos/2026-10/teste-animador-v13/` (resultado registrado ao concluir).
+- **Reteste (simulado):** Reels "Copy que acende" da Cabana Master para casais, em `design/videos/2026-10/teste-animador-v13/`. **Aprovado:** usou o animador e o modelo pedido, conferiu a folha de quadros e corrigiu um "2" sozinho na linha, deixou de fora a foto das camas de solteiro (fala com família), escolheu música do catálogo (nota 4 do dono, favorita), só fatos do contexto (sem "privativa" ou "aquecida"), listou o que confirmar (origem das fotos, foto da cama king) e propôs descer o selo do logo para fora da faixa de 250 px do topo sem mexer no animador.
 - Versão anterior: `rh/avaliacoes/versoes/editor-videos-v1.2.md`.
