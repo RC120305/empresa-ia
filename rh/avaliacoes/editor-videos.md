@@ -52,3 +52,8 @@ Rodado com um agente `general-purpose` que recebeu o corpo do arquivo do funcion
 - **Antes → depois:** o editor escolhia vídeos abrindo cada bruto → passa a **consultar o catálogo** (`design/videos/catalogo/catalogo.json`) e a **catalogar todo vídeo novo** (descrição por trecho, vocabulário fechado, "a confirmar" para o que a imagem não prova, nome padronizado proposto).
 - **Reteste (simulado):** "Reels de 10 s do Cânion do Salobra" → usou 4 trechos do catálogo (01-T1 gancho, 02-T3, 01-T4, 02-T5 fecho), citou a fonte, excluiu 01-T6/T7 ("não usar"), manteve o passeio como externo e listou direitos da Ecotrip e autorização de imagem. **Aprovado.**
 - Versão anterior: `rh/avaliacoes/versoes/editor-videos-v1.0.md`.
+
+## Ajuste v1.3 (05/10/2026, aprovado pelo dono: "sim, pode usar")
+- **Antes → depois:** montava Reels só com `reels-de-fotos.py` → passa a usar o **Animador Cabanas** (`node design/ferramentas/animador/animar.mjs`) nos modelos com animador e a seguir o modelo escolhido no pedido (`ferramentas/central-aprovacao/modelos.json`; nunca pausado/excluído). Não altera os arquivos do animador (propõe a mudança na entrega).
+- **Reteste (simulado):** Reels "Copy que acende" da Cabana Master para casais, em `design/videos/2026-10/teste-animador-v13/` (resultado registrado ao concluir).
+- Versão anterior: `rh/avaliacoes/versoes/editor-videos-v1.2.md`.
