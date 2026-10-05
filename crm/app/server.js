@@ -630,7 +630,12 @@ async function gravarFotoAjuste(linha, buscar = fetch) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/fotos_biblioteca?on_conflict=arquivo`, {
     method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'resolution=merge-duplicates,return=minimal' },
     body: JSON.stringify({ ...linha, atualizado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) });
-  if (r.status === 404 || r.status === 400) throw new ErroEnvio(503, 'O banco ainda não tem a tabela das fotos (falta rodar a migração 011 no Supabase).');
+  if (r.status === 404) throw new ErroEnvio(503, 'O banco ainda não tem a tabela das fotos (falta rodar a migração 011 no Supabase).');
+  if (r.status === 400) {
+    const t = await r.text().catch(() => '');
+    if (/arquivo_check/.test(t) && /\.mp4$/.test(linha.arquivo || '')) throw new ErroEnvio(503, 'O banco ainda não aceita vídeos: falta rodar a migração 024 no Supabase (crm/banco/024_videos_biblioteca.sql).');
+    throw new ErroEnvio(503, 'O banco recusou o arquivo (falta alguma migração? 011 ou 024).');
+  }
   if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar a foto agora.');
 }
 const errosDrive = fn => async (...a) => { try { return await fn(...a); } catch (e) { if (e instanceof drive.ErroDrive) throw new ErroEnvio(e.http, e.message); throw e; } };

@@ -162,6 +162,8 @@ const falso = http.createServer((req, res) => {
     if (req.url.startsWith('/rest/v1/sugestoes?id=eq.') && req.method === 'GET') return responder(200, [{ conversa_id: '11111111-1111-1111-1111-111111111111', ferramentas: { produto_oferecido: iaOferta || null, vitrines: iaVitrines || [] } }]);
     if (req.url.startsWith('/rest/v1/fotos_biblioteca')) {
       if (req.method === 'GET') return responder(200, fotosBib);
+      // mesma regra do banco (migrações 011 e 024): só .jpg e .mp4
+      if (req.method === 'POST' && !/^[A-Za-z0-9_.-]+\.(jpg|mp4)$/.test(json.arquivo || '')) return responder(400, { code: '23514', message: 'new row for relation "fotos_biblioteca" violates check constraint "fotos_biblioteca_arquivo_check"' });
       if (req.method === 'POST') { const i = fotosBib.findIndex(f => f.arquivo === json.arquivo); if (i >= 0) Object.assign(fotosBib[i], json); else fotosBib.push({ ordem: 100, criado_em: new Date().toISOString(), ...json }); res.writeHead(201); return res.end(); }
       if (req.method === 'PATCH') { const a = decodeURIComponent(req.url.split('arquivo=eq.')[1]); Object.assign(fotosBib.find(f => f.arquivo === a), json); res.writeHead(204); return res.end(); }
     }
