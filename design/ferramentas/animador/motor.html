@@ -47,8 +47,11 @@ async function iniciar(roteiro) {
   const ctx = {w, h, fps, palco};
   window.__inst = MODELOS[roteiro.modelo](palco, roteiro, ctx);
   await document.fonts.ready;
-  await Promise.all([...document.images].map(i => i.decode().catch(() => { throw new Error("imagem não carregou: " + i.src); })));
+  await Promise.all([...document.images].filter(i => i.getAttribute("src")).map(i => i.decode().catch(() => { throw new Error("imagem não carregou: " + i.src); })));
   return {quadros: window.__inst.duracao, fps, w, h};
 }
-function quadro(f) { window.__inst.quadro(f); }
+// quadro pode ser assíncrono (ex.: esperar o vídeo de fundo chegar no tempo certo)
+async function quadro(f) { await window.__inst.quadro(f); }
+// vídeo de fundo: animar.mjs extrai os quadros (roteiro.quadrosVideo = {base, n}); mostra o quadro i (0 = primeiro) numa <img>
+Anim.quadroVideo = async (img, qv, i) => { const k = Math.max(1, Math.min(qv.n, i + 1)), src = `${qv.base}/v${String(k).padStart(5, "0")}.jpg`; if (img.dataset.k !== String(k)) { img.src = src; img.dataset.k = k; await img.decode(); } };
 </script></body></html>

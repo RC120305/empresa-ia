@@ -17,7 +17,9 @@ const roteiro = JSON.parse(fs.readFileSync(arqRoteiro, 'utf8'));
 const saida = path.resolve(saidaArg || path.join(dirRot, roteiro.saida || 'saida.mp4'));
 const abs = p => (/^(https?|file|data):/.test(p) ? p : pathToFileURL(path.resolve(dirRot, p)).href);
 // troca todo campo "foto"/"fotos" por caminho absoluto, para o motor achar a partir da pasta dele
-const fixa = o => Array.isArray(o) ? o.map(fixa) : o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, k === 'foto' && typeof v === 'string' ? abs(v) : fixa(v)])) : o;
+// "foto" e "video" viram caminho absoluto; "transcricao" (arquivo JSON do legendar-fala.py) entra no roteiro já lido
+const fixa = o => Array.isArray(o) ? o.map(fixa) : o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).map(([k, v]) =>
+  [k, (k === 'foto' || k === 'video') && typeof v === 'string' ? abs(v) : k === 'transcricao' && typeof v === 'string' ? JSON.parse(fs.readFileSync(path.resolve(dirRot, v), 'utf8')) : fixa(v)])) : o;
 const rot = fixa(roteiro);
 
 const req = createRequire(path.join(execSync('npm root -g').toString().trim(), 'x.js'));
@@ -27,6 +29,16 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'animador-'));
 const escala = previa ? 0.5 : 1;
 
 const t0 = Date.now();
+// vídeo de fundo: o Chromium de teste não decodifica H.264, então o ffmpeg extrai os quadros antes (cover no tamanho do palco)
+if (rot.video) {
+  const {w: vw = 1080, h: vh = 1920, fps: vf = 30} = rot.formato || {}, dv = path.join(tmp, 'video');
+  fs.mkdirSync(dv);
+  const ext = ['-y', '-loglevel', 'error', '-ss', String(rot.inicioVideoSeg || 0), '-i', fileURLToPath(rot.video)];
+  if (rot.duracaoSeg) ext.push('-t', String(rot.duracaoSeg));
+  ext.push('-vf', `fps=${vf},scale=${vw}:${vh}:force_original_aspect_ratio=increase,crop=${vw}:${vh}`, '-q:v', '3', path.join(dv, 'v%05d.jpg'));
+  if (spawnSync(ffmpeg, ext, {stdio: 'inherit'}).status !== 0) throw new Error('não consegui extrair os quadros do vídeo');
+  rot.quadrosVideo = {base: pathToFileURL(dv).href, n: fs.readdirSync(dv).length};
+}
 const nav = await chromium.launch({args: ['--allow-file-access-from-files', '--disable-web-security']});
 const {w = 1080, h = 1920} = rot.formato || {};
 const abre = async () => {
@@ -50,11 +62,16 @@ await Promise.all(pags.map(async ({pg, erros}, k) => {
 }));
 await nav.close();
 
-const m = roteiro.musica, dur = quadros / fps;
+// áudio: a fala do vídeo de fundo (roteiro.video, quando "audioDoVideo" não é false) e/ou a música (mais baixa sob a fala)
+const m = roteiro.musica, dur = quadros / fps, fala = roteiro.video && roteiro.audioDoVideo !== false;
 const a = ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', path.join(tmp, 'q%05d.jpg')];
+if (fala) a.push('-ss', String(roteiro.inicioVideoSeg || 0), '-i', path.resolve(dirRot, roteiro.video));
 if (m) a.push('-ss', String(m.inicioSeg || 0), '-i', path.resolve(dirRot, m.arquivo));
 a.push('-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p', '-r', String(fps), '-movflags', '+faststart');
-if (m) a.push('-af', `volume=${m.volume ?? 0.8},afade=t=in:d=0.4,afade=t=out:st=${(dur - 1.3).toFixed(2)}:d=1.3`, '-c:a', 'aac', '-b:a', '160k', '-shortest');
+const fadeM = `afade=t=in:d=0.4,afade=t=out:st=${(dur - 1.3).toFixed(2)}:d=1.3`;
+if (fala && m) a.push('-filter_complex', `[1:a]volume=1[f];[2:a]volume=${m.volume ?? 0.15},${fadeM}[mu];[f][mu]amix=inputs=2:duration=first:normalize=0[aout]`, '-map', '0:v', '-map', '[aout]', '-c:a', 'aac', '-b:a', '160k');
+else if (fala) a.push('-map', '0:v', '-map', '1:a', '-c:a', 'aac', '-b:a', '160k');
+else if (m) a.push('-af', `volume=${m.volume ?? 0.8},${fadeM}`, '-c:a', 'aac', '-b:a', '160k', '-shortest');
 a.push('-t', dur.toFixed(3), saida);
 fs.mkdirSync(path.dirname(saida), {recursive: true});
 const r = spawnSync(ffmpeg, a, {stdio: 'inherit'});

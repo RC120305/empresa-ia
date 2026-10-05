@@ -19,8 +19,12 @@ Ferramentas do motor para os modelos (`Anim`): `interp` (valor por quadro, com e
 | Modelo | Arquivo | O que faz |
 |---|---|---|
 | Copy que acende | `modelos/copy-que-acende.js` | Foto com zoom ou deslize, copy palavra por palavra com a palavra-chave em laranja, contador opcional, selo do logo e fecho com chamada. |
+| Legenda da fala | `modelos/legenda-fala.js` | Vídeo de alguém falando com a legenda palavra por palavra (1 a 3 palavras por vez; a palavra falada acende em laranja). Roteiro com `video` e `transcricao` (JSON de `design/ferramentas/legendar-fala.py`), `destaques`, `selo`, `fecho`. A fala do vídeo vai para o MP4; `musica` entra baixinha por baixo (volume padrão 0,15). |
 
 Exemplo de roteiro: `design/videos/2026-10/piloto-legendas/roteiro-animador.json`.
+
+## Vídeo de fundo
+O Chromium do ambiente não decodifica H.264, então o `animar.mjs` extrai os quadros do `video` com o ffmpeg antes de animar (`roteiro.quadrosVideo`); o modelo mostra o quadro certo com `Anim.quadroVideo(img, r.quadrosVideo, f)`.
 
 ## Criar um modelo novo
 1. Copie `modelos/copy-que-acende.js` para `modelos/<id>.js` e registre `MODELOS["<id>"] = (palco, roteiro, {fps, w, h}) => ({duracao, quadro})`.
