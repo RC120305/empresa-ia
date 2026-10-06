@@ -336,7 +336,7 @@ async function patchPedido(id, dados, buscar = fetch) {
 async function pedirAParceira({ venda, item, conversa_id, negocio_id, numeroId, hospede }, buscar = fetch) {
   const pc = await parceiraMassagem(buscar);
   if (!pc || !WA_TOKEN || !numeroId) return null;
-  const pd = { venda_id: venda && venda.id || null, conversa_id, negocio_id: negocio_id || null, produto_codigo: item.codigo, servico: item.variacao || item.nome,
+  const pd = { venda_id: venda && venda.id || null, conversa_id, negocio_id: negocio_id || null, produto_codigo: item.codigo, servico: (item.variacao || item.nome) + (item.quantidade > 1 ? ' · ' + item.quantidade + ' pessoas' : ''),
     adicionais: item.adicionais || [], local: item.local, data: item.data, horario: item.horario, hospede: hospede || null, token_parceiro: crypto.randomBytes(16).toString('base64url') };
   const rc = await buscar(`${SUPABASE_URL}/rest/v1/pedidos_parceiro`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify(pd), signal: AbortSignal.timeout(5000) }).catch(() => null);
   if (!rc || !rc.ok) { console.warn(JSON.stringify({ evento: 'pedido_parceiro_nao_criado', http: rc && rc.status })); return null; } // sem a migração 025

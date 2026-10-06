@@ -1076,7 +1076,7 @@ falso.listen(0, () => {
       assert.deepEqual([pdm.situacao, pdm.horario, pdm.local, !!pdm.enviado_em, !!pdm.expira_em], ['aguardando_parceiro', '09:00', 'À beira do rio', true, true]);
       const envs = chamadas.slice(nMs).filter(c => c.url === '/graph/111/messages').map(c => c.corpo);
       const pedidoNat = envs.find(c => c.type === 'interactive' && c.interactive.type === 'cta_url');
-      assert.ok(pedidoNat && pedidoNat.interactive.body.text.includes('Massagem360') && pedidoNat.interactive.action.parameters.url.endsWith('/p/' + pdm.token_parceiro), JSON.stringify(envs));
+      assert.ok(pedidoNat && pedidoNat.interactive.body.text.includes('Massagem360 · 2 pessoas') && pedidoNat.interactive.action.parameters.url.endsWith('/p/' + pdm.token_parceiro), JSON.stringify(envs));
       const ackM = envs.find(c => c.type === 'text' && c.text.body.startsWith('Recebi seu pedido')).text.body;
       assert.ok(ackM.includes('Já pedi a confirmação do horário à massoterapeuta') && ackM.includes('às 9h'), ackM);
       assert.ok(!alertasF.some(a => a.venda_id === vendasF.at(-2).id && a.tipo === 'produto_pedido'), 'massagem automática: sem alerta de pedir à mão');
