@@ -1701,6 +1701,7 @@ const API_EQUIPE = {
         : padrao.link ? [{ type: 'BUTTONS', buttons: [{ type: 'URL', text: padrao.link.texto, url: URL_PUBLICA + padrao.link.caminho + '{{1}}', example: [URL_PUBLICA + padrao.link.caminho + padrao.link.exemplo] }] }] : [];
       const rp = await chamarMeta(`${await wabaDoNumero(id)}/message_templates`, { name: nome, language: 'pt_BR', category: padrao.categoria,
         components: [{ type: 'BODY', text: padrao.texto, example: { body_text: [padrao.exemplos] } }, ...botoes] }, fetch);
+      if (!rp.ok) ultimoErroMeta = { quando: new Date().toISOString(), http: rp.status, codigo: (rp.json.error || {}).code || null, mensagem: String((rp.json.error || {}).error_user_msg || (rp.json.error || {}).message || '').slice(0, 200) };
       if (!rp.ok) throw new ErroEnvio(rp.status === 400 ? 400 : 502, 'A Meta recusou o modelo: ' + String((rp.json.error || {}).error_user_msg || (rp.json.error || {}).message || rp.status).slice(0, 200));
       return { ok: true, nome, status: rp.json.status || 'PENDING', padrao: true };
     }
@@ -2654,6 +2655,24 @@ const servidor = http.createServer((req, res) => {
     return;
   }
 
+  // Diagnóstico do WhatsApp para os modelos: contas (WABA) conhecidas, permissões do token e situação dos modelos.
+  // Sem segredos: só IDs, nomes de permissão e nomes/situação dos modelos.
+  if (url.pathname === '/saude/whatsapp' && req.method === 'GET') {
+    (async () => {
+      const contas = ((await getJson(`${SUPABASE_URL}/rest/v1/config?chave=eq.wabas&select=valor`, fetch).catch(() => []))[0] || {}).valor || {};
+      const pr = WA_TOKEN ? await fetch(`${GRAPH}/me/permissions`, { headers: { Authorization: 'Bearer ' + WA_TOKEN }, signal: AbortSignal.timeout(8000) }).catch(() => null) : null;
+      const pj = pr ? await pr.json().catch(() => ({})) : {};
+      const permissoes = (pj.data || []).filter(x => x.status === 'granted').map(x => x.permission);
+      const modelos = {};
+      for (const [num, waba] of Object.entries({ ...contas, ...wabas })) {
+        const m = await fetch(`${GRAPH}/${waba}/message_templates?fields=name,status&limit=100`, { headers: { Authorization: 'Bearer ' + WA_TOKEN }, signal: AbortSignal.timeout(8000) }).catch(() => null);
+        const mj = m ? await m.json().catch(() => ({})) : {};
+        modelos[num] = m && m.ok ? (mj.data || []).map(x => x.name + ': ' + x.status) : 'erro: ' + String(((mj.error || {}).message) || (m && m.status) || 'sem resposta').slice(0, 160);
+      }
+      json(res, 200, { ok: true, contas: { ...contas, ...wabas }, permissoes: permissoes.length ? permissoes : (pj.error ? 'erro: ' + String(pj.error.message || '').slice(0, 160) : []), modelos, ultimoErroMeta });
+    })().catch(e => json(res, 500, { ok: false, erro: String(e.message || e).slice(0, 160) }));
+    return;
+  }
   // Teste da ponte com o Silbeck (porta, login, uma leitura). Sem dados sensíveis; resultado guardado por 60 s.
   if (url.pathname === '/saude/silbeck') {
     silbeck.diagnosticoCache()
