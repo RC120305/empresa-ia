@@ -189,6 +189,7 @@ const falso = http.createServer((req, res) => {
     if (req.url.startsWith('/graph/WABA1/message_templates') && req.method === 'GET') return responder(200, { data: [
       { name: 'retorno_de_contato', language: 'pt_BR', status: 'APPROVED', category: 'UTILITY', components: [{ type: 'BODY', text: 'Olá, {{1}}! Aqui é a equipe do Hotel Cabanas. Podemos seguir?' }, { type: 'FOOTER', text: 'Hotel Cabanas' }] },
       { name: 'extra_confirmado', language: 'pt_BR', status: 'APPROVED', category: 'UTILITY', components: [{ type: 'BODY', text: 'Olá, {{1}}! ✅ Seu pedido no Hotel Cabanas está reservado: {{2}}, {{3}}. O valor vai na conta da hospedagem, acertado no check-out. Qualquer dúvida, é só responder esta mensagem.' }] },
+      { name: 'massagem_aviso', language: 'pt_BR', status: 'APPROVED', category: 'UTILITY', components: [{ type: 'BODY', text: 'Olá, {{1}}! Atualização do pedido de massagem do Hotel Cabanas: {{2}}. Obrigado!' }] },
       { name: 'promo', language: 'pt_BR', status: 'PENDING', category: 'MARKETING', components: [{ type: 'BODY', text: 'Promoção' }] },
       { name: 'com_foto', language: 'pt_BR', status: 'APPROVED', category: 'MARKETING', components: [{ type: 'HEADER', format: 'IMAGE' }, { type: 'BODY', text: 'Veja' }] }] });
     if (req.url === '/graph/WABA1/message_templates' && req.method === 'POST') return json.name === 'ruim' ? responder(400, { error: { message: 'Invalid', error_user_msg: 'Nome em uso' } }) : responder(200, { id: 't1', status: 'PENDING', category: json.category });
@@ -624,7 +625,7 @@ falso.listen(0, () => {
     r = await api('/api/modelos?numero_id=111', null, 'token-equipe', 'GET');
     const mj = await r.json();
     assert.equal(r.status, 200, JSON.stringify(mj));
-    assert.deepEqual(mj.modelos.map(m => [m.nome, m.status, m.variaveis, m.suportado]), [['retorno_de_contato', 'APPROVED', 1, true], ['extra_confirmado', 'APPROVED', 3, true], ['promo', 'PENDING', 0, true], ['com_foto', 'APPROVED', 0, false]]);
+    assert.deepEqual(mj.modelos.map(m => [m.nome, m.status, m.variaveis, m.suportado]), [['retorno_de_contato', 'APPROVED', 1, true], ['extra_confirmado', 'APPROVED', 3, true], ['massagem_aviso', 'APPROVED', 2, true], ['promo', 'PENDING', 0, true], ['com_foto', 'APPROVED', 0, false]]);
     r = await api('/api/iniciar-conversa', { telefone: '(67) 98123-4567', nome: 'Paula Lima', numero_id: '111', modelo: 'retorno_de_contato', idioma: 'pt_BR', variaveis: ['Paula'] });
     const ic = await r.json();
     assert.equal(r.status, 200, JSON.stringify(ic));
@@ -1108,6 +1109,16 @@ falso.listen(0, () => {
       assert.ok(txs.some(t => t.startsWith('O hóspede escolheu')), 'a Natália fica sabendo');
       assert.ok(alertasF.some(a => a.tipo === 'parceiro_confirmou'));
       assert.equal((await fetch(base + '/mc/' + pdm.token_cliente, { method: 'POST', body: JSON.stringify({ acao: 'escolher', opcao: 0 }) })).status, 409);
+      // Janela da Natália fechada: o aviso vai sozinho pelo modelo massagem_aviso (sem tarefa para a equipe)
+      pdm.situacao = 'opcoes_enviadas'; janelaAberta = false; alertasF.length = 0;
+      const nJf = chamadas.length;
+      r = await fetch(base + '/mc/' + pdm.token_cliente, { method: 'POST', body: JSON.stringify({ acao: 'escolher', opcao: 0 }) });
+      janelaAberta = true;
+      assert.equal(r.status, 200);
+      const tpls = chamadas.slice(nJf).filter(c => c.url === '/graph/111/messages' && c.corpo.type === 'template').map(c => c.corpo.template);
+      const av = tpls.find(t => t.name === 'massagem_aviso');
+      assert.ok(av && av.components[0].parameters[1].text.startsWith('o hóspede escolheu') && !av.components[0].parameters[1].text.includes('Obrigado'), JSON.stringify(tpls));
+      assert.ok(!alertasF.some(a => a.titulo === 'Avise a massoterapeuta'), 'nada fica para a equipe');
       // 3 h sem resposta: aviso à equipe; 24 h: expira sem mandar nada para a Natália
       pedidosParceiroF.push({ id: crypto.randomUUID(), situacao: 'aguardando_parceiro', servico: 'Massagem360', data: emDias(42), horario: '10:00', opcoes: [], adicionais: [], conversa_id: conv, token_parceiro: 'q'.repeat(22), enviado_em: new Date(Date.now() - 4 * 3600e3).toISOString(), expira_em: new Date(Date.now() + 20 * 3600e3).toISOString() },
         { id: crypto.randomUUID(), situacao: 'aguardando_parceiro', servico: 'Massagem360', data: emDias(43), horario: '10:00', opcoes: [], adicionais: [], conversa_id: conv, token_parceiro: 'w'.repeat(22), enviado_em: new Date(Date.now() - 25 * 3600e3).toISOString(), expira_em: new Date(Date.now() - 3600e3).toISOString() });

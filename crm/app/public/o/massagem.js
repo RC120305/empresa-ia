@@ -15,6 +15,10 @@
       document.querySelectorAll('.ms-acoes, #ms-outros, .vt-op').forEach(e => { e.hidden = true; });
       msg.textContent = j.mensagem || 'Recebido!';
       msg.className = 'ms-msg ok';
+      if (j.whatsapp) { // abrir a conversa com o hotel deixa os avisos seguintes chegarem pelo WhatsApp
+        const a = document.createElement('a'); a.className = 'btn'; a.href = j.whatsapp; a.rel = 'noopener'; a.textContent = 'Avisar o hotel pelo WhatsApp';
+        msg.after(a);
+      }
     } catch (e) {
       botao.removeAttribute('aria-disabled'); botao.textContent = txt;
       msg.textContent = e.message + ' Tente de novo.';

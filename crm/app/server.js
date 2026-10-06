@@ -272,6 +272,9 @@ const MODELO_MASSAGEM = { nome: 'massagem_pedido', categoria: 'UTILITY',
 const MODELO_OPCOES = { nome: 'massagem_opcoes', categoria: 'UTILITY',
   texto: 'Olá, {{1}}! A massoterapeuta não tem vaga no horário que você pediu para a massagem, mas separou outras opções. Toque no botão para escolher a que fica melhor para você.',
   exemplos: ['Ana'], link: { texto: 'Escolher horário', caminho: '/mc/', exemplo: 'AbCdEfGhIjKlMnOpQrStUv' } };
+const MODELO_AVISO_PARCEIRA = { nome: 'massagem_aviso', categoria: 'UTILITY',
+  texto: 'Olá, {{1}}! Atualização do pedido de massagem do Hotel Cabanas: {{2}}. Obrigado!',
+  exemplos: ['Natália', 'o hóspede escolheu sáb, 16/11 às 15h, à beira do rio, e a massagem está confirmada'] };
 let parceiraCache = { ate: 0, v: null };
 async function parceiraMassagem(buscar = fetch) {
   if (process.env.K_SERVICE && parceiraCache.ate > Date.now()) return parceiraCache.v; // fora do Cloud Run (testes) lê sempre
@@ -410,8 +413,11 @@ async function avisarParceira(pd, texto, buscar = fetch) {
   const numeroId = ((await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${pd.conversa_id}&select=numero_id`, buscar))[0] || {}).numero_id;
   const conv = pc && numeroId ? await conversaDaParceira(pc, numeroId, buscar).catch(() => null) : null;
   if (conv && janelaAbertaEm(conv) && await enviarInterativo(conv.id, texto, {}, 'gilberto', buscar).then(() => true).catch(() => false)) return true;
+  // Janela dela fechada: vai pelo modelo aprovado (custa centavos), sem depender da equipe (dono, 06/10/2026)
+  const curto = String(texto).replace(/\s*(Obrigad[oa]!?|✅|🌿)\s*/g, ' ').replace(/\s+/g, ' ').replace(/[.\s]+$/, '').trim();
+  if (conv && await enviarModeloNaConversa(conv.id, MODELO_AVISO_PARCEIRA.nome, [String(pc.nome || '').split(/\s+/)[0] || 'tudo bem', curto.charAt(0).toLowerCase() + curto.slice(1)], 'gilberto', buscar).then(() => true).catch(() => false)) return true;
   await criarAlerta({ conversa_id: pd.conversa_id, negocio_id: pd.negocio_id, venda_id: pd.venda_id, tipo: 'parceiro_sem_resposta', titulo: 'Avise a massoterapeuta',
-    info: texto + ' (a janela de 24 h do WhatsApp dela fechou: avise por telefone ou mensagem comum)' }, buscar);
+    info: texto + ' (o WhatsApp não saiu: o modelo massagem_aviso ainda não está aprovado? Avise a massoterapeuta)' }, buscar);
   return false;
 }
 // Agendador (a cada 2 min): 3 h sem resposta → aviso à equipe; 24 h → o pedido expira
@@ -1677,7 +1683,7 @@ const API_EQUIPE = {
     const nome = String(corpo.nome || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 60);
     if (!nome) throw new ErroEnvio(400, 'Dê um nome ao modelo.');
     // Modelos do próprio CRM: basta o nome; texto, botões e exemplos vêm daqui
-    const padrao = [MODELO_EXTRA, MODELO_MASSAGEM, MODELO_OPCOES].find(m => m.nome === nome);
+    const padrao = [MODELO_EXTRA, MODELO_MASSAGEM, MODELO_OPCOES, MODELO_AVISO_PARCEIRA].find(m => m.nome === nome);
     if (padrao) {
       const botoes = padrao.botoes ? [{ type: 'BUTTONS', buttons: padrao.botoes.map(text => ({ type: 'QUICK_REPLY', text })) }]
         : padrao.link ? [{ type: 'BUTTONS', buttons: [{ type: 'URL', text: padrao.link.texto, url: URL_PUBLICA + padrao.link.caminho + '{{1}}', example: [URL_PUBLICA + padrao.link.caminho + padrao.link.exemplo] }] }] : [];
@@ -2741,7 +2747,9 @@ const servidor = http.createServer((req, res) => {
         if (pd.negocio_id) await eventoNegocio(pd.negocio_id, 'A massoterapeuta indicou outros horários: ' + val.opcoes.map(o => massagem.quando(o.data, o.horario)).join('; ') + (foi ? ' (enviados ao hóspede)' : ''), 'CRM').catch(() => {});
         if (!foi) await criarAlerta({ conversa_id: pd.conversa_id, negocio_id: pd.negocio_id, venda_id: pd.venda_id, tipo: 'parceiro_sem_resposta', titulo: 'Massagem: mande as opções ao hóspede',
           info: 'A massoterapeuta indicou ' + val.opcoes.map(o => massagem.quando(o.data, o.horario)).join('; ') + ', mas o WhatsApp não saiu. Link para o hóspede escolher: ' + URL_PUBLICA + '/mc/' + tc });
-        return json(res, 200, { ok: true, mensagem: 'Pronto! As opções foram enviadas ao hóspede. Quando ele escolher, avisamos você. 🌿' });
+        const nHotel = await numeroWhatsapp(((await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${pd.conversa_id}&select=numero_id`, fetch))[0] || {}).numero_id, fetch).catch(() => null);
+        return json(res, 200, { ok: true, mensagem: 'Pronto! As opções foram enviadas ao hóspede. Quando ele escolher, avisamos você pelo WhatsApp. 🌿',
+          whatsapp: nHotel ? `https://wa.me/${nHotel}?text=${encodeURIComponent('Oi! Indiquei os horários da massagem para ' + (pd.hospede || 'o hóspede') + '.')}` : null });
       }
       if (pd.situacao !== 'opcoes_enviadas') return json(res, 409, { ok: false, erro: 'Este link não está mais ativo.' });
       if (corpo.acao === 'nenhum') {
