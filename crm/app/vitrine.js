@@ -21,10 +21,15 @@ function diasDaEstadia(est) {
   return out;
 }
 const pessoasAptas = (p, est) => est && est.adultos ? est.adultos + (est.criancas_idades || []).filter(i => !p.idade_minima || i >= p.idade_minima).length : null;
+// Massagem (parceira, tipo_reserva 'terc'): 6 horários por dia e o local (dono, 01/10/2026)
+const HORARIOS = ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00'];
+const LOCAIS = ['À beira do rio', 'No quarto'];
+const horaBR = h => String(h).replace(/^0/, '').replace(':00', 'h').replace(':', 'h');
+const comHorario = p => p.tipo_reserva === 'terc';
 const variacoes = p => (Array.isArray(p.variacoes) ? p.variacoes : []);
 const adicionais = p => (Array.isArray(p.adicionais) ? p.adicionais : []);
 
-function pagina(v, { produtos, fotosDe, estadia, previa = false, versao = '' }) {
+function pagina(v, { produtos, fotosDe, estadia, previa = false, versao = '', ocupados = {} }) {
   const t = TEMAS[v.tema];
   const dias = diasDaEstadia(estadia);
   const nome = estadia && estadia.primeiro_nome ? esc(String(estadia.primeiro_nome).split(/\s+/)[0]) : '';
@@ -43,10 +48,16 @@ function pagina(v, { produtos, fotosDe, estadia, previa = false, versao = '' }) 
     const dia = dias
       ? `<select class="vt-dia" aria-label="Dia">${dias.map((d, k) => `<option value="${d}"${(p.tipo_reserva === 'simples' ? k === 0 : k === Math.min(1, dias.length - 1)) ? ' selected' : ''}>${diaBR(d)}${k === 0 ? ' (chegada)' : k === dias.length - 1 ? ' (saída)' : ''}</option>`).join('')}</select>`
       : `<input type="date" class="vt-dia" min="${hoje}" aria-label="Dia">`;
-    return `<article class="op vt-prod" data-codigo="${esc(p.codigo)}" data-nome="${esc(p.nome)}" data-precos="${esc(JSON.stringify(precos))}">${galeria}<div class="corpo">
+    const agenda = comHorario(p)
+      ? `<div class="vt-linha"><label class="vt-campo">Horário<select class="vt-hora" aria-label="Horário">${HORARIOS.map(h => `<option value="${h}">${horaBR(h)}</option>`).join('')}</select></label>
+<fieldset class="vt-op vt-local"><legend>Onde</legend>${LOCAIS.map((l, k) => `<label class="vt-esc"><input type="radio" name="l-${esc(p.codigo)}" value="${esc(l)}"${k ? '' : ' checked'}><span>${esc(l)}</span></label>`).join('')}</fieldset></div>
+<p class="vt-regra">A massoterapeuta confirma o horário pelo WhatsApp. Horários riscados já estão reservados.</p>`
+      : '';
+    return `<article class="op vt-prod" data-codigo="${esc(p.codigo)}" data-nome="${esc(p.nome)}" data-precos="${esc(JSON.stringify(precos))}"${comHorario(p) ? ` data-ocupados="${esc(JSON.stringify(ocupados))}"` : ''}>${galeria}<div class="corpo">
 <h2>${esc(p.nome)}</h2>${p.descricao ? `<p class="cap">${esc(p.descricao)}</p>` : ''}${p.regras ? `<p class="vt-regra">${esc(p.regras)}</p>` : ''}
 ${opcoes}${extras}
 <div class="vt-linha"><label class="vt-campo">${p.unidade === 'pessoa' ? 'Pessoas' : 'Quantidade'}<input type="number" class="vt-qtd" min="1" max="20" value="${qtd}" inputmode="numeric"></label><label class="vt-campo">Dia${p.antecedencia_dias ? ` <small>(pedir com ${p.antecedencia_dias} dias de antecedência)</small>` : ''}${dia}</label></div>
+${agenda}
 ${aptas && p.idade_minima && estadia && (estadia.criancas_idades || []).some(i => i < p.idade_minima) ? `<p class="vt-regra">Crianças com menos de ${p.idade_minima} anos não participam: já contamos só quem pode.</p>` : ''}
 <label class="ex-quero vt-quero"><input type="checkbox" class="vt-sel"> Quero este <span class="vt-sub"></span></label>
 </div></article>`;
@@ -95,14 +106,22 @@ function validarPedido(itens, produtos, estadia) {
     if (!(qtd >= 1 && qtd <= 20)) return { erro: 'Quantidade de 1 a 20 em ' + p.nome + '.' };
     const data = it.data ? String(it.data) : null;
     if (data && (!isoOk(data) || (dias ? !dias.includes(data) : data < hoje))) return { erro: 'Dia inválido em ' + p.nome + '.' };
-    const chave = p.codigo + '|' + (v ? v.nome : '');
+    let horario = null, local = null;
+    if (comHorario(p)) {
+      horario = String(it.horario || ''); local = String(it.local || '');
+      if (!data) return { erro: 'Escolha o dia de ' + p.nome + '.' };
+      if (!HORARIOS.includes(horario)) return { erro: 'Escolha o horário de ' + p.nome + '.' };
+      if (!LOCAIS.includes(local)) return { erro: 'Escolha onde vai ser ' + p.nome + '.' };
+    }
+    const chave = p.codigo + '|' + (v ? v.nome : '') + (horario ? '|' + data + '|' + horario : '');
     if (out.some(x => x.chave === chave)) continue;
-    out.push({ chave, codigo: p.codigo, nome: p.nome, variacao: v ? v.nome : null, adicionais: ads, quantidade: qtd, data });
+    out.push({ chave, codigo: p.codigo, nome: p.nome, variacao: v ? v.nome : null, adicionais: ads, quantidade: qtd, data, ...(horario ? { horario, local } : {}) });
   }
   return { itens: out };
 }
 // Uma linha por item, para a mensagem do WhatsApp e o histórico
 const linhaItem = (it, p) => it.nome + (it.variacao && variacoes(p || {}).length > 1 ? ' (' + it.variacao + ')' : '') + ' · ' + it.quantidade + (p && p.unidade === 'pessoa' ? (it.quantidade > 1 ? ' pessoas' : ' pessoa') : 'x')
-  + (it.adicionais.length ? ' · + ' + it.adicionais.join(', ') : '') + (it.data ? ' · ' + it.data.slice(8, 10) + '/' + it.data.slice(5, 7) : '');
+  + (it.adicionais.length ? ' · + ' + it.adicionais.join(', ') : '') + (it.data ? ' · ' + it.data.slice(8, 10) + '/' + it.data.slice(5, 7) : '')
+  + (it.horario ? ' às ' + horaBR(it.horario) : '') + (it.local ? ' · ' + it.local.toLowerCase() : '');
 
-module.exports = { TEMAS, pagina, validarPedido, linhaItem, diasDaEstadia };
+module.exports = { TEMAS, pagina, validarPedido, linhaItem, diasDaEstadia, HORARIOS, LOCAIS, horaBR, diaBR, esc };

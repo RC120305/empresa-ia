@@ -31,11 +31,12 @@
     const ads = [...c.querySelectorAll('.vt-ad:checked')].map(i => i.value);
     const qtd = Math.max(1, Math.min(20, Math.round(Number(c.querySelector('.vt-qtd').value) || 1)));
     const dia = c.querySelector('.vt-dia').value || null;
+    const hora = c.querySelector('.vt-hora'), local = c.querySelector('.vt-local input:checked');
     const vars = Object.keys(pr.vars);
     const base = v ? pr.vars[v.value] : vars.length === 1 ? pr.vars[vars[0]] : pr.base;
     const unit = base == null ? null : base + ads.reduce((s, a) => s + (pr.ads[a] || 0), 0);
     return { codigo: c.dataset.codigo, nome: c.dataset.nome, variacao: v ? v.value : (vars.length === 1 ? vars[0] : null), adicionais: ads, quantidade: qtd, data: dia,
-      total: unit == null ? null : unit * qtd, pessoa: pr.pessoa };
+      total: unit == null ? null : unit * qtd, pessoa: pr.pessoa, horario: hora && !hora.selectedOptions[0].disabled ? hora.value : null, local: local ? local.value : null, temHora: !!hora };
   };
   const escolhidos = () => cards.filter(c => c.querySelector('.vt-sel').checked).map(ler);
   const barra = document.getElementById('vt-barra');
@@ -55,6 +56,14 @@
     pintar();
   }));
   cards.forEach(c => c.querySelector('.vt-qtd').addEventListener('input', pintar));
+  // Massagem: horários já reservados naquele dia aparecem riscados (indisponíveis)
+  const riscar = c => {
+    const h = c.querySelector('.vt-hora'); if (!h) return;
+    const oc = JSON.parse(c.dataset.ocupados || '{}')[c.querySelector('.vt-dia').value] || [];
+    [...h.options].forEach(o => { o.disabled = oc.includes(o.value); o.textContent = o.textContent.replace(/ \(reservado\)$/, '') + (o.disabled ? ' (reservado)' : ''); });
+    if (h.selectedOptions[0] && h.selectedOptions[0].disabled) { const livre = [...h.options].find(o => !o.disabled); if (livre) h.value = livre.value; }
+  };
+  cards.forEach(c => { riscar(c); c.querySelector('.vt-dia').addEventListener('change', () => { riscar(c); pintar(); }); });
   pintar();
 
   // Resumo, confirmação e WhatsApp
@@ -63,13 +72,15 @@
   document.getElementById('p-voltar').addEventListener('click', fechar);
   passo.addEventListener('click', e => { if (e.target === passo) fechar(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') fechar(); });
-  const linha = x => x.nome + (x.variacao ? ' (' + x.variacao + ')' : '') + ' · ' + x.quantidade + (x.pessoa ? (x.quantidade > 1 ? ' pessoas' : ' pessoa') : 'x') + (x.adicionais.length ? ' · + ' + x.adicionais.join(', ') : '') + (x.data ? ' · ' + x.data.slice(8, 10) + '/' + x.data.slice(5, 7) : '') + (x.total != null ? ' · ' + reais(x.total) : '');
+  const linha = x => x.nome + (x.variacao ? ' (' + x.variacao + ')' : '') + ' · ' + x.quantidade + (x.pessoa ? (x.quantidade > 1 ? ' pessoas' : ' pessoa') : 'x') + (x.adicionais.length ? ' · + ' + x.adicionais.join(', ') : '') + (x.data ? ' · ' + x.data.slice(8, 10) + '/' + x.data.slice(5, 7) : '') + (x.horario ? ' às ' + x.horario.replace(/^0/, '').replace(':00', 'h') : '') + (x.local ? ' · ' + x.local.toLowerCase() : '') + (x.total != null ? ' · ' + reais(x.total) : '');
   document.getElementById('vt-enviar').addEventListener('click', () => {
     const l = escolhidos();
     if (!l.length) return;
+    const semHora = l.find(x => x.temHora && (!x.horario || !x.data));
+    if (semHora) { alert('Escolha um dia e um horário livre para ' + semHora.nome + '.'); return; }
     const lista = document.getElementById('p-lista'); lista.textContent = '';
     l.forEach(x => { const d = document.createElement('p'); d.textContent = linha(x); lista.appendChild(d); });
-    document.getElementById('p-txt').textContent = 'Vai para a conta da hospedagem e é acertado no check-out. A equipe confirma o horário com você pelo WhatsApp.';
+    document.getElementById('p-txt').textContent = 'Vai para a conta da hospedagem e é acertado no check-out. ' + (l.some(x => x.temHora) ? 'A massoterapeuta confirma o horário e avisamos você pelo WhatsApp.' : 'A equipe confirma o horário com você pelo WhatsApp.');
     document.getElementById('p-confirmar').hidden = false; document.getElementById('p-wa').hidden = true;
     passo.hidden = false; document.getElementById('p-confirmar').focus();
   });
@@ -80,7 +91,7 @@
     let j = {};
     try {
       const r = await fetch('/e/' + encodeURIComponent(token) + '/pedido', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ previa: document.body.dataset.previa === '1', itens: escolhidos().map(x => ({ codigo: x.codigo, variacao: x.variacao, adicionais: x.adicionais, quantidade: x.quantidade, data: x.data })) }) });
+        body: JSON.stringify({ previa: document.body.dataset.previa === '1', itens: escolhidos().map(x => ({ codigo: x.codigo, variacao: x.variacao, adicionais: x.adicionais, quantidade: x.quantidade, data: x.data, horario: x.horario, local: x.local })) }) });
       j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.erro || 'erro');
     } catch (err) {

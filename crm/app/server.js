@@ -12,6 +12,7 @@ const orcamento = require('./orcamento');
 const drive = require('./drive');
 const produtos = require('./produtos');
 const vitrine = require('./vitrine');
+const massagem = require('./massagem');
 const bb = require('./bb');
 const pedidos = require('./pedidos');
 const push = require('./push');
@@ -124,10 +125,10 @@ async function criarAlerta(a, buscar = fetch) {
   if (r && !r.ok) console.warn(JSON.stringify({ evento: 'alerta_nao_criado', http: r.status })); // banco sem a migração 013
   else if (r) notificarAlertas(buscar).catch(() => {}); // avisa no celular sem segurar quem criou o alerta
 }
-async function tarefasEAlertasDaVenda(p, venda, { negocio, responsavel, chegada, pedidoDoCliente, origemTxt }, buscar = fetch) {
+async function tarefasEAlertasDaVenda(p, venda, { negocio, responsavel, chegada, pedidoDoCliente, origemTxt, automatico }, buscar = fetch) {
   const nomes = [];
   let tarefaLancar = null;
-  if (negocio) for (const t of produtos.tarefasDaVenda(p, venda, { data_entrada: chegada })) {
+  if (negocio) for (const t of produtos.tarefasDaVenda(p, venda, { data_entrada: chegada }).filter(t => !automatico || t.tipo === 'Lançar na conta do hóspede')) {
     const r = await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
       body: JSON.stringify({ negocio_id: negocio, responsavel_id: responsavel || null, criado_por: 'CRM', ...t }) }).catch(() => null);
     const criada = r && r.ok ? (await r.json().catch(() => []))[0] : null;
@@ -147,7 +148,7 @@ async function tarefasEAlertasDaVenda(p, venda, { negocio, responsavel, chegada,
 // Aceite do cliente (botão da oferta ou extra marcado na página do orçamento): o CRM registra a venda na conta do hóspede
 // e cria as tarefas para a equipe reservar (agendar/preparar/pedir horário + lançar na conta), para o responsável da conversa.
 // Se faltar dado para fechar o valor (ex.: qual das 3 massagens), cria a tarefa de confirmar com o cliente.
-async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variacao, origem, quantidade, adicionais, data_uso }, buscar = fetch) {
+async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variacao, origem, quantidade, adicionais, data_uso, horario, automatico }, buscar = fetch) {
   const p = await produtoPorCodigo(produto_codigo, buscar).catch(() => null);
   if (!p) return null;
   const nr = await buscar(`${SUPABASE_URL}/rest/v1/negocios?conversa_id=eq.${conversa_id}&select=id,etapa,data_entrada,responsavel_id&order=criado_em.desc&limit=5`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
@@ -178,16 +179,16 @@ async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variaca
     return { venda: null, p, variacao: nomeVar };
   }
   const venda = { conversa_id, negocio_id: negocio ? negocio.id : null, oferta_id: oferta_id || null, produto_codigo: p.codigo, produto_nome: p.nome, ...v,
-    data_uso: data_uso || (p.tipo_reserva === 'ativ' ? null : chegada), horario: null,
-    observacoes: `O cliente ${origemTxt}. Confirmar ${p.tipo_reserva === 'simples' ? 'a data' : 'o dia e o horário'} com ele.`, criado_por: null };
+    data_uso: data_uso || (p.tipo_reserva === 'ativ' ? null : chegada), horario: horario || null,
+    observacoes: automatico ? `O cliente ${origemTxt}. Pedido enviado à parceira pelo CRM (confirmação automática).` : `O cliente ${origemTxt}. Confirmar ${p.tipo_reserva === 'simples' ? 'a data' : 'o dia e o horário'} com ele.`, criado_por: null };
   const r = await buscar(`${SUPABASE_URL}/rest/v1/vendas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify(venda), signal: AbortSignal.timeout(5000) });
   if (!r.ok) throw new Error('venda ' + r.status);
   const salva = (await r.json().catch(() => []))[0] || venda;
-  await tarefasEAlertasDaVenda(p, { ...venda, id: salva.id }, { negocio: negocio && negocio.id, responsavel, chegada, pedidoDoCliente: true, origemTxt }, buscar);
+  await tarefasEAlertasDaVenda(p, { ...venda, id: salva.id }, { negocio: negocio && negocio.id, responsavel, chegada, pedidoDoCliente: !automatico, origemTxt, automatico }, buscar);
   if (negocio) {
     await eventoNegocio(negocio.id, `Cliente ${origemTxt}: ${p.nome}${v.variacao ? ' (' + v.variacao + ')' : ''} · venda registrada ${produtos.brl(v.valor_total)} na conta do hóspede`, 'cliente', buscar);
   }
-  return { venda: salva, p };
+  return { venda: salva, p, negocio_id: negocio && negocio.id };
 }
 // Pedido de extra (dono, 06/10/2026): o cliente recebe na hora a confirmação de que o pedido chegou e, quando a
 // equipe marca "✓ Reservado", a confirmação da reserva com dia e horário. Não depende do modo do Gilberto.
@@ -204,10 +205,10 @@ async function primeiroNome(conversa, buscar = fetch) {
 async function avisarPedidoExtra(conversa, itens, buscar = fetch) {
   itens = (itens || []).filter(x => x && x.p);
   if (!itens.length || !WA_TOKEN) return null;
-  const agenda = itens.some(x => ['ativ', 'terc'].includes(x.p.tipo_reserva));
+  const agenda = itens.some(x => ['ativ', 'terc'].includes(x.p.tipo_reserva)), parceira = itens.some(x => x.pedidoParceiro);
   const nome = await primeiroNome(conversa, buscar);
-  const texto = ['Recebi seu pedido' + (nome ? ', ' + nome : '') + '! 🌿', '', ...itens.map(x => linhaExtra(x.p, x.venda, x.variacao)), '',
-    'Vai na conta da hospedagem, acertada no check-out. Nossa equipe vai ' + (agenda ? 'reservar o horário' : 'preparar tudo') + ' e eu te confirmo por aqui assim que estiver garantido.'].join('\n');
+  const texto = ['Recebi seu pedido' + (nome ? ', ' + nome : '') + '! 🌿', '', ...itens.map(x => linhaExtra(x.p, x.venda, x.variacao) + (x.pedidoParceiro ? ' · ' + massagem.quando(x.pedidoParceiro.data, x.pedidoParceiro.horario) : '')), '',
+    'Vai na conta da hospedagem, acertada no check-out. ' + (parceira ? 'Já pedi a confirmação do horário à massoterapeuta e' : 'Nossa equipe vai ' + (agenda ? 'reservar o horário' : 'preparar tudo') + ' e') + ' eu te confirmo por aqui assim que estiver garantido.'].join('\n');
   try {
     const { conv, para } = await carregarConversaParaEnvio(conversa, buscar);
     await enviarTexto(conv, para, texto, 'gilberto', buscar);
@@ -222,7 +223,7 @@ async function avisarPedidoExtra(conversa, itens, buscar = fetch) {
 const MODELO_EXTRA = { nome: 'extra_confirmado', categoria: 'UTILITY',
   texto: 'Olá, {{1}}! ✅ Seu pedido no Hotel Cabanas está reservado: {{2}}, {{3}}. O valor vai na conta da hospedagem, acertado no check-out. Qualquer dúvida, é só responder esta mensagem.',
   exemplos: ['Ana', 'Combo boia cross + arvorismo para 2 pessoas', 'dia 16/11 às 9h'] };
-async function enviarModeloNaConversa(conversaId, nomeModelo, vs, autor, buscar = fetch) {
+async function enviarModeloNaConversa(conversaId, nomeModelo, vs, autor, buscar = fetch, botoes = []) {
   const conv = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${conversaId}&select=id,canal,numero_id,contato:contatos(contato_identificadores(tipo,valor))`, buscar))[0];
   const wa = conv && conv.canal === 'wa' && ((conv.contato || {}).contato_identificadores || []).find(i => i.tipo === 'whatsapp');
   if (!wa) throw new ErroEnvio(400, 'Este contato não tem WhatsApp.');
@@ -230,7 +231,8 @@ async function enviarModeloNaConversa(conversaId, nomeModelo, vs, autor, buscar 
   if (!m) throw new ErroEnvio(409, 'o modelo "' + nomeModelo + '" ainda não está aprovado pela Meta');
   const vals = vs.slice(0, m.variaveis).map(v => String(v || '').replace(/\s+/g, ' ').trim().slice(0, 200) || '-');
   const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: numeroParaEnvio(wa.valor), type: 'template',
-    template: { name: m.nome, language: { code: m.idioma }, ...(vals.length ? { components: [{ type: 'body', parameters: vals.map(text => ({ type: 'text', text })) }] } : {}) } }, buscar);
+    template: { name: m.nome, language: { code: m.idioma }, components: [...(vals.length ? [{ type: 'body', parameters: vals.map(text => ({ type: 'text', text })) }] : []),
+      ...botoes.map((b, i) => ({ type: 'button', sub_type: b.url ? 'url' : 'quick_reply', index: String(i), parameters: [b.url ? { type: 'text', text: b.url } : { type: 'payload', payload: b.payload }] }))] } }, buscar);
   if (!r.ok || !r.json.messages || !r.json.messages[0]) throw new ErroEnvio(502, 'a Meta não aceitou o modelo' + ((r.json.error || {}).code ? ' (código ' + r.json.error.code + ')' : ''));
   const texto = [m.cabecalho, preencher(m.corpo, vals), m.rodape].filter(Boolean).join('\n\n');
   await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: r.json.messages[0].id, p_corpo: texto, p_autor: autor }, buscar);
@@ -240,7 +242,8 @@ async function confirmarExtraAoCliente(venda, por, buscar = fetch) {
   if (!venda.conversa_id || !WA_TOKEN) return { enviada: false, motivo: 'sem WhatsApp' };
   const p = await produtoPorCodigo(venda.produto_codigo, buscar).catch(() => null);
   const nome = await primeiroNome(venda.conversa_id, buscar);
-  const quando = venda.data_uso ? '📅 Dia ' + ddmm(venda.data_uso) + (venda.horario ? ' às ' + venda.horario : '') : venda.horario ? '🕘 ' + venda.horario : '';
+  const hora = h => /^\d{2}:\d{2}$/.test(h || '') ? vitrine.horaBR(h) : h;
+  const quando = venda.data_uso ? '📅 Dia ' + ddmm(venda.data_uso) + (venda.horario ? ' às ' + hora(venda.horario) : '') : venda.horario ? '🕘 ' + hora(venda.horario) : '';
   const texto = ['Tudo certo' + (nome ? ', ' + nome : '') + '! ✅ Seu pedido está reservado:', '', linhaExtra(p, venda), quando,
     '💳 Na conta da hospedagem, acertado no check-out.', '', 'Qualquer dúvida, é só chamar aqui 🌿'].filter((l, i, a) => l || a[i - 1]).join('\n');
   try {
@@ -251,13 +254,185 @@ async function confirmarExtraAoCliente(venda, por, buscar = fetch) {
     if (e.http !== 409) return { enviada: false, motivo: String(e.message || e).slice(0, 160) };
     try { // janela de 24 h fechada: vai pelo modelo aprovado
       const item = linhaExtra(p, venda).slice(2).replace(/ · (R\$[^·]*)$/, '').replace(/ · /g, ' para ');
-      const quandoTxt = venda.data_uso ? 'dia ' + ddmm(venda.data_uso) + (venda.horario ? ' às ' + venda.horario : '') : venda.horario ? 'às ' + venda.horario : 'no dia e horário combinados com a equipe';
+      const quandoTxt = venda.data_uso ? 'dia ' + ddmm(venda.data_uso) + (venda.horario ? ' às ' + hora(venda.horario) : '') : venda.horario ? 'às ' + hora(venda.horario) : 'no dia e horário combinados com a equipe';
       await enviarModeloNaConversa(venda.conversa_id, MODELO_EXTRA.nome, [nome || 'tudo bem', item, quandoTxt], por || 'gilberto', buscar);
       return { enviada: true, modelo: true };
     } catch (e2) {
       return { enviada: false, motivo: 'a janela de 24 h do WhatsApp fechou e ' + String(e2.message || e2).slice(0, 120) + ' (cadastre em Modelos: ' + MODELO_EXTRA.nome + ')' };
     }
   }
+}
+// ---------- Massagem com a parceira pelo WhatsApp (dono, 06/10/2026) ----------
+// O hóspede escolhe na página de extras; o CRM pede à parceira com [Confirmo] [Não posso]. Se ela não pode, indica até
+// 3 horários pela página /p/… e o hóspede escolhe um em /mc/… (já confirmado). 3 h sem resposta: aviso à equipe;
+// 24 h: o pedido expira e nada mais vai para ela (fora da janela de 24 h cada mensagem seria cobrada).
+const MODELO_MASSAGEM = { nome: 'massagem_pedido', categoria: 'UTILITY',
+  texto: 'Olá, {{1}}! Novo pedido de massagem pelo Hotel Cabanas: {{2}}. Hóspede: {{3}}. Você confirma esse horário?',
+  exemplos: ['Natália', 'Massagem relaxante, sáb, 16/11 às 9h, à beira do rio', 'Ana'], botoes: ['Confirmo', 'Não posso'] };
+const MODELO_OPCOES = { nome: 'massagem_opcoes', categoria: 'UTILITY',
+  texto: 'Olá, {{1}}! A massoterapeuta não tem vaga no horário que você pediu para a massagem, mas separou outras opções. Toque no botão para escolher a que fica melhor para você.',
+  exemplos: ['Ana'], link: { texto: 'Escolher horário', exemplo: 'AbCdEfGhIjKlMnOpQrStUv' } };
+let parceiraCache = { ate: 0, v: null };
+async function parceiraMassagem(buscar = fetch) {
+  if (process.env.K_SERVICE && parceiraCache.ate > Date.now()) return parceiraCache.v; // fora do Cloud Run (testes) lê sempre
+  const v = ((await getJson(`${SUPABASE_URL}/rest/v1/config?chave=eq.parceira_massagem&select=valor`, buscar))[0] || {}).valor || null;
+  parceiraCache = { ate: Date.now() + 60000, v: v && v.whatsapp ? v : null };
+  return parceiraCache.v;
+}
+const ehParceira = (de, pc) => !!(pc && chaveNumero(de) && chaveNumero(de) === chaveNumero(pc.whatsapp));
+const lerBotaoParceira = id => { const m = /^mp:([0-9a-f-]{36}):(s|n)$/.exec(String(id || '')); return m ? { pedido: m[1], aceito: m[2] === 's' } : null; };
+// Horários já tomados (pedidos em andamento ou confirmados e as opções oferecidas), a partir de hoje
+async function ocupadosMassagem(buscar = fetch, exceto = null) {
+  const hoje = new Date(Date.now() - 4 * 3600e3).toISOString().slice(0, 10);
+  const l = await getJson(`${SUPABASE_URL}/rest/v1/pedidos_parceiro?situacao=in.(aguardando_parceiro,opcoes_enviadas,confirmado)&data=gte.${hoje}&select=id,data,horario,situacao,opcoes&limit=500`, buscar);
+  const out = {};
+  const pôr = (d, h) => { d = String(d).slice(0, 10); (out[d] = out[d] || []).includes(h) || out[d].push(h); };
+  for (const x of l) if (x.id !== exceto) { pôr(x.data, x.horario); if (x.situacao === 'opcoes_enviadas') (x.opcoes || []).forEach(o => pôr(o.data, o.horario)); }
+  return out;
+}
+async function pedidoParceiro(filtro, buscar = fetch) {
+  return (await getJson(`${SUPABASE_URL}/rest/v1/pedidos_parceiro?${filtro}&select=*&limit=1`, buscar))[0] || null;
+}
+// Conversa do CRM com a parceira (criada na primeira vez), pelo mesmo número do hotel que atende o hóspede
+async function conversaDaParceira(pc, numeroId, buscar = fetch) {
+  const tel = whatsE164(pc.whatsapp);
+  let dono = await donoDoWhatsapp(tel, buscar), contatoId = dono && dono.contato_id;
+  if (!contatoId) {
+    const ct = await buscar(`${SUPABASE_URL}/rest/v1/contatos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify({ nome: (pc.nome || 'Parceira') + ' (massoterapeuta)' }), signal: AbortSignal.timeout(5000) });
+    if (!ct.ok) throw new ErroEnvio(502, 'Não deu para criar o contato da parceira.');
+    contatoId = (await ct.json())[0].id;
+    await buscar(`${SUPABASE_URL}/rest/v1/contato_identificadores`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ contato_id: contatoId, tipo: 'whatsapp', valor: tel }), signal: AbortSignal.timeout(5000) });
+  }
+  let conv = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?contato_id=eq.${contatoId}&canal=eq.wa&numero_id=eq.${numeroId}&select=id,ultima_msg_cliente_em`, buscar))[0];
+  if (!conv) {
+    const nc = await buscar(`${SUPABASE_URL}/rest/v1/conversas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify({ contato_id: contatoId, canal: 'wa', numero_id: numeroId, gilberto_pausado: true }), signal: AbortSignal.timeout(5000) });
+    if (!nc.ok) throw new ErroEnvio(502, 'Não deu para abrir a conversa com a parceira.');
+    conv = (await nc.json())[0];
+  }
+  return conv;
+}
+const janelaAbertaEm = c => !!(c && c.ultima_msg_cliente_em && Date.now() - new Date(c.ultima_msg_cliente_em).getTime() < JANELA_MS);
+// Mensagem livre (dentro da janela) para uma conversa: texto e, se houver, botões de resposta ou botão de link
+async function enviarInterativo(conversaId, corpo, { botoes, link } = {}, autor = 'gilberto', buscar = fetch) {
+  const { conv, para } = await carregarConversaParaEnvio(conversaId, buscar);
+  if (!botoes && !link) return enviarTexto(conv, para, corpo, autor, buscar);
+  const interactive = botoes
+    ? { type: 'button', body: { text: corpo.slice(0, 1024) }, action: { buttons: botoes.map(b => ({ type: 'reply', reply: { id: b.id, title: b.titulo.slice(0, 20) } })) } }
+    : { type: 'cta_url', body: { text: corpo.slice(0, 1024) }, action: { name: 'cta_url', parameters: { display_text: link.texto.slice(0, 20), url: link.url } } };
+  const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: para, type: 'interactive', interactive }, buscar);
+  if (!r.ok || !r.json.messages || !r.json.messages[0]) throw new ErroEnvio(502, 'A Meta não aceitou o envio' + ((r.json.error || {}).code ? ' (código ' + r.json.error.code + ')' : '') + '.');
+  const visto = corpo + (botoes ? '\n\n' + botoes.map(b => '[ ' + b.titulo + ' ]').join(' ') : '\n\n[ ' + link.texto + ' ] ' + link.url);
+  await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: r.json.messages[0].id, p_corpo: visto, p_autor: autor }, buscar);
+  return true;
+}
+async function patchPedido(id, dados, buscar = fetch) {
+  await buscar(`${SUPABASE_URL}/rest/v1/pedidos_parceiro?id=eq.${id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+    body: JSON.stringify({ ...dados, atualizado_em: new Date().toISOString() }) });
+}
+// Cria o pedido e manda para a parceira. Devolve o pedido, ou null (aí a equipe pede à mão pelo alerta de sempre).
+async function pedirAParceira({ venda, item, conversa_id, negocio_id, numeroId, hospede }, buscar = fetch) {
+  const pc = await parceiraMassagem(buscar);
+  if (!pc || !WA_TOKEN || !numeroId) return null;
+  const pd = { venda_id: venda && venda.id || null, conversa_id, negocio_id: negocio_id || null, produto_codigo: item.codigo, servico: item.variacao || item.nome,
+    adicionais: item.adicionais || [], local: item.local, data: item.data, horario: item.horario, hospede: hospede || null, token_parceiro: crypto.randomBytes(16).toString('base64url') };
+  const rc = await buscar(`${SUPABASE_URL}/rest/v1/pedidos_parceiro`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, body: JSON.stringify(pd), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  if (!rc || !rc.ok) { console.warn(JSON.stringify({ evento: 'pedido_parceiro_nao_criado', http: rc && rc.status })); return null; } // sem a migração 025
+  const salvo = (await rc.json())[0];
+  try {
+    const conv = await conversaDaParceira(pc, numeroId, buscar);
+    const det = massagem.detalhe(salvo), nome = String(pc.nome || '').split(/\s+/)[0] || 'tudo bem';
+    if (janelaAbertaEm(conv)) {
+      await enviarInterativo(conv.id, `Olá, ${nome}! Novo pedido de massagem pelo Hotel Cabanas 🌿\n\n${det}\nHóspede: ${salvo.hospede || '-'}\n\nVocê confirma esse horário?`,
+        { botoes: [{ id: 'mp:' + salvo.id + ':s', titulo: 'Confirmo' }, { id: 'mp:' + salvo.id + ':n', titulo: 'Não posso' }] }, 'gilberto', buscar);
+    } else {
+      await enviarModeloNaConversa(conv.id, MODELO_MASSAGEM.nome, [nome, det, salvo.hospede || '-'], 'gilberto', buscar, [{ payload: 'mp:' + salvo.id + ':s' }, { payload: 'mp:' + salvo.id + ':n' }]);
+    }
+    const agora = new Date();
+    await patchPedido(salvo.id, { enviado_em: agora.toISOString(), expira_em: new Date(agora.getTime() + massagem.VALIDADE_MS).toISOString() }, buscar);
+    if (negocio_id) await eventoNegocio(negocio_id, 'Pedido de massagem enviado à ' + (pc.nome || 'parceira') + ': ' + det, 'CRM', buscar).catch(() => {});
+    return salvo;
+  } catch (e) {
+    console.warn(JSON.stringify({ evento: 'pedido_parceiro_nao_enviado', erro: String(e.message || e).slice(0, 200) }));
+    await patchPedido(salvo.id, { situacao: 'cancelado' }, buscar).catch(() => {});
+    return null;
+  }
+}
+// Massagem confirmada (pela parceira no horário pedido ou pelo hóspede numa opção dela): avisa o hóspede e a equipe
+async function confirmarMassagem(pd, data, horario, por, buscar = fetch) {
+  await patchPedido(pd.id, { situacao: 'confirmado', data, horario, respondido_em: pd.respondido_em || new Date().toISOString() }, buscar);
+  const det = massagem.detalhe({ ...pd, data, horario });
+  let avisado = false;
+  if (pd.venda_id) {
+    await buscar(`${SUPABASE_URL}/rest/v1/vendas?id=eq.${pd.venda_id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify({ data_uso: data, horario }), signal: AbortSignal.timeout(5000) }).catch(() => null);
+    const venda = (await getJson(`${SUPABASE_URL}/rest/v1/vendas?id=eq.${pd.venda_id}&select=*`, buscar))[0];
+    if (venda) avisado = !!(await confirmarExtraAoCliente(venda, 'gilberto', buscar)).enviada;
+    await resolverAlertasDaVenda(pd.venda_id, ['produto_pedido'], null, buscar);
+  }
+  await criarAlerta({ conversa_id: pd.conversa_id, negocio_id: pd.negocio_id, venda_id: pd.venda_id, tipo: 'parceiro_confirmou', titulo: 'Massagem confirmada',
+    info: det + (pd.hospede ? ' · hóspede ' + pd.hospede : '') + '. ' + (avisado ? 'O hóspede já recebeu a confirmação no WhatsApp.' : 'Avise o hóspede (o WhatsApp não saiu).') }, buscar);
+  if (pd.negocio_id) await eventoNegocio(pd.negocio_id, 'Massagem confirmada (' + por + '): ' + det, 'CRM', buscar).catch(() => {});
+  return avisado;
+}
+// Toque da parceira em [Confirmo] / [Não posso] (a janela dela está aberta: as respostas a ela são grátis)
+async function respostaParceira({ pedido, aceito }, de, conversaParceira, buscar = fetch) {
+  const pc = await parceiraMassagem(buscar);
+  if (!ehParceira(de, pc)) return;
+  const pd = await pedidoParceiro(`id=eq.${pedido}`, buscar);
+  if (!pd) return;
+  const vencido = pd.expira_em && new Date(pd.expira_em).getTime() < Date.now();
+  const responder = (t, extra) => enviarInterativo(conversaParceira, t, extra, 'gilberto', buscar).catch(e => console.warn(JSON.stringify({ evento: 'resposta_parceira', erro: String(e.message || e).slice(0, 200) })));
+  if (pd.situacao !== 'aguardando_parceiro' || vencido) return responder(pd.situacao === 'confirmado' ? 'Esse pedido já está confirmado. Obrigado! 🌿' : 'Esse pedido não está mais aberto (já respondido ou expirado). A equipe do hotel segue com o hóspede. Obrigado! 🌿');
+  if (aceito) {
+    await confirmarMassagem(pd, String(pd.data).slice(0, 10), pd.horario, (pc.nome || 'parceira') + ' no WhatsApp', buscar);
+    return responder('Confirmado ✅ ' + massagem.detalhe(pd) + '. Obrigado! O hóspede já foi avisado.');
+  }
+  await patchPedido(pd.id, { respondido_em: new Date().toISOString() }, buscar);
+  if (pd.negocio_id) await eventoNegocio(pd.negocio_id, 'A massoterapeuta não pode em ' + massagem.quando(pd.data, pd.horario) + ': vai indicar outros horários', 'CRM', buscar).catch(() => {});
+  return responder('Sem problema! Toque no botão e marque até 3 horários livres: o hóspede escolhe um e a massagem já fica confirmada.', { link: { texto: 'Indicar horários', url: URL_PUBLICA + '/p/' + pd.token_parceiro } });
+}
+// A parceira indicou opções: o hóspede recebe o link para escolher (texto livre na janela; fora dela, o modelo)
+async function enviarOpcoesAoCliente(pd, buscar = fetch) {
+  const nome = await primeiroNome(pd.conversa_id, buscar);
+  const url = URL_PUBLICA + '/mc/' + pd.token_cliente;
+  try {
+    await enviarInterativo(pd.conversa_id, `${nome ? nome + ', a' : 'A'} massoterapeuta não tem vaga em ${massagem.quando(pd.data, pd.horario)}, mas separou outros horários para você 🌿 Toque no botão para escolher o que fica melhor.`,
+      { link: { texto: 'Escolher horário', url } }, 'gilberto', buscar);
+    return true;
+  } catch (e) {
+    if (e.http !== 409) return false;
+    return enviarModeloNaConversa(pd.conversa_id, MODELO_OPCOES.nome, [nome || 'tudo bem'], 'gilberto', buscar, [{ url: pd.token_cliente }]).then(() => true).catch(() => false);
+  }
+}
+// Avisa a parceira da escolha do hóspede (só se a janela dela ainda está aberta; senão, a equipe avisa)
+async function avisarParceira(pd, texto, buscar = fetch) {
+  const pc = await parceiraMassagem(buscar);
+  const numeroId = ((await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${pd.conversa_id}&select=numero_id`, buscar))[0] || {}).numero_id;
+  const conv = pc && numeroId ? await conversaDaParceira(pc, numeroId, buscar).catch(() => null) : null;
+  if (conv && janelaAbertaEm(conv) && await enviarInterativo(conv.id, texto, {}, 'gilberto', buscar).then(() => true).catch(() => false)) return true;
+  await criarAlerta({ conversa_id: pd.conversa_id, negocio_id: pd.negocio_id, venda_id: pd.venda_id, tipo: 'parceiro_sem_resposta', titulo: 'Avise a massoterapeuta',
+    info: texto + ' (a janela de 24 h do WhatsApp dela fechou: avise por telefone ou mensagem comum)' }, buscar);
+  return false;
+}
+// Agendador (a cada 2 min): 3 h sem resposta → aviso à equipe; 24 h → o pedido expira
+async function verificarPedidosParceiro(buscar = fetch) {
+  const agora = Date.now();
+  const l = await getJson(`${SUPABASE_URL}/rest/v1/pedidos_parceiro?situacao=eq.aguardando_parceiro&enviado_em=not.is.null&select=*&limit=200`, buscar);
+  let avisos = 0, expirados = 0;
+  for (const pd of l) {
+    const det = massagem.detalhe(pd) + (pd.hospede ? ' · hóspede ' + pd.hospede : '');
+    if (pd.expira_em && new Date(pd.expira_em).getTime() < agora) {
+      await patchPedido(pd.id, { situacao: 'expirado' }, buscar);
+      await criarAlerta({ conversa_id: pd.conversa_id, negocio_id: pd.negocio_id, venda_id: pd.venda_id, tipo: 'parceiro_sem_resposta', titulo: 'Massagem: pedido expirou (24 h)',
+        info: det + '. A massoterapeuta não respondeu em 24 h e o CRM não manda mais nada para ela. Combine com ela e avise o hóspede.' }, buscar);
+      expirados++;
+    } else if (!pd.respondido_em && !pd.avisado_3h_em && agora - new Date(pd.enviado_em).getTime() > massagem.PRAZO_AVISO_MS) {
+      await patchPedido(pd.id, { avisado_3h_em: new Date().toISOString() }, buscar);
+      await criarAlerta({ conversa_id: pd.conversa_id, negocio_id: pd.negocio_id, venda_id: pd.venda_id, tipo: 'parceiro_sem_resposta', titulo: 'Massagem: sem resposta há 3 h',
+        info: det + '. A massoterapeuta ainda não respondeu. O pedido vale até ' + quandoBR(pd.expira_em) + '.' }, buscar);
+      avisos++;
+    }
+  }
+  return { avisos, expirados };
 }
 async function respostaDoBotao({ oferta, aceito, opcao }, titulo, buscar) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/ofertas?id=eq.${oferta}&select=id,conversa_id,negocio_id,produto_codigo,produto_nome,situacao`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
@@ -291,9 +466,15 @@ async function registrar(evento, buscar = fetch) {
             p_quando: m.timestamp ? new Date(Number(m.timestamp) * 1000).toISOString() : null,
           }, buscar);
           item.gravado = true; gravadas++;
+          // Mensagem da parceira da massagem: [Confirmo] / [Não posso]; nunca vai para o Gilberto nem vira alerta de atendimento
+          const pc = await parceiraMassagem(buscar).catch(() => null);
+          const daParceira = ehParceira(m.from, pc);
+          const bp = daParceira && lerBotaoParceira(m.type === 'button' ? (m.button || {}).payload : m.type === 'interactive' ? ((m.interactive || {}).button_reply || {}).id : null);
+          if (bp && res && res.conversa_id) await respostaParceira(bp, m.from, res.conversa_id, buscar).catch(e => console.warn(JSON.stringify({ evento: 'botao_parceira', erro: String(e.message || e).slice(0, 200) })));
           // Toque num botão de oferta ("Eu aceito" / "Não, obrigado"): marca a resposta sozinho
-          const botao = m.type === 'interactive' && produtos.lerBotao(((m.interactive || {}).button_reply || {}).id);
-          if (botao) await respostaDoBotao(botao, corpoDe(m), buscar).catch(e => console.warn(JSON.stringify({ evento: 'botao_oferta', erro: String(e.message || e).slice(0, 200) })));
+          const botao = daParceira || (m.type === 'interactive' && produtos.lerBotao(((m.interactive || {}).button_reply || {}).id));
+          if (daParceira) { /* parceira: a equipe vê a conversa no CRM */ }
+          else if (botao) await respostaDoBotao(botao, corpoDe(m), buscar).catch(e => console.warn(JSON.stringify({ evento: 'botao_oferta', erro: String(e.message || e).slice(0, 200) })));
           // Pede uma pessoa, reclama, quer cancelar ou alterar: alerta para quem está de plantão
           else if (res && res.nova && res.conversa_id && ['text', 'button', 'interactive'].includes(m.type)) await conferirPedido(corpoDe(m), res.conversa_id, buscar).catch(e => console.warn(JSON.stringify({ evento: 'pedido_alerta', erro: String(e.message || e).slice(0, 200) })));
           // Gilberto automático: responde a mensagem nova do cliente (exceto o toque nos botões de oferta)
@@ -1494,6 +1675,16 @@ const API_EQUIPE = {
     if (!/^\d{1,25}$/.test(id)) throw new ErroEnvio(400, 'Número inválido.');
     const nome = String(corpo.nome || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 60);
     if (!nome) throw new ErroEnvio(400, 'Dê um nome ao modelo.');
+    // Modelos do próprio CRM: basta o nome; texto, botões e exemplos vêm daqui
+    const padrao = [MODELO_EXTRA, MODELO_MASSAGEM, MODELO_OPCOES].find(m => m.nome === nome);
+    if (padrao) {
+      const botoes = padrao.botoes ? [{ type: 'BUTTONS', buttons: padrao.botoes.map(text => ({ type: 'QUICK_REPLY', text })) }]
+        : padrao.link ? [{ type: 'BUTTONS', buttons: [{ type: 'URL', text: padrao.link.texto, url: URL_PUBLICA + '/mc/{{1}}', example: [URL_PUBLICA + '/mc/' + padrao.link.exemplo] }] }] : [];
+      const rp = await chamarMeta(`${await wabaDoNumero(id)}/message_templates`, { name: nome, language: 'pt_BR', category: padrao.categoria,
+        components: [{ type: 'BODY', text: padrao.texto, example: { body_text: [padrao.exemplos] } }, ...botoes] }, fetch);
+      if (!rp.ok) throw new ErroEnvio(rp.status === 400 ? 400 : 502, 'A Meta recusou o modelo: ' + String((rp.json.error || {}).error_user_msg || (rp.json.error || {}).message || rp.status).slice(0, 200));
+      return { ok: true, nome, status: rp.json.status || 'PENDING', padrao: true };
+    }
     if (!['UTILITY', 'MARKETING'].includes(corpo.categoria)) throw new ErroEnvio(400, 'Categoria inválida.');
     const texto = String(corpo.texto || '').trim().slice(0, 1024);
     if (texto.length < 10) throw new ErroEnvio(400, 'Escreva o texto do modelo.');
@@ -2467,7 +2658,8 @@ const servidor = http.createServer((req, res) => {
         const prods = ((cat || {}).produtos || []).filter(p => p.vitrine === v.tema);
         if (!previa) await rpc('registrar_abertura_vitrine', { p_token: token }).catch(() => {});
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow', ...cabecalhosSeguranca() });
-        res.end(vitrine.pagina(v, { produtos: prods, fotosDe: fotosDoProduto, estadia: est, previa, versao: encodeURIComponent(versao.replace(/[^\w.-]/g, '')) }));
+        const ocupados = prods.some(p => p.tipo_reserva === 'terc') ? await ocupadosMassagem().catch(() => ({})) : {};
+        res.end(vitrine.pagina(v, { produtos: prods, fotosDe: fotosDoProduto, estadia: est, previa, versao: encodeURIComponent(versao.replace(/[^\w.-]/g, '')), ocupados }));
       }).catch(() => { res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Página indisponível agora. Tente de novo em instantes.'); });
       return;
     }
@@ -2479,6 +2671,11 @@ const servidor = http.createServer((req, res) => {
         const prods = ((cat || {}).produtos || []).filter(p => p.vitrine === v.tema);
         const ped = vitrine.validarPedido(corpo.itens, prods, est);
         if (ped.erro) return json(res, 400, { ok: false, erro: ped.erro });
+        if (!corpo.previa && ped.itens.some(it => it.horario)) {
+          const oc = await ocupadosMassagem().catch(() => ({}));
+          const tomado = ped.itens.find(it => it.horario && (oc[it.data] || []).includes(it.horario) && !(v.pedido || []).some(x => x.chave === it.chave));
+          if (tomado) return json(res, 409, { ok: false, erro: 'O horário das ' + vitrine.horaBR(tomado.horario) + ' acabou de ser reservado. Escolha outro, por favor.' });
+        }
         const linhas = ped.itens.map(it => vitrine.linhaItem(it, prods.find(p => p.codigo === it.codigo)));
         if (!corpo.previa) {
           const anteriores = (v.pedido || []).map(x => x.chave), aceitos = [];
@@ -2486,8 +2683,14 @@ const servidor = http.createServer((req, res) => {
             const ro = await fetch(`${SUPABASE_URL}/rest/v1/ofertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
               body: JSON.stringify({ conversa_id: v.conversa_id, negocio_id: v.negocio_id, produto_codigo: it.codigo, produto_nome: it.nome + (it.variacao ? ' (' + it.variacao + ')' : ''), por: 'pagina', situacao: 'aceito', respondido_em: new Date().toISOString() }) }).catch(() => null);
             const of = ro && ro.ok ? (await ro.json().catch(() => []))[0] : null;
-            aceitos.push(await aceiteDoCliente({ conversa_id: v.conversa_id, oferta_id: of && of.id, produto_codigo: it.codigo, variacao: it.variacao, origem: 'vitrine', quantidade: it.quantidade, adicionais: it.adicionais, data_uso: it.data })
-              .catch(err => { console.warn(JSON.stringify({ evento: 'aceite_vitrine', erro: String(err.message || err).slice(0, 200) })); return null; }));
+            const ac = await aceiteDoCliente({ conversa_id: v.conversa_id, oferta_id: of && of.id, produto_codigo: it.codigo, variacao: it.variacao, origem: 'vitrine', quantidade: it.quantidade, adicionais: it.adicionais, data_uso: it.data, horario: it.horario, automatico: !!it.horario })
+              .catch(err => { console.warn(JSON.stringify({ evento: 'aceite_vitrine', erro: String(err.message || err).slice(0, 200) })); return null; });
+            if (ac && ac.venda && it.horario) { // massagem: o pedido vai direto para a parceira
+              ac.pedidoParceiro = await pedirAParceira({ venda: ac.venda, item: it, conversa_id: v.conversa_id, negocio_id: ac.negocio_id || v.negocio_id, numeroId: est.numero_id, hospede: (est.primeiro_nome || '').split(/\s+/)[0] || null });
+              if (!ac.pedidoParceiro) await criarAlerta({ conversa_id: v.conversa_id, negocio_id: ac.negocio_id || null, venda_id: ac.venda.id, tipo: 'produto_pedido', titulo: 'Cliente pediu produto',
+                info: vitrine.linhaItem(it, prods.find(x => x.codigo === it.codigo)) + ' · escolheu na página de extras. O CRM não conseguiu mandar à massoterapeuta: peça o horário a ela e confirme com o cliente.' });
+            }
+            aceitos.push(ac);
           }
           await avisarPedidoExtra(v.conversa_id, aceitos);
           await fetch(`${SUPABASE_URL}/rest/v1/vitrines?id=eq.${v.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
@@ -2502,6 +2705,59 @@ const servidor = http.createServer((req, res) => {
     return naoAchou();
   }
 
+  // Páginas da massagem: a parceira (/p/<token>) responde; o hóspede (/mc/<token>) escolhe uma das opções dela
+  const mp = url.pathname.match(/^\/(p|mc)\/([A-Za-z0-9_-]{22})$/);
+  if (mp) {
+    if (limiteExcedido(req)) { res.writeHead(429, { 'Content-Type': 'text/plain; charset=utf-8', 'Retry-After': '60' }); return res.end('Muitos acessos. Tente de novo em 1 minuto.'); }
+    const parc = mp[1] === 'p', token = mp[2];
+    const ver = encodeURIComponent(versao.replace(/[^\w.-]/g, ''));
+    const hoje = new Date(Date.now() - 4 * 3600e3).toISOString().slice(0, 10);
+    const naoAchouPagina = () => { res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', ...cabecalhosSeguranca() }); res.end('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hotel Cabanas</title><p style="font-family:sans-serif;padding:24px">Pedido não encontrado. Fale com a gente pelo WhatsApp.</p>'); };
+    (async () => {
+      const pd = await pedidoParceiro((parc ? 'token_parceiro' : 'token_cliente') + '=eq.' + token);
+      if (!pd) return naoAchouPagina();
+      if (req.method === 'GET') {
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', ...cabecalhosSeguranca() });
+        if (!parc) return res.end(massagem.paginaCliente(pd, { versao: ver, nome: await primeiroNome(pd.conversa_id).catch(() => '') }));
+        const est = await estadiaDaConversa(pd.conversa_id).catch(() => null);
+        return res.end(massagem.paginaParceira(pd, { dias: massagem.diasPossiveis(pd, est, hoje), ocupados: await ocupadosMassagem(fetch, pd.id).catch(() => ({})), versao: ver }));
+      }
+      if (req.method !== 'POST') return naoAchou();
+      const corpo = await lerCorpo(req, 4000);
+      if (parc) {
+        if (pd.situacao !== 'aguardando_parceiro' || (pd.expira_em && new Date(pd.expira_em) < new Date())) return json(res, 409, { ok: false, erro: 'Este pedido não está mais aberto.' });
+        if (corpo.acao === 'confirmar') {
+          await confirmarMassagem(pd, String(pd.data).slice(0, 10), pd.horario, 'massoterapeuta pela página');
+          return json(res, 200, { ok: true, mensagem: 'Massagem confirmada. Obrigado! O hóspede já foi avisado. ✅' });
+        }
+        if (corpo.acao !== 'opcoes') return json(res, 400, { ok: false, erro: 'Pedido inválido.' });
+        const est = await estadiaDaConversa(pd.conversa_id).catch(() => null);
+        const val = massagem.validarOpcoes(corpo.opcoes, massagem.diasPossiveis(pd, est, hoje), await ocupadosMassagem(fetch, pd.id).catch(() => ({})), pd);
+        if (val.erro) return json(res, 400, { ok: false, erro: val.erro });
+        const tc = crypto.randomBytes(16).toString('base64url');
+        await patchPedido(pd.id, { situacao: 'opcoes_enviadas', opcoes: val.opcoes, token_cliente: tc, respondido_em: pd.respondido_em || new Date().toISOString() });
+        const foi = await enviarOpcoesAoCliente({ ...pd, token_cliente: tc });
+        if (pd.negocio_id) await eventoNegocio(pd.negocio_id, 'A massoterapeuta indicou outros horários: ' + val.opcoes.map(o => massagem.quando(o.data, o.horario)).join('; ') + (foi ? ' (enviados ao hóspede)' : ''), 'CRM').catch(() => {});
+        if (!foi) await criarAlerta({ conversa_id: pd.conversa_id, negocio_id: pd.negocio_id, venda_id: pd.venda_id, tipo: 'parceiro_sem_resposta', titulo: 'Massagem: mande as opções ao hóspede',
+          info: 'A massoterapeuta indicou ' + val.opcoes.map(o => massagem.quando(o.data, o.horario)).join('; ') + ', mas o WhatsApp não saiu. Link para o hóspede escolher: ' + URL_PUBLICA + '/mc/' + tc });
+        return json(res, 200, { ok: true, mensagem: 'Pronto! As opções foram enviadas ao hóspede. Quando ele escolher, avisamos você. 🌿' });
+      }
+      if (pd.situacao !== 'opcoes_enviadas') return json(res, 409, { ok: false, erro: 'Este link não está mais ativo.' });
+      if (corpo.acao === 'nenhum') {
+        await patchPedido(pd.id, { situacao: 'sem_opcao' });
+        await criarAlerta({ conversa_id: pd.conversa_id, negocio_id: pd.negocio_id, venda_id: pd.venda_id, tipo: 'parceiro_sem_resposta', titulo: 'Massagem: hóspede não pôde nos horários',
+          info: massagem.detalhe(pd) + '. Nenhuma das opções da massoterapeuta serviu. Fale com o hóspede e com ela.' });
+        await avisarParceira(pd, 'O hóspede não pôde em nenhum dos horários indicados. A equipe do hotel segue com ele. Obrigado! 🌿');
+        return json(res, 200, { ok: true, mensagem: 'Recebemos. A equipe fala com você pelo WhatsApp para achar outro horário.' });
+      }
+      const o = (pd.opcoes || [])[Number(corpo.opcao)];
+      if (corpo.acao !== 'escolher' || !o) return json(res, 400, { ok: false, erro: 'Escolha um dos horários.' });
+      await confirmarMassagem(pd, o.data, o.horario, 'hóspede escolheu uma opção da massoterapeuta');
+      await avisarParceira({ ...pd, data: o.data, horario: o.horario }, 'O hóspede escolheu: ' + massagem.detalhe({ ...pd, data: o.data, horario: o.horario }) + '. Massagem confirmada ✅ Obrigado!');
+      return json(res, 200, { ok: true, mensagem: 'Massagem confirmada: ' + massagem.quando(o.data, o.horario) + ' ✅ Você também recebe a confirmação no WhatsApp.' });
+    })().catch(e => json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Não deu agora. Tente de novo.' }));
+    return;
+  }
   // Página pública do orçamento e o "Quero reservar esta".
   const mo = url.pathname.match(/^\/o\/([A-Za-z0-9_-]{22})(\/quero)?$/);
   if (mo) {
@@ -2629,7 +2885,8 @@ const servidor = http.createServer((req, res) => {
   if (url.pathname === '/cron/pix' && req.method === 'POST') {
     if (!bancoLigado()) return json(res, 503, { ok: false });
     Promise.all([verificarCobrancas(), escalarAlertas().catch(() => 0)]).then(async ([r, escalados]) => json(res, 200, { ok: true, ...r, escalados, avisos: await notificarAlertas().catch(() => 0),
-      retomar: await retomarOrcamentos().catch(() => ({ criadas: 0, fechadas: 0 })), resumo: await resumoDoDia().catch(() => 0) })).catch(() => json(res, 500, { ok: false }));
+      retomar: await retomarOrcamentos().catch(() => ({ criadas: 0, fechadas: 0 })), resumo: await resumoDoDia().catch(() => 0),
+      massagem: await verificarPedidosParceiro().catch(() => ({ avisos: 0, expirados: 0 })) })).catch(() => json(res, 500, { ok: false }));
     return;
   }
 

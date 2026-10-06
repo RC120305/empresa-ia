@@ -42,7 +42,7 @@ const VIDEO_GRANDE = (() => { // vídeo de 4 s com imagem pesada (~2 MB), para t
 })();
 const MP4_DRIVE = Buffer.concat([Buffer.from('\x00\x00\x00\x18ftypmp42'), Buffer.alloc(3000, 7)]);
 let bbPago = false;
-const configF = {};
+const configF = {}, pedidosParceiroF = [];
 const pushF = [], pushRecebidos = []; // inscrições de avisos no celular e o que o "serviço de push" recebeu
 let iaOferta = '';
 const RAIZ_DRIVE = '1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5';
@@ -112,6 +112,17 @@ const falso = http.createServer((req, res) => {
       if (req.method === 'PATCH') { Object.assign(cobrancasF.find(c => c.id === id), json); res.writeHead(204); return res.end(); }
       if (req.url.includes('situacao=eq.ativa')) return responder(200, cobrancasF.filter(c => c.situacao === 'ativa'));
       return responder(200, cobrancasF.filter(c => c.id === id));
+    }
+    if (req.url.startsWith('/rest/v1/pedidos_parceiro')) {
+      if (req.method === 'POST') { const x = { id: crypto.randomUUID(), situacao: 'aguardando_parceiro', opcoes: [], criado_em: new Date().toISOString(), ...json }; pedidosParceiroF.push(x); return responder(201, [x]); }
+      const u = new URL(req.url, 'http://x');
+      let l = pedidosParceiroF.slice();
+      for (const k of ['id', 'token_parceiro', 'token_cliente']) if (u.searchParams.get(k)) l = l.filter(x => x[k] === u.searchParams.get(k).replace(/^eq\./, ''));
+      const sit = u.searchParams.get('situacao');
+      if (sit) { const vs = sit.startsWith('in.') ? sit.slice(4, -1).split(',') : [sit.replace(/^eq\./, '')]; l = l.filter(x => vs.includes(x.situacao)); }
+      if (u.searchParams.get('enviado_em') === 'not.is.null') l = l.filter(x => x.enviado_em);
+      if (req.method === 'PATCH') { l.forEach(x => Object.assign(x, json)); res.writeHead(204); return res.end(); }
+      return responder(200, l);
     }
     if (req.url.startsWith('/rest/v1/config')) {
       if (req.method === 'POST') { configF[json.chave] = json.valor; res.writeHead(201); return res.end(); }
@@ -730,7 +741,7 @@ falso.listen(0, () => {
     assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'pag'), 'card em Aguardando pagamento');
     assert.equal((await api('/api/cobranca', { conversa_id: conv, valor: '0' })).status, 400);
     r = await fetch(base + '/cron/pix', { method: 'POST' });
-    assert.deepEqual(await r.json(), { ok: true, verificadas: 1, pagas: 0, vencidas: 0, escalados: 0, avisos: 0, retomar: { criadas: 0, fechadas: 0 }, resumo: 0 });
+    assert.deepEqual(await r.json(), { ok: true, verificadas: 1, pagas: 0, vencidas: 0, escalados: 0, avisos: 0, retomar: { criadas: 0, fechadas: 0 }, resumo: 0, massagem: { avisos: 0, expirados: 0 } });
     r = await api('/api/cobranca-acao', { id: cobrancasF[0].id, acao: 'simular_pagamento' });
     assert.equal((await r.json()).pagas, 1);
     assert.deepEqual([cobrancasF[0].situacao, cobrancasF[0].valor_pago, cobrancasF[0].pagador], ['paga', 1254.6, 'Cliente de teste']);
@@ -1050,9 +1061,66 @@ falso.listen(0, () => {
     const vh2 = await (await fetch(base + '/e/' + vt2)).text();
     assert.ok(vh2.includes('value="Completa"') && vh2.includes('class="vt-ad" value="Pedras quentes"'));
     assert.equal((await pedir([{ codigo: 'DECO', quantidade: 1 }], vt2)).status, 400);
-    r = await pedir([{ codigo: 'MASS', variacao: 'Massagem360', adicionais: ['Pedras quentes'], quantidade: 2, data: emDias(41) }, { codigo: 'DECO', variacao: 'Simples', quantidade: 1, data: emDias(40) }], vt2);
-    assert.equal(r.status, 200);
-    assert.deepEqual(vendasF.slice(-2).map(v => [v.produto_codigo, v.variacao, v.valor_total]), [['MASS', 'Massagem360', 540], ['DECO', 'Simples', 350]]);
+    assert.ok(vh2.includes('class="vt-hora"') && vh2.includes('À beira do rio'), 'massagem: horário e local');
+    assert.equal((await pedir([{ codigo: 'MASS', variacao: 'Massagem360', quantidade: 1, data: emDias(41) }], vt2)).status, 400, 'massagem sem horário');
+    configF.parceira_massagem = { nome: 'Natália', whatsapp: '+5567992286365' };
+    const nMs = chamadas.length;
+    r = await pedir([{ codigo: 'MASS', variacao: 'Massagem360', adicionais: ['Pedras quentes'], quantidade: 2, data: emDias(41), horario: '09:00', local: 'À beira do rio' }, { codigo: 'DECO', variacao: 'Simples', quantidade: 1, data: emDias(40) }], vt2);
+    assert.equal(r.status, 200, await r.clone().text());
+    assert.deepEqual(vendasF.slice(-2).map(v => [v.produto_codigo, v.variacao, v.valor_total, v.horario]), [['MASS', 'Massagem360', 540, '09:00'], ['DECO', 'Simples', 350, null]]);
+    // Massagem: o pedido vai direto para a Natália com [Confirmo] [Não posso]
+    {
+      const aguardar = async (cond, ms = 8000) => { const fim = Date.now() + ms; while (!cond() && Date.now() < fim) await new Promise(ok => setTimeout(ok, 50)); return cond(); };
+      const pdm = pedidosParceiroF.at(-1);
+      assert.deepEqual([pdm.situacao, pdm.horario, pdm.local, !!pdm.enviado_em, !!pdm.expira_em], ['aguardando_parceiro', '09:00', 'À beira do rio', true, true]);
+      const envs = chamadas.slice(nMs).filter(c => c.url === '/graph/111/messages').map(c => c.corpo);
+      const pedidoNat = envs.find(c => c.type === 'interactive' && c.interactive.type === 'button');
+      assert.ok(pedidoNat && pedidoNat.interactive.body.text.includes('Massagem360') && pedidoNat.interactive.action.buttons[0].reply.id === 'mp:' + pdm.id + ':s', JSON.stringify(envs));
+      const ackM = envs.find(c => c.type === 'text' && c.text.body.startsWith('Recebi seu pedido')).text.body;
+      assert.ok(ackM.includes('Já pedi a confirmação do horário à massoterapeuta') && ackM.includes('às 9h'), ackM);
+      assert.ok(!alertasF.some(a => a.venda_id === vendasF.at(-2).id && a.tipo === 'produto_pedido'), 'massagem automática: sem alerta de pedir à mão');
+      pedidosParceiroF.push({ id: crypto.randomUUID(), situacao: 'confirmado', data: emDias(41), horario: '10:00', opcoes: [] });
+      assert.ok((await (await fetch(base + '/e/' + vt2)).text()).includes('&quot;10:00&quot;'), 'horários tomados vão para a página');
+      assert.equal((await pedir([{ codigo: 'MASS', variacao: 'Massagem360', quantidade: 1, data: emDias(41), horario: '10:00', local: 'No quarto' }], vt2)).status, 409, 'horário já tomado');
+      pedidosParceiroF.pop();
+      // A Natália toca em "Não posso": recebe o link para indicar horários
+      const nNat = chamadas.length;
+      const btn = JSON.stringify({ entry: [{ changes: [{ value: { metadata: { phone_number_id: '111' }, contacts: [{ wa_id: '556792286365', profile: { name: 'Natália' } }], messages: [{ from: '556792286365', id: 'wamid.NAT1', timestamp: '1700000400', type: 'interactive', interactive: { type: 'button_reply', button_reply: { id: 'mp:' + pdm.id + ':n', title: 'Não posso' } } }] } }] }] });
+      await postar(btn);
+      assert.ok(await aguardar(() => chamadas.slice(nNat).some(c => c.url === '/graph/111/messages' && c.corpo.type === 'interactive' && c.corpo.interactive.type === 'cta_url')));
+      const ctaNat = chamadas.slice(nNat).find(c => c.url === '/graph/111/messages' && c.corpo.type === 'interactive').corpo.interactive;
+      assert.ok(ctaNat.action.parameters.url.endsWith('/p/' + pdm.token_parceiro));
+      assert.ok(!chamadas.slice(nNat).some(c => c.url === '/anthropic/v1/messages'), 'o Gilberto não responde à parceira');
+      // Página da Natália: indica 2 horários; o hóspede recebe o link para escolher
+      const pg = await (await fetch(base + '/p/' + pdm.token_parceiro)).text();
+      assert.ok(pg.includes('Pedido de <em>massagem</em>') && pg.includes('ms-op'), pg.slice(pg.indexOf('<main>'), pg.indexOf('<main>') + 900));
+      const nOp = chamadas.length;
+      r = await fetch(base + '/p/' + pdm.token_parceiro, { method: 'POST', body: JSON.stringify({ acao: 'opcoes', opcoes: [{ data: emDias(41), horario: '15:00' }, { data: emDias(41), horario: '16:00' }] }) });
+      assert.equal(r.status, 200, await r.clone().text());
+      assert.equal(pdm.situacao, 'opcoes_enviadas'); assert.equal(pdm.opcoes.length, 2);
+      const ctaCli = chamadas.slice(nOp).find(c => c.url === '/graph/111/messages' && c.corpo.type === 'interactive').corpo.interactive;
+      assert.ok(ctaCli.action.parameters.url.endsWith('/mc/' + pdm.token_cliente));
+      // O hóspede escolhe as 16h: confirmado para ele, para a equipe e para a Natália
+      assert.ok((await (await fetch(base + '/mc/' + pdm.token_cliente)).text()).includes('Quero este horário'));
+      const nEs = chamadas.length; alertasF.length = 0;
+      r = await fetch(base + '/mc/' + pdm.token_cliente, { method: 'POST', body: JSON.stringify({ acao: 'escolher', opcao: 1 }) });
+      assert.equal(r.status, 200, await r.clone().text());
+      assert.deepEqual([pdm.situacao, pdm.horario], ['confirmado', '16:00']); assert.equal(vendasF.at(-2).horario, '16:00');
+      const txs = chamadas.slice(nEs).filter(c => c.url === '/graph/111/messages' && c.corpo.type === 'text').map(c => c.corpo.text.body);
+      assert.ok(txs.some(t => t.includes('Seu pedido está reservado') && t.includes('às 16h')), JSON.stringify(txs));
+      assert.ok(txs.some(t => t.startsWith('O hóspede escolheu')), 'a Natália fica sabendo');
+      assert.ok(alertasF.some(a => a.tipo === 'parceiro_confirmou'));
+      assert.equal((await fetch(base + '/mc/' + pdm.token_cliente, { method: 'POST', body: JSON.stringify({ acao: 'escolher', opcao: 0 }) })).status, 409);
+      // 3 h sem resposta: aviso à equipe; 24 h: expira sem mandar nada para a Natália
+      pedidosParceiroF.push({ id: crypto.randomUUID(), situacao: 'aguardando_parceiro', servico: 'Massagem360', data: emDias(42), horario: '10:00', opcoes: [], adicionais: [], conversa_id: conv, token_parceiro: 'q'.repeat(22), enviado_em: new Date(Date.now() - 4 * 3600e3).toISOString(), expira_em: new Date(Date.now() + 20 * 3600e3).toISOString() },
+        { id: crypto.randomUUID(), situacao: 'aguardando_parceiro', servico: 'Massagem360', data: emDias(43), horario: '10:00', opcoes: [], adicionais: [], conversa_id: conv, token_parceiro: 'w'.repeat(22), enviado_em: new Date(Date.now() - 25 * 3600e3).toISOString(), expira_em: new Date(Date.now() - 3600e3).toISOString() });
+      alertasF.length = 0; const nCr = chamadas.length;
+      await fetch(base + '/cron/pix', { method: 'POST' });
+      assert.deepEqual(alertasF.filter(a => a.tipo === 'parceiro_sem_resposta').map(a => a.titulo).sort(), ['Massagem: pedido expirou (24 h)', 'Massagem: sem resposta há 3 h']);
+      assert.equal(pedidosParceiroF.at(-1).situacao, 'expirado');
+      assert.ok(!chamadas.slice(nCr).some(c => c.url === '/graph/111/messages'), 'nada vai para a Natália');
+      pedidosParceiroF.length = 0; delete configF.parceira_massagem; alertasF.length = 0;
+    }
     // O Gilberto vê o link enviado como oferta; o link criado pela sugestão só conta quando a equipe envia
     pedidosIA.length = 0;
     await (await fetch(base + '/api/sugerir', { method: 'POST', headers: { Authorization: 'Bearer token-equipe' }, body: JSON.stringify({ conversa_id: conv }) })).json();

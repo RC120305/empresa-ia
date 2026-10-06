@@ -566,6 +566,7 @@
     if (!numeroId) { toast('Escolha o número primeiro.'); return; }
     abrirForm('Cadastrar modelo na Meta', [
       { tipo: 'nota', rotulo: 'O modelo vai para a análise da Meta (de minutos a 24 h). Use {{1}} para o nome do cliente, {{2}}, {{3}}… para outros dados. Utilidade (avisos, retorno de contato) é mais barata que Marketing (promoções).' },
+      { tipo: 'nota', rotulo: 'Modelos do CRM: digite só o nome (extra_confirmado, massagem_pedido ou massagem_opcoes) e envie; o CRM preenche o texto e os botões.' },
       { k: 'nome', rotulo: 'Nome do modelo', dica: 'retorno_de_contato', largo: true },
       { k: 'categoria', rotulo: 'Categoria', tipo: 'select', valor: 'UTILITY', opcoes: [['UTILITY', 'Utilidade (mais barata)'], ['MARKETING', 'Marketing']] },
       { k: 'texto', rotulo: 'Texto', tipo: 'textarea', largo: true, valor: 'Olá, {{1}}! Aqui é a equipe do Hotel Cabanas 🌿 Recebemos seu contato e vamos continuar seu atendimento por aqui. Podemos seguir?' },
@@ -2151,7 +2152,7 @@
 
   // ---------- Sino: alertas da equipe (cliente pediu produto; lançar na conta no dia do check-in) ----------
   let alertas = [], alertasOk = true, painelAlertas = false, vistos = null, vendasResumo = {};
-  const ROT_ALERTA = { produto_pedido: 'Cliente pediu produto', lancar_conta: 'Lançar na conta do hóspede', pagamento_recebido: 'Pagamento recebido', cobranca_vencida: 'Cobrança vencida',
+  const ROT_ALERTA = { parceiro_sem_resposta: 'Massagem: atenção', parceiro_confirmou: 'Massagem confirmada', produto_pedido: 'Cliente pediu produto', lancar_conta: 'Lançar na conta do hóspede', pagamento_recebido: 'Pagamento recebido', cobranca_vencida: 'Cobrança vencida',
     atendimento_humano: 'Pede atendimento humano', reclamacao: 'Reclamação', cancelamento: 'Pedido de cancelamento', alteracao: 'Pedido de alteração', gilberto_passou: 'Gilberto passou para a equipe' };
   const ATENDIMENTO = ['reclamacao', 'cancelamento', 'atendimento_humano', 'alteracao', 'gilberto_passou'];
   // Toca para mim? Alerta de atendimento: só para quem está de plantão (ou todos, sem plantão ou depois de escalado)
