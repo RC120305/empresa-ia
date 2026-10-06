@@ -295,7 +295,8 @@ async function sugerir(historico, conversa, executores = {}, catalogo = null) {
       } else if (e instanceof Anthropic.RateLimitError) {
         throw new ErroSugestao(429, 'Muitas sugestões ao mesmo tempo. Tente de novo em alguns segundos.');
       } else if (e instanceof Anthropic.APIError) {
-        throw new ErroSugestao(502, 'A IA não respondeu agora (erro ' + e.status + '). Tente de novo.');
+        // O motivo da API (sem dados do cliente) vai junto: um 400 é quase sempre um problema do pedido, não da rede
+        throw new ErroSugestao(502, 'A IA não respondeu agora (erro ' + e.status + (e.status === 400 ? ': ' + String(e.message || '').replace(/\s+/g, ' ').slice(0, 220) : '') + '). Tente de novo.');
       } else throw e;
     }
   }

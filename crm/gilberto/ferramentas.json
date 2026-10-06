@@ -815,7 +815,7 @@
   {
     "name": "rota_ate_o_hotel",
     "description": "Monta o link do Google Maps com a rota de carro da cidade do cliente até o Hotel Cabanas (Bonito/MS). Use quando o cliente disser que vem de carro, ou quando falar de onde vem e você perguntar se vem de carro e ele confirmar. Antes, pergunte a cidade e o estado de saída, se ainda não souber. O Google Maps mostra distância, tempo e alternativas: não invente quilometragem, tempo nem estrada. Mande o link numa linha própria com uma frase curta (ex.: 'Tracei a rota pelo Google Maps para você ver o caminho e o tempo de viagem').",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
