@@ -2715,6 +2715,7 @@ const servidor = http.createServer((req, res) => {
           if (tomado) return json(res, 409, { ok: false, erro: 'O horário das ' + vitrine.horaBR(tomado.horario) + ' acabou de ser reservado. Escolha outro, por favor.' });
         }
         const linhas = ped.itens.map(it => vitrine.linhaItem(it, prods.find(p => p.codigo === it.codigo)));
+        let avisado = false;
         if (!corpo.previa) {
           const anteriores = (v.pedido || []).map(x => x.chave), aceitos = [];
           for (const it of ped.itens.filter(x => !anteriores.includes(x.chave))) { // o mesmo item escolhido de novo não duplica
@@ -2730,13 +2731,14 @@ const servidor = http.createServer((req, res) => {
             }
             aceitos.push(ac);
           }
-          await avisarPedidoExtra(v.conversa_id, aceitos);
+          avisado = !!(await avisarPedidoExtra(v.conversa_id, aceitos));
           await fetch(`${SUPABASE_URL}/rest/v1/vitrines?id=eq.${v.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
             body: JSON.stringify({ pedido: [...(v.pedido || []), ...ped.itens.filter(x => !(v.pedido || []).some(y => y.chave === x.chave))], pedido_em: new Date().toISOString() }) }).catch(() => {});
         }
         const numero = est.numero_whatsapp || (est.numero_id ? await numeroWhatsapp(est.numero_id, fetch).catch(() => null) : null);
+        // O cliente já recebeu "Recebi seu pedido" no WhatsApp: o botão só abre a conversa, sem mensagem pronta (dono, 06/10/2026)
         const texto = 'Oi! Escolhi na página de extras: ' + linhas.join('; ') + '.';
-        json(res, 200, { ok: true, whatsapp: numero ? `https://wa.me/${numero}?text=${encodeURIComponent(texto)}` : null });
+        json(res, 200, { ok: true, avisado, whatsapp: numero ? `https://wa.me/${numero}` + (avisado ? '' : `?text=${encodeURIComponent(texto)}`) : null });
       }).catch(e => json(res, e.http || 400, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Pedido inválido.' }));
       return;
     }

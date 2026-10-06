@@ -1022,7 +1022,7 @@ falso.listen(0, () => {
     r = await pedir([{ codigo: 'COMBO', quantidade: 2, data: emDias(41), adicionais: [] }]);
     const pj = await r.json();
     assert.equal(r.status, 200, JSON.stringify(pj));
-    assert.ok(decodeURIComponent(pj.whatsapp).includes('Escolhi na página de extras: Combo boia cross + arvorismo · 2 pessoas · ' + emDias(41).slice(8, 10) + '/'));
+    assert.equal(pj.avisado, true); assert.ok(!pj.whatsapp || !pj.whatsapp.includes('?text='), 'cliente já avisado: sem mensagem pronta');
     assert.deepEqual(vendasF.slice(nV).map(v => [v.produto_codigo, v.quantidade, v.valor_total, v.data_uso]), [['COMBO', 2, 340, emDias(41)]]);
     assert.ok(alertasF.findLast(a => a.tipo === 'produto_pedido').info.includes('escolheu na página de extras'));
     assert.ok(vitrinesF[0].pedido_em && vitrinesF[0].pedido[0].codigo === 'COMBO');

@@ -102,7 +102,9 @@
     b.removeAttribute('aria-disabled'); b.textContent = 'Confirmar'; b.hidden = true;
     document.getElementById('p-tit').textContent = 'Recebemos sua escolha!';
     const wa = document.getElementById('p-wa');
-    document.getElementById('p-txt').textContent = j.whatsapp ? 'Toque no botão para mandar a sua escolha na nossa conversa do WhatsApp. A equipe confirma o horário por lá.' : 'A equipe já recebeu e confirma o horário com você pelo WhatsApp.';
+    document.getElementById('p-txt').textContent = j.avisado ? 'Pronto! Mandamos a confirmação do seu pedido no WhatsApp e avisamos por lá assim que o horário estiver garantido.'
+      : j.whatsapp ? 'Toque no botão para mandar a sua escolha na nossa conversa do WhatsApp. A equipe confirma o horário por lá.' : 'A equipe já recebeu e confirma o horário com você pelo WhatsApp.';
+    wa.textContent = j.avisado ? 'Voltar para o WhatsApp' : 'Continuar no WhatsApp';
     wa.hidden = !j.whatsapp; if (j.whatsapp) { wa.href = j.whatsapp; wa.focus(); }
   });
 })();
