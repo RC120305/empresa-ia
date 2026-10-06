@@ -566,7 +566,7 @@
     if (!numeroId) { toast('Escolha o número primeiro.'); return; }
     abrirForm('Cadastrar modelo na Meta', [
       { tipo: 'nota', rotulo: 'O modelo vai para a análise da Meta (de minutos a 24 h). Use {{1}} para o nome do cliente, {{2}}, {{3}}… para outros dados. Utilidade (avisos, retorno de contato) é mais barata que Marketing (promoções).' },
-      { tipo: 'nota', rotulo: 'Modelos do CRM: digite só o nome (extra_confirmado, massagem_pedido ou massagem_opcoes) e envie; o CRM preenche o texto e os botões.' },
+      { tipo: 'nota', rotulo: 'Modelos do CRM: digite só o nome (extra_confirmado, massagem_pedido, massagem_opcoes ou massagem_aviso) e toque em Enviar para análise. O texto abaixo pode ficar como está: ao enviar, o CRM troca pelo texto e pelos botões certos.' },
       { k: 'nome', rotulo: 'Nome do modelo', dica: 'retorno_de_contato', largo: true },
       { k: 'categoria', rotulo: 'Categoria', tipo: 'select', valor: 'UTILITY', opcoes: [['UTILITY', 'Utilidade (mais barata)'], ['MARKETING', 'Marketing']] },
       { k: 'texto', rotulo: 'Texto', tipo: 'textarea', largo: true, valor: 'Olá, {{1}}! Aqui é a equipe do Hotel Cabanas 🌿 Recebemos seu contato e vamos continuar seu atendimento por aqui. Podemos seguir?' },
