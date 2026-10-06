@@ -1,4 +1,6 @@
-# Túnel do Silbeck para o CRM: guia do Márcio (Windows)
+# Túnel do Silbeck para o CRM: guia do Márcio
+
+> **Atualização (07/10/2026):** o Márcio montou o WireGuard no **roteador MikroTik**. Nesse caso não precisa do Windows (passos 1 a 5 abaixo ficam como alternativa): o script `ponte-silbeck-tunel.txt` pede a chave pública do MikroTik, o endereço público e porta dele (se houver), os IPs do túnel e o IP do Silbeck, e no fim mostra a chave pública do CRM e os comandos do RouterOS (peer + regra de firewall da porta 8366).
 
 Objetivo: o CRM (no Google Cloud) falar com a API do Silbeck (192.168.132.242:8366) por um túnel criptografado
 WireGuard que **sai do hotel**. Não é preciso abrir porta no roteador nem ter IP fixo no hotel.
