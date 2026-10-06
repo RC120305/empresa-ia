@@ -1850,7 +1850,16 @@
     if (!lista.length) box.append(el('div', { class: 'vazio', text: 'Nenhuma tarefa ainda.' }));
     lista.forEach(t => box.append(linhaTarefa(t, false)));
   }
+  // Blocos da aba Tarefas, na ordem em que aparecem (o último pega o que não se encaixar)
+  const BLOCOS_TAREFA = [
+    { nome: 'Reservar extras do hóspede', icone: '🔥', urgente: true, dica: 'Atividades, massagem e decoração pedidas pelo cliente: reserve e confirme com ele.',
+      teste: t => /^(Agendar |Pedir horário ao parceiro|Preparar |Encomendar |Confirmar e registrar venda)/.test(t) },
+    { nome: 'Reservas e pagamentos', icone: '💳', teste: t => /^(Confirmar a reserva|Confirmar pagamento|Conferir no Silbeck|Enviar link do cartão|Lançar)/.test(t) || /pix|pagamento|cobran/i.test(t) },
+    { nome: 'Retomar orçamentos', icone: '🔁', abertoAte: 8, teste: t => /^Retomar orçamento/.test(t) },
+    { nome: 'Outras tarefas', icone: '📝', teste: () => true },
+  ];
   let tModo = 'abertas';
+  const blocoAberto = new Map(); // quem a pessoa abriu/fechou continua assim quando a lista atualiza
   document.querySelector('[data-painel="tarefas"] .chips').addEventListener('click', e => {
     const c = e.target.closest('[data-t]'); if (!c) return;
     tModo = c.dataset.t;
@@ -1863,12 +1872,25 @@
     if (!funilOk) { box.append(el('div', { class: 'vazio', text: 'As tarefas ainda não estão no banco: falta rodar a migração 008 no Supabase.' })); return; }
     let ls = tarefas.filter(t => tModo === 'abertas' ? !t.feita : t.feita);
     if ($('t-resp').value) ls = ls.filter(t => t.responsavel_id === $('t-resp').value);
-    const agora = new Date(), fimHoje = new Date(); fimHoje.setHours(23, 59, 59, 999);
-    const grupos = tModo === 'feitas' ? [['Concluídas', ls.slice().reverse()]] : [
-      ['Atrasadas', ls.filter(t => new Date(t.quando) < agora)],
-      ['Hoje', ls.filter(t => new Date(t.quando) >= agora && new Date(t.quando) <= fimHoje)],
-      ['Próximas', ls.filter(t => new Date(t.quando) > fimHoje)]];
-    grupos.forEach(([nome, g]) => { if (g.length) box.append(el('div', { class: 'grupo-tarefas' }, el('h3', {}, nome, el('small', { text: String(g.length) })), g.map(t => linhaTarefa(t, true)))); });
+    if (tModo === 'feitas') {
+      if (ls.length) box.append(el('div', { class: 'grupo-tarefas' }, el('h3', {}, 'Concluídas', el('small', { text: String(ls.length) })), ls.slice().reverse().map(t => linhaTarefa(t, true))));
+    } else {
+      // Blocos por tipo (dono, 06/10/2026): o que é urgente primeiro e em destaque; dentro de cada bloco, a mais antiga primeiro
+      const agora = new Date();
+      const blocos = BLOCOS_TAREFA.map(b => ({ ...b, l: [] }));
+      ls.slice().sort((x, y) => new Date(x.quando) - new Date(y.quando)).forEach(t => (blocos.find(b => b.teste(t.tipo || '')) || blocos[blocos.length - 1]).l.push(t));
+      blocos.forEach(b => {
+        if (!b.l.length) return;
+        const atras = b.l.filter(t => new Date(t.quando) < agora).length;
+        const bloco = el('details', { class: 'grupo-tarefas bloco-tarefas' + (b.urgente ? ' urgente' : '') },
+          el('summary', {}, el('span', { class: 'bt-tit', text: b.icone + ' ' + b.nome }), el('small', { text: b.l.length + (atras ? ' · ' + atras + (atras > 1 ? ' atrasadas' : ' atrasada') : '') }),
+            b.dica ? el('span', { class: 'bt-dica', text: b.dica }) : null),
+          b.l.map(t => linhaTarefa(t, true)));
+        bloco.open = blocoAberto.has(b.nome) ? blocoAberto.get(b.nome) : b.l.length <= (b.abertoAte || 999); // 'open' não passa pelo el(): começa com "on"
+        bloco.addEventListener('toggle', () => blocoAberto.set(b.nome, bloco.open));
+        box.append(bloco);
+      });
+    }
     if (!box.children.length) box.append(el('div', { class: 'vazio', text: 'Nenhuma tarefa aqui.' }));
   }
 

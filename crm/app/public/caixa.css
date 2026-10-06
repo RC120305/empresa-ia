@@ -321,6 +321,17 @@ section[data-painel="funil"],section[data-painel="tarefas"]{gap:10px;overflow:hi
 .grupo-tarefas{display:flex;flex-direction:column;gap:8px}
 .grupo-tarefas h3{margin:4px 0 0;font-size:16px;display:flex;gap:8px;align-items:baseline}
 .grupo-tarefas h3 small{font-weight:500;color:var(--cor-texto-sec);font-size:13px}
+.bloco-tarefas{background:transparent}
+.bloco-tarefas>summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;padding:6px 2px;font-size:16px}
+.bloco-tarefas>summary::-webkit-details-marker{display:none}
+.bloco-tarefas>summary::before{content:'▾';color:var(--cor-texto-sec);width:12px}
+.bloco-tarefas:not([open])>summary::before{content:'▸'}
+.bloco-tarefas .bt-tit{font-weight:700}
+.bloco-tarefas>summary small{font-size:13px;color:var(--cor-texto-sec)}
+.bloco-tarefas .bt-dica{flex-basis:100%;padding-left:22px;font-size:13px;color:var(--cor-texto-sec)}
+.bloco-tarefas>.tarefa{margin-top:8px}
+.bloco-tarefas.urgente{border:2px solid var(--cor-erro);border-radius:var(--r-md);padding:8px 10px 10px;background:color-mix(in srgb,var(--cor-erro) 7%,transparent)}
+.bloco-tarefas.urgente .bt-tit{color:var(--cor-erro)}
 .hist{display:flex;flex-direction:column;border-left:2px solid var(--cor-borda);margin-left:6px}
 .hist div{position:relative;padding:0 0 14px 16px;font-size:14px}
 .hist div::before{content:"";position:absolute;left:-6px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--cor-borda-forte)}
