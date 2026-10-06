@@ -1,0 +1,111 @@
+bash <<'FIM'
+# CRM Cabanas: PONTE com o Silbeck por túnel WireGuard (opção A, 06/10/2026). Rodar no Cloud Shell.
+# Cria uma máquina pequena na rede privada do CRM. O computador do hotel (Windows, com o WireGuard)
+# liga o túnel até ela, de dentro para fora: o hotel não precisa abrir porta no roteador.
+# O CRM chama a máquina pelo endereço interno 10.20.0.250:8366 e ela repassa pelo túnel ao Silbeck.
+# Pede só a CHAVE PÚBLICA do WireGuard do hotel (não é segredo). Nenhuma senha passa por aqui.
+# Pode rodar de novo (ex.: para trocar a chave pública do hotel): o que já existe é reaproveitado.
+set -euo pipefail
+
+PROJECT_ID="cabanas-crm"
+REGION="southamerica-east1"
+ZONA="southamerica-east1-a"
+VM="silbeck-ponte"
+IP_INTERNO="10.20.0.250"   # endereço da ponte dentro da rede do CRM (crm-sp, 10.20.0.0/24)
+gcloud config set project "$PROJECT_ID" >/dev/null
+
+while :; do
+  read -r -p "Chave PÚBLICA do WireGuard do computador do hotel (o Márcio passa; termina com =): " HOTEL_PUB </dev/tty
+  HOTEL_PUB="$(echo "$HOTEL_PUB" | tr -d '[:space:]')"
+  echo "$HOTEL_PUB" | grep -Eq '^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw480]=$' && break
+  echo "  Isso não parece uma chave pública do WireGuard (44 caracteres, termina com =). Tente de novo."
+done
+
+echo "1/6 Endereços da ponte (interno fixo e público fixo)..."
+gcloud compute addresses describe silbeck-ponte-interno --region="$REGION" >/dev/null 2>&1 || \
+  gcloud compute addresses create silbeck-ponte-interno --region="$REGION" --subnet=crm-sp --addresses="$IP_INTERNO"
+gcloud compute addresses describe silbeck-ponte-publico --region="$REGION" >/dev/null 2>&1 || \
+  gcloud compute addresses create silbeck-ponte-publico --region="$REGION"
+IP_PUBLICO="$(gcloud compute addresses describe silbeck-ponte-publico --region="$REGION" --format='value(address)')"
+
+echo "2/6 Regras de firewall (só o necessário)..."
+regra() { gcloud compute firewall-rules describe "$1" >/dev/null 2>&1 || gcloud compute firewall-rules create "$1" --network=crm-vpc --direction=INGRESS --target-tags=silbeck-ponte "${@:2}" >/dev/null; echo "  ✓ $1"; }
+regra silbeck-ponte-wireguard --allow=udp:51820 --source-ranges=0.0.0.0/0          # túnel (protegido pela chave)
+regra silbeck-ponte-crm       --allow=tcp:8366  --source-ranges=10.20.0.0/24       # só o CRM, pela rede interna
+regra silbeck-ponte-ssh-iap   --allow=tcp:22    --source-ranges=35.235.240.0/20    # manutenção pelo console do Google
+
+echo "3/6 Programa de partida da máquina..."
+PARTIDA="$(mktemp)"
+cat > "$PARTIDA" <<'PARTIDA_FIM'
+#!/bin/bash
+# Roda a cada partida da máquina: instala o WireGuard, mantém a chave da ponte e monta o repasse ao Silbeck.
+set -eu
+MD=http://metadata.google.internal/computeMetadata/v1/instance
+if ! command -v wg >/dev/null; then
+  apt-get update -q && DEBIAN_FRONTEND=noninteractive apt-get install -y -q wireguard iptables unattended-upgrades
+fi
+umask 077; mkdir -p /etc/wireguard
+[ -s /etc/wireguard/ponte.key ] || wg genkey > /etc/wireguard/ponte.key   # chave privada: nunca sai da máquina
+PUB="$(wg pubkey < /etc/wireguard/ponte.key)"
+HOTEL="$(curl -sf -H 'Metadata-Flavor: Google' $MD/attributes/hotel-pubkey)"
+INTERNO="$(curl -sf -H 'Metadata-Flavor: Google' $MD/network-interfaces/0/ip)"
+cat > /etc/wireguard/wg0.conf <<CONF
+[Interface]
+Address = 10.99.0.1/24
+ListenPort = 51820
+PrivateKey = $(cat /etc/wireguard/ponte.key)
+PostUp = sysctl -qw net.ipv4.ip_forward=1; iptables -t nat -A PREROUTING -d $INTERNO -p tcp --dport 8366 -j DNAT --to-destination 10.99.0.2:8366; iptables -t nat -A POSTROUTING -o wg0 -j MASQUERADE; iptables -A FORWARD -i wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; iptables -A FORWARD -i wg0 -j DROP
+PostDown = iptables -t nat -D PREROUTING -d $INTERNO -p tcp --dport 8366 -j DNAT --to-destination 10.99.0.2:8366; iptables -t nat -D POSTROUTING -o wg0 -j MASQUERADE; iptables -D FORWARD -i wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; iptables -D FORWARD -i wg0 -j DROP
+
+[Peer]
+# computador do hotel (Windows)
+PublicKey = $HOTEL
+AllowedIPs = 10.99.0.2/32
+CONF
+systemctl enable wg-quick@wg0 >/dev/null 2>&1
+systemctl restart wg-quick@wg0
+curl -sf -X PUT --data "$PUB" -H 'Metadata-Flavor: Google' $MD/guest-attributes/ponte/pubkey
+PARTIDA_FIM
+
+echo "4/6 Máquina da ponte (e2-micro, Debian 12)..."
+if gcloud compute instances describe "$VM" --zone="$ZONA" >/dev/null 2>&1; then
+  gcloud compute instances add-metadata "$VM" --zone="$ZONA" --metadata=hotel-pubkey="$HOTEL_PUB",enable-guest-attributes=TRUE --metadata-from-file=startup-script="$PARTIDA" >/dev/null
+  gcloud compute instances reset "$VM" --zone="$ZONA" >/dev/null
+else
+  gcloud compute instances create "$VM" --zone="$ZONA" --machine-type=e2-micro \
+    --image-family=debian-12 --image-project=debian-cloud --boot-disk-size=10GB \
+    --network=crm-vpc --subnet=crm-sp --private-network-ip="$IP_INTERNO" --address="$IP_PUBLICO" \
+    --can-ip-forward --tags=silbeck-ponte --no-service-account --no-scopes --shielded-secure-boot \
+    --metadata=hotel-pubkey="$HOTEL_PUB",enable-guest-attributes=TRUE --metadata-from-file=startup-script="$PARTIDA" >/dev/null
+fi
+rm -f "$PARTIDA"
+
+echo "5/6 Esperando a máquina ligar o túnel (1 a 3 minutos)..."
+PONTE_PUB=""
+for i in $(seq 1 36); do
+  PONTE_PUB="$(gcloud compute instances get-guest-attributes "$VM" --zone="$ZONA" --query-path=ponte/pubkey --format='value(value)' 2>/dev/null \
+    || gcloud beta compute instances get-guest-attributes "$VM" --zone="$ZONA" --query-path=ponte/pubkey --format='value(value)' 2>/dev/null || true)"
+  [ -n "$PONTE_PUB" ] && break; sleep 5
+done
+[ -n "$PONTE_PUB" ] || { echo "A máquina ainda não respondeu. Espere 2 minutos e rode o script de novo (ele reaproveita tudo)."; exit 1; }
+
+echo "6/6 Endereço do Silbeck no cofre passa a ser a ponte..."
+NOVA="http://${IP_INTERNO}:8366/datasnap/rest"
+if [ "$(gcloud secrets versions access latest --secret=silbeck-url 2>/dev/null || true)" != "$NOVA" ]; then
+  if gcloud secrets describe silbeck-url >/dev/null 2>&1; then
+    printf '%s' "$NOVA" | gcloud secrets versions add silbeck-url --data-file=- >/dev/null
+  else
+    printf '%s' "$NOVA" | gcloud secrets create silbeck-url --replication-policy=user-managed --locations="$REGION" --data-file=- >/dev/null
+  fi
+fi
+echo "  ✓ silbeck-url = $NOVA (o endereço antigo fica guardado como versão anterior)"
+
+echo "----------------------------------------------------------------"
+echo "Pronto! Passe ao Márcio estes 2 dados (não são segredo):"
+echo "  Endpoint  = ${IP_PUBLICO}:51820"
+echo "  PublicKey = ${PONTE_PUB}"
+echo "Quando o Márcio ativar o túnel no Windows, abra:"
+echo "  https://crm-377803250649.southamerica-east1.run.app/saude/silbeck"
+echo "(o teste é refeito no máximo a cada 1 minuto; o certo é aparecer \"tudo certo\")"
+echo "----------------------------------------------------------------"
+FIM
