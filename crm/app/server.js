@@ -217,6 +217,25 @@ async function avisarPedidoExtra(conversa, itens, buscar = fetch) {
     return null; // janela fechada ou erro: o alerta da equipe continua valendo
   }
 }
+// Fora da janela de 24 h a Meta só aceita modelo aprovado: a confirmação do extra usa o modelo "extra_confirmado"
+// (cadastrado pela equipe em Modelos; os exemplos para a análise da Meta vão daqui).
+const MODELO_EXTRA = { nome: 'extra_confirmado', categoria: 'UTILITY',
+  texto: 'Olá, {{1}}! ✅ Seu pedido no Hotel Cabanas está reservado: {{2}}, {{3}}. O valor vai na conta da hospedagem, acertado no check-out. Qualquer dúvida, é só responder esta mensagem.',
+  exemplos: ['Ana', 'Combo boia cross + arvorismo para 2 pessoas', 'dia 16/11 às 9h'] };
+async function enviarModeloNaConversa(conversaId, nomeModelo, vs, autor, buscar = fetch) {
+  const conv = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${conversaId}&select=id,canal,numero_id,contato:contatos(contato_identificadores(tipo,valor))`, buscar))[0];
+  const wa = conv && conv.canal === 'wa' && ((conv.contato || {}).contato_identificadores || []).find(i => i.tipo === 'whatsapp');
+  if (!wa) throw new ErroEnvio(400, 'Este contato não tem WhatsApp.');
+  const m = (await modelosDoNumero(conv.numero_id, buscar)).find(x => x.nome === nomeModelo && x.status === 'APPROVED');
+  if (!m) throw new ErroEnvio(409, 'o modelo "' + nomeModelo + '" ainda não está aprovado pela Meta');
+  const vals = vs.slice(0, m.variaveis).map(v => String(v || '').replace(/\s+/g, ' ').trim().slice(0, 200) || '-');
+  const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: numeroParaEnvio(wa.valor), type: 'template',
+    template: { name: m.nome, language: { code: m.idioma }, ...(vals.length ? { components: [{ type: 'body', parameters: vals.map(text => ({ type: 'text', text })) }] } : {}) } }, buscar);
+  if (!r.ok || !r.json.messages || !r.json.messages[0]) throw new ErroEnvio(502, 'a Meta não aceitou o modelo' + ((r.json.error || {}).code ? ' (código ' + r.json.error.code + ')' : ''));
+  const texto = [m.cabecalho, preencher(m.corpo, vals), m.rodape].filter(Boolean).join('\n\n');
+  await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: r.json.messages[0].id, p_corpo: texto, p_autor: autor }, buscar);
+  return texto;
+}
 async function confirmarExtraAoCliente(venda, por, buscar = fetch) {
   if (!venda.conversa_id || !WA_TOKEN) return { enviada: false, motivo: 'sem WhatsApp' };
   const p = await produtoPorCodigo(venda.produto_codigo, buscar).catch(() => null);
@@ -229,7 +248,15 @@ async function confirmarExtraAoCliente(venda, por, buscar = fetch) {
     await enviarTexto(conv, para, texto, por || 'gilberto', buscar);
     return { enviada: true };
   } catch (e) {
-    return { enviada: false, motivo: e.http === 409 ? 'a janela de 24 h do WhatsApp fechou: avise o cliente com um modelo (Iniciar conversa)' : String(e.message || e).slice(0, 160) };
+    if (e.http !== 409) return { enviada: false, motivo: String(e.message || e).slice(0, 160) };
+    try { // janela de 24 h fechada: vai pelo modelo aprovado
+      const item = linhaExtra(p, venda).slice(2).replace(/ · (R\$[^·]*)$/, '').replace(/ · /g, ' para ');
+      const quandoTxt = venda.data_uso ? 'dia ' + ddmm(venda.data_uso) + (venda.horario ? ' às ' + venda.horario : '') : venda.horario ? 'às ' + venda.horario : 'no dia e horário combinados com a equipe';
+      await enviarModeloNaConversa(venda.conversa_id, MODELO_EXTRA.nome, [nome || 'tudo bem', item, quandoTxt], por || 'gilberto', buscar);
+      return { enviada: true, modelo: true };
+    } catch (e2) {
+      return { enviada: false, motivo: 'a janela de 24 h do WhatsApp fechou e ' + String(e2.message || e2).slice(0, 120) + ' (cadastre em Modelos: ' + MODELO_EXTRA.nome + ')' };
+    }
   }
 }
 async function respostaDoBotao({ oferta, aceito, opcao }, titulo, buscar) {
@@ -1472,7 +1499,7 @@ const API_EQUIPE = {
     if (texto.length < 10) throw new ErroEnvio(400, 'Escreva o texto do modelo.');
     const vs = varsDe(texto);
     if (vs.some((n, i) => n !== i + 1)) throw new ErroEnvio(400, 'As variáveis precisam ser {{1}}, {{2}}… em ordem.');
-    const exemplos = vs.map((n, i) => String((corpo.exemplos || [])[i] || ['Ana', 'sábado', '14/11'][i] || 'exemplo').slice(0, 60));
+    const exemplos = vs.map((n, i) => String((corpo.exemplos || [])[i] || (nome === MODELO_EXTRA.nome ? MODELO_EXTRA.exemplos : ['Ana', 'sábado', '14/11'])[i] || 'exemplo').slice(0, 60));
     const waba = await wabaDoNumero(id);
     const r = await chamarMeta(`${waba}/message_templates`, { name: nome, language: 'pt_BR', category: corpo.categoria,
       components: [{ type: 'BODY', text: texto, ...(vs.length ? { example: { body_text: [exemplos] } } : {}) }] }, fetch);

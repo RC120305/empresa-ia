@@ -177,6 +177,7 @@ const falso = http.createServer((req, res) => {
     if (req.url.startsWith('/graph/531727826009907/owned_whatsapp_business_accounts')) return responder(200, { data: [{ id: 'WABA1', phone_numbers: { data: [{ id: '111' }] } }] });
     if (req.url.startsWith('/graph/WABA1/message_templates') && req.method === 'GET') return responder(200, { data: [
       { name: 'retorno_de_contato', language: 'pt_BR', status: 'APPROVED', category: 'UTILITY', components: [{ type: 'BODY', text: 'Olá, {{1}}! Aqui é a equipe do Hotel Cabanas. Podemos seguir?' }, { type: 'FOOTER', text: 'Hotel Cabanas' }] },
+      { name: 'extra_confirmado', language: 'pt_BR', status: 'APPROVED', category: 'UTILITY', components: [{ type: 'BODY', text: 'Olá, {{1}}! ✅ Seu pedido no Hotel Cabanas está reservado: {{2}}, {{3}}. O valor vai na conta da hospedagem, acertado no check-out. Qualquer dúvida, é só responder esta mensagem.' }] },
       { name: 'promo', language: 'pt_BR', status: 'PENDING', category: 'MARKETING', components: [{ type: 'BODY', text: 'Promoção' }] },
       { name: 'com_foto', language: 'pt_BR', status: 'APPROVED', category: 'MARKETING', components: [{ type: 'HEADER', format: 'IMAGE' }, { type: 'BODY', text: 'Veja' }] }] });
     if (req.url === '/graph/WABA1/message_templates' && req.method === 'POST') return json.name === 'ruim' ? responder(400, { error: { message: 'Invalid', error_user_msg: 'Nome em uso' } }) : responder(200, { id: 't1', status: 'PENDING', category: json.category });
@@ -612,7 +613,7 @@ falso.listen(0, () => {
     r = await api('/api/modelos?numero_id=111', null, 'token-equipe', 'GET');
     const mj = await r.json();
     assert.equal(r.status, 200, JSON.stringify(mj));
-    assert.deepEqual(mj.modelos.map(m => [m.nome, m.status, m.variaveis, m.suportado]), [['retorno_de_contato', 'APPROVED', 1, true], ['promo', 'PENDING', 0, true], ['com_foto', 'APPROVED', 0, false]]);
+    assert.deepEqual(mj.modelos.map(m => [m.nome, m.status, m.variaveis, m.suportado]), [['retorno_de_contato', 'APPROVED', 1, true], ['extra_confirmado', 'APPROVED', 3, true], ['promo', 'PENDING', 0, true], ['com_foto', 'APPROVED', 0, false]]);
     r = await api('/api/iniciar-conversa', { telefone: '(67) 98123-4567', nome: 'Paula Lima', numero_id: '111', modelo: 'retorno_de_contato', idioma: 'pt_BR', variaveis: ['Paula'] });
     const ic = await r.json();
     assert.equal(r.status, 200, JSON.stringify(ic));
@@ -1029,6 +1030,14 @@ falso.listen(0, () => {
       assert.ok(conf.includes('Seu pedido está reservado') && conf.includes('📅 Dia ' + emDias(41).slice(8, 10) + '/' + emDias(41).slice(5, 7) + ' às 9h'), conf);
       assert.equal((await api('/api/alerta', { id: al.id, acao: 'reservado' })).status, 200, 'já resolvido: não manda de novo');
       assert.equal(chamadas.slice(nEnv).filter(c => c.url === '/graph/111/messages').length, 1);
+      // janela de 24 h fechada: a confirmação vai pelo modelo aprovado "extra_confirmado"
+      al.situacao = 'aberto'; janelaAberta = false;
+      r = await api('/api/alerta', { id: al.id, acao: 'reservado', horario: '14h' });
+      const rm = await r.json(); janelaAberta = true;
+      assert.equal(rm.avisado, true, JSON.stringify(rm));
+      const tpl = chamadas.findLast(c => c.url === '/graph/111/messages').corpo;
+      assert.equal(tpl.type, 'template'); assert.equal(tpl.template.name, 'extra_confirmado');
+      assert.deepEqual(tpl.template.components[0].parameters.map(x => x.text).slice(1), ['Combo boia cross + arvorismo para 2 pessoas', 'dia ' + emDias(41).slice(8, 10) + '/' + emDias(41).slice(5, 7) + ' às 14h']);
     }
     await pedir([{ codigo: 'COMBO', quantidade: 2, data: emDias(41) }]);
     assert.equal(vendasF.length, nV + 1, 'mesmo item de novo não duplica');
