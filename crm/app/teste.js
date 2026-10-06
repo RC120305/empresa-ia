@@ -274,6 +274,11 @@ const falso = http.createServer((req, res) => {
       if (iaOrcamento && !jaConsultou) return responder(200, { id: 'msg_o', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_o', name: 'gerar_orcamento', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], opcoes: [{ acomodacoes: ['BGE'] }, { acomodacoes: ['STD'] }], persona: 'familia', pessoas_aptas_combo: 2, frase_de_abertura: 'Ana, separei as opções para a família curtir os rios', sugerida: 'BGE' } }],
         usage: { input_tokens: 10, output_tokens: 20 } });
+      if (iaAuto === 'reclamacao') return responder(200, jaConsultou
+        ? { id: 'msg_rf', type: 'message', role: 'assistant', model: b.model, stop_reason: 'end_turn', stop_sequence: null, usage: { input_tokens: 10, output_tokens: 20 },
+            content: [{ type: 'text', text: JSON.stringify({ mensagem: 'Sinto muito pelo transtorno, Ana. Já passei para o responsável, que vai entrar em contato com você. Posso te ajudar com mais alguma coisa enquanto isso?', notas_internas: 'Reclamação do ar-condicionado.', precisa_equipe: true, produto_oferecido: '' }) }] }
+        : { id: 'msg_r', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null, usage: { input_tokens: 10, output_tokens: 20 },
+            content: [{ type: 'tool_use', id: 'toolu_r1', name: 'abrir_alerta', input: { motivo: 'reclamacao', prioridade: 1, resumo: 'Ar-condicionado da cabana não funciona.' } }] });
       if (iaAuto === 'erro') return responder(400, { type: 'error', error: { type: 'invalid_request_error', message: 'falha de teste' } });
       if (iaAuto === 'laco' && !(b.tool_choice && b.tool_choice.type === 'none')) return responder(200, { id: 'msg_l', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_l' + b.messages.length, name: 'consultar_disponibilidade', input: { data_entrada: emDias(40), data_saida: emDias(43), adultos: 2, idades_criancas: [] } }], usage: { input_tokens: 10, output_tokens: 20 } });
@@ -1180,21 +1185,30 @@ falso.listen(0, () => {
       assert.ok(await aguardar(() => enviosMeta().length >= nl + 1), 'respondeu mesmo depois de muitas consultas');
       assert.equal(pedidosIA.length - nIAl, 6); assert.deepEqual(pedidosIA.at(-1).tool_choice, { type: 'none' });
       assert.equal(enviosMeta().at(-1).corpo.text.body, 'Separei as opções para novembro! Qual semana fica melhor?');
-      // 2c) resposta com dado a completar: o cliente recebe um aviso (nada de silêncio), o Gilberto pausa e a equipe é chamada
-      iaAuto = 'marcador'; alertasF.length = 0; const nm = enviosMeta().length;
+      // 2c) resposta com dado a completar: o cliente recebe um aviso (nada de silêncio) e a equipe é chamada; o Gilberto segue na conversa
+      iaAuto = 'marcador'; alertasF.length = 0; const nm = enviosMeta().length, nChm = chamadas.length;
       await postar(msgCliente('wamid.AUTO2C', 'Quero para 8 pessoas'));
       assert.ok(await aguardar(() => enviosMeta().length >= nm + 1));
       assert.ok(/vou confirmar um detalhe com a equipe/i.test(enviosMeta().at(-1).corpo.text.body), 'aviso de espera ao cliente');
       assert.ok(!enviosMeta().slice(nm).some(c => c.corpo.text.body.includes('[[')), 'o marcador nunca vai ao cliente');
-      assert.ok(chamadas.findLast(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/conversas?id=eq.' + conv)).corpo.gilberto_pausado === true);
+      const pausouDesde = n => chamadas.slice(n).some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/conversas?id=eq.' + conv) && c.corpo.gilberto_pausado === true);
+      assert.ok(!pausouDesde(nChm), 'avisar a equipe não pausa o Gilberto (dono, 06/10/2026)');
       assert.ok(await aguardar(() => alertasF.length > 0)); assert.equal(alertasF.at(-1).titulo, 'Gilberto: resposta para revisar'); assert.ok(alertasF.at(-1).info.includes('Combinação'));
-      // 2d) a IA falha (mesmo tentando de novo): aviso ao cliente, pausa e alerta
+      // 2d) a IA falha (mesmo tentando de novo): aviso ao cliente (sem repetir a mesma frase) e alerta, sem pausar
       iaAuto = 'erro'; alertasF.length = 0; process.env.GILBERTO_REPETIR_MS = '0'; const nIAe = pedidosIA.length, ne = enviosMeta().length;
       await postar(msgCliente('wamid.AUTO2D', 'Oi'));
       assert.ok(await aguardar(() => enviosMeta().length >= ne + 1));
       assert.ok(pedidosIA.length - nIAe >= 2, 'tentou de novo antes de desistir');
-      assert.ok(/vou confirmar um detalhe com a equipe/i.test(enviosMeta().at(-1).corpo.text.body));
+      assert.ok(/ainda estou vendo esse ponto com a equipe/i.test(enviosMeta().at(-1).corpo.text.body), 'segundo aviso seguido: outra frase');
       assert.ok(await aguardar(() => alertasF.length > 0)); assert.equal(alertasF.at(-1).titulo, 'Gilberto não conseguiu responder');
+      assert.ok(!pausouDesde(nChm), 'nem a falha pausa o Gilberto');
+      // 2e) reclamação: o Gilberto acolhe, avisa a equipe (alerta de reclamação) e continua na conversa
+      iaAuto = 'reclamacao'; alertasF.length = 0; const nrc = enviosMeta().length, nChr = chamadas.length;
+      await postar(msgCliente('wamid.AUTO2E', 'O ar-condicionado da cabana não funciona, estou muito chateada'));
+      assert.ok(await aguardar(() => enviosMeta().length >= nrc + 1));
+      assert.ok(enviosMeta().at(-1).corpo.text.body.startsWith('Sinto muito pelo transtorno'));
+      assert.ok(await aguardar(() => alertasF.some(a => a.tipo === 'reclamacao')), JSON.stringify(alertasF));
+      assert.ok(!pausouDesde(nChr), 'reclamação: avisa a equipe sem pausar');
       iaAuto = 'sem_reserva'; alertasF.length = 0;
       // 3) conversa assumida pela equipe: o Gilberto não responde
       autoPausado = true; const nIA3 = pedidosIA.length, n3 = enviosMeta().length;

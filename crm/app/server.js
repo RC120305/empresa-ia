@@ -704,8 +704,11 @@ function chaveNumero(n) {
   return /^[1-9]{2}\d{8}$/.test(d) ? d : null;
 }
 const MOTIVOS_ALERTA = { alteracao: 'Pedido de alteração', fora_da_base: 'Pergunta fora da base', excecao_politica: 'Exceção de política', acessibilidade: 'Acessibilidade',
+  reclamacao: 'Reclamação', cancelamento: 'Pedido de cancelamento', pede_pessoa: 'Pede atendimento humano', grupo_agencia_evento: 'Grupo, agência ou evento',
   desconto_insistente: 'Pede desconto', problema_pagamento: 'Problema no pagamento', dado_sensivel_recebido: 'Dado sensível recebido', pedido_especial_outro: 'Pedido especial',
   comprovante_recebido: 'Comprovante recebido', reserva_urgente: 'Reserva urgente (check-in em até 3 dias)', atividade_escolhida: 'Atividade escolhida', seguranca: 'Segurança' };
+// Motivos que viram o alerta do próprio pedido (o mesmo que a detecção por palavra abriria: não duplica)
+const TIPO_DO_MOTIVO = { alteracao: 'alteracao', reclamacao: 'reclamacao', cancelamento: 'cancelamento', pede_pessoa: 'atendimento_humano' };
 // Mensagem nova do cliente: se for um desses pedidos, avisa a equipe
 async function conferirPedido(texto, conversa, buscar = fetch) {
   const tipo = pedidos.detectarPedido(texto);
@@ -868,14 +871,18 @@ const quandoBR = d => new Date(d).toLocaleString('pt-BR', { timeZone: 'America/C
 const textoPix = cob => 'Segue o Pix ' + (cob.tipo === 'sinal' ? 'do sinal (50%)' : cob.tipo === 'total' ? 'do valor total' : '') + ' de ' + produtos.brl(cob.valor) + ', válido até ' + quandoBR(cob.expira_em)
   + '. É só copiar o código abaixo e colar no app do seu banco, em Pix Copia e Cola.\n\n' + RECEBEDOR_PIX + '\n\nAssim que o pagamento cair, eu confirmo sua reserva por aqui 🌿\n---\n' + (cob.copia_e_cola || '');
 const respondendo = new Set();
-// Quando o Gilberto não consegue responder sozinho: avisa o cliente (nada de silêncio), pausa e chama a equipe
-const AVISO_ESPERA = { aberto: 'Só um instante: vou confirmar um detalhe com a equipe e já te respondo, tá? 🌿', fechado: 'Vou confirmar um detalhe com a equipe e te respondo assim que possível, tá? 🌿' };
+// Quando o Gilberto não consegue responder sozinho: avisa o cliente (nada de silêncio) e chama a equipe, sem pausar:
+// a próxima mensagem do cliente ele tenta responder de novo (dono, 06/10/2026: o Gilberto nunca para de responder).
+const AVISO_ESPERA = { aberto: 'Só um instante: vou confirmar um detalhe com a equipe e já te respondo, tá? 🌿', fechado: 'Vou confirmar um detalhe com a equipe e te respondo assim que possível, tá? 🌿',
+  de_novo: 'Ainda estou vendo esse ponto com a equipe e já te retorno. Enquanto isso, posso te ajudar com mais alguma coisa? 🌿' };
+const ultimoAviso = new Map(); // conversa → quando mandou o aviso de espera (não repete a mesma frase)
 async function segurarCliente(conversa, info, titulo, buscar = fetch) {
-  await pausarGilberto(conversa, true, null, buscar).catch(() => {});
   const m = minutosBonito(new Date());
+  const repetido = Date.now() - (ultimoAviso.get(conversa) || 0) < 60 * 60e3;
   try {
     const { conv, para } = await carregarConversaParaEnvio(conversa, buscar);
-    await enviarTexto(conv, para, m >= 7 * 60 + 30 && m < 22 * 60 ? AVISO_ESPERA.aberto : AVISO_ESPERA.fechado, 'gilberto', buscar);
+    await enviarTexto(conv, para, repetido ? AVISO_ESPERA.de_novo : m >= 7 * 60 + 30 && m < 22 * 60 ? AVISO_ESPERA.aberto : AVISO_ESPERA.fechado, 'gilberto', buscar);
+    ultimoAviso.set(conversa, Date.now());
   } catch (e) { console.warn(JSON.stringify({ evento: 'gilberto_aviso_espera', erro: String(e.message || e).slice(0, 200) })); }
   await alertaAtendimento('gilberto_passou', conversa, info, buscar, titulo).catch(() => {});
 }
@@ -904,7 +911,7 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
         if (tentativa === 0 && e instanceof ErroEnvio && [429, 502].includes(e.http)) { await esperar(Number(process.env.GILBERTO_REPETIR_MS ?? 8000)); continue; } // IA ocupada ou instável: tenta mais uma vez
         const motivo = String(e.message || e).slice(0, 150);
         console.warn(JSON.stringify({ evento: 'gilberto_auto_falha', erro: motivo }));
-        await segurarCliente(conversa, 'O Gilberto não conseguiu responder (' + motivo + '). Ele avisou o cliente que vai confirmar com a equipe e ficou pausado nesta conversa: responda e, se quiser, devolva a ele.', 'Gilberto não conseguiu responder', buscar);
+        await segurarCliente(conversa, 'O Gilberto não conseguiu responder (' + motivo + '). Ele avisou o cliente que vai confirmar com a equipe e continua na conversa: se você responder à mão, ele sai da conversa.', 'Gilberto não conseguiu responder', buscar);
         return { erro: motivo };
       }
     }
@@ -917,7 +924,7 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
     const alterado = linkAlterado(texto);
     if (!baloes.length || baloes.length > 6 || /\[\[[^\]]*\]\]/.test(texto) || alterado) {
       const porque = alterado ? 'link estranho' : /\[\[[^\]]*\]\]/.test(texto) ? 'dado a completar' : 'formato da mensagem';
-      await segurarCliente(conversa, 'O Gilberto preparou uma resposta que precisa de alguém (' + porque + '). Ela está em Revisão; o cliente foi avisado de que você responde. ' + (r.notas_internas ? 'Notas: ' + r.notas_internas : ''), 'Gilberto: resposta para revisar', buscar);
+      await segurarCliente(conversa, 'O Gilberto preparou uma resposta que precisa de alguém (' + porque + '). Ela está em Revisão; o cliente foi avisado de que a equipe confirma (o Gilberto continua na conversa). ' + (r.notas_internas ? 'Notas: ' + r.notas_internas : ''), 'Gilberto: resposta para revisar', buscar);
       return { pulou: 'revisar' };
     }
     const { conv, para, wamidCliente } = await carregarConversaParaEnvio(conversa, buscar);
@@ -933,7 +940,7 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
       await patchBanco('sugestoes', `id=eq.${r.sugestao_id}`, { situacao: 'usada', motivo: 'Enviada pelo Gilberto (automático)', revisada_em: new Date().toISOString() }).catch(() => {});
       await registrarUso(r.sugestao_id, null).catch(() => {});
     }
-    if (r.precisa_equipe || r.alertou) await pausarGilberto(conversa, true, null, buscar).catch(() => {}); // passou para a equipe: ela assume
+    // Avisar a equipe não tira o Gilberto da conversa (dono, 06/10/2026): só a equipe o pausa, ao assumir o alerta ou responder à mão
     console.log(JSON.stringify({ evento: 'gilberto_auto', baloes: enviadas.length, reserva: !!r.reserva_criada, pix: !!r.cobranca }));
     return { ok: true, enviadas: enviadas.length };
   } finally { respondendo.delete(conversa); }
@@ -2276,8 +2283,8 @@ async function gerarResposta(id, { modo, eu, mensagemId = null }, buscar = fetch
       abrir_alerta: async e => {
         const rot = MOTIVOS_ALERTA[e.motivo];
         if (!rot) return { ok: false, erro: 'Motivo inválido.' };
-        await alertaAtendimento(e.motivo === 'alteracao' ? 'alteracao' : 'gilberto_passou', conv.id, String(e.resumo || ''), buscar, 'Gilberto: ' + rot);
-        return { ok: true, aviso: 'A equipe foi avisada (quem está de plantão primeiro). Continue a conversa: diga ao cliente que vai ver com o pessoal, sem prometer o resultado.' };
+        await alertaAtendimento(TIPO_DO_MOTIVO[e.motivo] || 'gilberto_passou', conv.id, String(e.resumo || ''), buscar, 'Gilberto: ' + rot);
+        return { ok: true, aviso: 'A equipe foi avisada (quem está de plantão primeiro). Você continua na conversa: diga ao cliente nesta mesma mensagem que a equipe vai entrar em contato (no prazo do expediente), sem prometer o resultado, e siga ajudando no que puder. Se o cliente escrever de novo, responda sempre.' };
       },
       // Modo sugestão: o Gilberto escolhe as fotos; quem envia é a equipe, pelo painel da sugestão.
       // Vídeo do banco do hotel: um por resposta e nunca o mesmo duas vezes na conversa

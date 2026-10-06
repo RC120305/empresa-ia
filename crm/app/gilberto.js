@@ -167,7 +167,7 @@ const FORMATO = {
     properties: {
       mensagem: { type: 'string', description: 'O texto exato para o cliente, em 1 a 3 balões separados por uma linha contendo só ---' },
       notas_internas: { type: 'string', description: 'Para a equipe (não vai ao cliente): o que conferir ou fazer antes de enviar, ferramentas que seriam chamadas, dúvidas.' },
-      precisa_equipe: { type: 'boolean', description: 'true se o caso deve ir para uma pessoa (reclamação, cancelamento, alteração, pedido especial, fora da base).' },
+      precisa_equipe: { type: 'boolean', description: 'true se o caso precisa de uma pessoa (reclamação, cancelamento, alteração, pedido especial, fora da base): o CRM avisa a equipe e você continua na conversa. Dúvida ou indecisão do cliente e pedido de desconto: false.' },
       produto_oferecido: { type: 'string', description: 'Código do produto pago (de <produtos_ativos>) oferecido nesta mensagem, ex.: COMBO. String vazia se a mensagem não oferece produto.' },
     },
     required: ['mensagem', 'notas_internas', 'precisa_equipe', 'produto_oferecido'],

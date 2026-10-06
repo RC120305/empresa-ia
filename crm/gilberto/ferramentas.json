@@ -649,7 +649,7 @@
   },
   {
     "name": "abrir_alerta",
-    "description": "Avisa a equipe (Jagles, Márcio e Ricardo; quem está de plantão primeiro) com card em destaque, sino e notificação no celular, e você CONTINUA na conversa. Use para: pedido de alteração de reserva (depois de conferir a vaga com consultar_disponibilidade), pergunta fora da base, exceção de política, acessibilidade, problema de pagamento, dado sensível recebido. O CRM define a prioridade final pelo motivo (o valor que você envia é só uma sugestão). Fora do expediente, o alerta fica no topo da fila das 7h30. Não use para pedido de desconto: você mesmo responde, trabalha a objeção de preço e segue o atendimento.",
+    "description": "Avisa a equipe (Jagles, Márcio e Ricardo; quem está de plantão primeiro) com card em destaque, sino e notificação no celular, e você CONTINUA na conversa: nunca deixe o cliente sem resposta, diga a ele na mesma mensagem que a equipe vai entrar em contato e siga ajudando no que puder. Use para: reclamação (com o protocolo de crise), pedido de cancelamento, cliente que pede uma pessoa, grupo acima de 10 pessoas, agência, operadora ou evento, pedido de alteração de reserva (depois de conferir a vaga com consultar_disponibilidade), pergunta fora da base, exceção de política, acessibilidade, problema de pagamento, dado sensível recebido. O CRM define a prioridade final pelo motivo (o valor que você envia é só uma sugestão). Fora do expediente, o alerta fica no topo da fila das 7h30. Não use para pedido de desconto nem para dúvida ou indecisão do cliente (ex.: \"estou em dúvida se vou ficar\"): você mesmo responde, trabalha a objeção e segue o atendimento. Não repita o alerta do mesmo assunto na conversa.",
     "strict": true,
     "input_schema": {
       "type": "object",
@@ -657,6 +657,10 @@
         "motivo": {
           "type": "string",
           "enum": [
+            "reclamacao",
+            "cancelamento",
+            "pede_pessoa",
+            "grupo_agencia_evento",
             "alteracao",
             "fora_da_base",
             "excecao_politica",
@@ -672,7 +676,7 @@
         },
         "prioridade": {
           "type": "integer",
-          "description": "1 (mais alta) a 5. Referência: 4 para fora da base, exceção, acessibilidade e pedido especial; 5 para alteração. Reserva urgente (check-in em até 3 dias): 3. Comprovante recebido: 4. Atividade escolhida: 5 (o CRM já cria sozinho ao agendar)."
+          "description": "1 (mais alta) a 5. Referência: 1 para reclamação; 2 para cancelamento; 3 para quem pede uma pessoa e para grupo, agência ou evento; 4 para fora da base, exceção, acessibilidade e pedido especial; 5 para alteração. Reserva urgente (check-in em até 3 dias): 3. Comprovante recebido: 4. Atividade escolhida: 5 (o CRM já cria sozinho ao agendar)."
         },
         "resumo": {
           "type": "string",
