@@ -136,6 +136,7 @@ const falso = http.createServer((req, res) => {
         vitrinesF.filter(v => ids.includes(v.id)).forEach(v => Object.assign(v, json)); res.writeHead(204); return res.end();
       }
       if (req.url.includes('token=eq.')) return responder(200, vitrinesF.filter(v => v.token === req.url.split('token=eq.')[1].split('&')[0]));
+      if (/[?&]id=eq\./.test(req.url)) return responder(200, vitrinesF.filter(v => v.id === req.url.split('id=eq.')[1].split('&')[0]));
       return responder(200, vitrinesF.filter(v => v.conversa_id === req.url.split('conversa_id=eq.')[1].split('&')[0] && (!req.url.includes('enviada=eq.true') || v.enviada)));
     }
     if (req.url.startsWith('/rest/v1/alertas')) {
@@ -287,6 +288,11 @@ const falso = http.createServer((req, res) => {
       if (iaOrcamento && !jaConsultou) return responder(200, { id: 'msg_o', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_o', name: 'gerar_orcamento', input: { data_entrada: emDias(40), data_saida: emDias(42), adultos: 2, idades_criancas: [3], opcoes: [{ acomodacoes: ['BGE'] }, { acomodacoes: ['STD'] }], persona: 'familia', pessoas_aptas_combo: 2, frase_de_abertura: 'Ana, separei as opções para a família curtir os rios', sugerida: 'BGE' } }],
         usage: { input_tokens: 10, output_tokens: 20 } });
+      if (iaAuto === 'extras') return responder(200, jaConsultou
+        ? { id: 'msg_xf', type: 'message', role: 'assistant', model: b.model, stop_reason: 'end_turn', stop_sequence: null, usage: { input_tokens: 10, output_tokens: 20 },
+            content: [{ type: 'text', text: JSON.stringify({ mensagem: 'Para deixar a estadia ainda melhor, separei os momentos especiais: ' + (JSON.parse(b.messages.at(-1).content[0].content).link || (process.env.URL_PUBLICA || 'https://crm-377803250649.southamerica-east1.run.app').replace(/\/$/, '') + '/e/' + 'k'.repeat(22)), notas_internas: '', precisa_equipe: false, produto_oferecido: 'MASS' }) }] }
+        : { id: 'msg_x', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null, usage: { input_tokens: 10, output_tokens: 20 },
+            content: [{ type: 'tool_use', id: 'toolu_x1', name: 'enviar_link_extras', input: { tema: 'momentos' } }] });
       if (iaAuto === 'reclamacao') return responder(200, jaConsultou
         ? { id: 'msg_rf', type: 'message', role: 'assistant', model: b.model, stop_reason: 'end_turn', stop_sequence: null, usage: { input_tokens: 10, output_tokens: 20 },
             content: [{ type: 'text', text: JSON.stringify({ mensagem: 'Sinto muito pelo transtorno, Ana. Já passei para o responsável, que vai entrar em contato com você. Posso te ajudar com mais alguma coisa enquanto isso?', notas_internas: 'Reclamação do ar-condicionado.', precisa_equipe: true, produto_oferecido: '' }) }] }
@@ -1319,6 +1325,14 @@ falso.listen(0, () => {
       assert.ok(enviosMeta().at(-1).corpo.text.body.startsWith('Sinto muito pelo transtorno'));
       assert.ok(await aguardar(() => alertasF.some(a => a.tipo === 'reclamacao')), JSON.stringify(alertasF));
       assert.ok(!pausouDesde(nChr), 'reclamação: avisa a equipe sem pausar');
+      // 2f) o Gilberto oferece extras: o link vai como cartão com foto e botão, não no texto
+      iaAuto = 'extras'; vitrinesF.length = 0; const nx = chamadas.length;
+      await postar(msgCliente('wamid.AUTO2F', 'O que mais tem para fazer aí?'));
+      assert.ok(await aguardar(() => chamadas.slice(nx).some(c => c.url === '/graph/111/messages' && c.corpo.type === 'interactive')));
+      const env2f = chamadas.slice(nx).filter(c => c.url === '/graph/111/messages').map(c => c.corpo);
+      assert.ok(env2f.find(c => c.type === 'text').text.body.startsWith('Para deixar a estadia ainda melhor') && !env2f.some(c => c.type === 'text' && c.text.body.includes('/e/')), JSON.stringify(env2f));
+      assert.equal(env2f.find(c => c.type === 'interactive').interactive.action.parameters.display_text, 'Ver as opções');
+      assert.equal(vitrinesF[0].enviada, true, 'conta como oferta');
       iaAuto = 'sem_reserva'; alertasF.length = 0;
       // 3) conversa assumida pela equipe: o Gilberto não responde
       autoPausado = true; const nIA3 = pedidosIA.length, n3 = enviosMeta().length;

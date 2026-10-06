@@ -774,7 +774,7 @@
   },
   {
     "name": "enviar_link_extras",
-    "description": "Cria o link da página de extras do hotel para este cliente, com fotos, opções, preços e o dia de cada extra. O cliente escolhe lá e a escolha volta para a equipe (vai para a conta da hospedagem, acertada no check-out). Dois temas: 'aventuras' (combo boia cross + arvorismo, boia cross, arvorismo) e 'momentos' (decoração especial e massagem). Use no momento certo da regra 9, uma vez por conversa, e só o tema que combina com o grupo (crianças pequenas: veja as idades; casal em data especial: momentos). Coloque o link devolvido na mensagem exatamente como veio, com uma frase curta convidando a ver as opções. Preencha produto_oferecido com o código do produto principal do tema que você destacou.",
+    "description": "Cria o link da página de extras do hotel para este cliente, com fotos, opções, preços e o dia de cada extra. O cliente escolhe lá e a escolha volta para a equipe (vai para a conta da hospedagem, acertada no check-out). Dois temas: 'aventuras' (combo boia cross + arvorismo, boia cross, arvorismo) e 'momentos' (decoração especial e massagem). Use no momento certo da regra 9, uma vez por conversa, e só o tema que combina com o grupo (crianças pequenas: veja as idades; casal em data especial: momentos). Siga o aviso devolvido: no modo automático o CRM envia o link como cartão com foto e botão (não escreva o link, só uma frase curta convidando a ver as opções); no modo sugestão, coloque o link devolvido na mensagem exatamente como veio, com a frase curta. Preencha produto_oferecido com o código do produto principal do tema que você destacou.",
     "strict": true,
     "input_schema": {
       "type": "object",

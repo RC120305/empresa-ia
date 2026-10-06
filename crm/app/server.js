@@ -1191,6 +1191,7 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
     if (depois && depois.id !== mensagemId && !r.cobranca && !r.reserva_criada) return { pulou: 'chegou_outra' };
     let texto = r.mensagem || '';
     if (r.cobranca) texto = texto.includes('[[PIX]]') ? texto.replace('[[PIX]]', textoPix(r.cobranca)) : texto + '\n---\n' + textoPix(r.cobranca);
+    if (r.vitrines && r.vitrines.length) texto = texto.replace(new RegExp(URL_PUBLICA.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/e/[A-Za-z0-9_-]+', 'g'), '').replace(/[ \t]+\n/g, '\n').trim(); // o link vai no cartão
     const baloes = texto.split(/\n\s*[-–—]{3,}\s*\n/).map(t => t.trim()).filter(Boolean);
     const alterado = linkAlterado(texto);
     if (!baloes.length || baloes.length > 6 || /\[\[[^\]]*\]\]/.test(texto) || alterado) {
@@ -1207,6 +1208,15 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
       enviadas.push(await enviarTexto(conv, para, b, 'gilberto', buscar));
     }
     if (r.fotos && r.fotos.length) await enviarFotos(conv, para, r.fotos.map(f => f.arquivo), '', 'gilberto', buscar).catch(e => console.warn(JSON.stringify({ evento: 'gilberto_auto_fotos', erro: String(e.message || e).slice(0, 200) })));
+    // Link de extras do Gilberto: vai como cartão com foto e botão (e passa a contar como oferta)
+    for (const vid of (r.vitrines || []).filter(uuidOk).slice(0, 2)) {
+      const v = (await getJson(`${SUPABASE_URL}/rest/v1/vitrines?id=eq.${vid}&select=id,tema,token`, buscar))[0];
+      if (!v || !vitrine.TEMAS[v.tema]) continue;
+      const link = `${URL_PUBLICA}/e/${v.token}`;
+      await enviarCartaoVitrine(conv, para, v.tema, { ...v, link }, TEXTO_EXTRAS[v.tema], 'gilberto', buscar)
+        .catch(() => enviarTexto(conv, para, TEXTO_EXTRAS[v.tema] + '\n' + link, 'gilberto', buscar)).catch(() => {});
+      await patchBanco('vitrines', `id=eq.${v.id}`, { enviada: true }).catch(() => {});
+    }
     if (r.sugestao_id) {
       await patchBanco('sugestoes', `id=eq.${r.sugestao_id}`, { situacao: 'usada', motivo: 'Enviada pelo Gilberto (automático)', revisada_em: new Date().toISOString() }).catch(() => {});
       await registrarUso(r.sugestao_id, null).catch(() => {});
@@ -2538,6 +2548,9 @@ async function gerarResposta(id, { modo, eu, mensagemId = null }, buscar = fetch
         const nomes = ((cat || {}).produtos || []).filter(p => p.vitrine === e.tema).map(p => p.nome);
         if (!nomes.length) return { ok: false, erro: 'Não há produtos ativos nesse tema. Não ofereça.' };
         const v = await criarVitrine(conv.id, e.tema, { por: 'gilberto', enviada: false }, buscar);
+        // Automático: o CRM manda o cartão com foto e botão "Ver as opções" logo depois da mensagem (dono, 07/10/2026)
+        if (auto) return { ok: true, vitrine_id: v.id, tema: vitrine.TEMAS[e.tema].nome, produtos: nomes,
+          aviso: 'O CRM envia, logo depois da sua mensagem, um cartão com foto e o botão para ver as opções. NÃO escreva o link no texto: só uma frase curta convidando a ver as opções no cartão abaixo.' };
         return { ok: true, link: v.link, vitrine_id: v.id, tema: vitrine.TEMAS[e.tema].nome, produtos: nomes };
       },
       // Aceite: confere a frase do cliente, os dados do titular, a vaga e o preço AGORA. A reserva (não confirmada) e o
