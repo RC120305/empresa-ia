@@ -460,6 +460,7 @@ async function registrar(evento, buscar = fetch) {
     for (const mudanca of entrada.changes || []) {
       const v = mudanca.value || {};
       const numeroId = (v.metadata && v.metadata.phone_number_id) || '?';
+      if (/^\d+$/.test(String(entrada.id || '')) && numeroId !== '?' && wabas[numeroId] !== String(entrada.id)) await guardarWaba(numeroId, String(entrada.id), buscar).catch(() => {});
       const nomes = {};
       for (const c of v.contacts || []) nomes[c.wa_id] = c.profile && c.profile.name;
       for (const m of v.messages || []) {
@@ -550,16 +551,27 @@ async function chamarMeta(caminho, corpo, buscar) {
 // A conta do WhatsApp (WABA) de cada número é descoberta pelo portfólio do hotel (ou fixada em META_WABA_ID).
 const PORTFOLIO = process.env.META_PORTFOLIO_ID || '531727826009907';
 const wabas = {};
+// A conta (WABA) de cada número, guardada em config 'wabas' quando chega um aviso da Meta
+async function guardarWaba(numeroId, waba, buscar = fetch) {
+  wabas[numeroId] = waba;
+  const atual = ((await getJson(`${SUPABASE_URL}/rest/v1/config?chave=eq.wabas&select=valor`, buscar))[0] || {}).valor || {};
+  if (atual[numeroId] === waba) return;
+  await buscar(`${SUPABASE_URL}/rest/v1/config?on_conflict=chave`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({ chave: 'wabas', valor: { ...atual, [numeroId]: waba }, atualizado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) });
+}
 async function wabaDoNumero(numeroId, buscar = fetch) {
   if (process.env.META_WABA_ID) return process.env.META_WABA_ID.trim();
   if (wabas[numeroId]) return wabas[numeroId];
+  // Aprendida dos avisos (webhook) da Meta: cada aviso traz a conta (WABA) do número, sem precisar de permissão extra
+  const salvas = ((await getJson(`${SUPABASE_URL}/rest/v1/config?chave=eq.wabas&select=valor`, buscar))[0] || {}).valor || {};
+  if (salvas[numeroId]) return (wabas[numeroId] = salvas[numeroId]);
   for (const borda of ['owned_whatsapp_business_accounts', 'client_whatsapp_business_accounts']) {
     const r = await buscar(`${GRAPH}/${PORTFOLIO}/${borda}?fields=id,phone_numbers{id}&limit=50`, { headers: { Authorization: 'Bearer ' + WA_TOKEN }, signal: AbortSignal.timeout(8000) }).catch(() => null);
     const j = r && r.ok ? await r.json().catch(() => ({})) : {};
     for (const w of j.data || []) for (const n of ((w.phone_numbers || {}).data || [])) wabas[n.id] = w.id;
     if (wabas[numeroId]) return wabas[numeroId];
   }
-  throw new ErroEnvio(502, 'Não achei a conta do WhatsApp deste número na Meta (o token do CRM precisa da permissão whatsapp_business_management).');
+  throw new ErroEnvio(502, 'Ainda não sei a conta do WhatsApp deste número: mande um "oi" de qualquer celular para o número do hotel e tente de novo em 1 minuto.');
 }
 const varsDe = t => [...new Set((String(t || '').match(/\{\{(\d+)\}\}/g) || []).map(x => Number(x.slice(2, -2))))].sort((a, b) => a - b);
 const preencher = (t, vs) => String(t || '').replace(/\{\{(\d+)\}\}/g, (m, n) => vs[Number(n) - 1] || m);

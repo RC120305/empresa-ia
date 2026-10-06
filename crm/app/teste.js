@@ -1084,6 +1084,9 @@ falso.listen(0, () => {
       assert.ok((await (await fetch(base + '/e/' + vt2)).text()).includes('&quot;10:00&quot;'), 'horários tomados vão para a página');
       assert.equal((await pedir([{ codigo: 'MASS', variacao: 'Massagem360', quantidade: 1, data: emDias(41), horario: '10:00', local: 'No quarto' }], vt2)).status, 409, 'horário já tomado');
       pedidosParceiroF.pop();
+      // A conta (WABA) de cada número é aprendida dos avisos da Meta
+      await postar(JSON.stringify({ entry: [{ id: '999000111', changes: [{ value: { metadata: { phone_number_id: '222' }, statuses: [] } }] }] }));
+      assert.equal((configF.wabas || {})['222'], '999000111');
       // Mensagem da Natália nunca vai para o Gilberto
       const nNat = chamadas.length;
       await postar(JSON.stringify({ entry: [{ changes: [{ value: { metadata: { phone_number_id: '111' }, contacts: [{ wa_id: '556792286365', profile: { name: 'Natália' } }], messages: [{ from: '556792286365', id: 'wamid.NAT1', timestamp: '1700000400', type: 'text', text: { body: 'Oi, vi o pedido!' } }] } }] }] }));
