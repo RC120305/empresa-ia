@@ -1157,6 +1157,13 @@ falso.listen(0, () => {
     assert.equal(pedidosIA.at(-1).messages[0].content, 'Oi, tem vaga?');
     assert.equal((await api('/api/testar', { mensagens: [] })).status, 400);
 
+    // Rota de carro até o hotel no Google Maps
+    {
+      const g2 = require('./gilberto');
+      const rt = g2.rotaAteHotel('Campo Grande, MS');
+      assert.ok(rt.ok && rt.link.startsWith('https://www.google.com/maps/dir/?api=1&origin=Campo%20Grande%2C%20MS&destination=Hotel%20Cabanas') && rt.link.endsWith('&travelmode=driving'), rt.link);
+      assert.equal(g2.rotaAteHotel(' ').ok, false);
+    }
     const { numeroParaEnvio } = require('./server');
     assert.equal(numeroParaEnvio('+556798070981'), '5567998070981');
     assert.equal(numeroParaEnvio('5567998070981'), '5567998070981');
@@ -1176,7 +1183,7 @@ falso.listen(0, () => {
     assert.ok(pi.messages[3].content.includes('Modo: sugestao'));
     assert.equal(pi.output_config.format.type, 'json_schema');
     assert.equal(pi.fallbacks, 'default'); assert.ok(ultimoPedidoIA.beta.includes('server-side-fallback-2026-07-01'));
-    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'enviar_video', 'abrir_alerta', 'enviar_link_extras', 'consultar_documentos']);
+    assert.deepEqual(pi.tools.map(t => t.name), ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'enviar_video', 'abrir_alerta', 'enviar_link_extras', 'consultar_documentos', 'rota_ate_o_hotel']);
     assert.ok(pi.messages[3].content.includes('SIMULADOR'));
     // Cotação: o Gilberto pede, o CRM consulta o simulador do Silbeck e devolve o resultado na 2ª rodada
     iaCota = true; pedidosIA.length = 0;

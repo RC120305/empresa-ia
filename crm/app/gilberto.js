@@ -176,7 +176,15 @@ const FORMATO = {
 };
 
 // Ferramentas ligadas nesta fase: só a cotação no Silbeck (definição em crm/gilberto/ferramentas.json).
-const LIGADAS = ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'enviar_video', 'enviar_link_extras', 'abrir_alerta', 'consultar_documentos'];
+const LIGADAS = ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'enviar_video', 'enviar_link_extras', 'abrir_alerta', 'consultar_documentos', 'rota_ate_o_hotel'];
+// Rota de carro até o hotel no Google Maps (dono, 07/10/2026): link de rotas, sem chave de API; o Maps calcula distância e tempo
+const DESTINO_HOTEL = 'Hotel Cabanas, Rodovia Bonito/Balneário Municipal km 6, Bonito - MS';
+function rotaAteHotel(origem) {
+  const o = String(origem || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+  if (o.length < 3) return { ok: false, erro: 'Pergunte de qual cidade (e estado) o cliente sai antes de montar a rota.' };
+  const link = 'https://www.google.com/maps/dir/?api=1&origin=' + encodeURIComponent(o) + '&destination=' + encodeURIComponent(DESTINO_HOTEL) + '&travelmode=driving';
+  return { ok: true, link, origem: o, aviso: 'Mande o link exatamente como veio, numa linha própria. O Google Maps mostra a distância, o tempo e as alternativas de caminho: não invente quilometragem, tempo nem estrada. Dicas só as que estão na base (ex.: os últimos 6 km até o hotel são asfaltados, a 6 km do centro de Bonito).' };
+}
 const FERRAMENTAS = (() => {
   try { return JSON.parse(ler('ferramentas.json', '..', 'gilberto', 'ferramentas.json')).filter(t => LIGADAS.includes(t.name)); } catch (e) { return []; }
 })();
@@ -306,6 +314,7 @@ async function sugerir(historico, conversa, executores = {}, catalogo = null) {
     const resultados = [];
     for (const b of r.content.filter(b => b.type === 'tool_use')) {
       const res = b.name === 'consultar_documentos' && !executores.consultar_documentos ? consultarDocumentos(catalogo && catalogo.documentos, b.input && b.input.busca)
+        : b.name === 'rota_ate_o_hotel' && !executores.rota_ate_o_hotel ? rotaAteHotel(b.input && b.input.origem)
         : await executarFerramenta(b.name, b.input, executores, conversa && conversa.modo);
       if (b.name === 'consultar_disponibilidade') cotacoes.push({ pedido: b.input, ok: !!res.ok, fonte: res.fonte || null, opcoes: (res.opcoes || []).length, erro: res.erro || null });
       if (b.name === 'gerar_orcamento' && res.ok) orcamentos.push({ id: res.orcamento_id, link: res.link, fonte: res.fonte });
@@ -349,4 +358,4 @@ function questionario() {
     .map(x => ({ titulo: x.titulo, itens: x.itens.map(i => ({ p: limpar(i.p), r: limpar(i.r) })).filter(i => i.r) }));
 }
 
-module.exports = { questionario, sugerir, prepararDocumento, blocoDocumentos, consultarDocumentos, montarMensagens, ErroSugestao, sistemaPronto: () => !!SISTEMA, MODELO, ferramentas: () => FERRAMENTAS.map(t => t.name) };
+module.exports = { questionario, sugerir, prepararDocumento, blocoDocumentos, consultarDocumentos, rotaAteHotel, montarMensagens, ErroSugestao, sistemaPronto: () => !!SISTEMA, MODELO, ferramentas: () => FERRAMENTAS.map(t => t.name) };
