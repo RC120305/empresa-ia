@@ -813,7 +813,7 @@
     catch (e) { mostrar(e.dados && e.dados.enviadas); aviso(e.message); return false; }
     finally { travar(false); }
   }
-  let biblioteca = null;
+  let biblioteca = null, bibPedida = false; // bibPedida: o painel da conversa pede o banco de fotos uma vez só
   const ehVideo = a => /\.mp4$/i.test(a || '');
   // Foto ou vídeo da biblioteca para as telas (vídeo: primeiro quadro, sem som, com ▶)
   const midiaBib = (arquivo, alt) => ehVideo(arquivo)
@@ -2111,8 +2111,14 @@
     const indicados = prods.filter(p => !motivoNao(p, ctx)), outros = prods.filter(p => motivoNao(p, ctx));
     lat.append(el('div', { class: 'lat-cab' }, el('span', { class: 'rotulo', text: 'Indicados para este cliente' }), el('button', { class: 'btn-mini', type: 'button', text: 'Catálogo', onclick: () => irPara('produtos') })));
     if (!indicados.length) lat.append(el('p', { class: 'lat-txt', text: 'Nenhum produto indicado para este perfil.' }));
+    // Mini foto de cada produto (dono, 07/10/2026): a escolhida no produto ou a primeira da categoria no banco de fotos
+    const fotoMini = p => { const g = String(p.grupo_fotos || '').split(',')[0], x = g && (biblioteca || []).find(b => b.grupo === g), f = x && (x.fotos || []).find(y => !ehVideo(y.arquivo));
+      return (p.fotos || []).find(y => !ehVideo(y)) || p.foto || (f ? f.arquivo : null); };
+    if (!biblioteca && !bibPedida) { bibPedida = true; carregarBiblioteca().then(() => { if (biblioteca && painel === 'pro' && aberta === c.id) pintarPainel(); }).catch(() => {}); }
     const cartao = (p, motivo) => el('div', { class: 'sug-prod' + (motivo ? ' fora' : '') },
-      el('div', { class: 'sug-prod-cab' }, el('b', { text: p.nome }), el('span', { class: 'num', text: precoProduto(p) })),
+      el('div', { class: 'sug-prod-topo' },
+        fotoMini(p) ? el('img', { class: 'sug-prod-foto', src: '/fotos/' + fotoMini(p), alt: p.nome, loading: 'lazy', width: 56, height: 56 }) : el('span', { class: 'sug-prod-foto vazia', 'aria-hidden': 'true', text: '🖼' }),
+        el('div', { class: 'sug-prod-cab' }, el('b', { text: p.nome }), el('span', { class: 'num', text: precoProduto(p) }))),
       p.descricao ? el('small', { text: p.descricao }) : null,
       motivo ? el('small', { class: 'motivo', text: '⚠ ' + motivo }) : (p.regras ? el('small', { text: p.regras }) : null),
       el('div', { class: 'acoes' },
