@@ -1270,6 +1270,11 @@ falso.listen(0, () => {
         const rp = await api('/api/cobranca-acao', { id: cobrancasF.at(-1).id, acao: 'simular_pagamento' });
         assert.equal((await rp.json()).pagas, 1);
         assert.equal(rv.situacao, 'confirmada');
+        const todos = chamadas.filter(c => c.url === '/graph/111/messages').slice(-10).map(c => c.corpo);
+        // Depois do pagamento: o aviso em texto e os dois links de extras (aventuras e momentos especiais)
+        const fim = todos.slice(-3);
+        assert.ok(fim[0].type === 'text' && fim[0].text.body.startsWith('E para deixar a sua estadia ainda melhor'), JSON.stringify(fim[0]));
+        assert.deepEqual(fim.slice(1).map(c => c.interactive.action.parameters.display_text).sort(), ['Ver as aventuras', 'Ver as opções']);
         const conf = enviosMeta().slice(nConf).map(c => c.corpo.text.body);
         assert.ok(conf[0] && conf[0].startsWith('Pagamento recebido, Ana! ✅ Sua reserva no Hotel Cabanas está confirmada') && conf[0].includes('Reserva nº ' + rv.silbeck_id) && conf[0].includes('é pago no check-out'), JSON.stringify(conf));
         const tf = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.descricao;

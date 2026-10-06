@@ -1449,8 +1449,30 @@ function verificarCobrancas(buscar = fetch) {
 }
 // Pagamento recebido: o Gilberto confirma ao cliente no WhatsApp (e oferece os extras, uma vez) quando o
 // automático está ligado e a equipe não assumiu a conversa (dono, 05/10/2026). Senão, fica a tarefa da equipe.
-const TEXTO_EXTRAS = { aventuras: 'Para aproveitar ainda mais o Rio Formoso, separei as aventuras do hotel: boia cross, arvorismo ou o combo das duas, com guias. As vagas são limitadas, então vale garantir o horário já. É só escolher na página 🌿',
-  momentos: 'Se quiserem deixar a estadia ainda mais especial, dá para incluir decoração no quarto ou uma massagem para relaxar. É só escolher na página a opção e o dia 🌿' };
+const TEXTO_EXTRAS = { aventuras: 'Aventuras no Rio Formoso: boia cross, arvorismo ou o combo das duas, com guias. As vagas são limitadas, então vale garantir o horário já.',
+  momentos: 'Momentos especiais: decoração no quarto para comemorar e massagem para relaxar, no quarto ou à beira do rio. Você escolhe a opção, o dia e o horário.' };
+// Depois do pagamento (dono, 06/10/2026): primeiro um texto avisando dos extras, depois os dois links (o do perfil primeiro)
+const AVISO_EXTRAS = 'E para deixar a sua estadia ainda melhor, temos alguns serviços extras que você já pode reservar. Eles vão na conta da hospedagem e são acertados no check-out. Separei as opções aqui embaixo 👇';
+// Cartão do link de extras no WhatsApp: foto de um produto, texto e o botão "Ver as opções"
+async function enviarCartaoVitrine(conv, para, tema, v, texto, autor, buscar = fetch) {
+  await atualizarFotos().catch(() => {});
+  const prods = (((await catalogo(buscar).catch(() => null)) || {}).produtos || []).filter(p => p.vitrine === tema);
+  const foto = prods.map(fotosDoProduto).flat()[0] || null;
+  const interactive = { type: 'cta_url', ...(foto ? { header: { type: 'image', image: { link: `${URL_PUBLICA}/fotos/${foto}` } } } : { header: { type: 'text', text: vitrine.TEMAS[tema].nome } }),
+    body: { text: texto }, footer: { text: produtos.RODAPE_OFERTA }, action: { name: 'cta_url', parameters: { display_text: vitrine.TEMAS[tema].botao, url: v.link } } };
+  const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: para, type: 'interactive', interactive }, buscar);
+  if (!r.ok || !r.json.messages || !r.json.messages[0]) {
+    const e = r.json.error || {};
+    ultimoErroMeta = { quando: new Date().toISOString(), http: r.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
+    throw new ErroEnvio(502, 'A Meta não aceitou a mensagem' + (e.code ? ` (código ${e.code})` : '') + '. O link foi criado: ' + v.link);
+  }
+  const visto = texto + '\n\n[ ' + vitrine.TEMAS[tema].botao + ' ] ' + v.link;
+  const wamid = r.json.messages[0].id;
+  const id = foto
+    ? await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: wamid, p_tipo: 'image', p_legenda: visto, p_caminho: 'biblioteca/' + foto, p_mime: 'image/jpeg', p_nome: null, p_autor: autor }, buscar)
+    : await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: wamid, p_corpo: visto, p_autor: autor }, buscar);
+  return { id, tipo: foto ? 'image' : 'text', arquivo: foto, corpo: visto, enviada_em: new Date().toISOString() };
+}
 async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch) {
   if (!cob.conversa_id || !WA_TOKEN || !(await gilbertoAutoLigado(buscar))) return null;
   const c = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${cob.conversa_id}&select=status,gilberto_pausado,contato:contatos(nome)`, buscar))[0];
@@ -1472,17 +1494,24 @@ async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch) {
     const { conv, para } = await carregarConversaParaEnvio(cob.conversa_id, buscar);
     await enviarTexto(conv, para, texto, 'gilberto', buscar);
     let extras = null;
-    if (res && confirmada) { // extras uma vez só, com o link certo para o perfil
+    if (res && confirmada) { // extras uma vez só: aviso em texto e os links de aventuras e de momentos especiais
       const ja = await ofertasDaConversa(cob.conversa_id, buscar).catch(() => [{}]);
       const neg = await negocioDaConversa(cob.conversa_id, 'id,perfil', buscar).catch(() => null);
-      const tema = ['Casal', '55+'].includes(neg && neg.perfil) ? 'momentos' : 'aventuras';
+      const casal = ['Casal', '55+'].includes(neg && neg.perfil) || (Number(res.adultos) === 2 && !(res.criancas_idades || []).length);
       const cat = await catalogo(buscar).catch(() => null);
-      const tem = ((cat || {}).produtos || []).some(p => p.vitrine === tema);
-      if (!ja.length && tem) {
-        const v = await criarVitrine(cob.conversa_id, tema, { por: 'gilberto', enviada: true }, buscar);
+      const temas = (casal ? ['momentos', 'aventuras'] : ['aventuras', 'momentos']).filter(t => ((cat || {}).produtos || []).some(p => p.vitrine === t));
+      if (!ja.length && temas.length) {
         await esperar(Number(process.env.GILBERTO_ESPERA_EXTRAS_MS ?? 4000));
-        await enviarTexto(conv, para, TEXTO_EXTRAS[tema] + '\n' + v.link, 'gilberto', buscar);
-        extras = vitrine.TEMAS[tema].nome;
+        await enviarTexto(conv, para, AVISO_EXTRAS, 'gilberto', buscar);
+        const enviados = [];
+        for (const tema of temas) {
+          const v = await criarVitrine(cob.conversa_id, tema, { por: 'gilberto', enviada: true }, buscar);
+          await esperar(Number(process.env.GILBERTO_ESPERA_EXTRAS_MS ?? 4000) / 2);
+          await enviarCartaoVitrine(conv, para, tema, v, TEXTO_EXTRAS[tema], 'gilberto', buscar)
+            .catch(() => enviarTexto(conv, para, TEXTO_EXTRAS[tema] + '\n' + v.link, 'gilberto', buscar));
+          enviados.push(vitrine.TEMAS[tema].nome);
+        }
+        extras = enviados.join(' e ');
       }
     }
     console.log(JSON.stringify({ evento: 'confirmacao_enviada', confirmada: !!confirmada, extras: !!extras }));
@@ -2078,23 +2107,7 @@ const API_EQUIPE = {
     const v = await criarVitrine(conv.id, tema, { por: 'equipe', criado_por: eu.id });
     if (!corpo.enviar) return { ok: true, link: v.link };
     const texto = String(corpo.texto || '').trim().slice(0, 1000) || vitrine.TEMAS[tema].intro;
-    await atualizarFotos().catch(() => {});
-    const prods = (((await catalogo().catch(() => null)) || {}).produtos || []).filter(p => p.vitrine === tema);
-    const foto = prods.map(fotosDoProduto).flat()[0] || null;
-    const interactive = { type: 'cta_url', ...(foto ? { header: { type: 'image', image: { link: `${URL_PUBLICA}/fotos/${foto}` } } } : { header: { type: 'text', text: vitrine.TEMAS[tema].nome } }),
-      body: { text: texto }, footer: { text: produtos.RODAPE_OFERTA }, action: { name: 'cta_url', parameters: { display_text: vitrine.TEMAS[tema].botao, url: v.link } } };
-    const r = await chamarMeta(`${encodeURIComponent(conv.numero_id)}/messages`, { messaging_product: 'whatsapp', recipient_type: 'individual', to: para, type: 'interactive', interactive }, fetch);
-    if (!r.ok || !r.json.messages || !r.json.messages[0]) {
-      const e = r.json.error || {};
-      ultimoErroMeta = { quando: new Date().toISOString(), http: r.status, codigo: e.code || null, mensagem: String(e.message || '').slice(0, 200) };
-      throw new ErroEnvio(502, 'A Meta não aceitou a mensagem' + (e.code ? ` (código ${e.code})` : '') + '. O link foi criado: ' + v.link);
-    }
-    const visto = texto + '\n\n[ ' + vitrine.TEMAS[tema].botao + ' ] ' + v.link;
-    const wamid = r.json.messages[0].id;
-    const id = foto
-      ? await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: wamid, p_tipo: 'image', p_legenda: visto, p_caminho: 'biblioteca/' + foto, p_mime: 'image/jpeg', p_nome: null, p_autor: eu.id })
-      : await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: wamid, p_corpo: visto, p_autor: eu.id });
-    return { ok: true, link: v.link, mensagem: { id, tipo: foto ? 'image' : 'text', arquivo: foto, corpo: visto, enviada_em: new Date().toISOString() } };
+    return { ok: true, link: v.link, mensagem: await enviarCartaoVitrine(conv, para, tema, v, texto, eu.id) };
   },
   // Resposta do cliente à oferta
   'POST /api/oferta-resposta': async (corpo, eu) => {
