@@ -77,7 +77,7 @@ const cabecalhosBanco = () => Object.assign({ apikey: SUPABASE_KEY, 'Content-Typ
 
 const recentes = []; // últimos eventos (sem conteúdo), só para a página de status
 let ultimoErroBanco = null;
-let ultimoErroMeta = null;
+let ultimoErroMeta = null, ultimaFalhaGilberto = null; // diagnóstico em /saude (sem dados de cliente)
 let ultimoDigitando = null; // resultado do último pedido de "digitando…" à Meta (diagnóstico, sem dados de cliente) // último erro de envio da Meta (código e mensagem, sem dados de cliente) // código e mensagem do banco (sem dados de cliente), para diagnóstico
 const mascarar = n => (n ? String(n).replace(/^(\d{4})\d+(\d{3})$/, '$1•••••$2') : '?');
 
@@ -1182,6 +1182,7 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
         if (tentativa === 0 && e instanceof ErroEnvio && [429, 502].includes(e.http)) { await esperar(Number(process.env.GILBERTO_REPETIR_MS ?? 8000)); continue; } // IA ocupada ou instável: tenta mais uma vez
         const motivo = String(e.message || e).slice(0, 150);
         console.warn(JSON.stringify({ evento: 'gilberto_auto_falha', erro: motivo }));
+        ultimaFalhaGilberto = { quando: new Date().toISOString(), tipo: 'erro', motivo };
         await segurarCliente(conversa, 'O Gilberto não conseguiu responder (' + motivo + '). Ele avisou o cliente que vai confirmar com a equipe e continua na conversa: se você responder à mão, ele sai da conversa.', 'Gilberto não conseguiu responder', buscar);
         return { erro: motivo };
       }
@@ -1196,6 +1197,7 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
     const alterado = linkAlterado(texto);
     if (!baloes.length || baloes.length > 6 || /\[\[[^\]]*\]\]/.test(texto) || alterado) {
       const porque = alterado ? 'link estranho' : /\[\[[^\]]*\]\]/.test(texto) ? 'dado a completar' : 'formato da mensagem';
+      ultimaFalhaGilberto = { quando: new Date().toISOString(), tipo: 'revisar', motivo: porque, baloes: baloes.length };
       await segurarCliente(conversa, 'O Gilberto preparou uma resposta que precisa de alguém (' + porque + '). Ela está em Revisão; o cliente foi avisado de que a equipe confirma (o Gilberto continua na conversa). ' + (r.notas_internas ? 'Notas: ' + r.notas_internas : ''), 'Gilberto: resposta para revisar', buscar);
       return { pulou: 'revisar' };
     }
@@ -2671,7 +2673,7 @@ const servidor = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
 
   if (url.pathname === '/saude') {
-    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado(), supabasePublica: chavePublicaOk(), whatsappToken: !!WA_TOKEN, anthropic: !!process.env.ANTHROPIC_API_KEY }, gilberto: { instrucoes: gilberto.sistemaPronto(), modelo: gilberto.MODELO, ferramentas: gilberto.ferramentas() }, silbeck: silbeck.MODO(), pix: bb.MODO(), chaveSupabase: tipoChave(SUPABASE_KEY), ipSaida };
+    const base = { ok: true, servico: 'crm-cabanas', versao, segredos: { verify: !!VERIFY, appSecret: !!APP_SECRET, supabase: bancoLigado(), supabasePublica: chavePublicaOk(), whatsappToken: !!WA_TOKEN, anthropic: !!process.env.ANTHROPIC_API_KEY }, gilberto: { instrucoes: gilberto.sistemaPronto(), modelo: gilberto.MODELO, ferramentas: gilberto.ferramentas(), ultimaFalha: ultimaFalhaGilberto }, silbeck: silbeck.MODO(), pix: bb.MODO(), chaveSupabase: tipoChave(SUPABASE_KEY), ipSaida };
     if (!bancoLigado()) return json(res, 200, base);
     // Confere se o banco responde e se a chave tem permissão de servidor: chama a função de status com um
     // ID que não existe (não altera nada). Chave sem permissão de servidor recebe 401/403.
