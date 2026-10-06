@@ -1558,6 +1558,9 @@ falso.listen(0, () => {
       assert.ok(g.blocoDocumentos(muitos).includes('Outros documentos aprovados (consulte com consultar_documentos quando o assunto aparecer): Passeios'));
       const busca = g.consultarDocumentos(muitos, 'flutuação no Rio da Prata');
       assert.equal(busca.trechos[0].documento, 'Passeios'); assert.ok(busca.trechos[0].texto.startsWith('Rio da Prata'));
+      assert.equal((await api('/api/gilberto-documento-acao', { id: doc.id, acao: 'conferido' })).status, 403, 'só o dono marca conferido');
+      assert.equal((await api('/api/gilberto-documento-acao', { id: doc.id, acao: 'conferido' }, 'token-dono')).status, 200);
+      assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/gilberto_documentos?id=eq.') && Array.isArray(c.corpo.alertas) && !c.corpo.alertas.length && !c.corpo.conflitos.length), 'conferido tira os avisos');
       assert.equal((await api('/api/gilberto-documento-acao', { id: doc.id, acao: 'desligar' }, 'token-dono')).status, 200);
       assert.ok(!(await catalogoParaTeste()).documentos.length, 'desligado: o Gilberto deixa de usar');
       assert.equal((await api('/api/gilberto-documento-acao', { id: doc.id, acao: 'apagar' }, 'token-dono')).status, 200);

@@ -379,6 +379,8 @@ section[data-painel="produtos"],section[data-painel="agencias"],section[data-pai
 .bloco p,.bloco ul{margin:0;font-size:14px;color:var(--cor-texto-sec)}
 .bloco ul{padding-left:18px;display:flex;flex-direction:column;gap:4px}
 .modal-largo{width:min(640px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto}
+.modal-largo.amplo{width:min(1000px,calc(100% - 24px))}
+.campo textarea.grande{min-height:min(62dvh,640px);font-size:15px;line-height:1.5}
 .campo-check{display:flex;gap:8px;align-items:center;font-size:14px;grid-column:1/-1}
 .campo-check input{width:18px;height:18px;accent-color:var(--cor-primaria)}
 .cx-barra{background:var(--cor-elevada);border:1px solid var(--cor-borda);border-radius:var(--r-md);box-shadow:var(--sombra-2);display:flex;flex-direction:column;max-height:260px;overflow-y:auto}

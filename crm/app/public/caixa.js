@@ -507,6 +507,7 @@
       el('button', { class: 'btn-mini', type: 'button', text: '+ Cadastrar novo modelo', onclick: () => cadastrarModelo(num.value || (conv && conv.numero_id)) }));
     const enviar = el('button', { class: 'btn btn-enviar', type: 'button', text: 'Enviar mensagem', disabled: true });
     $('f-acoes').replaceChildren(el('button', { class: 'btn btn-editar', type: 'button', text: 'Cancelar', onclick: fechar }), enviar);
+    $('form-modal').classList.toggle('amplo', campos.some(c => c.grande)); // texto longo: janela quase do tamanho da tela
     $('f-fundo').hidden = false; $('form-modal').hidden = false; $('f-fundo').onclick = fechar;
     let modelos = [];
     const atual = () => modelos.find(m => m.nome + '|' + m.idioma === mod.value);
@@ -1196,7 +1197,7 @@
       if (c.tipo === 'nota') { box.append(el('p', { class: 'lat-txt largo', text: c.rotulo })); return; }
       if (c.tipo === 'codigo') { box.append(el('p', { class: 'codigo-grande largo', text: c.valor })); return; }
       if (c.tipo === 'select') inp = el('select', {}, c.opcoes.map(([v, t]) => el('option', { value: v, text: t, selected: String(c.valor ?? '') === String(v) })));
-      else if (c.tipo === 'textarea') { inp = el('textarea', { placeholder: c.dica || '' }); inp.value = c.valor || ''; }
+      else if (c.tipo === 'textarea') { inp = el('textarea', { placeholder: c.dica || '', class: c.grande ? 'grande' : null }); inp.value = c.valor || ''; }
       else if (c.tipo === 'check') { inp = el('input', { type: 'checkbox', checked: !!c.valor }); box.append(el('label', { class: 'campo-check' }, inp, c.rotulo)); ref[c.k] = inp; return; }
       else inp = el('input', { type: c.tipo || 'text', value: c.valor ?? '', placeholder: c.dica || '', ...(c.at || {}) });
       ref[c.k] = inp;
@@ -1552,13 +1553,23 @@
     const lista = docs.filter(d => docFiltro === 'outros' ? ['recusado', 'desligado'].includes(d.situacao) : d.situacao === docFiltro);
     if (!lista.length) box.append(el('div', { class: 'vazio', text: docFiltro === 'aguardando' ? 'Nenhum documento esperando aprovação.' : docFiltro === 'aprovado' ? 'O Gilberto ainda não usa nenhum documento.' : 'Nada por aqui.' }));
     lista.forEach(d => {
-      const acao = async (a, extra = {}) => { try { await chamarApi('/api/gilberto-documento-acao', { id: d.id, acao: a, ...extra }); toast({ aprovar: 'Aprovado: o Gilberto já usa este documento.', recusar: 'Documento recusado.', desligar: 'Desligado: o Gilberto deixou de usar.', religar: 'Religado.', apagar: 'Documento apagado.' }[a] || 'Feito.'); carregarDocumentos(); } catch (e) { toast(e.message); } };
+      const acao = async (a, extra = {}) => { try { await chamarApi('/api/gilberto-documento-acao', { id: d.id, acao: a, ...extra }); toast({ aprovar: 'Aprovado: o Gilberto já usa este documento.', recusar: 'Documento recusado.', conferido: 'Pontos conferidos: avisos retirados.', desligar: 'Desligado: o Gilberto deixou de usar.', religar: 'Religado.', apagar: 'Documento apagado.' }[a] || 'Feito.'); carregarDocumentos(); } catch (e) { toast(e.message); } };
       const podeEditar = dono || (d.situacao === 'aguardando' && eu && d.enviado_por === eu.id);
       const botoes = [];
       if (podeEditar) botoes.push(el('button', { class: 'btn-mini', type: 'button', text: '✎ Editar', onclick: () => abrirForm('Editar documento', [
         { k: 'titulo', rotulo: 'Título', valor: d.titulo, largo: true },
-        { k: 'conteudo', rotulo: 'O que o Gilberto vai ler', tipo: 'textarea', valor: d.conteudo, largo: true },
-      ], async v => { await chamarApi('/api/gilberto-documento-acao', { id: d.id, acao: 'editar', ...v }); toast('Documento salvo.'); carregarDocumentos(); }) }));
+        { k: 'conteudo', rotulo: 'O que o Gilberto vai ler', tipo: 'textarea', valor: d.conteudo, largo: true, grande: true },
+      ], async v => { await chamarApi('/api/gilberto-documento-acao', { id: d.id, acao: 'editar', ...v }); toast('Documento salvo.'); carregarDocumentos(); },
+      // Dono: salvar e já aprovar (aguardando) ou salvar e marcar os pontos como conferidos (em uso)
+      dono && (d.situacao === 'aguardando' || (d.alertas || []).length || (d.conflitos || []).length) ? fechar => el('button', { class: 'btn btn-enviar', type: 'button',
+        text: d.situacao === 'aguardando' ? 'Salvar e aprovar' : 'Salvar e marcar conferido', onclick: async () => {
+          const box = $('f-campos'), titulo = box.querySelector('input').value, conteudo = box.querySelector('textarea').value;
+          try {
+            await chamarApi('/api/gilberto-documento-acao', { id: d.id, acao: 'editar', titulo, conteudo });
+            await chamarApi('/api/gilberto-documento-acao', { id: d.id, acao: d.situacao === 'aguardando' ? 'aprovar' : 'conferido' });
+            fechar(); toast(d.situacao === 'aguardando' ? 'Salvo e aprovado: o Gilberto já usa este documento.' : 'Salvo e conferido.'); carregarDocumentos();
+          } catch (e) { toast(e.message); }
+        } }) : null) }));
       if (dono && d.situacao === 'aguardando') botoes.push(
         el('button', { class: 'btn btn-enviar', type: 'button', text: '✓ Aprovar', onclick: () => { if (!d.conflitos.length || confirm('Este documento tem ' + d.conflitos.length + ' conflito(s) com a base do hotel. Nesses pontos o Gilberto continua seguindo a base. Aprovar assim mesmo?')) acao('aprovar'); } }),
         el('button', { class: 'btn-mini', type: 'button', text: 'Recusar', onclick: () => { const m = prompt('Motivo da recusa (opcional):'); if (m !== null) acao('recusar', { motivo: m }); } }));
@@ -1570,7 +1581,8 @@
         el('p', { text: [d.tipo === 'pdf' ? 'PDF' : 'Texto', d.arquivo && d.arquivo !== 'texto colado' ? d.arquivo : '', 'enviado por ' + ((equipe && equipe[d.enviado_por]) || '—') + ' em ' + fmtData(d.criado_em), d.motivo ? 'motivo: ' + d.motivo : ''].filter(Boolean).join(' · ') }),
         d.resumo ? el('p', { style: 'color:var(--cor-texto)', text: d.resumo }) : null,
         (d.conflitos || []).length ? el('div', { class: 'aviso-sim' }, el('b', { text: '⚠ Conflitos com a base do hotel (o Gilberto segue a base nesses pontos):' }), el('ul', {}, d.conflitos.map(c => el('li', { text: c })))) : null,
-        (d.alertas || []).length ? el('div', { class: 'aviso-sim' }, el('b', { text: 'Para conferir antes de aprovar:' }), el('ul', {}, d.alertas.map(c => el('li', { text: c })))) : null,
+        (d.alertas || []).length ? el('div', { class: 'aviso-sim' }, el('b', { text: d.situacao === 'aguardando' ? 'Para conferir antes de aprovar:' : 'Pontos para conferir (o Gilberto já usa este documento):' }), el('ul', {}, d.alertas.map(c => el('li', { text: c }))),
+          dono && d.situacao !== 'aguardando' ? el('button', { class: 'btn-mini', type: 'button', text: '✓ Conferido', title: 'Tira estes avisos (o texto não muda)', onclick: () => acao('conferido') }) : null) : null,
         el('details', {}, el('summary', { text: 'Ver o que o Gilberto vai ler (' + Math.round((d.conteudo || '').length / 1000) + ' mil caracteres)' }), el('p', { style: 'white-space:pre-wrap;color:var(--cor-texto)', text: d.conteudo })),
         !dono && d.situacao === 'aguardando' ? el('p', { class: 'dica', text: 'Esperando o dono aprovar.' }) : null,
         botoes.length ? el('div', { class: 'acoes' }, botoes) : null));

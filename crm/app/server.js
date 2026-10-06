@@ -1901,6 +1901,7 @@ const API_EQUIPE = {
       if (acao === 'aprovar') mudar = { situacao: 'aprovado', aprovado_por: eu.id, aprovado_em: agora, motivo: null };
       else if (acao === 'recusar') mudar = { situacao: 'recusado', motivo: String(corpo.motivo || '').slice(0, 300) || null };
       else if (acao === 'desligar') mudar = { situacao: 'desligado' };
+      else if (acao === 'conferido') mudar = { alertas: [], conflitos: [] }; // o dono conferiu os pontos apontados: os avisos saem
       else if (acao === 'religar') mudar = { situacao: 'aprovado', aprovado_por: eu.id, aprovado_em: agora };
       else if (acao === 'apagar') {
         const d = await fetch(`${SUPABASE_URL}/rest/v1/gilberto_documentos?id=eq.${doc.id}`, { method: 'DELETE', headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
