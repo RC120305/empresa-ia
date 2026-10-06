@@ -263,15 +263,15 @@ async function confirmarExtraAoCliente(venda, por, buscar = fetch) {
   }
 }
 // ---------- Massagem com a parceira pelo WhatsApp (dono, 06/10/2026) ----------
-// O hóspede escolhe na página de extras; o CRM pede à parceira com [Confirmo] [Não posso]. Se ela não pode, indica até
-// 3 horários pela página /p/… e o hóspede escolhe um em /mc/… (já confirmado). 3 h sem resposta: aviso à equipe;
+// O hóspede escolhe na página de extras; o CRM manda à parceira um link único (/p/…) em que ela confirma ou, se não
+// puder, indica até 3 horários; o hóspede escolhe um em /mc/… (já confirmado) (dono, 06/10/2026). 3 h sem resposta: aviso à equipe;
 // 24 h: o pedido expira e nada mais vai para ela (fora da janela de 24 h cada mensagem seria cobrada).
 const MODELO_MASSAGEM = { nome: 'massagem_pedido', categoria: 'UTILITY',
-  texto: 'Olá, {{1}}! Novo pedido de massagem pelo Hotel Cabanas: {{2}}. Hóspede: {{3}}. Você confirma esse horário?',
-  exemplos: ['Natália', 'Massagem relaxante, sáb, 16/11 às 9h, à beira do rio', 'Ana'], botoes: ['Confirmo', 'Não posso'] };
+  texto: 'Olá, {{1}}! Novo pedido de massagem pelo Hotel Cabanas: {{2}}. Hóspede: {{3}}. Toque no botão para confirmar ou indicar outro horário. O link vale por 24 horas.',
+  exemplos: ['Natália', 'Massagem relaxante, sáb, 16/11 às 9h, à beira do rio', 'Ana'], link: { texto: 'Responder pedido', caminho: '/p/', exemplo: 'AbCdEfGhIjKlMnOpQrStUv' } };
 const MODELO_OPCOES = { nome: 'massagem_opcoes', categoria: 'UTILITY',
   texto: 'Olá, {{1}}! A massoterapeuta não tem vaga no horário que você pediu para a massagem, mas separou outras opções. Toque no botão para escolher a que fica melhor para você.',
-  exemplos: ['Ana'], link: { texto: 'Escolher horário', exemplo: 'AbCdEfGhIjKlMnOpQrStUv' } };
+  exemplos: ['Ana'], link: { texto: 'Escolher horário', caminho: '/mc/', exemplo: 'AbCdEfGhIjKlMnOpQrStUv' } };
 let parceiraCache = { ate: 0, v: null };
 async function parceiraMassagem(buscar = fetch) {
   if (process.env.K_SERVICE && parceiraCache.ate > Date.now()) return parceiraCache.v; // fora do Cloud Run (testes) lê sempre
@@ -341,11 +341,12 @@ async function pedirAParceira({ venda, item, conversa_id, negocio_id, numeroId, 
   try {
     const conv = await conversaDaParceira(pc, numeroId, buscar);
     const det = massagem.detalhe(salvo), nome = String(pc.nome || '').split(/\s+/)[0] || 'tudo bem';
+    // Um link só: na página ela confirma ou, se não puder, indica outros horários
     if (janelaAbertaEm(conv)) {
-      await enviarInterativo(conv.id, `Olá, ${nome}! Novo pedido de massagem pelo Hotel Cabanas 🌿\n\n${det}\nHóspede: ${salvo.hospede || '-'}\n\nVocê confirma esse horário?`,
-        { botoes: [{ id: 'mp:' + salvo.id + ':s', titulo: 'Confirmo' }, { id: 'mp:' + salvo.id + ':n', titulo: 'Não posso' }] }, 'gilberto', buscar);
+      await enviarInterativo(conv.id, `Olá, ${nome}! Novo pedido de massagem pelo Hotel Cabanas 🌿\n\n${det}\nHóspede: ${salvo.hospede || '-'}\n\nToque no botão para confirmar ou indicar outro horário. O link vale por 24 horas.`,
+        { link: { texto: 'Responder pedido', url: URL_PUBLICA + '/p/' + salvo.token_parceiro } }, 'gilberto', buscar);
     } else {
-      await enviarModeloNaConversa(conv.id, MODELO_MASSAGEM.nome, [nome, det, salvo.hospede || '-'], 'gilberto', buscar, [{ payload: 'mp:' + salvo.id + ':s' }, { payload: 'mp:' + salvo.id + ':n' }]);
+      await enviarModeloNaConversa(conv.id, MODELO_MASSAGEM.nome, [nome, det, salvo.hospede || '-'], 'gilberto', buscar, [{ url: salvo.token_parceiro }]);
     }
     const agora = new Date();
     await patchPedido(salvo.id, { enviado_em: agora.toISOString(), expira_em: new Date(agora.getTime() + massagem.VALIDADE_MS).toISOString() }, buscar);
@@ -1679,7 +1680,7 @@ const API_EQUIPE = {
     const padrao = [MODELO_EXTRA, MODELO_MASSAGEM, MODELO_OPCOES].find(m => m.nome === nome);
     if (padrao) {
       const botoes = padrao.botoes ? [{ type: 'BUTTONS', buttons: padrao.botoes.map(text => ({ type: 'QUICK_REPLY', text })) }]
-        : padrao.link ? [{ type: 'BUTTONS', buttons: [{ type: 'URL', text: padrao.link.texto, url: URL_PUBLICA + '/mc/{{1}}', example: [URL_PUBLICA + '/mc/' + padrao.link.exemplo] }] }] : [];
+        : padrao.link ? [{ type: 'BUTTONS', buttons: [{ type: 'URL', text: padrao.link.texto, url: URL_PUBLICA + padrao.link.caminho + '{{1}}', example: [URL_PUBLICA + padrao.link.caminho + padrao.link.exemplo] }] }] : [];
       const rp = await chamarMeta(`${await wabaDoNumero(id)}/message_templates`, { name: nome, language: 'pt_BR', category: padrao.categoria,
         components: [{ type: 'BODY', text: padrao.texto, example: { body_text: [padrao.exemplos] } }, ...botoes] }, fetch);
       if (!rp.ok) throw new ErroEnvio(rp.status === 400 ? 400 : 502, 'A Meta recusou o modelo: ' + String((rp.json.error || {}).error_user_msg || (rp.json.error || {}).message || rp.status).slice(0, 200));

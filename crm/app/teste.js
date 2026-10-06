@@ -1074,8 +1074,8 @@ falso.listen(0, () => {
       const pdm = pedidosParceiroF.at(-1);
       assert.deepEqual([pdm.situacao, pdm.horario, pdm.local, !!pdm.enviado_em, !!pdm.expira_em], ['aguardando_parceiro', '09:00', 'À beira do rio', true, true]);
       const envs = chamadas.slice(nMs).filter(c => c.url === '/graph/111/messages').map(c => c.corpo);
-      const pedidoNat = envs.find(c => c.type === 'interactive' && c.interactive.type === 'button');
-      assert.ok(pedidoNat && pedidoNat.interactive.body.text.includes('Massagem360') && pedidoNat.interactive.action.buttons[0].reply.id === 'mp:' + pdm.id + ':s', JSON.stringify(envs));
+      const pedidoNat = envs.find(c => c.type === 'interactive' && c.interactive.type === 'cta_url');
+      assert.ok(pedidoNat && pedidoNat.interactive.body.text.includes('Massagem360') && pedidoNat.interactive.action.parameters.url.endsWith('/p/' + pdm.token_parceiro), JSON.stringify(envs));
       const ackM = envs.find(c => c.type === 'text' && c.text.body.startsWith('Recebi seu pedido')).text.body;
       assert.ok(ackM.includes('Já pedi a confirmação do horário à massoterapeuta') && ackM.includes('às 9h'), ackM);
       assert.ok(!alertasF.some(a => a.venda_id === vendasF.at(-2).id && a.tipo === 'produto_pedido'), 'massagem automática: sem alerta de pedir à mão');
@@ -1083,14 +1083,11 @@ falso.listen(0, () => {
       assert.ok((await (await fetch(base + '/e/' + vt2)).text()).includes('&quot;10:00&quot;'), 'horários tomados vão para a página');
       assert.equal((await pedir([{ codigo: 'MASS', variacao: 'Massagem360', quantidade: 1, data: emDias(41), horario: '10:00', local: 'No quarto' }], vt2)).status, 409, 'horário já tomado');
       pedidosParceiroF.pop();
-      // A Natália toca em "Não posso": recebe o link para indicar horários
+      // Mensagem da Natália nunca vai para o Gilberto
       const nNat = chamadas.length;
-      const btn = JSON.stringify({ entry: [{ changes: [{ value: { metadata: { phone_number_id: '111' }, contacts: [{ wa_id: '556792286365', profile: { name: 'Natália' } }], messages: [{ from: '556792286365', id: 'wamid.NAT1', timestamp: '1700000400', type: 'interactive', interactive: { type: 'button_reply', button_reply: { id: 'mp:' + pdm.id + ':n', title: 'Não posso' } } }] } }] }] });
-      await postar(btn);
-      assert.ok(await aguardar(() => chamadas.slice(nNat).some(c => c.url === '/graph/111/messages' && c.corpo.type === 'interactive' && c.corpo.interactive.type === 'cta_url')));
-      const ctaNat = chamadas.slice(nNat).find(c => c.url === '/graph/111/messages' && c.corpo.type === 'interactive').corpo.interactive;
-      assert.ok(ctaNat.action.parameters.url.endsWith('/p/' + pdm.token_parceiro));
-      assert.ok(!chamadas.slice(nNat).some(c => c.url === '/anthropic/v1/messages'), 'o Gilberto não responde à parceira');
+      await postar(JSON.stringify({ entry: [{ changes: [{ value: { metadata: { phone_number_id: '111' }, contacts: [{ wa_id: '556792286365', profile: { name: 'Natália' } }], messages: [{ from: '556792286365', id: 'wamid.NAT1', timestamp: '1700000400', type: 'text', text: { body: 'Oi, vi o pedido!' } }] } }] }] }));
+      await new Promise(ok => setTimeout(ok, 300));
+      assert.ok(!chamadas.slice(nNat).some(c => c.url.split('?')[0] === '/v1/messages'), 'o Gilberto não responde à parceira');
       // Página da Natália: indica 2 horários; o hóspede recebe o link para escolher
       const pg = await (await fetch(base + '/p/' + pdm.token_parceiro)).text();
       assert.ok(pg.includes('Pedido de <em>massagem</em>') && pg.includes('ms-op'), pg.slice(pg.indexOf('<main>'), pg.indexOf('<main>') + 900));
