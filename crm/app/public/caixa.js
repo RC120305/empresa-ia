@@ -1187,6 +1187,28 @@
   $('resposta').addEventListener('blur', () => setTimeout(() => { if (!atalhoTodos) $('atalhos').hidden = true; }, 150));
 
   // ================= Formulário genérico (produto, agência, resposta) =================
+  // Busca dentro de um texto longo: mostra quantas vezes aparece e seleciona cada ocorrência (Enter = próxima)
+  function buscaNoTexto(ta) {
+    const q = el('input', { type: 'search', placeholder: '🔎 Buscar no texto (ex.: rolha)', 'aria-label': 'Buscar no texto' });
+    const info = el('span', { class: 'busca-info', 'aria-live': 'polite' });
+    let pos = -1;
+    const achados = () => { const t = q.value.trim().toLowerCase(); if (!t) return []; const v = ta.value.toLowerCase(), out = []; for (let i = v.indexOf(t); i >= 0 && out.length < 500; i = v.indexOf(t, i + t.length)) out.push(i); return out; };
+    const ir = passo => {
+      const l = achados(), t = q.value.trim();
+      if (!l.length) { info.textContent = t ? 'não encontrado' : ''; return; }
+      pos = (pos + passo + l.length) % l.length;
+      const i = l[pos];
+      ta.focus(); ta.setSelectionRange(i, i + t.length);
+      const linha = ta.value.slice(0, i).split('\n').length - 1, alt = parseFloat(getComputedStyle(ta).lineHeight) || 22;
+      ta.scrollTop = Math.max(0, linha * alt - ta.clientHeight / 3); // a ocorrência fica visível (linhas longas quebram: é aproximado)
+      info.textContent = (pos + 1) + ' de ' + l.length;
+    };
+    q.addEventListener('input', () => { pos = -1; const n = achados().length; info.textContent = q.value.trim() ? (n ? n + (n > 1 ? ' resultados' : ' resultado') : 'não encontrado') : ''; });
+    q.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); ir(e.shiftKey ? -1 : 1); } });
+    return el('div', { class: 'busca-texto largo' }, q,
+      el('button', { class: 'btn-mini', type: 'button', text: '‹', 'aria-label': 'Anterior', onclick: () => ir(-1) }),
+      el('button', { class: 'btn-mini', type: 'button', text: '›', 'aria-label': 'Próxima', onclick: () => ir(1) }), info);
+  }
   function abrirForm(titulo, campos, salvar, extra, rotuloSalvar) {
     $('f-tit').textContent = titulo;
     const box = $('f-campos'); box.textContent = '';
@@ -1201,6 +1223,7 @@
       else if (c.tipo === 'check') { inp = el('input', { type: 'checkbox', checked: !!c.valor }); box.append(el('label', { class: 'campo-check' }, inp, c.rotulo)); ref[c.k] = inp; return; }
       else inp = el('input', { type: c.tipo || 'text', value: c.valor ?? '', placeholder: c.dica || '', ...(c.at || {}) });
       ref[c.k] = inp;
+      if (c.grande) box.append(buscaNoTexto(inp)); // texto longo: busca de palavras (dono, 07/10/2026)
       box.append(el('label', { class: 'campo' + (c.largo ? ' largo' : '') }, c.rotulo, inp));
     });
     const fechar = () => { $('f-fundo').hidden = true; $('form-modal').hidden = true; };
