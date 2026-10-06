@@ -2249,10 +2249,31 @@
           ATENDIMENTO.includes(a.tipo) && !a.assumido_por ? el('button', { class: 'btn-mini', type: 'button', text: 'Assumir', onclick: async () => { try { await chamarApi('/api/alerta', { id: a.id, acao: 'assumir' }); toast('Você assumiu. A conversa passou para você.'); carregarAlertas(); abrirConv(); } catch (e) { toast(e.message); } } }) : null,
           a.tipo === 'lancar_conta'
             ? el('button', { class: 'btn-mini', type: 'button', text: '✓ Lançado na conta', onclick: () => resolverAlerta(a, 'Lançamento registrado. Alerta resolvido.') })
-            : el('button', { class: 'btn-mini', type: 'button', text: a.tipo === 'pagamento_recebido' ? '✓ Visto' : a.tipo === 'produto_pedido' ? '✓ Reservado' : '✓ Resolvido', onclick: () => resolverAlerta(a, 'Alerta resolvido.') }),
+            : a.tipo === 'produto_pedido' && a.venda_id
+              ? el('button', { class: 'btn-mini', type: 'button', text: '✓ Reservado', onclick: e => formReservado(a, e.target.closest('.al-item')) })
+              : el('button', { class: 'btn-mini', type: 'button', text: a.tipo === 'pagamento_recebido' ? '✓ Visto' : a.tipo === 'produto_pedido' ? '✓ Reservado' : '✓ Resolvido', onclick: () => resolverAlerta(a, 'Alerta resolvido.') }),
           c ? el('button', { class: 'btn-mini', type: 'button', text: 'Abrir conversa', onclick: abrirConv }) : null)));
     });
     const rod = rodapeAvisos(); if (rod) box.append(rod);
+  }
+  // Extra reservado (dono, 06/10/2026): a equipe confirma dia e horário e o cliente recebe a confirmação no WhatsApp
+  async function formReservado(a, item) {
+    if (!item || item.querySelector('.form-res')) return;
+    const { data: vs } = await sb.from('vendas').select('data_uso,horario').eq('id', a.venda_id).limit(1);
+    const v = (vs || [])[0] || {};
+    const data = el('input', { type: 'date', value: v.data_uso || '', 'aria-label': 'Dia' });
+    const hora = el('input', { type: 'text', value: v.horario || '', placeholder: 'Horário (ex.: 9h)', maxlength: 40, 'aria-label': 'Horário' });
+    const enviar = async avisar => {
+      try {
+        const r = await chamarApi('/api/alerta', { id: a.id, acao: 'reservado', data_uso: data.value || null, horario: hora.value, avisar });
+        alertas = alertas.filter(x => x.id !== a.id); pintarSino(); if (painel === 'pro') pintarPainel();
+        toast(!avisar ? 'Reservado. O cliente não foi avisado.' : r.avisado ? 'Reservado. O cliente recebeu a confirmação no WhatsApp.' : 'Reservado, mas o WhatsApp não saiu: ' + (r.motivo || 'erro') + '.');
+      } catch (e) { toast(e.message); }
+    };
+    item.append(el('div', { class: 'form-res al-acoes' }, data, hora,
+      el('button', { class: 'btn-mini', type: 'button', text: 'Confirmar e avisar o cliente', onclick: () => enviar(true) }),
+      el('button', { class: 'btn-mini', type: 'button', text: 'Só marcar (sem avisar)', onclick: () => enviar(false) })));
+    data.focus();
   }
   async function resolverAlerta(a, msg) {
     try { await chamarApi('/api/alerta', { id: a.id }); alertas = alertas.filter(x => x.id !== a.id); pintarSino(); toast(msg); if (painel === 'pro') pintarPainel(); }

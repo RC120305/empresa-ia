@@ -1013,6 +1013,23 @@ falso.listen(0, () => {
     assert.deepEqual(vendasF.slice(nV).map(v => [v.produto_codigo, v.quantidade, v.valor_total, v.data_uso]), [['COMBO', 2, 340, emDias(41)]]);
     assert.ok(alertasF.findLast(a => a.tipo === 'produto_pedido').info.includes('escolheu na página de extras'));
     assert.ok(vitrinesF[0].pedido_em && vitrinesF[0].pedido[0].codigo === 'COMBO');
+    // o cliente recebe na hora a confirmação de que o pedido chegou (dono, 06/10/2026)
+    const ack = chamadas.findLast(c => c.url === '/graph/111/messages' && c.corpo.type === 'text').corpo.text.body;
+    assert.ok(ack.startsWith('Recebi seu pedido') && ack.includes('• Combo boia cross + arvorismo · 2 pessoas · R$ 340') && ack.includes('reservar o horário'), ack);
+    // a equipe marca ✓ Reservado com dia e horário: o cliente recebe a confirmação no WhatsApp
+    {
+      const al = alertasF.findLast(a => a.tipo === 'produto_pedido' && a.situacao === 'aberto');
+      const vd = vendasF.find(v => v.id === al.venda_id);
+      const nEnv = chamadas.length;
+      r = await api('/api/alerta', { id: al.id, acao: 'reservado', data_uso: emDias(41), horario: '9h' });
+      const rj = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(rj)); assert.equal(rj.avisado, true, JSON.stringify(rj));
+      assert.equal(al.situacao, 'resolvido'); assert.equal(vd.horario, '9h');
+      const conf = chamadas.slice(nEnv).findLast(c => c.url === '/graph/111/messages' && c.corpo.type === 'text').corpo.text.body;
+      assert.ok(conf.includes('Seu pedido está reservado') && conf.includes('📅 Dia ' + emDias(41).slice(8, 10) + '/' + emDias(41).slice(5, 7) + ' às 9h'), conf);
+      assert.equal((await api('/api/alerta', { id: al.id, acao: 'reservado' })).status, 200, 'já resolvido: não manda de novo');
+      assert.equal(chamadas.slice(nEnv).filter(c => c.url === '/graph/111/messages').length, 1);
+    }
     await pedir([{ codigo: 'COMBO', quantidade: 2, data: emDias(41) }]);
     assert.equal(vendasF.length, nV + 1, 'mesmo item de novo não duplica');
     assert.equal((await pedir([{ codigo: 'DECO', variacao: 'Completa', quantidade: 1 }])).status, 400, 'decoração não está no link de aventuras');

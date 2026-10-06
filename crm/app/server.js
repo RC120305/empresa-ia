@@ -175,7 +175,7 @@ async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variaca
     }
     await criarAlerta({ conversa_id, negocio_id: negocio ? negocio.id : null, tipo: 'produto_pedido', titulo: 'Cliente pediu produto',
       info: `${p.nome}${nomeVar ? ' (' + nomeVar + ')' : ''} · ${origemTxt}. Falta confirmar ${!nomeVar && vs.length > 1 ? 'a opção, ' : ''}${!qtd ? 'quantas pessoas, ' : ''}a data, e registrar a venda.` }, buscar);
-    return { venda: null };
+    return { venda: null, p, variacao: nomeVar };
   }
   const venda = { conversa_id, negocio_id: negocio ? negocio.id : null, oferta_id: oferta_id || null, produto_codigo: p.codigo, produto_nome: p.nome, ...v,
     data_uso: data_uso || (p.tipo_reserva === 'ativ' ? null : chegada), horario: null,
@@ -187,7 +187,50 @@ async function aceiteDoCliente({ conversa_id, oferta_id, produto_codigo, variaca
   if (negocio) {
     await eventoNegocio(negocio.id, `Cliente ${origemTxt}: ${p.nome}${v.variacao ? ' (' + v.variacao + ')' : ''} · venda registrada ${produtos.brl(v.valor_total)} na conta do hóspede`, 'cliente', buscar);
   }
-  return { venda: salva };
+  return { venda: salva, p };
+}
+// Pedido de extra (dono, 06/10/2026): o cliente recebe na hora a confirmação de que o pedido chegou e, quando a
+// equipe marca "✓ Reservado", a confirmação da reserva com dia e horário. Não depende do modo do Gilberto.
+const ddmm = d => d ? d.split('-').reverse().slice(0, 2).join('/') : '';
+function linhaExtra(p, v, variacao) {
+  const nome = (p ? p.nome : (v && v.produto_nome) || 'Extra') + ((v && v.variacao) || variacao ? ' (' + ((v && v.variacao) || variacao) + ')' : '');
+  const q = v && v.quantidade ? (p && p.unidade === 'pessoa' ? v.quantidade + (v.quantidade > 1 ? ' pessoas' : ' pessoa') : v.quantidade > 1 ? v.quantidade + 'x' : '') : '';
+  return '• ' + [nome, q, v && v.valor_total != null ? produtos.brl(v.valor_total) : ''].filter(Boolean).join(' · ');
+}
+async function primeiroNome(conversa, buscar = fetch) {
+  const c = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${conversa}&select=contato:contatos(nome)`, buscar).catch(() => []))[0];
+  return String((c && c.contato && c.contato.nome) || '').trim().split(/\s+/)[0];
+}
+async function avisarPedidoExtra(conversa, itens, buscar = fetch) {
+  itens = (itens || []).filter(x => x && x.p);
+  if (!itens.length || !WA_TOKEN) return null;
+  const agenda = itens.some(x => ['ativ', 'terc'].includes(x.p.tipo_reserva));
+  const nome = await primeiroNome(conversa, buscar);
+  const texto = ['Recebi seu pedido' + (nome ? ', ' + nome : '') + '! 🌿', '', ...itens.map(x => linhaExtra(x.p, x.venda, x.variacao)), '',
+    'Vai na conta da hospedagem, acertada no check-out. Nossa equipe vai ' + (agenda ? 'reservar o horário' : 'preparar tudo') + ' e eu te confirmo por aqui assim que estiver garantido.'].join('\n');
+  try {
+    const { conv, para } = await carregarConversaParaEnvio(conversa, buscar);
+    await enviarTexto(conv, para, texto, 'gilberto', buscar);
+    return { enviada: true };
+  } catch (e) {
+    console.warn(JSON.stringify({ evento: 'aviso_pedido_extra', erro: String(e.message || e).slice(0, 200) }));
+    return null; // janela fechada ou erro: o alerta da equipe continua valendo
+  }
+}
+async function confirmarExtraAoCliente(venda, por, buscar = fetch) {
+  if (!venda.conversa_id || !WA_TOKEN) return { enviada: false, motivo: 'sem WhatsApp' };
+  const p = await produtoPorCodigo(venda.produto_codigo, buscar).catch(() => null);
+  const nome = await primeiroNome(venda.conversa_id, buscar);
+  const quando = venda.data_uso ? '📅 Dia ' + ddmm(venda.data_uso) + (venda.horario ? ' às ' + venda.horario : '') : venda.horario ? '🕘 ' + venda.horario : '';
+  const texto = ['Tudo certo' + (nome ? ', ' + nome : '') + '! ✅ Seu pedido está reservado:', '', linhaExtra(p, venda), quando,
+    '💳 Na conta da hospedagem, acertado no check-out.', '', 'Qualquer dúvida, é só chamar aqui 🌿'].filter((l, i, a) => l || a[i - 1]).join('\n');
+  try {
+    const { conv, para } = await carregarConversaParaEnvio(venda.conversa_id, buscar);
+    await enviarTexto(conv, para, texto, por || 'gilberto', buscar);
+    return { enviada: true };
+  } catch (e) {
+    return { enviada: false, motivo: e.http === 409 ? 'a janela de 24 h do WhatsApp fechou: avise o cliente com um modelo (Iniciar conversa)' : String(e.message || e).slice(0, 160) };
+  }
 }
 async function respostaDoBotao({ oferta, aceito, opcao }, titulo, buscar) {
   const r = await buscar(`${SUPABASE_URL}/rest/v1/ofertas?id=eq.${oferta}&select=id,conversa_id,negocio_id,produto_codigo,produto_nome,situacao`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
@@ -198,7 +241,8 @@ async function respostaDoBotao({ oferta, aceito, opcao }, titulo, buscar) {
   if (!aceito) { if (o.negocio_id) await eventoNegocio(o.negocio_id, 'Cliente recusou pelo botão: ' + o.produto_nome, 'cliente', buscar); return; }
   const p = await produtoPorCodigo(o.produto_codigo, buscar).catch(() => null);
   const vs = p && Array.isArray(p.variacoes) ? p.variacoes : [];
-  await aceiteDoCliente({ conversa_id: o.conversa_id, oferta_id: o.id, produto_codigo: o.produto_codigo, variacao: opcao != null && vs[opcao] ? vs[opcao].nome : null, origem: 'whatsapp' }, buscar);
+  const ac = await aceiteDoCliente({ conversa_id: o.conversa_id, oferta_id: o.id, produto_codigo: o.produto_codigo, variacao: opcao != null && vs[opcao] ? vs[opcao].nome : null, origem: 'whatsapp' }, buscar);
+  if (ac) await avisarPedidoExtra(o.conversa_id, [ac], buscar);
 }
 
 async function registrar(evento, buscar = fetch) {
@@ -1977,6 +2021,23 @@ const API_EQUIPE = {
       if (a.negocio_id) await eventoNegocio(a.negocio_id, 'Assumiu o alerta: ' + a.titulo, eu.id);
       return { ok: true };
     }
+    if (a.tipo === 'produto_pedido' && a.venda_id && corpo.acao === 'reservado') { // a equipe reservou o extra: confirma ao cliente
+      const vr = await fetch(`${SUPABASE_URL}/rest/v1/vendas?id=eq.${a.venda_id}&select=*`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
+      const venda = vr.ok ? (await vr.json())[0] : null;
+      if (!venda) throw new ErroEnvio(404, 'Venda não encontrada.');
+      const muda = {};
+      if (corpo.data_uso !== undefined) { if (corpo.data_uso && !/^\d{4}-\d{2}-\d{2}$/.test(String(corpo.data_uso))) throw new ErroEnvio(400, 'Data inválida.'); muda.data_uso = corpo.data_uso || null; }
+      if (corpo.horario !== undefined) muda.horario = String(corpo.horario || '').trim().slice(0, 40) || null;
+      if (Object.keys(muda).length) { await patchBanco('vendas', `id=eq.${venda.id}`, muda); Object.assign(venda, muda); }
+      await patchBanco('alertas', `id=eq.${a.id}`, { situacao: 'resolvido', resolvido_por: eu.id, resolvido_em: new Date().toISOString() });
+      // A tarefa de agendar/preparar deste extra também fica concluída
+      const nomeVenda = venda.produto_nome + (venda.variacao ? ' (' + venda.variacao + ')' : '');
+      if (venda.negocio_id) for (const t of await getJson(`${SUPABASE_URL}/rest/v1/tarefas?negocio_id=eq.${venda.negocio_id}&feita=eq.false&select=id,tipo,descricao&limit=50`, fetch))
+        if (t.tipo !== 'Lançar na conta do hóspede' && String(t.descricao || '').startsWith(nomeVenda + ' · ')) await patchBanco('tarefas', `id=eq.${t.id}`, { feita: true, feita_em: new Date().toISOString() }).catch(() => {});
+      const aviso = corpo.avisar === false ? { enviada: false, motivo: 'sem aviso' } : await confirmarExtraAoCliente(venda, eu.id);
+      if (a.negocio_id) await eventoNegocio(a.negocio_id, 'Extra reservado: ' + nomeVenda + (venda.data_uso ? ' · dia ' + ddmm(venda.data_uso) : '') + (venda.horario ? ' às ' + venda.horario : '') + (aviso.enviada ? ' · cliente avisado no WhatsApp' : ''), eu.id);
+      return { ok: true, avisado: !!aviso.enviada, motivo: aviso.enviada ? null : aviso.motivo };
+    }
     if (a.tipo === 'lancar_conta' && a.venda_id) {
       await patchBanco('vendas', `id=eq.${a.venda_id}`, { situacao: 'lancado', lancado_em: new Date().toISOString(), lancado_por: eu.id });
       await resolverAlertasDaVenda(a.venda_id, ['lancar_conta'], eu.id);
@@ -2393,14 +2454,15 @@ const servidor = http.createServer((req, res) => {
         if (ped.erro) return json(res, 400, { ok: false, erro: ped.erro });
         const linhas = ped.itens.map(it => vitrine.linhaItem(it, prods.find(p => p.codigo === it.codigo)));
         if (!corpo.previa) {
-          const anteriores = (v.pedido || []).map(x => x.chave);
+          const anteriores = (v.pedido || []).map(x => x.chave), aceitos = [];
           for (const it of ped.itens.filter(x => !anteriores.includes(x.chave))) { // o mesmo item escolhido de novo não duplica
             const ro = await fetch(`${SUPABASE_URL}/rest/v1/ofertas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
               body: JSON.stringify({ conversa_id: v.conversa_id, negocio_id: v.negocio_id, produto_codigo: it.codigo, produto_nome: it.nome + (it.variacao ? ' (' + it.variacao + ')' : ''), por: 'pagina', situacao: 'aceito', respondido_em: new Date().toISOString() }) }).catch(() => null);
             const of = ro && ro.ok ? (await ro.json().catch(() => []))[0] : null;
-            await aceiteDoCliente({ conversa_id: v.conversa_id, oferta_id: of && of.id, produto_codigo: it.codigo, variacao: it.variacao, origem: 'vitrine', quantidade: it.quantidade, adicionais: it.adicionais, data_uso: it.data })
-              .catch(err => console.warn(JSON.stringify({ evento: 'aceite_vitrine', erro: String(err.message || err).slice(0, 200) })));
+            aceitos.push(await aceiteDoCliente({ conversa_id: v.conversa_id, oferta_id: of && of.id, produto_codigo: it.codigo, variacao: it.variacao, origem: 'vitrine', quantidade: it.quantidade, adicionais: it.adicionais, data_uso: it.data })
+              .catch(err => { console.warn(JSON.stringify({ evento: 'aceite_vitrine', erro: String(err.message || err).slice(0, 200) })); return null; }));
           }
+          await avisarPedidoExtra(v.conversa_id, aceitos);
           await fetch(`${SUPABASE_URL}/rest/v1/vitrines?id=eq.${v.id}`, { method: 'PATCH', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
             body: JSON.stringify({ pedido: [...(v.pedido || []), ...ped.itens.filter(x => !(v.pedido || []).some(y => y.chave === x.chave))], pedido_em: new Date().toISOString() }) }).catch(() => {});
         }
