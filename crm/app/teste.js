@@ -757,6 +757,24 @@ falso.listen(0, () => {
     assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'res'), 'card em Reservado');
     assert.equal(alertasF.at(-1).tipo, 'pagamento_recebido'); assert.ok(alertasF.at(-1).info.includes('R$ 1.254,60'));
     assert.equal(chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.tipo, 'Confirmar a reserva');
+    // Etapa 1 do Silbeck real (dono, 07/10/2026): com o Pix do BB em teste, nada de Pix fictício nem pagamento simulado
+    {
+      const { travaReservas } = require('./server'), antes = process.env.SILBECK_MODO;
+      assert.equal(travaReservas(), false, 'no simulador, tudo liberado');
+      process.env.SILBECK_MODO = 'real';
+      try {
+        assert.equal(travaReservas(), true, 'Silbeck real + Pix em teste: reservas e Pix automáticos travados');
+        const nC = cobrancasF.length;
+        r = await api('/api/cobranca', { conversa_id: conv, tipo: 'sinal', valor: '100' });
+        assert.equal(r.status, 409); assert.ok((await r.json()).erro.includes('Pix do BB ainda está em modo de teste'));
+        assert.equal(cobrancasF.length, nC, 'nenhum Pix fictício');
+        assert.equal((await api('/api/cobranca-acao', { id: cobrancasF[0].id, acao: 'simular_pagamento' })).status, 409, 'nada de pagamento simulado no Silbeck real');
+        r = await api('/api/fechar-reserva', { conversa_id: conv, forma: 'pix', opcao_codigo: 'STD' });
+        assert.equal(r.status, 409, 'Pix recusado antes de criar a reserva');
+        const G = require('./gilberto');
+        assert.ok(G._contextoTurno({ modo: 'automatico', reservasPelaEquipe: true }).includes('RESERVA E PAGAMENTO NESTA FASE'));
+      } finally { if (antes === undefined) delete process.env.SILBECK_MODO; else process.env.SILBECK_MODO = antes; }
+    }
     // Prazo: 48 h; 2 h com check-in em até 3 dias; nunca depois das 15h do check-in
     const { prazoCobranca } = require('./server');
     const ag = new Date('2026-10-02T12:00:00Z');

@@ -1237,7 +1237,14 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch, { retomada
 }
 
 // ---------- Reserva no Silbeck (aceite) e cobrança ----------
+// Etapa 1 do Silbeck real (dono, 07/10/2026): consultas e orçamentos reais, mas reserva e Pix automáticos travados
+// enquanto o Pix do BB estiver em modo de teste (um Pix de mentira numa reserva de verdade não paga nada).
+// Quando o cliente aceita, o Gilberto passa os dados à equipe, que fecha a reserva e manda o pagamento.
+const travaReservas = () => silbeck.MODO() === 'real' && (bb.MODO() === 'simulador' || process.env.RESERVAS_AUTO === 'travadas');
+const pixFicticioComSilbeckReal = () => silbeck.MODO() === 'real' && bb.MODO() === 'simulador';
+const ERRO_PIX_TESTE = 'O Pix do BB ainda está em modo de teste: com o Silbeck real, o CRM não gera Pix (seria um código que não paga). Gere o Pix pelo app do banco ou use o link do cartão.';
 async function criarCobrancaPix(conversa, corpo, porId, buscar = fetch) {
+  if (pixFicticioComSilbeckReal()) throw new ErroEnvio(409, ERRO_PIX_TESTE);
   const valor = Math.round(Number(String(corpo.valor || '').replace(',', '.')) * 100) / 100;
   if (!(valor >= 1 && valor <= 100000)) throw new ErroEnvio(400, 'Valor inválido (de R$ 1 a R$ 100.000).');
   const tipo = ['sinal', 'total', 'outro'].includes(corpo.tipo) ? corpo.tipo : 'sinal';
@@ -1310,6 +1317,7 @@ async function fecharReserva(conversa, d, { usuario, origem }, buscar = fetch) {
   const forma = d.forma === 'cartao' ? 'cartao' : d.forma === 'pix' ? 'pix' : null;
   if (!forma) throw new ErroEnvio(400, 'Escolha a forma de pagamento (Pix ou cartão).');
   const pct = Number(d.percentual) === 100 ? 100 : 50;
+  if (forma === 'pix' && pixFicticioComSilbeckReal()) throw new ErroEnvio(409, ERRO_PIX_TESTE); // antes de criar a reserva
   const reserva = await criarReservaSilbeck(conversa, { ...d, forma, percentual: pct }, { usuario, origem }, buscar);
   const valor = Math.round(Number(reserva.valor_total) * pct) / 100;
   const descricao = (pct === 100 ? 'Valor total' : 'Sinal 50%') + ' · ' + reserva.acomodacao + ' (' + reserva.periodo + ')';
@@ -2324,6 +2332,7 @@ const API_EQUIPE = {
     }
     if (corpo.acao === 'simular_pagamento') {
       if (cob.fonte !== 'simulador') throw new ErroEnvio(400, 'Só cobranças do simulador.');
+      if (silbeck.MODO() === 'real') throw new ErroEnvio(409, 'Com o Silbeck real ligado, simular pagamento lançaria um pagamento de mentira no Silbeck do hotel.');
       bb.simularPagamento(cob.txid);
       ultimaVerificacaoPix = 0;
       return { ok: true, ...(await verificarCobrancas()) };
@@ -2668,7 +2677,7 @@ async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null, 
     const pendentes = historico.filter(m => m.tipo === 'audio' && m.direcao === 'entrada' && m.id && (!m.transcricao_status || m.transcricao_status === 'falhou')).slice(-3);
     await Promise.all(pendentes.map(m => transcreverMensagem(m, buscar).then(r => { m.transcricao = r.texto; m.transcricao_status = r.status; }).catch(() => {})));
     const nome = conv.contato && conv.contato.nome;
-    let reservaPendente = null, reservaCriada = null, cobrancaGerada = null, videoNoTurno = null;
+    let reservaPendente = null, reservaCriada = null, cobrancaGerada = null, videoNoTurno = null, reservaPorEquipe = false;
     const executores = {
       gerar_orcamento: entrada => criarOrcamento(entrada, { conversa_id: conv.id, numero_id: conv.numero_id, primeiro_nome: nome, criado_por: 'gilberto' }, buscar),
       // Link de extras: criado agora, mas só conta como oferta quando a equipe enviar a sugestão
@@ -2704,6 +2713,14 @@ async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null, 
         if (Math.abs(atual.valor_total - Number(op.valor_total)) > 0.5) return { ok: false, preco_mudou: true, valor_novo: atual.valor_total, erro: 'O valor mudou desde o orçamento: avise o cliente, gere um orçamento novo e peça um novo OK.' };
         reservaPendente = { opcao_codigo: op.codigo, titular, email: String(e.email).trim(), acompanhantes: (e.acompanhantes || []).map(String).filter(Boolean).slice(0, 20),
           acomodacao: op.nome, valor_total: op.valor_total, periodo: orcamento.periodo(o.data_entrada, o.data_saida) };
+        if (auto && travaReservas()) { // etapa 1 do Silbeck real: a equipe fecha a reserva e manda o pagamento
+          await alertaAtendimento('gilberto_passou', conv.id, 'Cliente aceitou e quer reservar: ' + op.nome + ', ' + reservaPendente.periodo + ', ' + produtos.brl(op.valor_total)
+            + ' (vaga e preço conferidos agora no Silbeck). Titular: ' + titular + ' · e-mail: ' + reservaPendente.email + (reservaPendente.acompanhantes.length ? ' · acompanhantes: ' + reservaPendente.acompanhantes.join(', ') : '')
+            + '. Fechar a reserva no Silbeck e mandar o pagamento ao cliente (o Pix automático ainda está em teste).', buscar, 'Gilberto: cliente quer reservar').catch(() => {});
+          reservaPendente = null; reservaPorEquipe = true;
+          return { ok: true, reserva_pela_equipe: true, acomodacao: op.nome, valor_total: op.valor_total,
+            aviso: 'Vaga e preço conferidos agora. Nesta fase quem fecha a reserva e manda o pagamento é a EQUIPE, que já foi avisada com os dados. Diga ao cliente que a equipe está garantindo a reserva e manda os dados de pagamento em instantes (no horário de atendimento). Não diga que está reservado ou confirmado e NÃO chame gerar_cobranca.' };
+        }
         if (auto) { // modo automático: a reserva nasce agora no Silbeck (não confirmada)
           try { reservaCriada = await criarReservaSilbeck(conv.id, reservaPendente, { usuario: null, origem: 'gilberto' }, buscar); }
           catch (er) { reservaPendente = null; return { ok: false, erro: 'Não consegui reservar agora: ' + er.message + ' Avise o cliente e use abrir_alerta.' }; }
@@ -2714,6 +2731,7 @@ async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null, 
           aviso: 'Vaga e preço conferidos agora. A reserva é criada no Silbeck (não confirmada, aguardando pagamento) quando a equipe aprovar o envio. Chame gerar_cobranca na forma escolhida, nesta mesma resposta.' };
       },
       gerar_cobranca: async e => {
+        if (auto && (reservaPorEquipe || travaReservas())) return { ok: false, erro: 'Nesta fase o pagamento é mandado pela equipe (já avisada). Não escreva marcador: diga que a equipe manda os dados de pagamento em instantes.' };
         const pct = e.percentual === 100 ? 100 : 50, forma = e.forma === 'cartao' ? 'cartao' : 'pix';
         const existente = reservaCriada || (reservaPendente ? null : (await getJson(`${SUPABASE_URL}/rest/v1/reservas?conversa_id=eq.${conv.id}&situacao=eq.nao_confirmada&select=id,silbeck_id,acomodacao,valor_total,data_entrada,data_saida&order=criado_em.desc&limit=1`, buscar))[0]);
         // Trava do dono (04/10/2026): dados de pagamento só depois de a reserva existir no Silbeck
@@ -2762,7 +2780,7 @@ async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null, 
     const retomar = neg && neg.etapa === 'orc' && (await getJson(`${SUPABASE_URL}/rest/v1/tarefas?negocio_id=eq.${neg.id}&tipo=eq.${encodeURIComponent(TIPO_RETOMAR)}&feita=eq.false&select=id&limit=1`, buscar)).length;
     const jaVideos = historico.filter(m => m.midia_caminho && orcamento.ehVideo(m.midia_caminho)).map(m => m.midia_caminho.slice('biblioteca/'.length));
     const listaVideos = orcamento.videos().map(v => ({ categoria: v.nome_grupo, descricao: v.descricao, enviado: jaVideos.includes(v.arquivo) }));
-    const r = await gilberto.sugerir(historico, { modo: auto ? 'automatico' : 'sugestao', canal: conv.canal, nome, videos: listaVideos, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, retomada, gatilho: gatilho || (retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null) }, executores, await catalogo(buscar));
+    const r = await gilberto.sugerir(historico, { modo: auto ? 'automatico' : 'sugestao', canal: conv.canal, nome, videos: listaVideos, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, retomada, reservasPelaEquipe: auto && travaReservas(), gatilho: gatilho || (retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null) }, executores, await catalogo(buscar));
     // Registro para a revisão (Ajustes do agente): o que o cliente perguntou e o que o Gilberto sugeriu
     const ultimaDoCliente = [...historico].reverse().find(m => m.direcao === 'entrada');
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
@@ -3238,4 +3256,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => { console.log('CRM Cabanas ouvindo na porta ' + porta); conferirIpSaida(); });
-module.exports = { zerarCacheAuto: () => { autoCache.ate = 0; }, emOrdemDeLeitura, servidor, retomarOrcamentos, retomadaAutomatica, motivoRetomada, ehRobo, resumoDoDia, sinalQuente, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca, catalogoParaTeste: () => { limparCatalogo(); return catalogo(); } };
+module.exports = { travaReservas, zerarCacheAuto: () => { autoCache.ate = 0; }, emOrdemDeLeitura, servidor, retomarOrcamentos, retomadaAutomatica, motivoRetomada, ehRobo, resumoDoDia, sinalQuente, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca, catalogoParaTeste: () => { limparCatalogo(); return catalogo(); } };
