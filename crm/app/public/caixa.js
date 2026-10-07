@@ -1868,7 +1868,7 @@
         // Plano B do pagamento: depois de conferir e lançar no Silbeck, o Gilberto confirma ao cliente (dono, 07/10/2026)
         !t.feita && t.tipo === 'Confirmar a reserva' && /Já lancei no Silbeck/.test(t.descricao || '') ? el('button', { class: 'btn-mini lancei', type: 'button', text: '✓ Já lancei no Silbeck', onclick: async e => {
           if (!confirm('A reserva já está no Silbeck com o pagamento lançado?\n\nO Gilberto vai mandar ao cliente a confirmação, os extras e o agradecimento.')) return;
-          e.target.disabled = true;
+          e.target.disabled = true; e.target.textContent = 'O Gilberto está mandando as mensagens (leva 1 a 2 minutos)…';
           try { const r = await chamarApi('/api/reserva-lancada', { tarefa_id: t.id }); toast('Pronto: o Gilberto confirmou ao cliente' + (r.extras ? ' e mandou os extras.' : '.')); }
           catch (er) { e.target.disabled = false; toast(er.message); }
           carregarFunil();

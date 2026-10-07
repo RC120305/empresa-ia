@@ -1286,7 +1286,8 @@ falso.listen(0, () => {
         const rp = await api('/api/cobranca-acao', { id: cobrancasF.at(-1).id, acao: 'simular_pagamento' });
         assert.equal((await rp.json()).pagas, 1);
         assert.equal(rv.situacao, 'confirmada');
-        const todos = chamadas.filter(c => c.url === '/graph/111/messages').slice(-10).map(c => c.corpo);
+        const todos = chamadas.filter(c => c.url === '/graph/111/messages' && !c.corpo.typing_indicator).slice(-10).map(c => c.corpo);
+        assert.ok(chamadas.filter(c => c.url === '/graph/111/messages').slice(-12).filter(c => c.corpo.typing_indicator).length >= 4, '"digitando…" antes de cada mensagem');
         // Depois do pagamento: o aviso em texto e os dois links de extras (aventuras e momentos especiais)
         assert.ok(todos.at(-1).type === 'text' && todos.at(-1).text.body.startsWith('Muito obrigado por escolher o Cabanas, Ana!') && todos.at(-1).text.body.includes('de carro ou de avião'), JSON.stringify(todos.at(-1)));
         const fim = todos.slice(-4, -1);

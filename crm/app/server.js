@@ -534,6 +534,8 @@ async function autenticarEquipe(tokenUsuario, buscar = fetch) {
 // Especificação §6.6: ~6 a 8 caracteres por segundo, mínimo 2 s e máximo 12 s por balão (calibrar nos testes).
 // FATOR_DIGITACAO ajusta tudo sem mexer no código (0 nos testes; 0,5 = metade do tempo).
 const FATOR_DIGITACAO = process.env.FATOR_DIGITACAO !== undefined ? Number(process.env.FATOR_DIGITACAO) : 1;
+// Tempo de leitura da mensagem anterior antes de começar a digitar a próxima (entre 3 e 8 s)
+const tempoLeitura = t => FATOR_DIGITACAO * Math.min(8000, Math.max(3000, 1500 + String(t).length * 25));
 const tempoDigitacao = t => FATOR_DIGITACAO * Math.min(12000, Math.max(2000, 1000 + t.length * 140));
 const esperar = ms => new Promise(ok => setTimeout(ok, ms));
 
@@ -1507,7 +1509,16 @@ async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch, {
       ...(res.fonte === 'simulador' ? ['', '⚠ Teste: reserva do SIMULADOR do Silbeck.'] : [])].join('\n');
   } else texto = ola + ' Obrigado. A equipe está finalizando a confirmação da sua reserva no sistema e te manda os detalhes em instantes 🌿';
   try {
-    const { conv, para } = await carregarConversaParaEnvio(cob.conversa_id, buscar);
+    const { conv, para, wamidCliente } = await carregarConversaParaEnvio(cob.conversa_id, buscar);
+    // Ritmo de pessoa (dono, 07/10/2026): antes de cada mensagem, o tempo de o cliente ler a anterior e o "digitando…"
+    let anterior = '';
+    const digitar = async proxima => {
+      if (anterior) await esperar(tempoLeitura(anterior));
+      await mostrarDigitando(conv, wamidCliente, buscar);
+      await esperar(tempoDigitacao(proxima));
+      anterior = proxima;
+    };
+    await digitar(texto);
     await enviarTexto(conv, para, texto, 'gilberto', buscar);
     let extras = null;
     if (res && confirmada) { // extras uma vez só: aviso em texto e os links de aventuras e de momentos especiais
@@ -1517,12 +1528,12 @@ async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch, {
       const cat = await catalogo(buscar).catch(() => null);
       const temas = (casal ? ['momentos', 'aventuras'] : ['aventuras', 'momentos']).filter(t => ((cat || {}).produtos || []).some(p => p.vitrine === t));
       if (!ja.length && temas.length) {
-        await esperar(Number(process.env.GILBERTO_ESPERA_EXTRAS_MS ?? 4000));
+        await digitar(AVISO_EXTRAS);
         await enviarTexto(conv, para, AVISO_EXTRAS, 'gilberto', buscar);
         const enviados = [];
         for (const tema of temas) {
           const v = await criarVitrine(cob.conversa_id, tema, { por: 'gilberto', enviada: true }, buscar);
-          await esperar(Number(process.env.GILBERTO_ESPERA_EXTRAS_MS ?? 4000) / 2);
+          await digitar(TEXTO_EXTRAS[tema]);
           await enviarCartaoVitrine(conv, para, tema, v, TEXTO_EXTRAS[tema], 'gilberto', buscar)
             .catch(() => enviarTexto(conv, para, TEXTO_EXTRAS[tema] + '\n' + v.link, 'gilberto', buscar));
           enviados.push(vitrine.TEMAS[tema].nome);
@@ -1530,7 +1541,7 @@ async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch, {
         extras = enviados.join(' e ');
       }
       // Fecho da venda (dono, 07/10/2026): agradecimento, à disposição, dicas de viagem e como vão vir (o Gilberto oferece a rota)
-      await esperar(Number(process.env.GILBERTO_ESPERA_EXTRAS_MS ?? 4000));
+      await digitar(AGRADECIMENTO(primeiro));
       await enviarTexto(conv, para, AGRADECIMENTO(primeiro), 'gilberto', buscar).catch(() => {});
     }
     console.log(JSON.stringify({ evento: 'confirmacao_enviada', confirmada: !!confirmada, extras: !!extras }));
