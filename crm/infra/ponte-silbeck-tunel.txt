@@ -1,7 +1,7 @@
 bash <<'FIM'
 # CRM Cabanas: PONTE com o Silbeck por túnel WireGuard (opção A, 06/10/2026). Rodar no Cloud Shell.
 # Cria uma máquina pequena na rede privada do CRM, ligada por WireGuard ao roteador MikroTik do hotel
-# (07/10/2026: o Márcio configurou o WireGuard no MikroTik). O CRM chama a máquina pelo endereço interno
+# (07/10/2026: o Márcio configurou o WireGuard no MikroTik; endereços dele: CRM 10.99.0.3, MikroTik e Silbeck em 10.99.0.1). O CRM chama a máquina pelo endereço interno
 # 10.20.0.250:8366 e ela repassa pelo túnel ao servidor do Silbeck na rede do hotel.
 # Os dois lados se conectam: a ponte chama o MikroTik (se ele tiver endereço público) e o MikroTik chama a ponte.
 # Pede só dados que não são segredo (chave PÚBLICA, IPs). A chave privada da ponte nunca sai da máquina.
@@ -32,16 +32,16 @@ while :; do
   echo "  Use IP:porta (ex.: 200.100.50.25:13231). Tente de novo."
 done
 while :; do
-  read -r -p "3) IP do CRM dentro do túnel (o Márcio define) [10.99.0.1]: " TUN_CRM </dev/tty
-  TUN_CRM="${TUN_CRM:-10.99.0.1}"; ipok "$TUN_CRM" && fora "$TUN_CRM" && break; ipok "$TUN_CRM" || echo "  Só o IP (ex.: 10.99.0.1)."
+  read -r -p "3) IP do CRM dentro do túnel (o Márcio define) [10.99.0.3]: " TUN_CRM </dev/tty
+  TUN_CRM="${TUN_CRM:-10.99.0.3}"; ipok "$TUN_CRM" && fora "$TUN_CRM" && break; ipok "$TUN_CRM" || echo "  Só o IP (ex.: 10.99.0.1)."
 done
 while :; do
-  read -r -p "4) IP do servidor WireGuard do Márcio dentro do túnel [10.99.0.2]: " TUN_HOTEL </dev/tty
-  TUN_HOTEL="${TUN_HOTEL:-10.99.0.2}"; ipok "$TUN_HOTEL" && fora "$TUN_HOTEL" && break; ipok "$TUN_HOTEL" || echo "  Só o IP (ex.: 10.99.0.2)."
+  read -r -p "4) IP do servidor WireGuard do Márcio dentro do túnel [10.99.0.1]: " TUN_HOTEL </dev/tty
+  TUN_HOTEL="${TUN_HOTEL:-10.99.0.1}"; ipok "$TUN_HOTEL" && fora "$TUN_HOTEL" && break; ipok "$TUN_HOTEL" || echo "  Só o IP (ex.: 10.99.0.2)."
 done
 while :; do
-  read -r -p "5) IP do servidor do Silbeck na rede do hotel [192.168.132.242]: " DESTINO </dev/tty
-  DESTINO="${DESTINO:-192.168.132.242}"; ipok "$DESTINO" && break; echo "  Só o IP (ex.: 192.168.132.242)."
+  read -r -p "5) IP para acessar o Silbeck pelo túnel (o Márcio repassa no MikroTik) [10.99.0.1]: " DESTINO </dev/tty
+  DESTINO="${DESTINO:-10.99.0.1}"; ipok "$DESTINO" && break; echo "  Só o IP (ex.: 192.168.132.242)."
 done
 META="hotel-pubkey=${HOTEL_PUB},hotel-endpoint=${HOTEL_END:-nenhum},tunel-crm=${TUN_CRM},tunel-hotel=${TUN_HOTEL},destino=${DESTINO},enable-guest-attributes=TRUE"
 
@@ -73,7 +73,8 @@ umask 077; mkdir -p /etc/wireguard
 PUB="$(wg pubkey < /etc/wireguard/ponte.key)"
 at() { curl -sf -H 'Metadata-Flavor: Google' "$MD/attributes/$1"; }
 HOTEL="$(at hotel-pubkey)"; FIMH="$(at hotel-endpoint || echo nenhum)"
-TCRM="$(at tunel-crm || echo 10.99.0.1)"; THOTEL="$(at tunel-hotel || echo 10.99.0.2)"; DEST="$(at destino || echo 192.168.132.242)"
+TCRM="$(at tunel-crm || echo 10.99.0.3)"; THOTEL="$(at tunel-hotel || echo 10.99.0.1)"; DEST="$(at destino || echo 10.99.0.1)"
+PERMITIDOS="$THOTEL/32"; [ "$DEST" != "$THOTEL" ] && PERMITIDOS="$PERMITIDOS, $DEST/32"
 INTERNO="$(curl -sf -H 'Metadata-Flavor: Google' $MD/network-interfaces/0/ip)"
 REGRAS="-t nat -A PREROUTING -d $INTERNO -p tcp --dport 8366 -j DNAT --to-destination $DEST:8366"
 cat > /etc/wireguard/wg0.conf <<CONF
@@ -87,7 +88,7 @@ PostDown = iptables ${REGRAS/-A PREROUTING/-D PREROUTING}; iptables -t nat -D PO
 [Peer]
 # roteador MikroTik do hotel
 PublicKey = $HOTEL
-AllowedIPs = $THOTEL/32, $DEST/32
+AllowedIPs = $PERMITIDOS
 PersistentKeepalive = 25
 CONF
 [ "$FIMH" != "nenhum" ] && echo "Endpoint = $FIMH" >> /etc/wireguard/wg0.conf

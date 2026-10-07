@@ -1,5 +1,8 @@
 # Túnel do Silbeck para o CRM: guia do Márcio
 
+> **Endereços definidos pelo Márcio (07/10/2026):** CRM no túnel = **10.99.0.3**; MikroTik = **10.99.0.1**, e o Silbeck é acessado em **10.99.0.1:8366** (o MikroTik repassa para 192.168.132.242:8366). Para aplicar na ponte, o Ricardo roda no Cloud Shell:
+> `gcloud compute instances add-metadata silbeck-ponte --zone=southamerica-east1-a --metadata=tunel-crm=10.99.0.3,tunel-hotel=10.99.0.1,destino=10.99.0.1 && gcloud compute instances reset silbeck-ponte --zone=southamerica-east1-a`
+
 > **Atualização (07/10/2026):** o Márcio montou o WireGuard no **roteador MikroTik**. Nesse caso não precisa do Windows (passos 1 a 5 abaixo ficam como alternativa): o script `ponte-silbeck-tunel.txt` pede a chave pública do MikroTik, o endereço público e porta dele (se houver), os IPs do túnel e o IP do Silbeck, e no fim mostra a chave pública do CRM e os comandos do RouterOS (peer + regra de firewall da porta 8366).
 
 Objetivo: o CRM (no Google Cloud) falar com a API do Silbeck (192.168.132.242:8366) por um túnel criptografado
