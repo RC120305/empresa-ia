@@ -1832,6 +1832,10 @@ falso.listen(0, () => {
         assert.deepEqual(DISP.map(d => [d.conversa_id, d.retomada]), [['C7', 'voltou']]);
         assert.ok(EVN.some(e => e.texto.includes('O Gilberto retomou o orçamento (voltou ao orçamento)')));
         assert.equal(await retomadaAutomatica(fr, B + 60e3), 0, 'um toque só por orçamento');
+        const dg = await retomadaAutomatica(fr, B, { simular: true });
+        assert.deepEqual(dg.orcamentos.map(x => [x.orcamento, x.resultado]), [['r7', 'não retoma: já retomado (um toque por orçamento)'], ['r8', 'não retoma: a equipe assumiu a conversa (Gilberto pausado)'], ['r9', 'não retoma: já retomado (um toque por orçamento)']]);
+        assert.equal(DISP.length, 1, 'o diagnóstico não manda nada');
+        assert.equal(motivoRetomada({ criado_em: ti(2), aberturas: 2, aberto_primeira_vez_em: ti(1.9), ultima_abertura_em: ti(1.88) }, ti(2.1), sai(2), B, true).porque, 'abriu, mas não voltou (as aberturas foram em menos de 10 min)');
         R_EV.length = 1; zerarCacheAuto();
         assert.equal(await retomadaAutomatica(fr, Date.parse('2026-10-06T02:00:00Z')), 0, '22h em Bonito: fora do horário');
         zerarCacheAuto();

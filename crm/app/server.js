@@ -1379,39 +1379,49 @@ const GATILHO_RETOMADA = {
   silencio: 'retomada automática: o orçamento foi enviado e o cliente não respondeu desde a última mensagem dele (cerca de 20 h). Mande UMA mensagem curta com algo novo e útil (regra 10): uma foto real (enviar_fotos), a programação inclusa ou uma data de domingo a quinta com vaga real. Sem repetir o orçamento e sem pressionar. NUNCA diga que viu o cliente abrir o link.',
 };
 const ROTULO_RETOMADA = { quero_reservar: 'tocou em "Quero reservar" e não escreveu', voltou: 'voltou ao orçamento', silencio: '20 h sem resposta' };
-function motivoRetomada(o, ultimaDoCliente, ultimaMsg, agora = Date.now()) {
+// Devolve o motivo da retomada ou null; com explicar = true, devolve { motivo, porque } (diagnóstico em /saude/retomada)
+function motivoRetomada(o, ultimaDoCliente, ultimaMsg, agora = Date.now(), explicar = false) {
   const t = x => x ? Date.parse(x) : 0, calado = x => t(ultimaDoCliente) < t(x), MIN = 60e3, H = 3600e3;
-  if (!t(ultimaDoCliente) || agora - t(ultimaDoCliente) > 23 * H) return null;             // janela de 24 h fechada (ou fechando)
-  if (!ultimaMsg || ultimaMsg.direcao === 'entrada') return null;                          // o cliente está esperando resposta
-  if (agora - t(ultimaMsg.enviada_em) < 10 * MIN) return null;                             // acabou de receber mensagem
-  if (t(o.escolhida_em) && calado(o.escolhida_em) && agora - t(o.escolhida_em) >= 10 * MIN) return 'quero_reservar';
-  if (t(o.ultima_abertura_em) - t(o.aberto_primeira_vez_em) >= VOLTOU_MIN_MS && calado(o.ultima_abertura_em) && agora - t(o.ultima_abertura_em) >= 30 * MIN) return 'voltou';
-  if (agora - t(ultimaDoCliente) >= 20 * H && agora - t(o.criado_em) >= 3 * H) return 'silencio';
-  return null;
+  const r = (motivo, porque) => explicar ? { motivo, porque } : motivo;
+  if (!t(ultimaDoCliente) || agora - t(ultimaDoCliente) > 23 * H) return r(null, 'janela de 24 h do WhatsApp fechada (o cliente não escreve há mais de 23 h)');
+  if (!ultimaMsg || ultimaMsg.direcao === 'entrada') return r(null, 'a última mensagem é do cliente (o Gilberto responde normalmente)');
+  if (agora - t(ultimaMsg.enviada_em) < 10 * MIN) return r(null, 'o hotel mandou mensagem há menos de 10 min');
+  if (t(o.escolhida_em) && calado(o.escolhida_em)) return agora - t(o.escolhida_em) >= 10 * MIN ? r('quero_reservar', 'tocou em Quero reservar e não escreveu') : r(null, 'tocou em Quero reservar há menos de 10 min');
+  const volta = t(o.ultima_abertura_em) - t(o.aberto_primeira_vez_em) >= VOLTOU_MIN_MS && calado(o.ultima_abertura_em);
+  if (volta) return agora - t(o.ultima_abertura_em) >= 30 * MIN ? r('voltou', 'voltou ao orçamento') : r(null, 'voltou ao orçamento há menos de 30 min');
+  if (agora - t(ultimaDoCliente) >= 20 * H && agora - t(o.criado_em) >= 3 * H) return r('silencio', '20 h sem resposta');
+  return r(null, !o.aberturas ? 'ainda não abriu o link' : t(o.ultima_abertura_em) - t(o.aberto_primeira_vez_em) < VOLTOU_MIN_MS ? 'abriu, mas não voltou (as aberturas foram em menos de 10 min)' : 'o cliente escreveu depois de voltar ao orçamento');
 }
 let ultimaRetomadaAuto = 0;
-async function retomadaAutomatica(buscar = fetch, agora = Date.now()) {
+// simular: não manda nada, só explica orçamento a orçamento por que retomaria ou não (sem dados pessoais)
+async function retomadaAutomatica(buscar = fetch, agora = Date.now(), { simular = false } = {}) {
+  const diag = [];
   const desde = agora - ultimaRetomadaAuto;
-  if (desde >= 0 && desde < Number(process.env.RETOMAR_INTERVALO_MS || 4 * 60e3)) return 0;
-  ultimaRetomadaAuto = agora;
-  const m = minutosBonito(new Date(agora));
-  if (m < 8 * 60 || m >= 21 * 60 || !(await gilbertoAutoLigado(buscar))) return 0;
+  if (!simular && desde >= 0 && desde < Number(process.env.RETOMAR_INTERVALO_MS || 4 * 60e3)) return 0;
+  if (!simular) ultimaRetomadaAuto = agora;
+  const m = minutosBonito(new Date(agora)), ligado = await gilbertoAutoLigado(buscar);
+  if (!simular && (m < 8 * 60 || m >= 21 * 60 || !ligado)) return 0;
   const lista = await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?criado_em=gte.${new Date(agora - 48 * 3600e3).toISOString()}&select=id,conversa_id,criado_em,aberturas,aberto_primeira_vez_em,ultima_abertura_em,escolhida_em&order=criado_em.desc&limit=100`, buscar);
   const vistas = new Set();
   let disparadas = 0;
   for (const o of lista) {
     if (!o.conversa_id || vistas.has(o.conversa_id) || disparadas >= 3) continue;
     vistas.add(o.conversa_id); // só o orçamento mais recente da conversa
-    if ((await getJson(`${SUPABASE_URL}/rest/v1/orcamento_eventos?orcamento_id=eq.${o.id}&tipo=eq.retomada&select=id&limit=1`, buscar)).length) continue; // já retomou
+    const d = { orcamento: o.id.slice(0, 8), criado_em: o.criado_em, aberturas: o.aberturas || 0, aberto_primeira_vez_em: o.aberto_primeira_vez_em || null, ultima_abertura_em: o.ultima_abertura_em || null };
+    const pula = porque => { d.resultado = 'não retoma: ' + porque; diag.push(d); };
+    if ((await getJson(`${SUPABASE_URL}/rest/v1/orcamento_eventos?orcamento_id=eq.${o.id}&tipo=eq.retomada&select=id&limit=1`, buscar)).length) { pula('já retomado (um toque por orçamento)'); continue; }
     const c = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${o.conversa_id}&select=status,canal,gilberto_pausado,ultima_msg_cliente_em`, buscar))[0];
-    if (!c || c.status !== 'aberta' || c.canal !== 'wa' || c.gilberto_pausado !== false) continue;
+    if (!c || c.status !== 'aberta') { pula('conversa fechada'); continue; }
+    if (c.canal !== 'wa') { pula('conversa fora do WhatsApp'); continue; }
+    if (c.gilberto_pausado !== false) { pula('a equipe assumiu a conversa (Gilberto pausado)'); continue; }
     const neg = await negocioDaConversa(o.conversa_id, 'id', buscar).catch(() => null);
-    if (!neg) continue;
-    const etapa = (await getJson(`${SUPABASE_URL}/rest/v1/negocios?id=eq.${neg}&select=etapa`, buscar))[0];
-    if (!etapa || etapa.etapa !== 'orc') continue;
+    const etapa = neg && (await getJson(`${SUPABASE_URL}/rest/v1/negocios?id=eq.${neg}&select=etapa`, buscar))[0];
+    if (!etapa || etapa.etapa !== 'orc') { pula('o negócio não está em Orçamento' + (etapa ? ' (etapa: ' + etapa.etapa + ')' : '')); continue; }
     const ultimaMsg = (await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${o.conversa_id}&select=id,direcao,enviada_em&order=enviada_em.desc&limit=1`, buscar))[0];
-    const motivo = motivoRetomada(o, c.ultima_msg_cliente_em, ultimaMsg, agora);
-    if (!motivo) continue;
+    const ex = motivoRetomada(o, c.ultima_msg_cliente_em, ultimaMsg, agora, true);
+    if (!ex.motivo) { pula(ex.porque); continue; }
+    if (simular) { d.resultado = 'RETOMA: ' + ex.porque + (m < 8 * 60 || m >= 21 * 60 ? ' (quando der 8h)' : '') + (ligado ? '' : ' (mas o Gilberto automático está desligado)'); diag.push(d); continue; }
+    const motivo = ex.motivo;
     const doCliente = (await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${o.conversa_id}&direcao=eq.entrada&select=id&order=enviada_em.desc&limit=1`, buscar))[0];
     if (!doCliente) continue;
     const marca = await buscar(`${SUPABASE_URL}/rest/v1/orcamento_eventos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
@@ -1422,6 +1432,7 @@ async function retomadaAutomatica(buscar = fetch, agora = Date.now()) {
       .catch(e => console.warn(JSON.stringify({ evento: 'retomada_disparo', erro: String(e.message || e).slice(0, 200) })));
     disparadas++;
   }
+  if (simular) return { agora: new Date(agora).toISOString(), horario: m >= 8 * 60 && m < 21 * 60 ? 'dentro do horário (8h às 21h)' : 'fora do horário (8h às 21h)', gilberto_automatico: ligado, orcamentos: diag };
   if (disparadas) await esperar(150); // garante que os pedidos saíram
   return disparadas;
 }
@@ -2811,6 +2822,12 @@ const servidor = http.createServer((req, res) => {
       }
       json(res, 200, { ok: true, contas: { ...contas, ...wabas }, permissoes: permissoes.length ? permissoes : (pj.error ? 'erro: ' + String(pj.error.message || '').slice(0, 160) : []), modelos, ultimoErroMeta });
     })().catch(e => json(res, 500, { ok: false, erro: String(e.message || e).slice(0, 160) }));
+    return;
+  }
+  // Diagnóstico da retomada automática: por que cada orçamento das últimas 48 h seria (ou não) retomado. Não manda nada.
+  if (url.pathname === '/saude/retomada' && req.method === 'GET') {
+    if (limiteExcedido(req)) return json(res, 429, { ok: false });
+    retomadaAutomatica(fetch, Date.now(), { simular: true }).then(r => json(res, 200, { ok: true, ...r })).catch(e => json(res, 500, { ok: false, erro: String(e.message || e).slice(0, 160) }));
     return;
   }
   // Teste da ponte com o Silbeck (porta, login, uma leitura). Sem dados sensíveis; resultado guardado por 60 s.
