@@ -74,12 +74,15 @@ PUB="$(wg pubkey < /etc/wireguard/ponte.key)"
 at() { curl -sf -H 'Metadata-Flavor: Google' "$MD/attributes/$1"; }
 HOTEL="$(at hotel-pubkey)"; FIMH="$(at hotel-endpoint || echo nenhum)"
 TCRM="$(at tunel-crm || echo 10.99.0.3)"; THOTEL="$(at tunel-hotel || echo 10.99.0.1)"; DEST="$(at destino || echo 10.99.0.1)"
-PERMITIDOS="$THOTEL/32"; [ "$DEST" != "$THOTEL" ] && PERMITIDOS="$PERMITIDOS, $DEST/32"
+MASCARA="$(at tunel-mascara || echo 32)"   # o Márcio usa 10.99.0.3/24 (07/10/2026)
+# Redes que passam pelo túnel ("redes", separadas por espaço; o Márcio: 10.99.0.0/24 192.168.132.0/24)
+REDES="$(at redes || true)"
+if [ -n "$REDES" ]; then PERMITIDOS="$(echo $REDES | sed 's/ /, /g')"; else PERMITIDOS="$THOTEL/32"; [ "$DEST" != "$THOTEL" ] && PERMITIDOS="$PERMITIDOS, $DEST/32"; fi
 INTERNO="$(curl -sf -H 'Metadata-Flavor: Google' $MD/network-interfaces/0/ip)"
 REGRAS="-t nat -A PREROUTING -d $INTERNO -p tcp --dport 8366 -j DNAT --to-destination $DEST:8366"
 cat > /etc/wireguard/wg0.conf <<CONF
 [Interface]
-Address = $TCRM/32
+Address = $TCRM/$MASCARA
 ListenPort = 51820
 PrivateKey = $(cat /etc/wireguard/ponte.key)
 PostUp = sysctl -qw net.ipv4.ip_forward=1; iptables $REGRAS; iptables -t nat -A POSTROUTING -o wg0 -j MASQUERADE; iptables -A FORWARD -i wg0 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; iptables -A FORWARD -i wg0 -j DROP
