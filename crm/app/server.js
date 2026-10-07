@@ -1182,7 +1182,7 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch, { retomada
   try {
     let r;
     for (let tentativa = 0; !r; tentativa++) {
-      try { r = await gerarResposta(conversa, { modo: 'automatico', eu: null, mensagemId, gatilho: retomada ? GATILHO_RETOMADA[retomada] : null }, buscar); }
+      try { r = await gerarResposta(conversa, { modo: 'automatico', eu: null, mensagemId, gatilho: retomada ? GATILHO_RETOMADA[retomada] : null, retomada: !!retomada }, buscar); }
       catch (e) {
         // Só pula calado quando não há nada a responder ou alguém da equipe já está pedindo a sugestão desta conversa
         if (e instanceof ErroEnvio && (e.http === 409 || (e.http === 429 && /preparando/.test(e.message)))) return { pulou: e.message };
@@ -1409,7 +1409,11 @@ async function retomadaAutomatica(buscar = fetch, agora = Date.now(), { simular 
     vistas.add(o.conversa_id); // só o orçamento mais recente da conversa
     const d = { orcamento: o.id.slice(0, 8), criado_em: o.criado_em, aberturas: o.aberturas || 0, aberto_primeira_vez_em: o.aberto_primeira_vez_em || null, ultima_abertura_em: o.ultima_abertura_em || null };
     const pula = porque => { d.resultado = 'não retoma: ' + porque; diag.push(d); };
-    if ((await getJson(`${SUPABASE_URL}/rest/v1/orcamento_eventos?orcamento_id=eq.${o.id}&tipo=eq.retomada&select=id&limit=1`, buscar)).length) { pula('já retomado (um toque por orçamento)'); continue; }
+    if ((await getJson(`${SUPABASE_URL}/rest/v1/orcamento_eventos?orcamento_id=eq.${o.id}&tipo=eq.retomada&select=id&limit=1`, buscar)).length) {
+      const res = simular ? (await getJson(`${SUPABASE_URL}/rest/v1/orcamento_eventos?orcamento_id=eq.${o.id}&tipo=eq.retomada_resultado&select=dados,quando&order=quando.desc&limit=1`, buscar))[0] : null;
+      if (res) d.envio = res.dados && res.dados.enviada ? 'mensagem enviada em ' + res.quando : 'não enviou: ' + ((res.dados && (res.dados.pulou || res.dados.erro)) || 'sem detalhe');
+      pula('já retomado (um toque por orçamento)'); continue;
+    }
     const c = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${o.conversa_id}&select=status,canal,gilberto_pausado,ultima_msg_cliente_em`, buscar))[0];
     if (!c || c.status !== 'aberta') { pula('conversa fechada'); continue; }
     if (c.canal !== 'wa') { pula('conversa fora do WhatsApp'); continue; }
@@ -1428,7 +1432,7 @@ async function retomadaAutomatica(buscar = fetch, agora = Date.now(), { simular 
       body: JSON.stringify({ orcamento_id: o.id, tipo: 'retomada', dados: { motivo } }) }).catch(() => null);
     if (!marca || !marca.ok) continue; // sem a marca, não arrisca mandar duas vezes
     await eventoNegocio(neg, 'O Gilberto retomou o orçamento (' + ROTULO_RETOMADA[motivo] + ')', 'gilberto', buscar).catch(() => {});
-    buscar(URL_INTERNA() + '/interno/gilberto', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Interno': TOKEN_INTERNO }, body: JSON.stringify({ conversa_id: o.conversa_id, mensagem_id: doCliente.id, retomada: motivo }), signal: AbortSignal.timeout(280000) })
+    buscar(URL_INTERNA() + '/interno/gilberto', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Interno': TOKEN_INTERNO }, body: JSON.stringify({ conversa_id: o.conversa_id, mensagem_id: doCliente.id, retomada: motivo, orcamento_id: o.id }), signal: AbortSignal.timeout(280000) })
       .catch(e => console.warn(JSON.stringify({ evento: 'retomada_disparo', erro: String(e.message || e).slice(0, 200) })));
     disparadas++;
   }
@@ -2646,7 +2650,7 @@ function emOrdemDeLeitura(historico, mensagemId, visto = null) {
   if (!historico.slice(primeira).some(m => m.direcao !== 'entrada')) return historico; // nada saiu depois: ordem já certa
   return [...historico.filter((m, k) => !naoLida(m, k)), ...pendentes];
 }
-async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null }, buscar = fetch) {
+async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null, retomada = false }, buscar = fetch) {
   const auto = modo === 'automatico';
   await atualizarFotos(buscar).catch(() => {});
   if (sugerindo.has(id)) throw new ErroEnvio(429, 'Já estou preparando uma sugestão para esta conversa.');
@@ -2658,7 +2662,8 @@ async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null }
     const url = campos => `${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${id}&select=${campos}&order=enviada_em.desc&limit=40`;
     let h = await buscar(url('id,conversa_id,direcao,tipo,corpo,enviada_em,midia_id,midia_caminho,transcricao,transcricao_status'), { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) });
     if (!h.ok) h = await buscar(url('direcao,tipo,corpo,enviada_em'), { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }); // banco sem a migração 005
-    const historico = emOrdemDeLeitura(h.ok ? (await h.json()).reverse() : [], mensagemId, mensagemId ? vistoAte.get(id) : null);
+    const historico = retomada ? (h.ok ? (await h.json()).reverse() : []) // retomada: ordem real (a última é do hotel)
+      : emOrdemDeLeitura(h.ok ? (await h.json()).reverse() : [], mensagemId, mensagemId ? vistoAte.get(id) : null);
     // Áudios do cliente ainda sem texto: transcreve os 3 mais recentes antes de o Gilberto ler.
     const pendentes = historico.filter(m => m.tipo === 'audio' && m.direcao === 'entrada' && m.id && (!m.transcricao_status || m.transcricao_status === 'falhou')).slice(-3);
     await Promise.all(pendentes.map(m => transcreverMensagem(m, buscar).then(r => { m.transcricao = r.texto; m.transcricao_status = r.status; }).catch(() => {})));
@@ -2757,7 +2762,7 @@ async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null }
     const retomar = neg && neg.etapa === 'orc' && (await getJson(`${SUPABASE_URL}/rest/v1/tarefas?negocio_id=eq.${neg.id}&tipo=eq.${encodeURIComponent(TIPO_RETOMAR)}&feita=eq.false&select=id&limit=1`, buscar)).length;
     const jaVideos = historico.filter(m => m.midia_caminho && orcamento.ehVideo(m.midia_caminho)).map(m => m.midia_caminho.slice('biblioteca/'.length));
     const listaVideos = orcamento.videos().map(v => ({ categoria: v.nome_grupo, descricao: v.descricao, enviado: jaVideos.includes(v.arquivo) }));
-    const r = await gilberto.sugerir(historico, { modo: auto ? 'automatico' : 'sugestao', canal: conv.canal, nome, videos: listaVideos, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, gatilho: gatilho || (retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null) }, executores, await catalogo(buscar));
+    const r = await gilberto.sugerir(historico, { modo: auto ? 'automatico' : 'sugestao', canal: conv.canal, nome, videos: listaVideos, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, retomada, gatilho: gatilho || (retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null) }, executores, await catalogo(buscar));
     // Registro para a revisão (Ajustes do agente): o que o cliente perguntou e o que o Gilberto sugeriu
     const ultimaDoCliente = [...historico].reverse().find(m => m.direcao === 'entrada');
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
@@ -3077,7 +3082,14 @@ const servidor = http.createServer((req, res) => {
   // Pedido interno do próprio CRM: o Gilberto responde sozinho (só aceita com o código desta instância)
   if (url.pathname === '/interno/gilberto' && req.method === 'POST') {
     if (req.headers['x-interno'] !== TOKEN_INTERNO) return json(res, 403, { ok: false });
-    lerCorpo(req, 2000).then(c => uuidOk(c.conversa_id) && uuidOk(c.mensagem_id) ? responderSozinho(c.conversa_id, c.mensagem_id, fetch, { retomada: Object.hasOwn(GATILHO_RETOMADA, String(c.retomada)) ? c.retomada : null }) : { ok: false })
+    lerCorpo(req, 2000).then(async c => {
+      if (!uuidOk(c.conversa_id) || !uuidOk(c.mensagem_id)) return { ok: false };
+      const retomada = Object.hasOwn(GATILHO_RETOMADA, String(c.retomada)) ? c.retomada : null;
+      const r = await responderSozinho(c.conversa_id, c.mensagem_id, fetch, { retomada }).catch(e => ({ erro: String(e.message || e).slice(0, 150) }));
+      if (retomada && uuidOk(c.orcamento_id)) await fetch(`${SUPABASE_URL}/rest/v1/orcamento_eventos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000), // o que aconteceu (diagnóstico)
+        body: JSON.stringify({ orcamento_id: c.orcamento_id, tipo: 'retomada_resultado', dados: { enviada: !!(r && r.enviadas), pulou: (r && r.pulou) || null, erro: (r && r.erro) || null } }) }).catch(() => {});
+      return r;
+    })
       .then(r => json(res, 200, r)).catch(e => { console.error(JSON.stringify({ evento: 'gilberto_auto_falha', erro: String(e.message || e).slice(0, 200) })); json(res, 500, { ok: false }); });
     return;
   }

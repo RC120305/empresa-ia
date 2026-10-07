@@ -247,7 +247,7 @@ Canal: ${c.canal === 'wa' ? 'WhatsApp' : c.canal}
 Expediente da equipe aberto agora: ${aberto ? 'sim' : 'não'}
 De plantão: não informado
 Modo: ${c.modo === 'automatico' ? 'automatico' : 'sugestao'}
-Gatilho deste turno: ${c.modo === 'automatico' ? 'mensagem nova do cliente (você responde sozinho: o CRM envia a sua resposta na hora)' : 'a equipe pediu uma sugestão de resposta para a última mensagem do cliente'}
+Gatilho deste turno: ${c.retomada ? 'RETOMADA AUTOMÁTICA: o cliente NÃO escreveu nada novo; a última mensagem da conversa é do hotel. Escreva a mensagem de retomada pedida no Gatilho abaixo (o CRM envia na hora), sem responder de novo a mensagens antigas do cliente' : c.modo === 'automatico' ? 'mensagem nova do cliente (você responde sozinho: o CRM envia a sua resposta na hora)' : 'a equipe pediu uma sugestão de resposta para a última mensagem do cliente'}
 Contato (dados já conhecidos): nome do perfil do WhatsApp: ${c.nome || 'não informado'}
 Pendências (reservas, cobranças, alertas abertos): não disponíveis nesta fase
 ${c.modo === 'automatico' ? 'MODO AUTOMÁTICO: as ferramentas executam na hora. criar_reserva cria a reserva no Silbeck de verdade; gerar_cobranca só funciona depois da reserva criada (Pix: escreva [[PIX]] sozinho no último balão, o CRM troca pelo Pix com o código e já diz que você avisa quando o pagamento cair: não escreva nada depois do [[PIX]] nem repita esse aviso; cartão: diga que o link do cartão chega em instantes pela equipe, sem marcador). Nunca escreva outros marcadores [[...]]: se faltar um dado, pergunte ao cliente ou use abrir_alerta. Depois de abrir_alerta você continua na conversa (só a equipe tira você, ao assumir).\n' : ''}${c.gatilho ? 'Gatilho: ' + c.gatilho + '\n' : ''}Reserva: ${c.reservaPaga ? 'PAGA (card em Reserva concluída; o CRM já mandou a confirmação, os links de extras e um agradecimento perguntando como vão vir a Bonito e oferecendo dicas do que trazer: se responderem de carro, mande a rota_ate_o_hotel; se pedirem dicas, use o documento de clima e mala)' + (c.perfil ? ', perfil ' + c.perfil : '') + '. Se ainda não houve oferta, é o momento de oferecer os extras uma vez (regra 9), com enviar_link_extras no tema certo para o perfil.' : 'ainda não paga. Não ofereça extras pagos por conta própria (só responda se o cliente perguntar; pergunta sobre o que fazer no hotel ou quantos dias ficar conta como pergunta: cite a boia cross e o arvorismo como opcionais pagos à parte e diga que o ideal é pelo menos 2 dias no hotel).'}
@@ -271,6 +271,8 @@ async function sugerir(historico, conversa, executores = {}, catalogo = null) {
   if (!SISTEMA) throw new ErroSugestao(503, 'As instruções do Gilberto não foram encontradas no servidor.');
   const mensagens = montarMensagens(historico);
   if (!mensagens.length) throw new ErroSugestao(409, 'Ainda não há mensagem do cliente para responder.');
+  // Retomada automática (dono, 07/10/2026): a última mensagem é do hotel; um aviso no lugar do cliente abre o turno
+  if (conversa.retomada && mensagens[mensagens.length - 1].role !== 'user') mensagens.push({ role: 'user', content: '[Aviso do CRM, não é mensagem do cliente: o cliente não escreveu nada novo. Faça a retomada pedida no Gatilho deste turno.]' });
   if (mensagens[mensagens.length - 1].role !== 'user') throw new ErroSugestao(409, 'A última mensagem já é da equipe. A sugestão aparece quando o cliente escrever de novo.');
 
   const pedido = {

@@ -1350,6 +1350,17 @@ falso.listen(0, () => {
       assert.ok(await aguardar(() => enviosMeta().length >= nl + 1), 'respondeu mesmo depois de muitas consultas');
       assert.equal(pedidosIA.length - nIAl, 6); assert.deepEqual(pedidosIA.at(-1).tool_choice, { type: 'none' });
       assert.equal(enviosMeta().at(-1).corpo.text.body, 'Separei as opções para novembro! A *Cabana Casal* sai por *R$ 2.111,40*. Qual semana fica melhor?', 'negrito do WhatsApp com 1 asterisco');
+      // Retomada automática: a última mensagem é do hotel; o Gilberto escreve mesmo assim (antes desistia calado com 409)
+      {
+        const G = require('./gilberto'), antes = iaAuto; iaAuto = 'marcador';
+        const hist = [{ direcao: 'entrada', tipo: 'text', corpo: 'Quero um orçamento', enviada_em: '2026-10-02T10:00:00Z' }, { direcao: 'saida', tipo: 'text', corpo: 'Segue o orçamento!', enviada_em: '2026-10-02T10:01:00Z' }];
+        await assert.rejects(G.sugerir(hist, { modo: 'automatico' }), e => e.http === 409, 'sem retomada: nada a responder');
+        await G.sugerir(hist, { modo: 'automatico', retomada: true, gatilho: 'retomada automática: teste' });
+        const ms = pedidosIA.at(-1).messages, ult = ms.filter(m => m.role !== 'system').at(-1);
+        assert.ok(ult.role === 'user' && JSON.stringify(ult.content).includes('não é mensagem do cliente'), JSON.stringify(ult));
+        assert.ok(JSON.stringify(ms.at(-1).content).includes('RETOMADA AUTOMÁTICA'));
+        iaAuto = antes;
+      }
       // 2c) resposta com dado a completar: o cliente recebe um aviso (nada de silêncio) e a equipe é chamada; o Gilberto segue na conversa
       iaAuto = 'marcador'; alertasF.length = 0; const nm = enviosMeta().length, nChm = chamadas.length;
       await postar(msgCliente('wamid.AUTO2C', 'Quero para 8 pessoas'));
