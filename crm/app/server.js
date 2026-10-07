@@ -1190,7 +1190,7 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
     // Mensagem nova do cliente enquanto o Gilberto pensava: a resposta pode estar velha; a mais nova responde
     const depois = (await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${conversa}&direcao=eq.entrada&select=id&order=enviada_em.desc&limit=1`, buscar))[0];
     if (depois && depois.id !== mensagemId && !r.cobranca && !r.reserva_criada) return { pulou: 'chegou_outra' };
-    let texto = r.mensagem || '';
+    let texto = String(r.mensagem || '').replace(/\*\*([^*\n]+?)\*\*/g, '*$1*'); // negrito do WhatsApp é com 1 asterisco
     if (r.cobranca) texto = texto.includes('[[PIX]]') ? texto.replace('[[PIX]]', textoPix(r.cobranca)) : texto + '\n---\n' + textoPix(r.cobranca);
     if (r.vitrines && r.vitrines.length) texto = texto.replace(new RegExp(URL_PUBLICA.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/e/[A-Za-z0-9_-]+', 'g'), '').replace(/[ \t]+\n/g, '\n').trim(); // o link vai no cartão
     const baloes = texto.split(/\n\s*[-–—]{3,}\s*\n/).map(t => t.trim()).filter(Boolean);

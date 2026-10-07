@@ -302,7 +302,7 @@ const falso = http.createServer((req, res) => {
       if (iaAuto === 'laco' && !(b.tool_choice && b.tool_choice.type === 'none')) return responder(200, { id: 'msg_l', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: [{ type: 'tool_use', id: 'toolu_l' + b.messages.length, name: 'consultar_disponibilidade', input: { data_entrada: emDias(40), data_saida: emDias(43), adultos: 2, idades_criancas: [] } }], usage: { input_tokens: 10, output_tokens: 20 } });
       if (iaAuto === 'laco' || iaAuto === 'marcador') return responder(200, { id: 'msg_m', type: 'message', role: 'assistant', model: b.model, stop_reason: 'end_turn', stop_sequence: null,
-        content: [{ type: 'text', text: JSON.stringify({ mensagem: iaAuto === 'laco' ? 'Separei as opções para novembro! Qual semana fica melhor?' : 'Segue o orçamento: [[ORCAMENTO_COMBINADO]]', notas_internas: 'Combinação de duas cabanas.', precisa_equipe: false, produto_oferecido: '' }) }],
+        content: [{ type: 'text', text: JSON.stringify({ mensagem: iaAuto === 'laco' ? 'Separei as opções para novembro! A **Cabana Casal** sai por *R$ 2.111,40*. Qual semana fica melhor?' : 'Segue o orçamento: [[ORCAMENTO_COMBINADO]]', notas_internas: 'Combinação de duas cabanas.', precisa_equipe: false, produto_oferecido: '' }) }],
         usage: { input_tokens: 10, output_tokens: 20 } });
       if (iaAuto && !jaConsultou) return responder(200, { id: 'msg_a', type: 'message', role: 'assistant', model: b.model, stop_reason: 'tool_use', stop_sequence: null,
         content: iaAuto === 'pix' ? [{ type: 'tool_use', id: 'toolu_a1', name: 'criar_reserva', input: { opcao_codigo: 'STD', aceite_cliente_literal: 'tem vaga de 14 a 16/11', titular_nome_completo: 'Ana Souza Lima', email: 'ana@exemplo.com', acompanhantes: [] } },
@@ -1308,7 +1308,7 @@ falso.listen(0, () => {
       await postar(msgCliente('wamid.AUTO2B', 'Faz um orçamento para 3 diárias em novembro'));
       assert.ok(await aguardar(() => enviosMeta().length >= nl + 1), 'respondeu mesmo depois de muitas consultas');
       assert.equal(pedidosIA.length - nIAl, 6); assert.deepEqual(pedidosIA.at(-1).tool_choice, { type: 'none' });
-      assert.equal(enviosMeta().at(-1).corpo.text.body, 'Separei as opções para novembro! Qual semana fica melhor?');
+      assert.equal(enviosMeta().at(-1).corpo.text.body, 'Separei as opções para novembro! A *Cabana Casal* sai por *R$ 2.111,40*. Qual semana fica melhor?', 'negrito do WhatsApp com 1 asterisco');
       // 2c) resposta com dado a completar: o cliente recebe um aviso (nada de silêncio) e a equipe é chamada; o Gilberto segue na conversa
       iaAuto = 'marcador'; alertasF.length = 0; const nm = enviosMeta().length, nChm = chamadas.length;
       await postar(msgCliente('wamid.AUTO2C', 'Quero para 8 pessoas'));
