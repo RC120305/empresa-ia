@@ -1464,6 +1464,7 @@ function verificarCobrancas(buscar = fetch) {
 const TEXTO_EXTRAS = { aventuras: 'Aventuras no Rio Formoso: boia cross, arvorismo ou o combo das duas, com guias. As vagas são limitadas, então vale garantir o horário já.',
   momentos: 'Momentos especiais: decoração no quarto para comemorar e massagem para relaxar, no quarto ou à beira do rio. Você escolhe a opção, o dia e o horário.' };
 // Depois do pagamento (dono, 06/10/2026): primeiro um texto avisando dos extras, depois os dois links (o do perfil primeiro)
+const AGRADECIMENTO = nome => 'Muito obrigado por escolher o Cabanas' + (nome ? ', ' + nome : '') + '! 🌿 Fico à disposição para qualquer dúvida até a sua chegada. Se quiser, te passo dicas do que trazer na mala para a época da viagem. E como vocês estão planejando vir para Bonito: de carro ou de avião?';
 const AVISO_EXTRAS = 'E para deixar a sua estadia ainda melhor, temos alguns serviços extras que você já pode reservar. Eles vão na conta da hospedagem e são acertados no check-out. Separei as opções aqui embaixo 👇';
 // Cartão do link de extras no WhatsApp: foto de um produto, texto e o botão "Ver as opções"
 async function enviarCartaoVitrine(conv, para, tema, v, texto, autor, buscar = fetch) {
@@ -1525,6 +1526,9 @@ async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch) {
         }
         extras = enviados.join(' e ');
       }
+      // Fecho da venda (dono, 07/10/2026): agradecimento, à disposição, dicas de viagem e como vão vir (o Gilberto oferece a rota)
+      await esperar(Number(process.env.GILBERTO_ESPERA_EXTRAS_MS ?? 4000));
+      await enviarTexto(conv, para, AGRADECIMENTO(primeiro), 'gilberto', buscar).catch(() => {});
     }
     console.log(JSON.stringify({ evento: 'confirmacao_enviada', confirmada: !!confirmada, extras: !!extras }));
     return { enviada: true, extras };

@@ -1285,7 +1285,8 @@ falso.listen(0, () => {
         assert.equal(rv.situacao, 'confirmada');
         const todos = chamadas.filter(c => c.url === '/graph/111/messages').slice(-10).map(c => c.corpo);
         // Depois do pagamento: o aviso em texto e os dois links de extras (aventuras e momentos especiais)
-        const fim = todos.slice(-3);
+        assert.ok(todos.at(-1).type === 'text' && todos.at(-1).text.body.startsWith('Muito obrigado por escolher o Cabanas, Ana!') && todos.at(-1).text.body.includes('de carro ou de avião'), JSON.stringify(todos.at(-1)));
+        const fim = todos.slice(-4, -1);
         assert.ok(fim[0].type === 'text' && fim[0].text.body.startsWith('E para deixar a sua estadia ainda melhor'), JSON.stringify(fim[0]));
         assert.deepEqual(fim.slice(1).map(c => c.interactive.action.parameters.display_text).sort(), ['Ver as aventuras', 'Ver as opções']);
         const conf = enviosMeta().slice(nConf).map(c => c.corpo.text.body);
