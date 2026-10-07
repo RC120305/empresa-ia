@@ -750,7 +750,7 @@ falso.listen(0, () => {
     assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'pag'), 'card em Aguardando pagamento');
     assert.equal((await api('/api/cobranca', { conversa_id: conv, valor: '0' })).status, 400);
     r = await fetch(base + '/cron/pix', { method: 'POST' });
-    assert.deepEqual(await r.json(), { ok: true, verificadas: 1, pagas: 0, vencidas: 0, escalados: 0, avisos: 0, retomar: { criadas: 0, fechadas: 0 }, resumo: 0, massagem: { avisos: 0, expirados: 0 } });
+    assert.deepEqual(await r.json(), { ok: true, verificadas: 1, pagas: 0, vencidas: 0, escalados: 0, avisos: 0, retomar: { criadas: 0, fechadas: 0 }, retomadas: 0, resumo: 0, massagem: { avisos: 0, expirados: 0 } });
     r = await api('/api/cobranca-acao', { id: cobrancasF[0].id, acao: 'simular_pagamento' });
     assert.equal((await r.json()).pagas, 1);
     assert.deepEqual([cobrancasF[0].situacao, cobrancasF[0].valor_pago, cobrancasF[0].pagador], ['paga', 1254.6, 'Cliente de teste']);
@@ -1727,7 +1727,8 @@ falso.listen(0, () => {
       const { retomarOrcamentos, resumoDoDia, proximoExpediente, sinalQuente } = require('./server');
       { // Quente = interesse real, não a abertura logo após o envio
         const A = Date.parse('2026-10-05T15:00:00Z'), t = h => new Date(A - h * 3600e3).toISOString();
-        assert.equal(sinalQuente({ aberto_primeira_vez_em: t(1), ultima_abertura_em: t(0.5), aberturas: 3 }, null, A), null, 'abriu várias vezes logo após o envio');
+        assert.equal(sinalQuente({ aberto_primeira_vez_em: t(1), ultima_abertura_em: t(0.5), aberturas: 3 }, null, A), 'voltou', 'voltou dentro de 2 h (dono, 07/10/2026)');
+        assert.equal(sinalQuente({ aberto_primeira_vez_em: t(1), ultima_abertura_em: t(1 - 5 / 60), aberturas: 2 }, null, A), null, 'reabrir em 5 min (atualizar a página) não conta');
         assert.equal(sinalQuente({ aberto_primeira_vez_em: t(20), ultima_abertura_em: t(1), aberturas: 2 }, null, A), 'voltou', 'voltou horas depois');
         assert.equal(sinalQuente({ aberto_primeira_vez_em: t(20), ultima_abertura_em: t(1), aberturas: 2 }, t(0.5), A), null, 'já escreveu depois: está na conversa');
         assert.equal(sinalQuente({ aberto_primeira_vez_em: t(30), ultima_abertura_em: t(26), aberturas: 2 }, null, A), null, 'mais de 24 h: esfriou');
@@ -1742,7 +1743,7 @@ falso.listen(0, () => {
       // C1: orçamento de 30 h sem resposta → tarefa; C2: cliente respondeu → nada; C3: reservado → nada; C4: 10 h → cedo
       const ORC = [{ id: 'o1', conversa_id: 'C1', criado_em: iso(agora - 30 * H), aberturas: 2 }, { id: 'o2', conversa_id: 'C2', criado_em: iso(agora - 30 * H), aberturas: 1 },
         { id: 'o3', conversa_id: 'C3', criado_em: iso(agora - 40 * H), aberturas: 0 }, { id: 'o4', conversa_id: 'C4', criado_em: iso(agora - 10 * H), aberturas: 3, aberto_primeira_vez_em: iso(agora - 9 * H), ultima_abertura_em: iso(agora - 2 * H) },
-        { id: 'o5', conversa_id: 'C5', criado_em: iso(agora - 5 * H), aberturas: 4, aberto_primeira_vez_em: iso(agora - 4 * H), ultima_abertura_em: iso(agora - 3.5 * H) }]; // C5: abriu várias vezes logo após o envio → não é quente
+        { id: 'o5', conversa_id: 'C5', criado_em: iso(agora - 5 * H), aberturas: 4, aberto_primeira_vez_em: iso(agora - 4 * H), ultima_abertura_em: iso(agora - 4 * H + 5 * 60e3) }]; // C5: só atualizou a página logo após abrir → não é quente
       const NEG = { C1: { id: 'N1', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C1' }, C2: { id: 'N2', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C2' }, C3: { id: 'N3', etapa: 'res', responsavel_id: 'U1', conversa_id: 'C3' }, C4: { id: 'N4', etapa: 'orc', responsavel_id: 'U1', conversa_id: 'C4' }, C5: { id: 'N5', etapa: 'orc', responsavel_id: 'U2', conversa_id: 'C5' } };
       const MSG = [{ conversa_id: 'C2', direcao: 'entrada', enviada_em: iso(agora - 20 * H) }];
       const TAR = [], CFG = {}, PUSH = [];
@@ -1792,6 +1793,49 @@ falso.listen(0, () => {
         CFG.resumo_dia_enviado = null; CFG.resumo_dia_desligado = { usuarios: ['U1'] };
         assert.equal(await resumoDoDia(fb, new Date(agora)), 0, 'quem desligou não recebe');
       } finally { globalThis.fetch = fetchReal; delete process.env.VAPID_CHAVE; }
+      // Retomada automática pelo Gilberto (dono, 07/10/2026): um toque por orçamento, janela aberta, cliente calado
+      {
+        const { motivoRetomada, retomadaAutomatica, ehRobo, zerarCacheAuto } = require('./server');
+        const B = Date.parse('2026-10-05T15:00:00Z'), ti = h => iso(B - h * H), sai = h => ({ direcao: 'saida', enviada_em: ti(h) });
+        assert.equal(motivoRetomada({ criado_em: ti(1), escolhida_em: ti(0.25) }, ti(1.1), sai(1), B), 'quero_reservar', 'tocou em Quero reservar há 15 min');
+        assert.equal(motivoRetomada({ criado_em: ti(1), escolhida_em: ti(0.1) }, ti(1.1), sai(1), B), null, 'ainda não deu 10 min');
+        assert.equal(motivoRetomada({ criado_em: ti(1.5), aberto_primeira_vez_em: ti(1.4), ultima_abertura_em: ti(0.6) }, ti(1.6), sai(1.5), B), 'voltou', 'voltou dentro de 2 h; 30 min depois o Gilberto escreve');
+        assert.equal(motivoRetomada({ criado_em: ti(1.5), aberto_primeira_vez_em: ti(1.4), ultima_abertura_em: ti(0.2) }, ti(1.6), sai(1.5), B), null, 'voltou agora há pouco: espera 30 min');
+        assert.equal(motivoRetomada({ criado_em: ti(1.5), aberto_primeira_vez_em: ti(1.4), ultima_abertura_em: ti(1.35) }, ti(1.6), sai(1.5), B), null, 'só atualizou a página');
+        assert.equal(motivoRetomada({ criado_em: ti(1.5), aberto_primeira_vez_em: ti(1.4), ultima_abertura_em: ti(0.6) }, ti(0.5), sai(0.3), B), null, 'o cliente escreveu depois de voltar');
+        assert.equal(motivoRetomada({ criado_em: ti(20) }, ti(21), sai(20), B), 'silencio', '20 h sem resposta, janela ainda aberta');
+        assert.equal(motivoRetomada({ criado_em: ti(23) }, ti(23.5), sai(23), B), null, 'janela fechando: fica a tarefa da equipe');
+        assert.equal(motivoRetomada({ criado_em: ti(1), escolhida_em: ti(0.5) }, ti(0.3), { direcao: 'entrada', enviada_em: ti(0.3) }, B), null, 'cliente esperando resposta');
+        assert.equal(motivoRetomada({ criado_em: ti(1), escolhida_em: ti(0.5) }, ti(1.1), sai(0.05), B), null, 'acabou de receber mensagem');
+        assert.ok(ehRobo({ headers: { 'user-agent': 'WhatsApp/2.23.20.0 A' } }) && ehRobo({ headers: { 'user-agent': 'facebookexternalhit/1.1' } }), 'prévia do link não conta como abertura');
+        assert.ok(!ehRobo({ headers: { 'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1' } }));
+        // O laço: C7 voltou ao orçamento → dispara uma vez; C8 equipe assumiu → nada; C9 já retomado → nada
+        const R_ORC = [{ id: 'r7', conversa_id: 'C7', criado_em: ti(1.5), aberto_primeira_vez_em: ti(1.4), ultima_abertura_em: ti(0.6) },
+          { id: 'r8', conversa_id: 'C8', criado_em: ti(1.5), escolhida_em: ti(0.5) }, { id: 'r9', conversa_id: 'C9', criado_em: ti(1.5), escolhida_em: ti(0.5) }];
+        const R_CONV = { C7: { status: 'aberta', canal: 'wa', gilberto_pausado: false, ultima_msg_cliente_em: ti(1.6) }, C8: { status: 'aberta', canal: 'wa', gilberto_pausado: true, ultima_msg_cliente_em: ti(1.6) }, C9: { status: 'aberta', canal: 'wa', gilberto_pausado: false, ultima_msg_cliente_em: ti(1.6) } };
+        const R_EV = [{ orcamento_id: 'r9', tipo: 'retomada' }], DISP = [], EVN = [];
+        const fr = async (url, o = {}) => {
+          const u = new URL(url), p = u.pathname.replace('/rest/v1/', ''), m = o.method || 'GET', body = o.body && typeof o.body === 'string' ? JSON.parse(o.body) : null;
+          if (u.pathname === '/interno/gilberto') { DISP.push(body); return resp({ ok: true }); }
+          if (p === 'config') return resp([{ valor: { ligado: true } }]);
+          if (p === 'orcamentos') return resp(R_ORC);
+          if (p === 'orcamento_eventos' && m === 'POST') { R_EV.push(body); return resp(null, 201); }
+          if (p === 'orcamento_eventos') return resp(R_EV.filter(e => e.orcamento_id === q(u, 'orcamento_id') && e.tipo === q(u, 'tipo')));
+          if (p === 'conversas') return resp([R_CONV[q(u, 'id')]].filter(Boolean));
+          if (p === 'negocios') return resp(u.searchParams.get('conversa_id') ? [{ id: 'N' + q(u, 'conversa_id'), etapa: 'orc' }] : [{ etapa: 'orc' }]);
+          if (p === 'mensagens') return resp(u.searchParams.get('direcao') ? [{ id: 'aaaaaaaa-0000-0000-0000-00000000000' + q(u, 'conversa_id').slice(1) }] : [sai(1.5)]);
+          if (p === 'negocio_eventos') { EVN.push(body); return resp(null, 201); }
+          throw new Error('fake sem rota: ' + m + ' ' + url);
+        };
+        zerarCacheAuto(); process.env.RETOMAR_INTERVALO_MS = '0';
+        assert.equal(await retomadaAutomatica(fr, B), 1);
+        assert.deepEqual(DISP.map(d => [d.conversa_id, d.retomada]), [['C7', 'voltou']]);
+        assert.ok(EVN.some(e => e.texto.includes('O Gilberto retomou o orçamento (voltou ao orçamento)')));
+        assert.equal(await retomadaAutomatica(fr, B + 60e3), 0, 'um toque só por orçamento');
+        R_EV.length = 1; zerarCacheAuto();
+        assert.equal(await retomadaAutomatica(fr, Date.parse('2026-10-06T02:00:00Z')), 0, '22h em Bonito: fora do horário');
+        zerarCacheAuto();
+      }
     }
     // Todo módulo local usado pelo servidor precisa estar no Dockerfile (senão o Cloud Run não sobe)
     const fsD = require('fs'), docker = fsD.readFileSync(require('path').join(__dirname, 'Dockerfile'), 'utf8');

@@ -1164,8 +1164,8 @@ async function segurarCliente(conversa, info, titulo, buscar = fetch) {
   } catch (e) { console.warn(JSON.stringify({ evento: 'gilberto_aviso_espera', erro: String(e.message || e).slice(0, 200) })); }
   await alertaAtendimento('gilberto_passou', conversa, info, buscar, titulo).catch(() => {});
 }
-async function responderSozinho(conversa, mensagemId, buscar = fetch) {
-  await esperar(Number(process.env.GILBERTO_ESPERA_MS ?? 15000)); // o cliente costuma mandar várias mensagens seguidas
+async function responderSozinho(conversa, mensagemId, buscar = fetch, { retomada = null } = {}) {
+  if (!retomada) await esperar(Number(process.env.GILBERTO_ESPERA_MS ?? 15000)); // o cliente costuma mandar várias mensagens seguidas
   const ultima = (await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${conversa}&direcao=eq.entrada&select=id&order=enviada_em.desc&limit=1`, buscar))[0];
   if (!ultima || ultima.id !== mensagemId) return { pulou: 'chegou_outra' }; // a mais nova responde por todas
   for (let i = 0; respondendo.has(conversa) && i < 60; i++) await esperar(1500);
@@ -1182,7 +1182,7 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch) {
   try {
     let r;
     for (let tentativa = 0; !r; tentativa++) {
-      try { r = await gerarResposta(conversa, { modo: 'automatico', eu: null, mensagemId }, buscar); }
+      try { r = await gerarResposta(conversa, { modo: 'automatico', eu: null, mensagemId, gatilho: retomada ? GATILHO_RETOMADA[retomada] : null }, buscar); }
       catch (e) {
         // Só pula calado quando não há nada a responder ou alguém da equipe já está pedindo a sugestão desta conversa
         if (e instanceof ErroEnvio && (e.http === 409 || (e.http === 429 && /preparando/.test(e.message)))) return { pulou: e.message };
@@ -1334,6 +1334,7 @@ function proximoExpediente(d = new Date()) {
 }
 const getJson = async (url, buscar) => { const r = await buscar(url, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null); return r && r.ok ? r.json().catch(() => []) : []; };
 let ultimaRetomada = 0;
+const ehRobo = req => /WhatsApp|facebookexternalhit|facebookcatalog|Facebot|meta-externalagent|bot\b|crawler|spider|preview|Slackbot|TelegramBot|Twitterbot|Discordbot|SkypeUriPreview|Google-PageRenderer|HeadlessChrome/i.test(String(req.headers['user-agent'] || ''));
 async function retomarOrcamentos(buscar = fetch, agora = Date.now()) {
   const desde = agora - ultimaRetomada; // no máximo a cada 15 min (relógio voltando, como nos testes, não trava)
   if (desde >= 0 && desde < Number(process.env.RETOMAR_INTERVALO_MS || 15 * 60e3)) return { criadas: 0, fechadas: 0 };
@@ -1367,16 +1368,75 @@ async function retomarOrcamentos(buscar = fetch, agora = Date.now()) {
   }
   return { criadas, fechadas };
 }
+// ---------- Retomada automática pelo Gilberto (dono, 07/10/2026) ----------
+// Um toque só por orçamento, das 8h às 21h, com a janela de 24 h do WhatsApp aberta e o cliente calado:
+// tocou em "Quero reservar" e não mandou a mensagem → 10 min depois; voltou ao orçamento → 30 min depois;
+// nenhum sinal → 20 h depois da última mensagem do cliente. Nunca se a equipe assumiu, o negócio saiu de Orçamento
+// ou o cliente está esperando resposta. Fechada a janela, segue a tarefa "Retomar orçamento" para a equipe.
+const GATILHO_RETOMADA = {
+  quero_reservar: 'retomada automática: o cliente demonstrou que quer reservar uma das opções do orçamento, mas não escreveu. Mande UMA mensagem curta e natural oferecendo ajuda para garantir a reserva (ex.: se quer que você já deixe tudo pronto, qual opção e a forma de pagamento). NUNCA diga que viu o cliente abrir o link ou tocar em botão.',
+  voltou: 'retomada automática: o cliente voltou a olhar o orçamento, mas não escreveu. Mande UMA mensagem curta com algo novo e útil: uma foto real de uma acomodação do orçamento (enviar_fotos), a programação inclusa, ou uma pergunta sobre o que falta para decidir. Sem repetir o orçamento e sem pressionar. NUNCA diga que viu o cliente abrir o link.',
+  silencio: 'retomada automática: o orçamento foi enviado e o cliente não respondeu desde a última mensagem dele (cerca de 20 h). Mande UMA mensagem curta com algo novo e útil (regra 10): uma foto real (enviar_fotos), a programação inclusa ou uma data de domingo a quinta com vaga real. Sem repetir o orçamento e sem pressionar. NUNCA diga que viu o cliente abrir o link.',
+};
+const ROTULO_RETOMADA = { quero_reservar: 'tocou em "Quero reservar" e não escreveu', voltou: 'voltou ao orçamento', silencio: '20 h sem resposta' };
+function motivoRetomada(o, ultimaDoCliente, ultimaMsg, agora = Date.now()) {
+  const t = x => x ? Date.parse(x) : 0, calado = x => t(ultimaDoCliente) < t(x), MIN = 60e3, H = 3600e3;
+  if (!t(ultimaDoCliente) || agora - t(ultimaDoCliente) > 23 * H) return null;             // janela de 24 h fechada (ou fechando)
+  if (!ultimaMsg || ultimaMsg.direcao === 'entrada') return null;                          // o cliente está esperando resposta
+  if (agora - t(ultimaMsg.enviada_em) < 10 * MIN) return null;                             // acabou de receber mensagem
+  if (t(o.escolhida_em) && calado(o.escolhida_em) && agora - t(o.escolhida_em) >= 10 * MIN) return 'quero_reservar';
+  if (t(o.ultima_abertura_em) - t(o.aberto_primeira_vez_em) >= VOLTOU_MIN_MS && calado(o.ultima_abertura_em) && agora - t(o.ultima_abertura_em) >= 30 * MIN) return 'voltou';
+  if (agora - t(ultimaDoCliente) >= 20 * H && agora - t(o.criado_em) >= 3 * H) return 'silencio';
+  return null;
+}
+let ultimaRetomadaAuto = 0;
+async function retomadaAutomatica(buscar = fetch, agora = Date.now()) {
+  const desde = agora - ultimaRetomadaAuto;
+  if (desde >= 0 && desde < Number(process.env.RETOMAR_INTERVALO_MS || 4 * 60e3)) return 0;
+  ultimaRetomadaAuto = agora;
+  const m = minutosBonito(new Date(agora));
+  if (m < 8 * 60 || m >= 21 * 60 || !(await gilbertoAutoLigado(buscar))) return 0;
+  const lista = await getJson(`${SUPABASE_URL}/rest/v1/orcamentos?criado_em=gte.${new Date(agora - 48 * 3600e3).toISOString()}&select=id,conversa_id,criado_em,aberturas,aberto_primeira_vez_em,ultima_abertura_em,escolhida_em&order=criado_em.desc&limit=100`, buscar);
+  const vistas = new Set();
+  let disparadas = 0;
+  for (const o of lista) {
+    if (!o.conversa_id || vistas.has(o.conversa_id) || disparadas >= 3) continue;
+    vistas.add(o.conversa_id); // só o orçamento mais recente da conversa
+    if ((await getJson(`${SUPABASE_URL}/rest/v1/orcamento_eventos?orcamento_id=eq.${o.id}&tipo=eq.retomada&select=id&limit=1`, buscar)).length) continue; // já retomou
+    const c = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${o.conversa_id}&select=status,canal,gilberto_pausado,ultima_msg_cliente_em`, buscar))[0];
+    if (!c || c.status !== 'aberta' || c.canal !== 'wa' || c.gilberto_pausado !== false) continue;
+    const neg = await negocioDaConversa(o.conversa_id, 'id', buscar).catch(() => null);
+    if (!neg) continue;
+    const etapa = (await getJson(`${SUPABASE_URL}/rest/v1/negocios?id=eq.${neg}&select=etapa`, buscar))[0];
+    if (!etapa || etapa.etapa !== 'orc') continue;
+    const ultimaMsg = (await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${o.conversa_id}&select=id,direcao,enviada_em&order=enviada_em.desc&limit=1`, buscar))[0];
+    const motivo = motivoRetomada(o, c.ultima_msg_cliente_em, ultimaMsg, agora);
+    if (!motivo) continue;
+    const doCliente = (await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${o.conversa_id}&direcao=eq.entrada&select=id&order=enviada_em.desc&limit=1`, buscar))[0];
+    if (!doCliente) continue;
+    const marca = await buscar(`${SUPABASE_URL}/rest/v1/orcamento_eventos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
+      body: JSON.stringify({ orcamento_id: o.id, tipo: 'retomada', dados: { motivo } }) }).catch(() => null);
+    if (!marca || !marca.ok) continue; // sem a marca, não arrisca mandar duas vezes
+    await eventoNegocio(neg, 'O Gilberto retomou o orçamento (' + ROTULO_RETOMADA[motivo] + ')', 'gilberto', buscar).catch(() => {});
+    buscar(URL_INTERNA() + '/interno/gilberto', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Interno': TOKEN_INTERNO }, body: JSON.stringify({ conversa_id: o.conversa_id, mensagem_id: doCliente.id, retomada: motivo }), signal: AbortSignal.timeout(280000) })
+      .catch(e => console.warn(JSON.stringify({ evento: 'retomada_disparo', erro: String(e.message || e).slice(0, 200) })));
+    disparadas++;
+  }
+  if (disparadas) await esperar(150); // garante que os pedidos saíram
+  return disparadas;
+}
 // Resumo do dia: às 8h (horário de Bonito), um aviso por pessoa com tarefas de hoje e clientes quentes
 async function lerConfig(chave, buscar) { return ((await getJson(`${SUPABASE_URL}/rest/v1/config?chave=eq.${chave}&select=valor`, buscar))[0] || {}).valor || null; }
 const gravarConfig = (chave, valor, buscar, por = null) => buscar(`${SUPABASE_URL}/rest/v1/config?on_conflict=chave`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'resolution=merge-duplicates,return=minimal' },
   body: JSON.stringify({ chave, valor, atualizado_por: por, atualizado_em: new Date().toISOString() }), signal: AbortSignal.timeout(5000) });
-// Quente = interesse real: voltou ao orçamento 2 h ou mais depois da 1ª abertura, ou tocou em "Quero reservar" e não
-// mandou a mensagem; e o cliente não escreveu depois disso (mesma regra da lista no CRM)
+// Quente = interesse real: voltou ao orçamento (outra abertura 10 min ou mais depois da 1ª, inclusive dentro de 2 h:
+// dono, 07/10/2026), ou tocou em "Quero reservar" e não mandou a mensagem; e o cliente não escreveu depois disso
+// (mesma regra da lista no CRM). Reabrir em poucos minutos (atualizar a página) não conta.
+const VOLTOU_MIN_MS = 10 * 60e3;
 function sinalQuente(o, ultimaDoCliente, agora = Date.now()) {
   const t = x => x ? Date.parse(x) : 0, dia = agora - 864e5, calado = x => t(ultimaDoCliente) < t(x);
   if (t(o.escolhida_em) > dia && calado(o.escolhida_em)) return 'quero_reservar';
-  if (t(o.ultima_abertura_em) > dia && t(o.ultima_abertura_em) - t(o.aberto_primeira_vez_em) >= 2 * 3600e3 && calado(o.ultima_abertura_em)) return 'voltou';
+  if (t(o.ultima_abertura_em) > dia && t(o.ultima_abertura_em) - t(o.aberto_primeira_vez_em) >= VOLTOU_MIN_MS && calado(o.ultima_abertura_em)) return 'voltou';
   return null;
 }
 async function resumoDoDia(buscar = fetch, agora = new Date()) {
@@ -2575,7 +2635,7 @@ function emOrdemDeLeitura(historico, mensagemId, visto = null) {
   if (!historico.slice(primeira).some(m => m.direcao !== 'entrada')) return historico; // nada saiu depois: ordem já certa
   return [...historico.filter((m, k) => !naoLida(m, k)), ...pendentes];
 }
-async function gerarResposta(id, { modo, eu, mensagemId = null }, buscar = fetch) {
+async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null }, buscar = fetch) {
   const auto = modo === 'automatico';
   await atualizarFotos(buscar).catch(() => {});
   if (sugerindo.has(id)) throw new ErroEnvio(429, 'Já estou preparando uma sugestão para esta conversa.');
@@ -2686,7 +2746,7 @@ async function gerarResposta(id, { modo, eu, mensagemId = null }, buscar = fetch
     const retomar = neg && neg.etapa === 'orc' && (await getJson(`${SUPABASE_URL}/rest/v1/tarefas?negocio_id=eq.${neg.id}&tipo=eq.${encodeURIComponent(TIPO_RETOMAR)}&feita=eq.false&select=id&limit=1`, buscar)).length;
     const jaVideos = historico.filter(m => m.midia_caminho && orcamento.ehVideo(m.midia_caminho)).map(m => m.midia_caminho.slice('biblioteca/'.length));
     const listaVideos = orcamento.videos().map(v => ({ categoria: v.nome_grupo, descricao: v.descricao, enviado: jaVideos.includes(v.arquivo) }));
-    const r = await gilberto.sugerir(historico, { modo: auto ? 'automatico' : 'sugestao', canal: conv.canal, nome, videos: listaVideos, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, gatilho: retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null }, executores, await catalogo(buscar));
+    const r = await gilberto.sugerir(historico, { modo: auto ? 'automatico' : 'sugestao', canal: conv.canal, nome, videos: listaVideos, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, gatilho: gatilho || (retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null) }, executores, await catalogo(buscar));
     // Registro para a revisão (Ajustes do agente): o que o cliente perguntou e o que o Gilberto sugeriu
     const ultimaDoCliente = [...historico].reverse().find(m => m.direcao === 'entrada');
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
@@ -2881,6 +2941,7 @@ const servidor = http.createServer((req, res) => {
     return;
   }
   // Página pública do orçamento e o "Quero reservar esta".
+  // A prévia do link (WhatsApp, Facebook, robôs) não é o cliente abrindo: não conta como abertura (dono, 07/10/2026)
   const mo = url.pathname.match(/^\/o\/([A-Za-z0-9_-]{22})(\/quero)?$/);
   if (mo) {
     if (limiteExcedido(req)) { res.writeHead(429, { 'Content-Type': 'text/plain; charset=utf-8', 'Retry-After': '60' }); return res.end('Muitos acessos. Tente de novo em 1 minuto.'); }
@@ -2890,7 +2951,7 @@ const servidor = http.createServer((req, res) => {
       lerOrcamento(token).then(async o => {
         if (!o) { res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', ...cabecalhosSeguranca() }); return res.end('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hotel Cabanas</title><p style="font-family:sans-serif;padding:24px">Orçamento não encontrado. Fale com a gente pelo WhatsApp que enviamos um novo.</p>'); }
         await atualizarFotos().catch(() => {});
-        if (!previa) await rpc('registrar_abertura_orcamento', { p_token: token }).catch(() => {}); // antes de responder: no Cloud Run a CPU para depois da resposta
+        if (!previa && !ehRobo(req)) await rpc('registrar_abertura_orcamento', { p_token: token }).catch(() => {}); // antes de responder: no Cloud Run a CPU para depois da resposta
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow', ...cabecalhosSeguranca() });
         res.end(orcamento.pagina(o, { previa, produtos: ((await catalogo().catch(() => null)) || {}).produtos }));
       }).catch(() => { res.writeHead(503, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('Página indisponível agora. Tente de novo em instantes.'); });
@@ -2999,7 +3060,7 @@ const servidor = http.createServer((req, res) => {
   // Pedido interno do próprio CRM: o Gilberto responde sozinho (só aceita com o código desta instância)
   if (url.pathname === '/interno/gilberto' && req.method === 'POST') {
     if (req.headers['x-interno'] !== TOKEN_INTERNO) return json(res, 403, { ok: false });
-    lerCorpo(req, 2000).then(c => uuidOk(c.conversa_id) && uuidOk(c.mensagem_id) ? responderSozinho(c.conversa_id, c.mensagem_id) : { ok: false })
+    lerCorpo(req, 2000).then(c => uuidOk(c.conversa_id) && uuidOk(c.mensagem_id) ? responderSozinho(c.conversa_id, c.mensagem_id, fetch, { retomada: Object.hasOwn(GATILHO_RETOMADA, String(c.retomada)) ? c.retomada : null }) : { ok: false })
       .then(r => json(res, 200, r)).catch(e => { console.error(JSON.stringify({ evento: 'gilberto_auto_falha', erro: String(e.message || e).slice(0, 200) })); json(res, 500, { ok: false }); });
     return;
   }
@@ -3007,7 +3068,7 @@ const servidor = http.createServer((req, res) => {
   if (url.pathname === '/cron/pix' && req.method === 'POST') {
     if (!bancoLigado()) return json(res, 503, { ok: false });
     Promise.all([verificarCobrancas(), escalarAlertas().catch(() => 0)]).then(async ([r, escalados]) => json(res, 200, { ok: true, ...r, escalados, avisos: await notificarAlertas().catch(() => 0),
-      retomar: await retomarOrcamentos().catch(() => ({ criadas: 0, fechadas: 0 })), resumo: await resumoDoDia().catch(() => 0),
+      retomar: await retomarOrcamentos().catch(() => ({ criadas: 0, fechadas: 0 })), retomadas: await retomadaAutomatica().catch(() => 0), resumo: await resumoDoDia().catch(() => 0),
       massagem: await verificarPedidosParceiro().catch(() => ({ avisos: 0, expirados: 0 })) })).catch(() => json(res, 500, { ok: false }));
     return;
   }
@@ -3148,4 +3209,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => { console.log('CRM Cabanas ouvindo na porta ' + porta); conferirIpSaida(); });
-module.exports = { emOrdemDeLeitura, servidor, retomarOrcamentos, resumoDoDia, sinalQuente, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca, catalogoParaTeste: () => { limparCatalogo(); return catalogo(); } };
+module.exports = { zerarCacheAuto: () => { autoCache.ate = 0; }, emOrdemDeLeitura, servidor, retomarOrcamentos, retomadaAutomatica, motivoRetomada, ehRobo, resumoDoDia, sinalQuente, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca, catalogoParaTeste: () => { limparCatalogo(); return catalogo(); } };

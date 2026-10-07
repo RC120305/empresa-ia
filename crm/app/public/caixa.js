@@ -343,8 +343,8 @@
     });
   }
   // ---------- Clientes quentes: sinal de interesse real nas últimas 24 h (dono, 04/10/2026) ----------
-  // Abrir o link logo depois do envio é o normal e não conta. Conta: voltou ao orçamento 2 h ou mais depois da
-  // 1ª abertura, ou tocou em "Quero reservar" e não mandou a mensagem; e não escreveu depois disso.
+  // Conta: voltou ao orçamento (outra abertura 10 min ou mais depois da 1ª, inclusive dentro de 2 h: dono, 07/10/2026),
+  // ou tocou em "Quero reservar" e não mandou a mensagem; e não escreveu depois disso. Atualizar a página não conta.
   let quentes = {}; // conversa_id -> orçamento mais recente com atividade
   async function carregarQuentes() {
     const dia = new Date(Date.now() - 864e5).toISOString();
@@ -357,7 +357,7 @@
   function sinalQuente(o, ultimaDoCliente, agora = Date.now()) {
     const t = x => x ? Date.parse(x) : 0, dia = agora - 864e5, calado = x => t(ultimaDoCliente) < t(x);
     if (t(o.escolhida_em) > dia && calado(o.escolhida_em)) return { quando: o.escolhida_em, txt: 'tocou em "Quero reservar" e não mandou a mensagem' };
-    if (t(o.ultima_abertura_em) > dia && t(o.ultima_abertura_em) - t(o.aberto_primeira_vez_em) >= 2 * 3600e3 && calado(o.ultima_abertura_em))
+    if (t(o.ultima_abertura_em) > dia && t(o.ultima_abertura_em) - t(o.aberto_primeira_vez_em) >= 10 * 60e3 && calado(o.ultima_abertura_em))
       return { quando: o.ultima_abertura_em, txt: 'voltou ao orçamento' + (o.aberturas > 1 ? ' (' + o.aberturas + 'ª vez)' : '') };
     return null;
   }
