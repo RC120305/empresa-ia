@@ -589,3 +589,4 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
 .sug-prod-topo .sug-prod-cab{flex:1;min-width:0}
 .sug-prod-foto{width:56px;height:56px;flex:none;border-radius:var(--r-md);object-fit:cover;background:var(--cor-fundo);border:1px solid var(--cor-borda)}
 .sug-prod-foto.vazia{display:flex;align-items:center;justify-content:center;font-size:20px;opacity:.5}
+.tarefa .lancei{margin-top:6px;border:1px solid currentColor}

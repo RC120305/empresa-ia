@@ -1864,7 +1864,15 @@
         carregarFunil();
       } }),
       el('div', {}, el('div', { class: 'tt' }, el('b', { text: t.tipo }), t.descricao && t.descricao !== t.tipo ? ' · ' + t.descricao : ''),
-        el('div', { class: 'qd' + (atras ? ' atrasada' : ''), text: (atras ? 'Atrasada · ' : '') + quandoTxt(t.quando) + ' · ' + (t.responsavel_id ? equipe[t.responsavel_id] || 'Equipe' : 'Sem responsável') })),
+        el('div', { class: 'qd' + (atras ? ' atrasada' : ''), text: (atras ? 'Atrasada · ' : '') + quandoTxt(t.quando) + ' · ' + (t.responsavel_id ? equipe[t.responsavel_id] || 'Equipe' : 'Sem responsável') }),
+        // Plano B do pagamento: depois de conferir e lançar no Silbeck, o Gilberto confirma ao cliente (dono, 07/10/2026)
+        !t.feita && t.tipo === 'Confirmar a reserva' && /Já lancei no Silbeck/.test(t.descricao || '') ? el('button', { class: 'btn-mini lancei', type: 'button', text: '✓ Já lancei no Silbeck', onclick: async e => {
+          if (!confirm('A reserva já está no Silbeck com o pagamento lançado?\n\nO Gilberto vai mandar ao cliente a confirmação, os extras e o agradecimento.')) return;
+          e.target.disabled = true;
+          try { const r = await chamarApi('/api/reserva-lancada', { tarefa_id: t.id }); toast('Pronto: o Gilberto confirmou ao cliente' + (r.extras ? ' e mandou os extras.' : '.')); }
+          catch (er) { e.target.disabled = false; toast(er.message); }
+          carregarFunil();
+        } }) : null),
       comLead && n ? el('button', { class: 'lead-link', type: 'button', text: n.nome, onclick: () => abrirFicha(n.id) }) : el('span'));
   }
   function amanha10() { const d = new Date(Date.now() + 864e5); d.setHours(10, 0, 0, 0); const z = x => String(x).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}T10:00`; }

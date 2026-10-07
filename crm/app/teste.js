@@ -33,6 +33,7 @@ const PRODS = [
 const ofertasF = [], vendasF = [], alertasF = [], vitrinesF = [];
 let iaVitrines = null;
 const cobrancasF = [], reservasF = [];
+let tarefaGetF = null;
 const docsF = [];
 const VIDEO_GRANDE = (() => { // vídeo de 4 s com imagem pesada (~2 MB), para testar a redução
   const f = require('path').join(require('os').tmpdir(), 'teste-video-grande.mp4');
@@ -111,6 +112,7 @@ const falso = http.createServer((req, res) => {
       const id = (req.url.match(/id=eq\.([0-9a-f-]+)/) || [])[1];
       if (req.method === 'PATCH') { Object.assign(cobrancasF.find(c => c.id === id), json); res.writeHead(204); return res.end(); }
       if (req.url.includes('situacao=eq.ativa')) return responder(200, cobrancasF.filter(c => c.situacao === 'ativa'));
+      if (req.url.includes('negocio_id=eq.')) { const ng = req.url.split('negocio_id=eq.')[1].split('&')[0]; return responder(200, cobrancasF.filter(c => c.negocio_id === ng && c.situacao === 'paga' && c.reserva_id).reverse()); }
       return responder(200, cobrancasF.filter(c => c.id === id));
     }
     if (req.url.startsWith('/rest/v1/pedidos_parceiro')) {
@@ -244,7 +246,7 @@ const falso = http.createServer((req, res) => {
     if (req.url.startsWith('/rest/v1/contato_identificadores?contato_id=eq.')) return responder(200, req.url.includes('k-sem') ? [] : [{ id: 'i-1', valor: '+5567988887777' }]);
     if (req.url.startsWith('/rest/v1/contato_identificadores?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
     if (req.url === '/rest/v1/contato_identificadores' || req.url === '/rest/v1/negocio_eventos' || (req.url === '/rest/v1/tarefas' && req.method === 'POST')) { res.writeHead(201); return res.end(); }
-    if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'GET') return responder(200, [{ negocio_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', tipo: 'Ligar' }]);
+    if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'GET') return responder(200, [tarefaGetF || { negocio_id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', tipo: 'Ligar' }]);
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/rest/v1/produtos?ativo=eq.true')) return responder(200, PRODS);
     if (req.url.startsWith('/rest/v1/respostas?ativo=eq.true')) return responder(200, [{ id: 'r-1', pergunta: 'Aceita pet?', resposta: 'Não aceitamos pets, {nome}.', fixa: true }, { id: 'r-2', pergunta: 'Fica longe do centro?', resposta: 'São 6 km de asfalto.', fixa: false }, { id: 'r-3', pergunta: 'Qual o horário do café?', resposta: 'O café é das 7h às 10h.', fixa: false, origem: 'correcao' }]);
@@ -1295,6 +1297,34 @@ falso.listen(0, () => {
         const tf = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.descricao;
         assert.ok(tf.includes('O Gilberto já mandou a confirmação ao cliente no WhatsApp') && !tf.includes('mandar a confirmação'), tf);
         assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'res'), 'card em Reserva concluída');
+      }
+      // 1c) plano B: o CRM não consegue lançar no Silbeck → o Gilberto só avisa que a equipe está finalizando (não confirma);
+      // a equipe lança no Silbeck e clica em "Já lancei no Silbeck": aí o Gilberto confirma e agradece
+      {
+        const cob0 = cobrancasF.at(-1);
+        rv.situacao = 'nao_confirmada'; const itemAntes = rv.silbeck_item_id; rv.silbeck_item_id = null; delete rv.itens;
+        cobrancasF.push({ ...cob0, id: crypto.randomUUID(), txid: 'CAB' + 'P'.repeat(26), situacao: 'ativa', valor_pago: null, pago_em: null });
+        const nB = enviosMeta().length;
+        assert.equal((await (await api('/api/cobranca-acao', { id: cobrancasF.at(-1).id, acao: 'simular_pagamento' })).json()).pagas, 1);
+        assert.equal(rv.situacao, 'nao_confirmada', 'sem lançar no Silbeck, a reserva não é confirmada');
+        const avB = enviosMeta().slice(nB).map(c => c.corpo.text.body);
+        assert.ok(avB.length === 1 && avB[0].includes('A equipe está finalizando'), JSON.stringify(avB));
+        const tB = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo;
+        assert.ok(tB.descricao.includes('Já lancei no Silbeck') && !tB.descricao.includes('já mandou a confirmação'), tB.descricao);
+        tarefaGetF = { negocio_id: cob0.negocio_id, tipo: 'Ligar', feita: false };
+        assert.equal((await api('/api/reserva-lancada', { tarefa_id: crypto.randomUUID() })).status, 404, 'só na tarefa de confirmar a reserva');
+        tarefaGetF = { negocio_id: cob0.negocio_id, tipo: 'Confirmar a reserva', feita: false };
+        const nL = enviosMeta().length;
+        const rl = await api('/api/reserva-lancada', { tarefa_id: crypto.randomUUID() });
+        assert.equal(rl.status, 200, await rl.clone().text());
+        assert.equal(rv.situacao, 'confirmada');
+        const cL = enviosMeta().slice(nL).map(c => c.corpo.text.body);
+        assert.ok(cL[0].startsWith('Tudo certo, Ana! ✅ Sua reserva no Hotel Cabanas está confirmada') && cL[0].includes('Reserva nº ' + rv.silbeck_id), JSON.stringify(cL));
+        assert.ok(cL.at(-1).startsWith('Muito obrigado por escolher o Cabanas, Ana!'), 'e o agradecimento');
+        assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/tarefas?id=eq.') && c.corpo.feita === true), 'tarefa concluída');
+        tarefaGetF = { negocio_id: cob0.negocio_id, tipo: 'Confirmar a reserva', feita: true };
+        assert.equal((await api('/api/reserva-lancada', { tarefa_id: crypto.randomUUID() })).status, 409, 'não manda duas vezes');
+        tarefaGetF = null; rv.silbeck_item_id = itemAntes;
       }
       // 2) trava: sem reserva no Silbeck, o Pix não sai
       reservasF.length = 0; iaAuto = 'sem_reserva';

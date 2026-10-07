@@ -1487,12 +1487,14 @@ async function enviarCartaoVitrine(conv, para, tema, v, texto, autor, buscar = f
     : await rpc('registrar_saida_whatsapp', { p_conversa: conv.id, p_wamid: wamid, p_corpo: visto, p_autor: autor }, buscar);
   return { id, tipo: foto ? 'image' : 'text', arquivo: foto, corpo: visto, enviada_em: new Date().toISOString() };
 }
-async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch) {
-  if (!cob.conversa_id || !WA_TOKEN || !(await gilbertoAutoLigado(buscar))) return null;
+// pelaEquipe: a equipe lançou o pagamento no Silbeck e clicou em "Já lancei no Silbeck" (dono, 07/10/2026):
+// manda a mesma sequência mesmo com o Gilberto pausado ou desligado
+async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch, { pelaEquipe = false } = {}) {
+  if (!cob.conversa_id || !WA_TOKEN || (!pelaEquipe && !(await gilbertoAutoLigado(buscar)))) return null;
   const c = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${cob.conversa_id}&select=status,gilberto_pausado,contato:contatos(nome)`, buscar))[0];
-  if (!c || c.gilberto_pausado !== false) return null; // a equipe está atendendo: ela confirma
+  if (!c || (!pelaEquipe && c.gilberto_pausado !== false)) return null; // a equipe está atendendo: ela confirma
   const primeiro = String((res && res.titular) || (c.contato && c.contato.nome) || '').trim().split(/\s+/)[0];
-  const ola = 'Pagamento recebido' + (primeiro ? ', ' + primeiro : '') + '! ✅';
+  const ola = (pelaEquipe ? 'Tudo certo' : 'Pagamento recebido') + (primeiro ? ', ' + primeiro : '') + '! ✅';
   let texto;
   if (res && confirmada) {
     const n = Math.round((new Date(res.data_saida) - new Date(res.data_entrada)) / 864e5);
@@ -1549,6 +1551,7 @@ function partesDoPagamento(res, valor) {
     return { item_id: i.item_id || null, nome: i.nome || i.codigo, valor: centavos / 100 };
   });
 }
+const DEPOIS_DE_LANCAR = 'Depois de conferir e lançar no Silbeck, clique em "Já lancei no Silbeck" na tarefa "Confirmar a reserva": o Gilberto manda ao cliente a confirmação, os extras e o agradecimento.';
 async function baixaCobranca(cob, pg, buscar = fetch) {
   const valor = pg.valor || Number(cob.valor);
   await patchBanco('cobrancas', `id=eq.${cob.id}`, { situacao: 'paga', valor_pago: valor, pago_em: pg.horario || new Date().toISOString(), e2e_id: pg.e2e || null, pagador: pg.pagador || null, atualizado_em: new Date().toISOString() });
@@ -1574,13 +1577,14 @@ async function baixaCobranca(cob, pg, buscar = fetch) {
   // Card em "Reserva concluída" antes de avisar o cliente (o Gilberto já sabe que a reserva está paga)
   if (cob.negocio_id) await patchBanco('negocios', `id=eq.${cob.negocio_id}`, { etapa: 'res', etapa_desde: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
   const aviso = await confirmarAoCliente(cob, res, confirmada, valor, buscar);
-  if (aviso) silb = silb.replace(/ e mandar a confirmação ao cliente\.| Mandar a confirmação ao cliente\./, '.') + ' O Gilberto já mandou a confirmação ao cliente no WhatsApp' + (aviso.extras ? ' e o link de extras (' + aviso.extras + ')' : '') + '.';
+  if (aviso && confirmada) silb = silb.replace(/ e mandar a confirmação ao cliente\.| Mandar a confirmação ao cliente\./, '.') + ' O Gilberto já mandou a confirmação ao cliente no WhatsApp' + (aviso.extras ? ' e o link de extras (' + aviso.extras + ')' : '') + '.';
+  else if (res) silb = silb.replace(/ e mandar a confirmação ao cliente\.| Mandar a confirmação ao cliente\./, '.') + (aviso ? ' O Gilberto avisou o cliente que a equipe está finalizando.' : '') + ' ' + DEPOIS_DE_LANCAR;
   if (cob.negocio_id) {
     await eventoNegocio(cob.negocio_id, txt + ' · card em Reserva concluída' + (aviso ? ' · confirmação enviada pelo Gilberto' : ''), 'CRM', buscar);
     await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
       body: JSON.stringify({ negocio_id: cob.negocio_id, responsavel_id: cob.criado_por || null, criado_por: 'CRM', tipo: 'Confirmar a reserva', descricao: txt + '. ' + silb, quando: new Date().toISOString() }) }).catch(() => null);
   }
-  await criarAlerta({ tipo: 'pagamento_recebido', titulo: 'Pagamento recebido', info: txt + (aviso ? '. O Gilberto já confirmou ao cliente' + (aviso.extras ? ' e ofereceu os extras.' : '.') : '. Mande a confirmação ao cliente e ofereça os extras: abra a conversa (aviso 🎉).'), conversa_id: cob.conversa_id, negocio_id: cob.negocio_id, cobranca_id: cob.id }, buscar);
+  await criarAlerta({ tipo: 'pagamento_recebido', titulo: 'Pagamento recebido', info: txt + (aviso && confirmada ? '. O Gilberto já confirmou ao cliente' + (aviso.extras ? ' e ofereceu os extras.' : '.') : res ? '. ' + silb : '. Mande a confirmação ao cliente e ofereça os extras: abra a conversa (aviso 🎉).'), conversa_id: cob.conversa_id, negocio_id: cob.negocio_id, cobranca_id: cob.id }, buscar);
 }
 async function cobrancaVencida(cob, buscar = fetch) {
   await patchBanco('cobrancas', `id=eq.${cob.id}`, { situacao: 'expirada', atualizado_em: new Date().toISOString() });
@@ -2034,6 +2038,24 @@ const API_EQUIPE = {
     if (evento) await fetch(`${SUPABASE_URL}/rest/v1/negocio_eventos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
       body: JSON.stringify({ negocio_id: negocio, texto: evento, por: eu.nome }), signal: AbortSignal.timeout(5000) }).catch(() => {});
     return { ok: true };
+  },
+  // Plano B do pagamento: o CRM não conseguiu lançar no Silbeck. A equipe confere e lança no Silbeck, clica em
+  // "Já lancei no Silbeck" na tarefa e o Gilberto manda a confirmação, os extras e o agradecimento (dono, 07/10/2026)
+  'POST /api/reserva-lancada': async (corpo, eu) => {
+    if (!/^[0-9a-f-]{36}$/i.test(String(corpo.tarefa_id || ''))) throw new ErroEnvio(400, 'Tarefa inválida.');
+    const t = (await getJson(`${SUPABASE_URL}/rest/v1/tarefas?id=eq.${corpo.tarefa_id}&select=negocio_id,tipo,feita`, fetch))[0];
+    if (!t || t.tipo !== 'Confirmar a reserva') throw new ErroEnvio(404, 'Tarefa de confirmar reserva não encontrada.');
+    if (t.feita) throw new ErroEnvio(409, 'Esta tarefa já foi concluída.');
+    const cob = t.negocio_id && (await getJson(`${SUPABASE_URL}/rest/v1/cobrancas?negocio_id=eq.${t.negocio_id}&situacao=eq.paga&reserva_id=not.is.null&select=*&order=pago_em.desc&limit=1`, fetch))[0];
+    if (!cob) throw new ErroEnvio(404, 'Não achei o pagamento desta reserva. Confirme ao cliente pela conversa.');
+    const res = (await getJson(`${SUPABASE_URL}/rest/v1/reservas?id=eq.${cob.reserva_id}&select=*`, fetch))[0];
+    if (!res) throw new ErroEnvio(404, 'Não achei a reserva no CRM. Confirme ao cliente pela conversa.');
+    await patchBanco('reservas', `id=eq.${res.id}`, { situacao: 'confirmada', confirmada_em: new Date().toISOString(), atualizado_em: new Date().toISOString() });
+    const aviso = await confirmarAoCliente(cob, res, true, Number(cob.valor_pago || cob.valor), fetch, { pelaEquipe: true });
+    if (!aviso) throw new ErroEnvio(502, 'A reserva ficou confirmada no CRM, mas o WhatsApp não aceitou a mensagem (janela de 24 h fechada?). Confirme ao cliente pela conversa.');
+    await patchBanco('tarefas', `id=eq.${corpo.tarefa_id}`, { feita: true, feita_em: new Date().toISOString() });
+    await eventoNegocio(t.negocio_id, 'Reserva ' + res.silbeck_id + ' lançada no Silbeck por ' + eu.nome + ' · o Gilberto mandou a confirmação' + (aviso.extras ? ', os extras (' + aviso.extras + ')' : '') + ' e o agradecimento', eu.id, fetch).catch(() => {});
+    return { ok: true, extras: aviso.extras };
   },
   // Produtos (atividades e extras): o Gilberto e a página do orçamento usam esta lista
   'POST /api/produto': async corpo => {
