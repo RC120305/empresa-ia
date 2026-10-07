@@ -9,6 +9,7 @@ const gilberto = require('./gilberto');
 const silbeck = require('./silbeck');
 const transcricao = require('./transcricao');
 const orcamento = require('./orcamento');
+const voucher = require('./voucher');
 const drive = require('./drive');
 const produtos = require('./produtos');
 const vitrine = require('./vitrine');
@@ -708,7 +709,10 @@ async function enviarMidiaPelaEquipe(tokenUsuario, params, dados, mimeEnviado, b
   if (tipo === 'image' && dados.length > 5 * 1024 * 1024) throw new ErroEnvio(413, 'Foto grande demais (máximo 5 MB).');
   const nome = String(params.get('nome') || 'arquivo').replace(/[^\w.\- ()À-ú]/g, '_').slice(0, 120);
   const legenda = String(params.get('legenda') || '').trim().slice(0, 1024);
-
+  return { ok: true, ...(await enviarArquivo(conv, para, dados, mime, tipo, nome, legenda, equipe.id, buscar)) };
+}
+// Sobe o arquivo na Meta, envia, guarda uma cópia no Storage e registra na conversa
+async function enviarArquivo(conv, para, dados, mime, tipo, nome, legenda, autor, buscar = fetch) {
   const form = new FormData();
   form.append('messaging_product', 'whatsapp');
   form.append('type', mime);
@@ -733,8 +737,8 @@ async function enviarMidiaPelaEquipe(tokenUsuario, params, dados, mimeEnviado, b
   const caminho = `${conv.id}/saida-${crypto.randomUUID()}.${extDe(mime)}`;
   let guardado = caminho;
   try { await gravarNoStorage(caminho, dados, mime, buscar); } catch (e) { guardado = null; console.warn(JSON.stringify({ evento: 'midia_saida_nao_guardada', erro: String(e.message).slice(0, 150) })); }
-  const id = await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: wamid, p_tipo: tipo, p_legenda: legenda, p_caminho: guardado, p_mime: mime, p_nome: tipo === 'document' ? nome : null, p_autor: equipe.id }, buscar);
-  return { ok: true, id, wamid, tipo, corpo: legenda, enviada_em: new Date().toISOString() };
+  const id = await rpc('registrar_saida_midia', { p_conversa: conv.id, p_wamid: wamid, p_tipo: tipo, p_legenda: legenda, p_caminho: guardado, p_mime: mime, p_nome: tipo === 'document' ? nome : null, p_autor: autor }, buscar);
+  return { id, wamid, tipo, corpo: legenda, enviada_em: new Date().toISOString() };
 }
 
 // Envia 1 ou mais balões (texto separado por uma linha só com ---), um por vez, com "digitando…" antes de cada um.
@@ -1521,6 +1525,15 @@ async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch, {
     await digitar(texto);
     await enviarTexto(conv, para, texto, 'gilberto', buscar);
     let extras = null;
+    let voucherEnviado = false;
+    if (res && confirmada) { // voucher em PDF logo abaixo da confirmação (dono, 07/10/2026)
+      try {
+        const pdf = await voucher.gerarVoucher(res, { pago: valor, pagoEm: cob.pago_em || new Date() });
+        await esperar(tempoLeitura(texto) / 2);
+        await enviarArquivo(conv, para, pdf, 'application/pdf', 'document', voucher.nomeDoArquivo(res), 'Seu voucher de confirmação 📄', 'gilberto', buscar);
+        voucherEnviado = true; anterior = 'Seu voucher de confirmação';
+      } catch (e) { console.warn(JSON.stringify({ evento: 'voucher_falhou', erro: String(e.message || e).slice(0, 200) })); }
+    }
     if (res && confirmada) { // extras uma vez só: aviso em texto e os links de aventuras e de momentos especiais
       const ja = await ofertasDaConversa(cob.conversa_id, buscar).catch(() => [{}]);
       const neg = await negocioDaConversa(cob.conversa_id, 'id,perfil', buscar).catch(() => null);
@@ -1544,8 +1557,8 @@ async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch, {
       await digitar(AGRADECIMENTO(primeiro));
       await enviarTexto(conv, para, AGRADECIMENTO(primeiro), 'gilberto', buscar).catch(() => {});
     }
-    console.log(JSON.stringify({ evento: 'confirmacao_enviada', confirmada: !!confirmada, extras: !!extras }));
-    return { enviada: true, extras };
+    console.log(JSON.stringify({ evento: 'confirmacao_enviada', confirmada: !!confirmada, extras: !!extras, voucher: voucherEnviado }));
+    return { enviada: true, extras, voucher: voucherEnviado };
   } catch (e) {
     console.warn(JSON.stringify({ evento: 'confirmacao_falhou', erro: String(e.message || e).slice(0, 200) }));
     return null; // janela de 24 h fechada ou erro de envio: a tarefa da equipe continua valendo

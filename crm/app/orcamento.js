@@ -208,4 +208,4 @@ ${cards}
 <script src="/o/orcamento.js?v=${VERSAO}"></script></body></html>`;
 }
 
-module.exports = { ehVideo, videos, escolherVideo, resumo, resumoGrupo, MAX_OPCOES, montar, codigosDe, chaveCombinacao, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };
+module.exports = { INCLUSO, ehVideo, videos, escolherVideo, resumo, resumoGrupo, MAX_OPCOES, montar, codigosDe, chaveCombinacao, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };

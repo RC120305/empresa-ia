@@ -1294,6 +1294,15 @@ falso.listen(0, () => {
         assert.ok(fim[0].type === 'text' && fim[0].text.body.startsWith('E para deixar a sua estadia ainda melhor'), JSON.stringify(fim[0]));
         assert.deepEqual(fim.slice(1).map(c => c.interactive.action.parameters.display_text).sort(), ['Ver as aventuras', 'Ver as opções']);
         const conf = enviosMeta().slice(nConf).map(c => c.corpo.text.body);
+        // Voucher em PDF logo depois da confirmação (com foto da acomodação)
+        const docs = chamadas.filter(c => c.url === '/graph/111/messages' && c.corpo && c.corpo.type === 'document').slice(-1);
+        assert.ok(docs.length && /^Voucher-Hotel-Cabanas-Reserva-.+\.pdf$/.test(docs[0].corpo.document.filename), JSON.stringify(docs));
+        const ordem = chamadas.filter(c => c.url === '/graph/111/messages' && c.corpo && !c.corpo.typing_indicator).slice(-6).map(c => c.corpo.type);
+        assert.equal(ordem[0] + ',' + ordem[1], 'text,document', 'o voucher vem logo abaixo da confirmação: ' + ordem);
+        const V = require('./voucher');
+        assert.equal(V.fotoDaAcomodacao('QST'), V.fotoDaAcomodacao('STD'), 'quádruplo usa a foto do standard');
+        const pdfCombo = await V.gerarVoucher({ silbeck_id: 7, codigo: 'XYZ+CBM', acomodacao: 'Cabana Master + Standard', itens: [{ nome: 'Cabana Master' }, { nome: 'Apartamento Standard' }], data_entrada: '2026-11-10', data_saida: '2026-11-12', adultos: 4, criancas_idades: [6], valor_total: 3000, fonte: 'simulador' }, { pago: 3000 });
+        assert.equal(pdfCombo.subarray(0, 5).toString(), '%PDF-', 'voucher de combinação, pago 100%');
         assert.ok(conf[0] && conf[0].startsWith('Pagamento recebido, Ana! ✅ Sua reserva no Hotel Cabanas está confirmada') && conf[0].includes('Reserva nº ' + rv.silbeck_id) && conf[0].includes('é pago no check-out'), JSON.stringify(conf));
         const tf = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.descricao;
         assert.ok(tf.includes('O Gilberto já mandou a confirmação ao cliente no WhatsApp') && !tf.includes('mandar a confirmação'), tf);
