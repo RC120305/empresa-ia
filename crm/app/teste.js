@@ -1374,6 +1374,7 @@ falso.listen(0, () => {
     assert.ok(html.includes('Bangalô Especial') && html.includes('Apartamento Standard') && html.includes('valores fictícios'));
     // Benefícios antes das opções; opções da mais em conta para a maior
     assert.ok(html.indexOf('Por que o Cabanas') < html.indexOf('class="op') && html.includes('cercado por dois rios') && html.indexOf('Já está incluso') < html.indexOf('class="op'));
+    assert.ok(html.includes('class="slogan">Seu lugar de conexão com a natureza<') && html.includes('acompanhamento de guia'), 'slogan e texto novo do Por que o Cabanas');
     assert.ok(html.indexOf('<h2>Apartamento Standard') < html.indexOf('<h2>Bangalô Especial'));
     assert.equal((html.match(/Nossa sugestão para vocês/g) || []).length, 1);
     assert.ok(html.indexOf('Nossa sugestão para vocês') > html.indexOf('<h2>Apartamento Standard') && html.indexOf('Nossa sugestão para vocês') < html.indexOf('<h2>Bangalô Especial'), 'selo no Bangalô (2ª opção)');

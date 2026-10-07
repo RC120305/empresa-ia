@@ -15,6 +15,7 @@ button{font:inherit}
 header{background:#3B3128;color:#F7F1E6;padding-block:22px 26px;padding-inline:16px}
 .cab{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
 .cab img{width:96px;height:auto}
+.slogan{font-family:var(--f-tit);font-style:italic;font-weight:500;font-size:21px;line-height:1.25;color:#C9DC8F;margin:-4px 0 4px;padding-bottom:12px;border-bottom:1px solid rgba(247,241,230,.25);text-wrap:balance}
 .rot{font-family:var(--f-marca);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
 h1{font-family:var(--f-tit);font-weight:600;font-size:30px;line-height:1.15;margin:0;text-wrap:balance}
 h1 em{font-style:italic;font-weight:500;color:#C9DC8F}

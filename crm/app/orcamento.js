@@ -20,7 +20,8 @@ const CATALOGO = {
   CST: { nome: 'Duplo Casa Standard', cap: 'para 2 pessoas', dest: ['Opção econômica para casal', 'Ar quente e frio, frigobar e Wi-Fi', 'Café da manhã incluso'] },
 };
 // Antes das opções e dos valores, os benefícios (dono, 04/10/2026). Fatos aprovados: contexto/hotel-operacional.md
-const PORQUE = 'O único hotel de Bonito cercado por dois rios, o Formoso e o Formosinho: 40 hectares de natureza a 6 km do centro, todo o caminho em asfalto. A diária já inclui o café da manhã e a programação diária com monitor (trilhas com banho de rio, tirolesa, stand up, caiaque e arco e flecha), também para quem fica uma noite só.';
+const PORQUE = 'O único hotel de Bonito cercado por dois rios, o Formoso e o Formosinho: 40 hectares de natureza a 6 km do centro, por acesso de asfalto. A diária já inclui o café da manhã e uma programação diária de atividades com acompanhamento de guia como: trilhas com banho de rio, tirolesa, stand up, caiaque e arco e flecha.';
+const SLOGAN = 'Seu lugar de conexão com a natureza'; // slogan do Código de Cultura, em destaque no topo (dono, 07/10/2026)
 const INCLUSO = ['Café da manhã (6h30 às 9h30)', 'Piscina climatizada', 'Hidromassagem aquecida', 'Sauna', 'Trilhas e decks nos dois rios', 'Caiaque e stand up com monitor', 'Arco e flecha', 'Playground e salão de jogos'];
 
 // Fotos reais por acomodação (item 2): public/fotos/<CODIGO>-<n>.jpg, listadas em public/fotos/fotos.json.
@@ -184,6 +185,7 @@ ${quem}<ul class="dest">${cat.dest.map(d => `<li>${esc(d)}</li>`).join('')}</ul>
 ${o.fonte === 'simulador' ? '<div class="aviso-teste">Página de teste: valores fictícios do simulador, não são preços reais.</div>' : ''}
 ${previa ? '<div class="aviso-teste">Prévia da equipe: esta visita não conta como abertura do cliente.</div>' : ''}
 <header><div class="cab"><img src="/o/logo-branco.png" alt="Hotel Cabanas · Bonito MS" width="120" height="95">
+<p class="slogan">${esc(SLOGAN)}</p>
 <span class="rot">${nome ? `Orçamento para ${nome}` : 'Seu orçamento'}</span>
 <h1>${titulo}</h1>
 <div class="resumo"><span>${esc(periodo(o.data_entrada, o.data_saida))}</span><span>${n} ${n > 1 ? 'noites' : 'noite'}</span><span>${esc(grupo(o))}</span></div></div></header>
