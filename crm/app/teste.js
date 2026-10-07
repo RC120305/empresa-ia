@@ -1271,6 +1271,7 @@ falso.listen(0, () => {
       assert.ok(await aguardar(() => enviosMeta().length >= nEnv + 3), 'o Gilberto respondeu sozinho (3 balões: texto, Pix e copia e cola)');
       const txt = enviosMeta().slice(nEnv).map(c => c.corpo.text.body);
       assert.equal(txt[0], 'Reserva garantida, Ana! 🌿'); assert.ok(txt[1].startsWith('Segue o Pix do sinal (50%)') && txt[1].includes('Agência 1031-6')); assert.ok(txt[2].includes('SIMULADOR'));
+      assert.ok(/de \*R\$ [\d.,]+\*, válido até \*\d{2}\/\d{2} às \d{2}:\d{2}\*\./.test(txt[1]), 'valor e prazo do Pix em negrito');
       const rv = reservasF.at(-1);
       assert.deepEqual([rv.criado_por, rv.situacao, rv.codigo], ['gilberto', 'nao_confirmada', 'STD']);
       assert.equal(cobrancasF.at(-1).reserva_id, rv.id, 'o Pix é da reserva criada antes');

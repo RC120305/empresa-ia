@@ -1139,7 +1139,8 @@ async function dispararGilberto(conversa, mensagemId, buscar = fetch) {
 }
 const RECEBEDOR_PIX = 'Para conferir no seu banco, o recebedor é:\nHotel Cabanas Ltda\nBanco do Brasil · Agência 1031-6 · Conta corrente 8583-9';
 const quandoBR = d => new Date(d).toLocaleString('pt-BR', { timeZone: 'America/Campo_Grande', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', ' às');
-const textoPix = cob => 'Segue o Pix ' + (cob.tipo === 'sinal' ? 'do sinal (50%)' : cob.tipo === 'total' ? 'do valor total' : '') + ' de ' + produtos.brl(cob.valor) + ', válido até ' + quandoBR(cob.expira_em)
+// Valor e prazo em negrito do WhatsApp (dono, 07/10/2026)
+const textoPix = cob => 'Segue o Pix ' + (cob.tipo === 'sinal' ? 'do sinal (50%)' : cob.tipo === 'total' ? 'do valor total' : '') + ' de *' + produtos.brl(cob.valor) + '*, válido até *' + quandoBR(cob.expira_em) + '*'
   + '. É só copiar o código abaixo e colar no app do seu banco, em Pix Copia e Cola.\n\n' + RECEBEDOR_PIX + '\n\nAssim que o pagamento cair, eu confirmo sua reserva por aqui 🌿\n---\n' + (cob.copia_e_cola || '');
 const respondendo = new Set();
 // Quando o Gilberto não consegue responder sozinho: avisa o cliente (nada de silêncio) e chama a equipe, sem pausar:
@@ -1497,9 +1498,9 @@ async function confirmarAoCliente(cob, res, confirmada, valor, buscar = fetch) {
     const n = Math.round((new Date(res.data_saida) - new Date(res.data_entrada)) / 864e5);
     const resto = Math.round((Number(res.valor_total) - valor) * 100) / 100;
     texto = [ola + ' Sua reserva no Hotel Cabanas está confirmada:', '',
-      '🏡 ' + res.acomodacao, '📅 ' + orcamento.periodo(res.data_entrada, res.data_saida) + ' (' + n + (n > 1 ? ' noites)' : ' noite)'),
+      '🏡 *' + res.acomodacao + '*', '📅 *' + orcamento.periodo(res.data_entrada, res.data_saida) + '* (' + n + (n > 1 ? ' noites)' : ' noite)'),
       '👥 ' + orcamento.resumoGrupo({ adultos: res.adultos, idades_criancas: res.criancas_idades || [] }), '🔖 Reserva nº ' + res.silbeck_id,
-      '💳 Valor pago: ' + produtos.brl(valor) + (resto >= 1 ? '\nO restante, ' + produtos.brl(resto) + ', é pago no check-out.' : ''), '',
+      '💳 Valor pago: *' + produtos.brl(valor) + '*' + (resto >= 1 ? '\nO restante, *' + produtos.brl(resto) + '*, é pago no check-out.' : ''), '',
       'Check-in a partir das 15h e check-out até as 13h (a estrutura fica à disposição antes e depois). Qualquer dúvida, é só chamar aqui 🌿',
       ...(res.fonte === 'simulador' ? ['', '⚠ Teste: reserva do SIMULADOR do Silbeck.'] : [])].join('\n');
   } else texto = ola + ' Obrigado. A equipe está finalizando a confirmação da sua reserva no sistema e te manda os detalhes em instantes 🌿';
