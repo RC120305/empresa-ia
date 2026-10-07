@@ -176,6 +176,8 @@ const FORMATO = {
 };
 
 // Ferramentas ligadas nesta fase: só a cotação no Silbeck (definição em crm/gilberto/ferramentas.json).
+// Modo estrito só nas ferramentas que mexem com reserva e dinheiro (criar_reserva, gerar_cobranca): estrito em todas
+// estoura o limite da API ("compiled grammar is too large", 06/10/2026); as demais o CRM valida ao executar.
 const LIGADAS = ['consultar_disponibilidade', 'gerar_orcamento', 'criar_reserva', 'gerar_cobranca', 'enviar_fotos', 'enviar_video', 'enviar_link_extras', 'abrir_alerta', 'consultar_documentos', 'rota_ate_o_hotel'];
 // Rota de carro até o hotel no Google Maps (dono, 07/10/2026): link de rotas, sem chave de API; o Maps calcula distância e tempo
 const DESTINO_HOTEL = 'Hotel Cabanas, Rodovia Bonito/Balneário Municipal km 6, Bonito - MS';

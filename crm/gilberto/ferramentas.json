@@ -2,7 +2,7 @@
   {
     "name": "consultar_disponibilidade",
     "description": "Consulta no Silbeck (Disponibilidade + Tarifario/Valor) as vagas e os valores de hoje para um período e um grupo. Use antes de falar de qualquer preço ou vaga, e também para conferir as novas datas de um pedido de alteração (só para informar a equipe). Devolve os tipos de acomodação que comportam o grupo pela capacidade do Silbeck e pelas regras de criança (Cabana Casal e Tripla não recebem menores de 5 anos), com: código, nome, vagas no período, valor total, média por noite, valor da parcela em 6x. Quando o grupo não cabe (ou não há vaga) numa acomodação só, ou quando você manda grupos_por_acomodacao, devolve COMBINAÇÕES (até 5, da mais em conta à de mais conforto): cada uma com código (ex.: CBM+STD ou QST+QST), nome, quem fica em cada acomodação e o valor total. Regras das combinações: 1 adulto ao menos em cada acomodação; até 4 acomodações e 16 pessoas (acima disso, aviso para passar à equipe com abrir_alerta). O CRM recusa datas no passado, saída antes da entrada e criança sem idade: nesses casos devolve um erro explicando o que falta. Nunca invente valor: se a ferramenta falhar, diga ao cliente que vai conferir e use abrir_alerta.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -74,7 +74,7 @@
   {
     "name": "gerar_orcamento",
     "description": "Monta o orçamento com até 3 opções e cria a página do orçamento (link único com fotos reais, incluso, condições e botão 'Quero reservar'). O CRM recota no Silbeck na hora, salva a versão no card e devolve: orcamento_id, link da página e, para cada opção, valor total, média por noite e parcela em 6x. Use só depois de consultar_disponibilidade e só com acomodações ou combinações que vieram dela (para uma combinação, a lista de códigos dela, ex.: [\"CBM\", \"STD\"], e o mesmo grupos_por_acomodacao da consulta). A página mostra, em cada combinação, quem fica em cada acomodação. Ordene da opção de mais valor para o perfil até a mais econômica. Coloque o link devolvido na sua mensagem exatamente como veio. O orçamento não tem validade: os valores são os de hoje, sujeitos à disponibilidade.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -251,7 +251,7 @@
   {
     "name": "consultar_reservas_do_contato",
     "description": "Lista as reservas ligadas a este contato (CRM e Silbeck, de qualquer origem: CRM, motor, Booking, agência), com datas, acomodação, status (não confirmada, confirmada, hospedado, cancelada), valor pago e prazo de pagamento. Use quando o cliente falar de uma reserva que já existe (alteração, cancelamento, pagamento, dúvida de quem está hospedado) antes de responder. Só leitura.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -268,7 +268,7 @@
   {
     "name": "enviar_fotos",
     "description": "Envia ao cliente fotos ou vídeos reais do banco de imagens do hotel (nunca imagens de fora). Escolha pelo código da acomodação e/ou por etiquetas do que o cliente quer ver. O CRM envia no máximo 5 arquivos por vez e devolve o que foi enviado (com a descrição de cada foto). Não descreva uma foto como se você a tivesse tirado ou visto ao vivo. Para mostrar uma acomodação (por exemplo, a sugerida, logo depois do orçamento): só o código, etiquetas vazias e quantidade 2; o CRM manda uma foto de fora e uma do quarto. Banheiro só se o cliente pedir (etiqueta \"banheiro\").",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -299,7 +299,7 @@
   {
     "name": "enviar_video",
     "description": "Envia ao cliente UM vídeo real do banco do hotel, como argumento de venda: o institucional (o hotel e os dois rios), o de uma acomodação ou o das atividades. O CRM nunca repete um vídeo que a conversa já recebeu e manda no máximo um por resposta. Use quando o vídeo ajudar a decidir: depois de o cliente mostrar interesse no hotel, junto do orçamento (o da acomodação sugerida, se houver) ou quando perguntar das atividades. Não use no primeiro cumprimento nem a cada mensagem. A lista do que existe está em <contexto_crm> (Vídeos no banco). Apresente o vídeo em uma frase na sua mensagem.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -325,7 +325,7 @@
   {
     "name": "usar_resposta_fixa",
     "description": "Envia, exatamente como está cadastrada na Biblioteca de respostas, uma resposta marcada como fixa (o CRM troca {nome} pelo primeiro nome do cliente). Use quando a pergunta do cliente corresponder, pelo sentido, a uma resposta fixa listada em <biblioteca_respostas_fixas>. O CRM envia o texto como um balão ANTES dos seus; não o repita na sua mensagem e conte-o no limite de 3 balões.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -342,7 +342,7 @@
   {
     "name": "consultar_horarios_atividade",
     "description": "Consulta no sistema interno do hotel os horários e as vagas de boia cross, arvorismo ou combo (boia cross + arvorismo em sequência compatível) para uma data. Use antes de propor horário a quem aceitou a atividade ou para oferecer a quem já está hospedado ('hoje às 15h30 ainda tem vaga'). Só leitura.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -373,7 +373,7 @@
   {
     "name": "agendar_atividade",
     "description": "Reserva boia cross, arvorismo ou combo (com horário vindo de consultar_horarios_atividade) ou decoração especial (sem horário; só com 3 dias ou mais de antecedência da data). Use SOMENTE depois de o cliente aceitar explicitamente. O CRM recusa participante com menos de 5 anos ou menos de 1,15 m, horário sem vaga e decoração com menos de 3 dias; registra no card e cria a cobrança ou o lançamento na conta. Antes, confirme com o cliente que nenhum participante é gestante e lembre que não se participa depois de ingerir álcool. Boia cross e arvorismo têm vagas limitadas: sempre consulte antes. Cada atividade agendada gera uma tarefa \"agendar atividade\" para a equipe (P71a): enquanto o sistema de atividades não estiver ligado ao CRM, é a equipe que confirma a vaga lá; diga ao cliente que o horário fica confirmado pela equipe.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -444,7 +444,7 @@
   {
     "name": "pedir_horario_parceiro",
     "description": "Pede à massoterapeuta parceira (Natália, Massagem 360), pelo WhatsApp oficial do hotel, a confirmação de uma massagem para um hóspede. Horários possíveis por dia: 08:00, 09:00, 10:00, 14:00, 15:00 e 16:00 (ofereça só esses). Tipos: Massagem360, Massagem relaxante ou Massagem linfática (R$ 220 cada), com adicionais opcionais. Antes de chamar, o cliente precisa ter escolhido data, horário e tipo. A parceira responde [Confirmo] ou [Não posso]: se confirma, o CRM confirma ao hóspede (o valor vai para a conta do hóspede no hotel, sem cobrança à parte) e cria a tarefa de lançar na comanda; se recusa, o CRM pergunta a ela quais datas e horários têm vaga e te devolve as opções para oferecer ao cliente (o horário escolhido vira um novo pedido). Sem resposta em 2 h no expediente, alerta a equipe. Ao cliente, diga que está confirmando o horário com a massoterapeuta; nunca dê como confirmado antes da resposta dela.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -515,7 +515,7 @@
   {
     "name": "registrar_dados_contato",
     "description": "Grava no card do contato o que o cliente informou na conversa, sem formulário: nome, e-mail, WhatsApp, datas, pessoas, idades e alturas das crianças, ocasião, persona e consentimento para novidades. Chame sempre que surgir um dado novo (pode ser junto com outras ferramentas). Mande só os campos que você realmente sabe; use null no resto. Nunca grave número de cartão, documento ou dado de saúde.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -650,7 +650,7 @@
   {
     "name": "abrir_alerta",
     "description": "Avisa a equipe (Jagles, Márcio e Ricardo; quem está de plantão primeiro) com card em destaque, sino e notificação no celular, e você CONTINUA na conversa: nunca deixe o cliente sem resposta, diga a ele na mesma mensagem que a equipe vai entrar em contato e siga ajudando no que puder. Use para: reclamação (com o protocolo de crise), pedido de cancelamento, cliente que pede uma pessoa, grupo acima de 10 pessoas, agência, operadora ou evento, pedido de alteração de reserva (depois de conferir a vaga com consultar_disponibilidade), pergunta fora da base, exceção de política, acessibilidade, problema de pagamento, dado sensível recebido. O CRM define a prioridade final pelo motivo (o valor que você envia é só uma sugestão). Fora do expediente, o alerta fica no topo da fila das 7h30. Não use para pedido de desconto nem para dúvida ou indecisão do cliente (ex.: \"estou em dúvida se vou ficar\"): você mesmo responde, trabalha a objeção e segue o atendimento. Não repita o alerta do mesmo assunto na conversa.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -694,7 +694,7 @@
   {
     "name": "passar_para_equipe",
     "description": "Passa a conversa para uma pessoa: abre o alerta e PAUSA você nesta conversa até a equipe devolvê-la. Use para: reclamação, pedido de cancelamento, cliente que pede uma pessoa, grupo acima de 10 pessoas, agência ou operadora, evento. Na mesma resposta, mande ao cliente a mensagem de passagem (no expediente, a equipe continua em instantes; fora dele, a equipe responde a partir das 7h30). Se o cliente escrever de novo antes de alguém assumir, o CRM pode chamar você só para acolher e informar o prazo, sem resolver o motivo da passagem.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -729,7 +729,7 @@
   {
     "name": "registrar_nota_interna",
     "description": "Escreve uma nota no card que só a equipe vê (nunca vai ao cliente): persona e etapa do funil, objeção percebida, fato que precisa ser confirmado com o dono, contexto útil para quem assumir. Use quando houver algo que a equipe precisa saber e que não cabe nas outras ferramentas.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -757,7 +757,7 @@
   {
     "name": "enviar_link_massagem",
     "description": "Envia ao hóspede o link da página de agendamento de massagem (crm.hotelcabanas.com.br/m/…), em que ele escolhe sozinho o tipo (Massagem360, relaxante ou linfática, R$ 220), o local (à beira do rio ou no quarto), o dia dentro da estadia, o horário (8h, 9h, 10h, 14h, 15h ou 16h; os ocupados aparecem riscados) e os adicionais. O pedido vai direto para a massoterapeuta e a resposta dela volta ao hóspede pela página e pelo WhatsApp. Use quando o cliente demonstrar interesse em massagem; escreva uma frase curta convidando a escolher pelo link.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -775,7 +775,7 @@
   {
     "name": "enviar_link_extras",
     "description": "Cria o link da página de extras do hotel para este cliente, com fotos, opções, preços e o dia de cada extra. O cliente escolhe lá e a escolha volta para a equipe (vai para a conta da hospedagem, acertada no check-out). Dois temas: 'aventuras' (combo boia cross + arvorismo, boia cross, arvorismo) e 'momentos' (decoração especial e massagem). Use no momento certo da regra 9, uma vez por conversa, e só o tema que combina com o grupo (crianças pequenas: veja as idades; casal em data especial: momentos). Siga o aviso devolvido: no modo automático o CRM envia o link como cartão com foto e botão (não escreva o link, só uma frase curta convidando a ver as opções); no modo sugestão, coloque o link devolvido na mensagem exatamente como veio, com a frase curta. Preencha produto_oferecido com o código do produto principal do tema que você destacou.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
@@ -797,7 +797,7 @@
   {
     "name": "consultar_documentos",
     "description": "Busca nos documentos aprovados pelo dono que não couberam nas suas instruções (a lista dos títulos está no fim de <documentos_aprovados>). Use quando o cliente perguntar de um assunto desses documentos. Devolve os trechos mais ligados à busca. Se não achar, não invente: diga que vai confirmar.",
-    "strict": true,
+    "strict": false,
     "input_schema": {
       "type": "object",
       "properties": {
