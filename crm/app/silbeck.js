@@ -457,4 +457,33 @@ async function lancarAdiantamento({ item_id, valor, observacao }, buscar = fetch
   return { ok: true, id: r.dados && r.dados.id, confirmado: !!(r.dados && r.dados.confirmado), fonte: r.fonte };
 }
 
-module.exports = { diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
+// Cotação passo a passo (dono, 08/10/2026: o real falhou e o motivo só ia para o log). Mostra só o formato das
+// respostas (nomes dos campos, contagens, status), nunca dados de hóspedes. Usado por /saude/silbeck-cotacao.
+let ultimaFalhaCotacao = null;
+const registrarFalhaCotacao = (pedido, e) => { ultimaFalhaCotacao = { quando: new Date().toISOString(), pedido, erro: String((e && e.message) || e).slice(0, 300) }; };
+async function diagnosticoCotacao({ entrada, saida, adultos = 2 } = {}, buscar = fetch) {
+  const ini = /^\d{4}-\d{2}-\d{2}$/.test(entrada || '') ? entrada : somarDias(hojeBonito(), 45);
+  const fim = /^\d{4}-\d{2}-\d{2}$/.test(saida || '') && saida > ini ? saida : somarDias(ini, 2);
+  const out = { modo: MODO(), pedido: { entrada: ini, saida: fim, adultos: Number(adultos) || 2 }, passos: {}, ultimaFalhaCotacao };
+  const chaves = o => o && typeof o === 'object' ? Object.keys(o).slice(0, 25) : typeof o;
+  const passo = async (nome, fn) => { const t = Date.now(); try { out.passos[nome] = { ok: true, ...(await fn()), ms: Date.now() - t }; return true; } catch (e) { out.passos[nome] = { ok: false, erro: String(e.message || e).slice(0, 300), ms: Date.now() - t }; return false; } };
+  let tipos = [], categorias = [];
+  await passo('tiposDeApartamento', async () => { const { dados } = await chamar('GET', '/v1/TipoApartamento', null, buscar); tipos = (dados && dados.listaTipoApartamento) || [];
+    return { campos: chaves(dados), quantos: tipos.length, camposDoItem: chaves(tipos[0]), codigos: tipos.map(t => t.codigo).slice(0, 20), comMaximoOcupantes: tipos.filter(t => Number(t.maximoOcupantes) > 0).length }; });
+  await passo('categoriasDeHospede', async () => { const { dados } = await chamar('GET', '/v1/CategoriaHospede', null, buscar); categorias = (dados && dados.listaCategoriaHospede) || [];
+    return { campos: chaves(dados), quantos: categorias.length, camposDoItem: chaves(categorias[0]), tipos: categorias.map(c => c.tipo) }; });
+  let disp = null;
+  await passo('disponibilidade', async () => { const r = await chamar('GET', `/v1/Disponibilidade?dataInicial=${ini}&DataFinal=${somarDias(fim, -1)}&DetalharDiaADia=true`, null, buscar); disp = r.dados;
+    const l = (disp && disp.listaTipoApto) || [];
+    return { campos: chaves(disp), tiposNaLista: l.length, camposDoItem: chaves(l[0]), camposDoDia: chaves(((l[0] || {}).listaSituacaoTipoApto || [])[0]), codigos: l.map(t => t.codigo).slice(0, 20) }; });
+  const t0 = tipos[0];
+  if (t0) await passo('tarifa', async () => {
+    const cat = (categorias.find(c => c.tipo === 1) || {}).id;
+    const { dados } = await chamar('POST', '/v1/Tarifario/Valor', { dataEntrada: ini, dataSaida: fim, idTipoApartamento: t0.id, listaCategoriaHospede: [{ id: cat, quantidade: out.pedido.adultos }] }, buscar);
+    return { tipo: t0.codigo, categoriaAdulto: cat ?? null, eLista: Array.isArray(dados), campos: chaves(Array.isArray(dados) ? dados[0] : dados), itens: Array.isArray(dados) ? dados.length : null };
+  });
+  await passo('cotacaoCompleta', async () => { const r = await cotar({ data_entrada: ini, data_saida: fim, adultos: out.pedido.adultos, idades_criancas: [] }, buscar);
+    return { resultado: r.ok ? 'ok' : 'erro', erro: r.erro || null, opcoes: (r.opcoes || []).map(o => o.codigo + ' ' + o.valor_total), esgotados: (r.esgotados_no_periodo || []).length, naoComportam: (r.nao_comportam_o_grupo || []).length }; });
+  return out;
+}
+module.exports = { diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };

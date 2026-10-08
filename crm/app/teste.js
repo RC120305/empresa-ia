@@ -1870,6 +1870,12 @@ falso.listen(0, () => {
         zerarCacheAuto();
       }
     }
+    // Diagnóstico da cotação no Silbeck, passo a passo (no simulador, tudo certo)
+    {
+      const dc = await require('./silbeck').diagnosticoCotacao({ adultos: 2 });
+      assert.ok(Object.values(dc.passos).every(p => p.ok), JSON.stringify(dc.passos));
+      assert.equal(dc.passos.cotacaoCompleta.resultado, 'ok'); assert.ok(dc.passos.cotacaoCompleta.opcoes.length > 0);
+    }
     // Todo módulo local usado pelo servidor precisa estar no Dockerfile (senão o Cloud Run não sobe)
     const fsD = require('fs'), docker = fsD.readFileSync(require('path').join(__dirname, 'Dockerfile'), 'utf8');
     const locais = new Set(fsD.readdirSync(__dirname).filter(f => f.endsWith('.js') && f !== 'teste.js').flatMap(f => [...fsD.readFileSync(require('path').join(__dirname, f), 'utf8').matchAll(/require\('\.\/([\w-]+)'\)/g)].map(m => m[1] + '.js')));

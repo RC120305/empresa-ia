@@ -205,6 +205,7 @@ async function executarFerramenta(nome, entrada, executores = {}, modo = 'sugest
   if (nome === 'consultar_disponibilidade') {
     try { return await silbeck.cotar(entrada); } catch (e) {
       console.warn(JSON.stringify({ evento: 'silbeck_falhou', erro: String(e.message || e).slice(0, 200) }));
+      silbeck.registrarFalhaCotacao({ entrada: entrada.data_entrada, saida: entrada.data_saida, adultos: entrada.adultos, criancas: (entrada.idades_criancas || []).length }, e);
       return { ok: false, erro: 'O Silbeck não respondeu agora. Não informe preço nem vaga: diga que vai conferir' + (modo === 'automatico' ? ' e chame abrir_alerta.' : ' e avise a equipe nas notas_internas.') };
     }
   }

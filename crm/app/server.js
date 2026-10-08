@@ -2853,6 +2853,13 @@ const servidor = http.createServer((req, res) => {
     retomadaAutomatica(fetch, Date.now(), { simular: true }).then(r => json(res, 200, { ok: true, ...r })).catch(e => json(res, 500, { ok: false, erro: String(e.message || e).slice(0, 160) }));
     return;
   }
+  // Cotação no Silbeck passo a passo (formato das respostas e a última falha do Gilberto). Sem dados de hóspedes.
+  if (url.pathname === '/saude/silbeck-cotacao' && req.method === 'GET') {
+    if (limiteExcedido(req)) return json(res, 429, { ok: false });
+    silbeck.diagnosticoCotacao({ entrada: url.searchParams.get('entrada'), saida: url.searchParams.get('saida'), adultos: url.searchParams.get('adultos') })
+      .then(r => json(res, 200, { ok: true, ...r })).catch(e => json(res, 500, { ok: false, erro: String(e.message || e).slice(0, 200) }));
+    return;
+  }
   // Teste da ponte com o Silbeck (porta, login, uma leitura). Sem dados sensíveis; resultado guardado por 60 s.
   if (url.pathname === '/saude/silbeck') {
     silbeck.diagnosticoCache()
