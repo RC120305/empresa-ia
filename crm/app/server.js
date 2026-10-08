@@ -1364,6 +1364,7 @@ async function retomarOrcamentos(buscar = fetch, agora = Date.now()) {
     if (!neg || neg.etapa !== 'orc') continue;
     if ((await getJson(`${SUPABASE_URL}/rest/v1/mensagens?conversa_id=eq.${o.conversa_id}&direcao=eq.entrada&enviada_em=gt.${o.criado_em}&select=id&limit=1`, buscar)).length) continue; // o cliente respondeu
     if ((await getJson(`${SUPABASE_URL}/rest/v1/tarefas?negocio_id=eq.${neg.id}&tipo=eq.${encodeURIComponent(TIPO_RETOMAR)}&criado_em=gte.${o.criado_em}&select=id&limit=1`, buscar)).length) continue; // já tem
+    if ((await getJson(`${SUPABASE_URL}/rest/v1/tarefas?negocio_id=eq.${neg.id}&tipo=eq.${encodeURIComponent(TIPO_RETOMAR)}&feita=eq.false&select=id&limit=1`, buscar)).length) continue; // uma aberta por negócio (sem duplicar)
     const vezes = o.aberturas ? `abriu ${o.aberturas}x` : 'ainda não abriu o link';
     const r = await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
       body: JSON.stringify({ negocio_id: neg.id, responsavel_id: neg.responsavel_id || null, criado_por: 'CRM', tipo: TIPO_RETOMAR, quando: proximoExpediente(new Date(agora)).toISOString(),
@@ -1453,6 +1454,8 @@ async function retomadaAutomatica(buscar = fetch, agora = Date.now(), { simular 
   if (disparadas) await esperar(150); // garante que os pedidos saíram
   return disparadas;
 }
+// Promoção do site (Ajustes; config promocao_site): o módulo do Silbeck lê a cada minuto
+silbeck.definirFontePromocao(() => bancoLigado() ? lerConfig('promocao_site', fetch) : null);
 // Resumo do dia: às 8h (horário de Bonito), um aviso por pessoa com tarefas de hoje e clientes quentes
 async function lerConfig(chave, buscar) { return ((await getJson(`${SUPABASE_URL}/rest/v1/config?chave=eq.${chave}&select=valor`, buscar))[0] || {}).valor || null; }
 const gravarConfig = (chave, valor, buscar, por = null) => buscar(`${SUPABASE_URL}/rest/v1/config?on_conflict=chave`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'resolution=merge-duplicates,return=minimal' },
@@ -2355,6 +2358,18 @@ const API_EQUIPE = {
     return { ok: true, ligado: !!corpo.ligado };
   },
   // Gilberto automático: geral (Ajustes/barra lateral) e por conversa (a equipe assume ou devolve)
+  // Promoção do site (dono, 08/10/2026): −41% a partir de 2 diárias; ligar só quando o preço da API bater com o do motor
+  'POST /api/promocao': async (corpo, eu) => {
+    const percentual = Number(corpo.percentual ?? 41), minimo = Number(corpo.minimo_diarias ?? 2);
+    if (!(percentual > 0 && percentual < 90)) throw new ErroEnvio(400, 'Desconto inválido (de 1% a 89%).');
+    if (!(Number.isInteger(minimo) && minimo >= 1 && minimo <= 30)) throw new ErroEnvio(400, 'Mínimo de diárias inválido.');
+    const valor = { ligada: !!corpo.ligada, percentual, minimo_diarias: minimo };
+    const r = await gravarConfig('promocao_site', valor, fetch, eu.id);
+    if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar agora.');
+    silbeck.definirFontePromocao(() => lerConfig('promocao_site', fetch)); // vale já na próxima cotação
+    console.log(JSON.stringify({ evento: 'promocao_' + (valor.ligada ? 'ligada' : 'desligada'), percentual, minimo }));
+    return { ok: true, ...valor };
+  },
   'POST /api/gilberto-auto': async (corpo, eu) => {
     const r = await gravarConfig('gilberto_auto', { ligado: !!corpo.ligado }, fetch, eu.id);
     if (!r.ok) throw new ErroEnvio(r.status === 404 ? 503 : 502, 'Não deu para salvar (o banco precisa da migração 018?).');

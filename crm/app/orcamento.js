@@ -165,7 +165,7 @@ function montar(entrada, cotacao) {
       const cod = cods[0];
       const c = (cotacao.opcoes || []).find(x => x.codigo === cod && !x.combinacao);
       if (!c) return { erro: `${CATALOGO[cod] ? CATALOGO[cod].nome : cod} não tem vaga nessas datas ou não comporta o grupo. Use só códigos que vieram de consultar_disponibilidade.` };
-      if (!opcoes.some(x => x.codigo === cod)) opcoes.push({ codigo: cod, nome: nomeCat(c), valor_total: c.valor_total, media_por_noite: c.media_por_noite, parcela_6x: c.parcela_6x, diarias: c.diarias, taxas: c.taxas, ...(sug.length === 1 && cod === sug[0] ? { sugerida: true } : {}) });
+      if (!opcoes.some(x => x.codigo === cod)) opcoes.push({ codigo: cod, nome: nomeCat(c), valor_total: c.valor_total, media_por_noite: c.media_por_noite, parcela_6x: c.parcela_6x, diarias: c.diarias, taxas: c.taxas, ...(c.valor_cheio > c.valor_total ? { valor_cheio: c.valor_cheio, promocao: c.promocao } : {}), ...(sug.length === 1 && cod === sug[0] ? { sugerida: true } : {}) });
       continue;
     }
     const chave = chaveCombinacao(cods);
@@ -173,7 +173,7 @@ function montar(entrada, cotacao) {
     if (!c) return { erro: `A combinação ${cods.join('+')} não tem vaga ou não comporta o grupo nessas datas. Use uma das combinações de consultar_disponibilidade.` };
     if (!opcoes.some(x => x.codigo === c.codigo)) opcoes.push({ codigo: c.codigo, nome: nomeDaCombinacao(c.acomodacoes), combinacao: true,
       acomodacoes: c.acomodacoes.map(a => ({ codigo: a.codigo, nome: nomeCat(a), adultos: a.adultos, idades_criancas: a.idades_criancas || [], valor_total: a.valor_total })),
-      valor_total: c.valor_total, media_por_noite: c.media_por_noite, parcela_6x: c.parcela_6x, diarias: c.diarias, taxas: c.taxas, ...(sug.length > 1 && chave === chaveSug ? { sugerida: true } : {}) });
+      valor_total: c.valor_total, media_por_noite: c.media_por_noite, parcela_6x: c.parcela_6x, diarias: c.diarias, taxas: c.taxas, ...(c.valor_cheio > c.valor_total ? { valor_cheio: c.valor_cheio, promocao: c.promocao } : {}), ...(sug.length > 1 && chave === chaveSug ? { sugerida: true } : {}) });
   }
   // Sempre da mais em conta para a de maior valor (dono, 04/10/2026): nunca abrir com a mais cara
   return { opcoes: emOrdemDeValor(opcoes) };
@@ -198,7 +198,7 @@ function pagina(o, { previa = false, produtos = null } = {}) {
     return `<article class="op${op.sugerida ? ' rec' : ''}">${galeria}${nota}<div class="corpo">
 ${op.sugerida ? '<span class="selo">Nossa sugestão para vocês</span>' : ''}<h2>${esc(cat.nome)}</h2><p class="cap">${esc(cat.cap)}</p>
 ${quem}<ul class="dest">${cat.dest.map(d => `<li>${esc(d)}</li>`).join('')}</ul>
-<div class="preco"><div><small>Total ${n > 1 ? `das ${n} noites` : 'da noite'}</small><b>${brl(op.valor_total)}</b><small>${n > 1 ? `média de ${brl(op.media_por_noite)} por noite · ` : ''}ou 6x de ${brl(op.parcela_6x)} sem juros</small></div></div>
+<div class="preco"><div><small>Total ${n > 1 ? `das ${n} noites` : 'da noite'}</small>${op.valor_cheio > op.valor_total ? `<span class="cheio"><s>${brl(op.valor_cheio)}</s> <em class="desc">−${Math.round(Number(op.promocao) || (1 - op.valor_total / op.valor_cheio) * 100)}%</em></span>` : ''}<b>${brl(op.valor_total)}</b><small>${n > 1 ? `média de ${brl(op.media_por_noite)} por noite · ` : ''}ou 6x de ${brl(op.parcela_6x)} sem juros</small></div></div>
 <button class="btn quero" type="button" data-codigo="${esc(op.codigo)}" data-nome="${esc(cat.nome)}">Quero reservar esta</button></div></article>`;
   }).join('\n');
   // Extras pagos não entram no orçamento: são oferecidos depois da reserva paga (dono, 04/10/2026)

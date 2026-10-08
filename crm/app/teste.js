@@ -1288,6 +1288,9 @@ falso.listen(0, () => {
       const enviosMeta = () => chamadas.filter(c => c.url === '/graph/111/messages' && c.corpo && c.corpo.type === 'text');
       assert.equal((await api('/api/gilberto-auto', { ligado: true })).status, 200);
       assert.deepEqual(configF.gilberto_auto, { ligado: true });
+      assert.equal((await api('/api/promocao', { ligada: true, percentual: 95 })).status, 400, 'desconto inválido');
+      assert.equal((await api('/api/promocao', { ligada: false, percentual: 41, minimo_diarias: 2 })).status, 200);
+      assert.deepEqual(configF.promocao_site, { ligada: false, percentual: 41, minimo_diarias: 2 });
       // 1) aceite + Pix: reserva criada pelo Gilberto e Pix ligado a ela, tudo enviado sem ninguém aprovar
       iaAuto = 'pix'; autoUltimaId = MSG_MIDIA; autoPausado = false;
       const nEnv = enviosMeta().length, nIA = pedidosIA.length;
@@ -1908,6 +1911,24 @@ falso.listen(0, () => {
       const dc = await require('./silbeck').diagnosticoCotacao({ adultos: 2 });
       assert.ok(Object.values(dc.passos).every(p => p.ok), JSON.stringify(dc.passos));
       assert.equal(dc.passos.cotacaoCompleta.resultado, 'ok'); assert.ok(dc.passos.cotacaoCompleta.opcoes.length > 0);
+      // Promoção do site (desligada por padrão): −41% a partir de 2 diárias, 1 diária pelo preço cheio
+      {
+        const S2 = require('./silbeck'), dia = d => { const x = new Date(); x.setDate(x.getDate() + d); return x.toISOString().slice(0, 10); };
+        const base2 = await S2.cotar({ data_entrada: dia(50), data_saida: dia(52), adultos: 2, idades_criancas: [] });
+        assert.ok(base2.ok && !base2.opcoes[0].valor_cheio && !base2.promocao, 'desligada: nada muda');
+        S2.definirFontePromocao(async () => ({ ligada: true, percentual: 41, minimo_diarias: 2 }));
+        const p2 = await S2.cotar({ data_entrada: dia(50), data_saida: dia(52), adultos: 2, idades_criancas: [] });
+        const o = p2.opcoes.find(x => x.codigo === base2.opcoes[0].codigo);
+        assert.equal(o.valor_cheio, base2.opcoes[0].valor_total, 'valor cheio = o preço sem desconto');
+        assert.ok(Math.abs(o.valor_total - base2.opcoes[0].valor_total * 0.59) < 0.05, o.valor_total + ' x ' + base2.opcoes[0].valor_total);
+        assert.ok(p2.promocao.includes('41%'));
+        const p1 = await S2.cotar({ data_entrada: dia(50), data_saida: dia(51), adultos: 2, idades_criancas: [] });
+        assert.ok(!p1.opcoes[0].valor_cheio && p1.promocao.includes('1 diária sai pelo preço cheio'), '1 diária: preço cheio');
+        const O2 = require('./orcamento');
+        const html = O2.pagina({ token: 'x'.repeat(22), data_entrada: dia(50), data_saida: dia(52), adultos: 2, criancas_idades: [], opcoes: [o], fonte: 'simulador' }, {});
+        assert.ok(html.includes('<s>') && html.includes('−41%'), 'a página mostra o preço cheio riscado');
+        S2.definirFontePromocao(async () => ({ ligada: false }));
+      }
       const dt = await require('./silbeck').diagnosticoTarifa({ adultos: 2 });
       assert.ok(dt.precos.CBD && dt.precos.CBD.semPensao.total > 0, JSON.stringify(dt).slice(0, 400));
       // Silbeck real (08/10/2026): tipo de hóspede como texto e códigos próprios das acomodações

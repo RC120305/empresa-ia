@@ -209,16 +209,41 @@ function distribuir(tipos, adultos, idades) {
   for (let a = tipos.length; a < adultos; a++) if (!poe(q => q.adultos++, () => true)) return null;
   return quartos.map(q => ({ t: q.t, adultos: q.adultos, idades: q.idades }));
 }
+// Promoção do site (dono, 08/10/2026): −41% a partir de 2 diárias, como no motor de reservas (1 diária: preço cheio).
+// Fica DESLIGADA até o valor da API bater com o preço cheio do motor; a equipe liga em Ajustes (config promocao_site).
+// Aplicada num ponto só (tarifa): vale para a cotação, as combinações e as diárias enviadas na reserva.
+let PROMO = { ligada: false, percentual: 41, minimo_diarias: 2 }, fontePromo = null, promoAte = 0;
+const definirFontePromocao = fn => { fontePromo = fn; promoAte = 0; };
+async function promocao() {
+  if (fontePromo && promoAte < Date.now()) {
+    try { const p = await fontePromo(); PROMO = { ligada: false, percentual: 41, minimo_diarias: 2, ...(p || {}) }; } catch (e) { /* mantém a última */ }
+    promoAte = Date.now() + 60000;
+  }
+  return PROMO;
+}
+async function tarifa(corpo, buscar) {
+  const r = await chamar('POST', '/v1/Tarifario/Valor', corpo, buscar);
+  const p = await promocao(), pct = Number(p.percentual);
+  const noites = Math.round((new Date(corpo.dataSaida) - new Date(corpo.dataEntrada)) / 864e5);
+  if (!p.ligada || !(pct > 0 && pct < 100) || noites < (Number(p.minimo_diarias) || 2) || !Array.isArray(r.dados)) return r;
+  const f = 1 - pct / 100, n = x => Number(x || 0);
+  r.dados = r.dados.map(d => ({ ...d, valorCheio: n(d.valor), taxasCheias: n(d.valorTaxaServico) + n(d.valorTaxaISS),
+    valor: reais(n(d.valor) * f), valorTaxaServico: reais(n(d.valorTaxaServico) * f), valorTaxaISS: reais(n(d.valorTaxaISS) * f) }));
+  r.promocao = pct;
+  return r;
+}
+// Preço cheio (sem a promoção) de uma lista de diárias devolvida por tarifa()
+const cheio = dias => reais(dias.reduce((s, d) => s + (d.valorCheio != null ? d.valorCheio + d.taxasCheias : Number(d.valor || 0) + Number(d.valorTaxaServico || 0) + Number(d.valorTaxaISS || 0)), 0));
 // Preço de uma acomodação para uma ocupação (Tarifario/Valor), com cache dentro da mesma consulta
 async function precoQuarto(t, ini, fim, adultos, idades, categorias, cache, buscar) {
   const { lista } = categoriasDoGrupo(categorias, adultos, idades);
   const chave = t.codigo + '|' + JSON.stringify(lista);
-  if (!cache.has(chave)) cache.set(chave, chamar('POST', '/v1/Tarifario/Valor', { dataEntrada: ini, dataSaida: fim, idTipoApartamento: t.id, listaCategoriaHospede: lista }, buscar).then(p => {
+  if (!cache.has(chave)) cache.set(chave, tarifa({ dataEntrada: ini, dataSaida: fim, idTipoApartamento: t.id, listaCategoriaHospede: lista }, buscar).then(p => {
     const dias = p && Array.isArray(p.dados) ? p.dados : [];
     if (!dias.length) return null;
     const diarias = reais(dias.reduce((s, d) => s + Number(d.valor || 0), 0));
     const taxas = reais(dias.reduce((s, d) => s + Number(d.valorTaxaServico || 0) + Number(d.valorTaxaISS || 0), 0));
-    return { diarias, taxas, valor_total: reais(diarias + taxas), dias };
+    return { diarias, taxas, valor_total: reais(diarias + taxas), dias, ...(p.promocao ? { valor_cheio: cheio(dias), promocao: p.promocao } : {}) };
   }).catch(() => null));
   return cache.get(chave);
 }
@@ -226,11 +251,12 @@ async function precoQuarto(t, ini, fim, adultos, idades, categorias, cache, busc
 async function precificar(quartos, ini, fim, noites, categorias, cache, buscar) {
   const precos = await emFila(quartos, q => precoQuarto(q.t, ini, fim, q.adultos, q.idades, categorias, cache, buscar));
   if (precos.some(p => !p)) return null;
-  const acomodacoes = quartos.map((q, i) => ({ codigo: q.t.codigo, nome: q.t.nome, adultos: q.adultos, idades_criancas: q.idades, valor_total: precos[i].valor_total, diarias: precos[i].diarias, taxas: precos[i].taxas }));
+  const acomodacoes = quartos.map((q, i) => ({ codigo: q.t.codigo, nome: q.t.nome, adultos: q.adultos, idades_criancas: q.idades, valor_total: precos[i].valor_total, ...(precos[i].valor_cheio ? { valor_cheio: precos[i].valor_cheio } : {}), diarias: precos[i].diarias, taxas: precos[i].taxas }));
   const total = reais(acomodacoes.reduce((s, a) => s + a.valor_total, 0));
   return { codigo: codigoCombinacao(quartos.map(q => q.t).sort(ordemQuartos).map(t => t.codigo)), nome: nomeCombinacao(acomodacoes), combinacao: true, acomodacoes,
     capacidade: quartos.reduce((s, q) => s + q.t.maximoOcupantes, 0), valor_total: total, media_por_noite: reais(total / noites), parcela_6x: reais(total / 6),
-    diarias: reais(acomodacoes.reduce((s, a) => s + a.diarias, 0)), taxas: reais(acomodacoes.reduce((s, a) => s + a.taxas, 0)) };
+    diarias: reais(acomodacoes.reduce((s, a) => s + a.diarias, 0)), taxas: reais(acomodacoes.reduce((s, a) => s + a.taxas, 0)),
+    ...(precos.every(p => p.valor_cheio) ? { valor_cheio: reais(precos.reduce((s, p) => s + p.valor_cheio, 0)), promocao: precos[0].promocao } : {}) };
 }
 const temVagas = (tipos, vagas) => { const n = {}; for (const t of tipos) n[t.codigo] = (n[t.codigo] || 0) + 1; return Object.entries(n).every(([c, q]) => (vagas[c] || 0) >= q); };
 // Grupos pedidos pelo cliente ("os avós num quarto separado"): confere se somam o grupo todo
@@ -321,7 +347,7 @@ async function cotar(entrada, buscar = fetch) {
   }
   const pedidos = gruposValidos(entrada.grupos_por_acomodacao, adultos, idades);
   if (pedidos && pedidos.erro) return erro(pedidos.erro);
-  const precos = pedidos ? [] : await emFila(candidatos, t => chamar('POST', '/v1/Tarifario/Valor', { dataEntrada: ini, dataSaida: fim, idTipoApartamento: t.id, listaCategoriaHospede: lista }, buscar));
+  const precos = pedidos ? [] : await emFila(candidatos, t => tarifa({ dataEntrada: ini, dataSaida: fim, idTipoApartamento: t.id, listaCategoriaHospede: lista }, buscar));
   const opcoes = [];
   if (!pedidos) candidatos.forEach((t, i) => {
     const p = precos[i];
@@ -330,11 +356,15 @@ async function cotar(entrada, buscar = fetch) {
     const taxas = p.dados.reduce((s, d) => s + Number(d.valorTaxaServico || 0) + Number(d.valorTaxaISS || 0), 0);
     const total = reais(diarias + taxas);
     opcoes.push({ codigo: t.codigo, nome: t.nome, capacidade: t.maximoOcupantes, vagas_no_periodo: vagas[t.codigo],
-      valor_total: total, media_por_noite: reais(total / noites), parcela_6x: reais(total / 6), diarias: reais(diarias), taxas: reais(taxas) });
+      valor_total: total, media_por_noite: reais(total / noites), parcela_6x: reais(total / 6), diarias: reais(diarias), taxas: reais(taxas),
+      ...(p.promocao ? { valor_cheio: cheio(p.dados), promocao: p.promocao } : {}) });
   });
   opcoes.sort((a, b) => a.valor_total - b.valor_total);
   const r = { ok: true, fonte: disp.fonte, periodo: { entrada: ini, saida: fim, noites }, grupo: { adultos, idades_criancas: idades, pagantes: adultos + pagantesCriancas },
     opcoes, esgotados_no_periodo: semVaga, nao_comportam_o_grupo: naoComporta };
+  const pr = await promocao();
+  if (pr.ligada && noites >= (Number(pr.minimo_diarias) || 2)) r.promocao = `Valores já com o desconto de ${pr.percentual}% do site (a partir de ${pr.minimo_diarias || 2} diárias); valor_cheio é o preço sem o desconto. Pode dizer ao cliente que é o mesmo preço promocional do site.`;
+  else if (pr.ligada) r.promocao = `1 diária sai pelo preço cheio; a partir de ${pr.minimo_diarias || 2} diárias há ${pr.percentual}% de desconto (o mesmo do site). Vale oferecer a 2ª noite.`;
   // Combinação: quando o cliente pede acomodações separadas ou quando o grupo não cabe (ou não há vaga) numa acomodação só
   if (pedidos || !opcoes.length) {
     if (pessoas > LIMITE_PESSOAS || (pedidos && pedidos.grupos.length > LIMITE_ACOMODACOES)) r.aviso = `Grupo grande (mais de ${LIMITE_PESSOAS} pessoas ou de ${LIMITE_ACOMODACOES} acomodações): quem monta é a equipe, que pode negociar uma condição de grupo. Use abrir_alerta.`;
@@ -554,4 +584,4 @@ async function diagnosticoTarifario({ entrada, saida, adultos = 2, codigo = 'CBD
   }
   return out;
 }
-module.exports = { diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
+module.exports = { definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };

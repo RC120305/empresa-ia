@@ -152,6 +152,7 @@
     mostrarTela('tela-caixa');
     chamarApi('/api/equipe', null, 'GET').then(j => { equipe = Object.fromEntries(j.equipe.map(u => [u.id, u.nome])); preencherFiltrosEquipe(); if (aberta) pintarCabecalho(); carregarPlantao(); }).catch(() => { equipe = { [meu.id]: meu.nome }; preencherFiltrosEquipe(); carregarPlantao(); });
     await carregarGilAuto();
+    carregarPromo().catch(() => {});
     carregarNumerosTeste();
     await carregarConversas();
     if (abrirAoEntrar) abrirDoAviso(abrirAoEntrar === 'docs' ? '#docs' : '#c=' + abrirAoEntrar);
@@ -241,6 +242,28 @@
     catch (e) { toast(e.message); }
   };
   $('gil-auto').addEventListener('click', alternarGilAuto); $('gil-geral').addEventListener('click', alternarGilAuto);
+  // ---------- Promoção do site (−41% a partir de 2 diárias, como no motor de reservas) ----------
+  let promo = { ligada: false, percentual: 41, minimo_diarias: 2 };
+  async function carregarPromo() {
+    const { data, error } = await sb.from('config').select('valor').eq('chave', 'promocao_site').maybeSingle();
+    if (!error && data && data.valor) promo = { ...promo, ...data.valor };
+    $('promo-txt').textContent = promo.ligada
+      ? 'Ligada: ' + promo.percentual + '% de desconto a partir de ' + promo.minimo_diarias + ' diárias (1 diária: preço cheio). O orçamento mostra o preço cheio riscado.'
+      : 'Desligada: o Gilberto cota o preço cheio do Silbeck. Ligue quando o valor da API bater com o preço cheio do motor de reservas.';
+    $('promo-bt').textContent = promo.ligada ? 'Desligar' : 'Ligar'; $('promo-bt').className = 'btn ' + (promo.ligada ? 'btn-editar' : 'btn-enviar');
+  }
+  $('promo-bt').addEventListener('click', () => {
+    if (promo.ligada) {
+      if (!confirm('Desligar a promoção do site? O Gilberto passa a cotar o preço cheio.')) return;
+      chamarApi('/api/promocao', { ...promo, ligada: false }).then(() => { toast('Promoção desligada.'); carregarPromo(); }).catch(e => toast(e.message));
+      return;
+    }
+    abrirForm('Ligar a promoção do site', [
+      { tipo: 'nota', rotulo: 'Ligue só depois de conferir que o preço cheio do Silbeck (diagnóstico /saude/silbeck-tarifario) é o mesmo do motor de reservas. Vale para o Gilberto, a página do orçamento e a reserva.' },
+      { k: 'percentual', rotulo: 'Desconto (%)', tipo: 'number', valor: promo.percentual, at: { min: 1, max: 89, step: 1 } },
+      { k: 'minimo_diarias', rotulo: 'A partir de quantas diárias', tipo: 'number', valor: promo.minimo_diarias, at: { min: 1, max: 30, step: 1 } },
+    ], async v => { await chamarApi('/api/promocao', { ligada: true, percentual: Number(v.percentual), minimo_diarias: Number(v.minimo_diarias) }); toast('Promoção ligada.'); carregarPromo(); }, null, 'Ligar');
+  });
   function botaoGilberto(c) {
     if (!gilAuto || c.gilberto_pausado === undefined) return null;
     const pausado = !!c.gilberto_pausado;
