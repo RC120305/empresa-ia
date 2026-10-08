@@ -19,9 +19,9 @@ const CATALOGO = {
   QST: { nome: 'Standard Quádruplo', cap: '20 a 25 m² · até 4 pessoas', dest: ['Ótimo custo para família ou grupo', 'Térreo, com estacionamento em frente', 'Cama queen + 2 de solteiro'] },
   CST: { nome: 'Duplo Casa Standard', cap: 'para 2 pessoas', dest: ['Opção econômica para casal', 'Ar quente e frio, frigobar e Wi-Fi', 'Café da manhã incluso'] },
 };
-// Bangalô Triplo e Quádruplo: no Silbeck real são dois tipos (BANG3 e BANG4); o hotel os apresenta como o Bangalô (08/10/2026)
-CATALOGO.BANG3 = { ...CATALOGO.BG, nome: 'Bangalô', cap: '40 m² · até 3 pessoas' };
-CATALOGO.BANG4 = { ...CATALOGO.BG, nome: 'Bangalô', cap: '40 m² · até 4 pessoas' };
+// Bangalô Triplo e Quádruplo: no Silbeck real são dois tipos (BANG3 e BANG4), com a descrição e as fotos do Bangalô (dono, 08/10/2026)
+CATALOGO.BANG3 = { ...CATALOGO.BG, nome: 'Bangalô Triplo', cap: '40 m² · até 3 pessoas' };
+CATALOGO.BANG4 = { ...CATALOGO.BG, nome: 'Bangalô Quádruplo', cap: '40 m² · até 4 pessoas' };
 // Fotos: acomodações sem pasta própria usam a da equivalente
 const FOTO_DE = { QES: 'SUP', QST: 'STD', CST: 'STD', BANG3: 'BG', BANG4: 'BG' };
 // Antes das opções e dos valores, os benefícios (dono, 04/10/2026). Fatos aprovados: contexto/hotel-operacional.md

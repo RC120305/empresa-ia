@@ -133,3 +133,24 @@
 | Agências | `codigoEmpresa` calcula a comissão; o **`idFaturamento` precisa ser o de empresa** | Regra do CRM: reserva de agência → faturamento "empresa" |
 | Cancelar/alterar e webhooks | **Não existe**; melhoria pode ser pedida em suporte@silbeck.com.br | Mantém o desenho (alerta + equipe no Silbeck; consulta a cada 5 min) |
 | IDs, categorias, bandeiras | Coletar dentro do sistema | `silbeck/mapa-ids.md` |
+
+## 7. Códigos das acomodações no Silbeck do hotel (confirmados pelo dono, 08/10/2026)
+
+O CRM traduz na entrada (`CODIGO_DO_CRM` em `app/silbeck.js`); fotos e descrições seguem o código do CRM (`app/orcamento.js`).
+
+| Silbeck | Nome no Silbeck | Capacidade | Unidades | No CRM |
+|---|---|---|---|---|
+| CAB | Cabana Casal | 2 | 3 | CBD · Cabana Casal |
+| CABT | Cabana Triplo | 3 | 1 | CBT · Cabana Tripla |
+| CABMAS | Cabana Master | 5 | 1 | CBM · Cabana Master |
+| STD | Standard | 3 | 6 | STD · Apartamento Standard |
+| STD1 | Standard Casal | 2 | 1 | CST · Duplo Casa Standard |
+| DPLS | Superior | 3 | 2 | SUP · Apartamento Superior |
+| QSTD | Quádruplo Standard | 4 | 2 | QST · Standard Quádruplo |
+| QSUP | Quádruplo Superior | 4 | 1 | QES · Superior Quádruplo |
+| CON | Conjugado | 5 | 1 | CJ · Apartamento Conjugado |
+| BANG3 | Bangalô Triplo | 3 | 1 | BANG3 · Bangalô Triplo (fotos e descrição do Bangalô) |
+| BANG4 | Bangalô Quádruplo | 4 | 1 | BANG4 · Bangalô Quádruplo (fotos e descrição do Bangalô) |
+| BANG4C | Bangalô Quádruplo Especial | 4 | 1 | BGE · Bangalô Especial |
+
+Outros pontos do Silbeck real: o tipo da categoria de hóspede vem como texto ("1" a "4"); `expires_in` do token = 30.

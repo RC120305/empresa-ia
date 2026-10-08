@@ -1881,7 +1881,7 @@ falso.listen(0, () => {
       assert.deepEqual(S._paraCRM([{ codigo: 'CAB', id: 1 }, { codigo: 'BANG3', id: 2 }, { codigo: 'STD1', id: 3 }, { codigo: 'DPLS', id: 4 }, { codigo: 'BANG4C', id: 5 }]).map(t => [t.codigo, t.codigo_silbeck || null, t.id]),
         [['CBD', 'CAB', 1], ['BANG3', null, 2], ['CST', 'STD1', 3], ['SUP', 'DPLS', 4], ['BGE', 'BANG4C', 5]]);
       const O = require('./orcamento');
-      assert.equal(O.CATALOGO.BANG4.nome, 'Bangalô'); assert.equal(O.FOTO_DE.BANG3, 'BG');
+      assert.equal(O.CATALOGO.BANG4.nome, 'Bangalô Quádruplo'); assert.equal(O.FOTO_DE.BANG3, 'BG');
     }
     // Todo módulo local usado pelo servidor precisa estar no Dockerfile (senão o Cloud Run não sobe)
     const fsD = require('fs'), docker = fsD.readFileSync(require('path').join(__dirname, 'Dockerfile'), 'utf8');
