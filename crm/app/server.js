@@ -2889,6 +2889,13 @@ const servidor = http.createServer((req, res) => {
     retomadaAutomatica(fetch, Date.now(), { simular: true }).then(r => json(res, 200, { ok: true, ...r })).catch(e => json(res, 500, { ok: false, erro: String(e.message || e).slice(0, 160) }));
     return;
   }
+  // Variações do pedido de preço (tarifário do motor). Sem dados de hóspedes.
+  if (url.pathname === '/saude/silbeck-tarifario' && req.method === 'GET') {
+    if (limiteExcedido(req)) return json(res, 429, { ok: false });
+    silbeck.diagnosticoTarifario({ entrada: url.searchParams.get('entrada'), saida: url.searchParams.get('saida'), adultos: url.searchParams.get('adultos'), codigo: url.searchParams.get('codigo') || undefined })
+      .then(r => json(res, 200, { ok: true, ...r })).catch(e => json(res, 500, { ok: false, erro: String(e.message || e).slice(0, 200) }));
+    return;
+  }
   // Preço por pensão no Silbeck (comparar com o motor de reservas). Sem dados de hóspedes.
   if (url.pathname === '/saude/silbeck-tarifa' && req.method === 'GET') {
     if (limiteExcedido(req)) return json(res, 429, { ok: false });

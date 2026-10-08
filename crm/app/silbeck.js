@@ -526,4 +526,32 @@ async function diagnosticoTarifa({ entrada, saida, adultos = 2, codigos = 'CBD,C
   }
   return out;
 }
-module.exports = { diagnosticoTarifa, _paraCRM: paraCRM, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
+// Tarifário do motor (dono, 08/10/2026): no Silbeck há "TARIFA MOTOR DE RESERVAS BT 2026" (000027), "AT 2026" (000028)
+// e o "AGENDAMENTO RESERVA ONLINE" (000003), que escolhe o tarifário por período. O Tarifario/Valor não documenta campo
+// para isso: este teste manda variações (campos não documentados) e mostra qual muda o valor. Sem dados de hóspedes.
+async function diagnosticoTarifario({ entrada, saida, adultos = 2, codigo = 'CBD' } = {}, buscar = fetch) {
+  const ini = /^\d{4}-\d{2}-\d{2}$/.test(entrada || '') ? entrada : somarDias(hojeBonito(), 45);
+  const fim = /^\d{4}-\d{2}-\d{2}$/.test(saida || '') && saida > ini ? saida : somarDias(ini, 1);
+  const n = Math.round((new Date(fim) - new Date(ini)) / 864e5), ad = Number(adultos) || 2;
+  const [tipos, categorias] = await Promise.all([cadastro('/v1/TipoApartamento', 'listaTipoApartamento', buscar), cadastro('/v1/CategoriaHospede', 'listaCategoriaHospede', buscar)]);
+  const t = tipos.find(x => x.codigo === String(codigo).toUpperCase());
+  if (!t) return { erro: 'tipo não encontrado: ' + codigo };
+  const adulto = (categorias.find(c => Number(c.tipo) === 1) || {}).id;
+  const VARIANTES = {
+    padrao: {}, idTarifario_27: { idTarifario: 27 }, idTarifario_28: { idTarifario: 28 },
+    codigoTarifario_000027: { codigoTarifario: '000027' }, codigoTarifario_000028: { codigoTarifario: '000028' },
+    idAgendamentoTarifa_3: { idAgendamentoTarifa: 3 }, idAgendamento_3: { idAgendamento: 3 }, codigoAgendamento_000003: { codigoAgendamento: '000003' },
+    idTarifarioAgendamento_3: { idTarifarioAgendamento: 3 }, reservaOnline: { reservaOnline: true }, idReservaPortal_motor: { origem: 'MOTOR' },
+  };
+  const out = { pedido: { tipo: t.codigo_silbeck || t.codigo, entrada: ini, saida: fim, noites: n, adultos: ad }, variantes: {} };
+  for (const [nome, extra] of Object.entries(VARIANTES)) {
+    try {
+      const { dados } = await chamar('POST', '/v1/Tarifario/Valor', { dataEntrada: ini, dataSaida: fim, idTipoApartamento: t.id, listaCategoriaHospede: [{ id: adulto, quantidade: ad }], ...extra }, buscar);
+      const d = Array.isArray(dados) ? dados : [];
+      const v = reais(d.reduce((x, y) => x + Number(y.valor || 0), 0)), iss = reais(d.reduce((x, y) => x + Number(y.valorTaxaISS || 0) + Number(y.valorTaxaServico || 0), 0));
+      out.variantes[nome] = { diariaMedia: reais(v / (n || 1)), comTaxasPorNoite: reais((v + iss) / (n || 1)), campos: Object.keys(d[0] || {}).join(',') };
+    } catch (e) { out.variantes[nome] = { erro: String(e.message || e).slice(0, 160) }; }
+  }
+  return out;
+}
+module.exports = { diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
