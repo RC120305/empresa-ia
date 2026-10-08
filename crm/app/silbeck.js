@@ -99,6 +99,11 @@ function subirSimulador() {
   return simulador;
 }
 
+// Códigos do Silbeck REAL → códigos do CRM (fotos, descrições do orçamento, regra de menores de 5 anos).
+// Visto no Silbeck do hotel em 08/10/2026. Só os pares certos; os outros seguem com o código e o nome do Silbeck
+// até o dono confirmar (ver /saude/silbeck-cotacao). O simulador já usa os códigos do CRM.
+const CODIGO_DO_CRM = { CAB: 'CBD', CABT: 'CBT', CABMAS: 'CBM', CON: 'CJ', QSUP: 'QES', QSTD: 'QST', STD: 'STD' };
+const paraCRM = lista => Array.isArray(lista) ? lista.map(t => t && t.codigo && CODIGO_DO_CRM[t.codigo] ? { ...t, codigo: CODIGO_DO_CRM[t.codigo], codigo_silbeck: t.codigo } : t) : lista;
 class ErroSilbeck extends Error { constructor(msg, http) { super(msg); this.http = http; } }
 
 let token = null; // { valor, ate, base }
@@ -133,6 +138,10 @@ async function chamar(metodo, caminho, corpo, buscar = fetch) {
       const e = j && Array.isArray(j.erro) ? j.erro.map(x => x.mensagem).join(' ') : (j && j.error) || '';
       throw new ErroSilbeck(`Silbeck ${caminho.split('?')[0]} ${r.status}${e ? ': ' + String(e).slice(0, 200) : ''}`, r.status);
     }
+    if (c.fonte !== 'simulador' && j && typeof j === 'object') { // códigos das acomodações na língua do CRM
+      if (j.listaTipoApartamento) j.listaTipoApartamento = paraCRM(j.listaTipoApartamento);
+      if (j.listaTipoApto) j.listaTipoApto = paraCRM(j.listaTipoApto);
+    }
     return { dados: j, fonte: c.fonte };
   }
   throw new ErroSilbeck('o Silbeck recusou o token duas vezes', 401);
@@ -166,7 +175,7 @@ const SEM_MENORES_DE_5 = new Set(['CBD', 'CBT']); // Cabana Casal e Cabana Tripl
 
 // Regra do hotel (P68a): até 4 anos não paga (cortesia); 5 anos ou mais paga.
 function categoriasDoGrupo(categorias, adultos, idades) {
-  const cat = t => (categorias.find(c => c.tipo === t) || {}).id;
+  const cat = t => (categorias.find(c => Number(c.tipo) === t) || {}).id; // o Silbeck real manda o tipo como texto ("1")
   const pequenos = idades.filter(x => x <= 4).length, pagantesCriancas = idades.length - pequenos;
   const lista = [{ id: cat(1), quantidade: adultos }];
   if (pagantesCriancas) lista.push({ id: cat(3), quantidade: pagantesCriancas });
@@ -469,7 +478,7 @@ async function diagnosticoCotacao({ entrada, saida, adultos = 2 } = {}, buscar =
   const passo = async (nome, fn) => { const t = Date.now(); try { out.passos[nome] = { ok: true, ...(await fn()), ms: Date.now() - t }; return true; } catch (e) { out.passos[nome] = { ok: false, erro: String(e.message || e).slice(0, 300), ms: Date.now() - t }; return false; } };
   let tipos = [], categorias = [];
   await passo('tiposDeApartamento', async () => { const { dados } = await chamar('GET', '/v1/TipoApartamento', null, buscar); tipos = (dados && dados.listaTipoApartamento) || [];
-    return { campos: chaves(dados), quantos: tipos.length, camposDoItem: chaves(tipos[0]), codigos: tipos.map(t => t.codigo).slice(0, 20), comMaximoOcupantes: tipos.filter(t => Number(t.maximoOcupantes) > 0).length }; });
+    return { campos: chaves(dados), quantos: tipos.length, camposDoItem: chaves(tipos[0]), acomodacoes: tipos.map(t => [t.codigo_silbeck || t.codigo, t.codigo_silbeck ? '→ ' + t.codigo : 'sem par no CRM', t.nome, 'até ' + t.maximoOcupantes, t.quantidade + ' un.'].join(' · ')), comMaximoOcupantes: tipos.filter(t => Number(t.maximoOcupantes) > 0).length }; });
   await passo('categoriasDeHospede', async () => { const { dados } = await chamar('GET', '/v1/CategoriaHospede', null, buscar); categorias = (dados && dados.listaCategoriaHospede) || [];
     return { campos: chaves(dados), quantos: categorias.length, camposDoItem: chaves(categorias[0]), tipos: categorias.map(c => c.tipo) }; });
   let disp = null;
@@ -478,7 +487,7 @@ async function diagnosticoCotacao({ entrada, saida, adultos = 2 } = {}, buscar =
     return { campos: chaves(disp), tiposNaLista: l.length, camposDoItem: chaves(l[0]), camposDoDia: chaves(((l[0] || {}).listaSituacaoTipoApto || [])[0]), codigos: l.map(t => t.codigo).slice(0, 20) }; });
   const t0 = tipos[0];
   if (t0) await passo('tarifa', async () => {
-    const cat = (categorias.find(c => c.tipo === 1) || {}).id;
+    const cat = (categorias.find(c => Number(c.tipo) === 1) || {}).id;
     const { dados } = await chamar('POST', '/v1/Tarifario/Valor', { dataEntrada: ini, dataSaida: fim, idTipoApartamento: t0.id, listaCategoriaHospede: [{ id: cat, quantidade: out.pedido.adultos }] }, buscar);
     return { tipo: t0.codigo, categoriaAdulto: cat ?? null, eLista: Array.isArray(dados), campos: chaves(Array.isArray(dados) ? dados[0] : dados), itens: Array.isArray(dados) ? dados.length : null };
   });
@@ -486,4 +495,4 @@ async function diagnosticoCotacao({ entrada, saida, adultos = 2 } = {}, buscar =
     return { resultado: r.ok ? 'ok' : 'erro', erro: r.erro || null, opcoes: (r.opcoes || []).map(o => o.codigo + ' ' + o.valor_total), esgotados: (r.esgotados_no_periodo || []).length, naoComportam: (r.nao_comportam_o_grupo || []).length }; });
   return out;
 }
-module.exports = { diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
+module.exports = { _paraCRM: paraCRM, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
