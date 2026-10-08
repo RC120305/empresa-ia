@@ -32,7 +32,7 @@ const PRODS = [
 ];
 const ofertasF = [], vendasF = [], alertasF = [], vitrinesF = [];
 let iaVitrines = null;
-const cobrancasF = [], reservasF = [];
+const cobrancasF = [], reservasF = [], aptosF = [];
 let tarefaGetF = null;
 const docsF = [];
 const VIDEO_GRANDE = (() => { // vídeo de 4 s com imagem pesada (~2 MB), para testar a redução
@@ -181,6 +181,10 @@ const falso = http.createServer((req, res) => {
       return responder(200, vendasF.filter(v => v.id === id));
     }
     if (req.url.startsWith('/rest/v1/sugestoes?id=eq.') && req.method === 'GET') return responder(200, [{ conversa_id: '11111111-1111-1111-1111-111111111111', ferramentas: { produto_oferecido: iaOferta || null, vitrines: iaVitrines || [] } }]);
+    if (req.url.startsWith('/rest/v1/apartamentos')) {
+      if (req.method === 'PATCH') { const n = Number(req.url.split('numero=eq.')[1]); Object.assign(aptosF.find(x => x.numero === n), json); res.writeHead(204); return res.end(); }
+      return responder(200, aptosF);
+    }
     if (req.url.startsWith('/rest/v1/fotos_biblioteca')) {
       if (req.method === 'GET') return responder(200, fotosBib);
       // mesma regra do banco (migrações 011 e 024): só .jpg e .mp4
@@ -1588,6 +1592,23 @@ falso.listen(0, () => {
     assert.equal((await statusF({ arquivo: tz.foto.arquivo, ativo: true })).status, 200);
     r = await fetch(base + '/api/fotos', { headers: eq });
     assert.equal((await r.json()).grupos.find(g => g.grupo === 'BGE').fotos.length, 3);
+    // Apartamentos pela numeração (migração 026): ligar foto a apartamento, descrição de cada um
+    {
+      const aptoF = c => fetch(base + '/api/foto-apartamento', { method: 'POST', headers: eq, body: JSON.stringify(c) });
+      r = await aptoF({ arquivo: 'BGE-2.jpg', apartamento: 42 });
+      assert.equal(r.status, 400); assert.ok((await r.json()).erro.includes('migração 026'), 'sem a tabela, avisa a migração');
+      aptosF.push({ numero: 42, codigo_silbeck: 'BANG4C', categoria: 'BGE', descricao: null, ativo: true });
+      assert.equal((await aptoF({ arquivo: 'BGE-2.jpg', apartamento: 42 })).status, 200);
+      assert.equal(fotosBib.find(f => f.arquivo === 'BGE-2.jpg').apartamento, 42);
+      const jf = await (await fetch(base + '/api/fotos', { headers: eq })).json();
+      assert.deepEqual(jf.apartamentos.map(a => [a.numero, a.nome]), [[42, 'Bangalô Especial']]);
+      assert.equal(jf.grupos.find(g => g.grupo === 'BGE').fotos.find(f => f.arquivo === 'BGE-2.jpg').apartamento, 42);
+      assert.equal((await aptoF({ arquivo: 'BGE-2.jpg', apartamento: 99 })).status, 400, 'apartamento que não existe');
+      assert.equal((await fetch(base + '/api/apartamento', { method: 'POST', headers: eq, body: JSON.stringify({ numero: 42, descricao: 'Duas camas king' }) })).status, 200);
+      assert.equal(aptosF[0].descricao, 'Duas camas king');
+      assert.equal((await aptoF({ arquivo: 'BGE-2.jpg', apartamento: null })).status, 200);
+      assert.equal(fotosBib.find(f => f.arquivo === 'BGE-2.jpg').apartamento, null);
+    }
     // volta ao estado inicial para os testes seguintes
     await statusF({ arquivo: tz.foto.arquivo, ativo: false });
     const { escolherFotos } = require('./orcamento');
@@ -1607,6 +1628,18 @@ falso.listen(0, () => {
         assert.ok(!real.escolherFotos({ codigo_acomodacao: c, etiquetas: [], quantidade: 5 }).some(f => et(f.arquivo).includes('banheiro')), c + ': sem banheiro');
       }
       assert.ok(real.escolherFotos({ codigo_acomodacao: 'CBD', etiquetas: ['banheiro'], quantidade: 1 }).some(f => et(f.arquivo).includes('banheiro')), 'banheiro quando o cliente pede');
+      // Apartamentos pela numeração (dono, 08/10/2026): o 31 (Duplo Casa Standard) só tem cama de casal; nunca as fotos do Standard
+      assert.equal(real.escolherFotos({ codigo_acomodacao: 'CST', etiquetas: [], quantidade: 2 }).length, 0, 'sem fotos próprias, o Duplo Casa Standard não usa as do Standard');
+      const APT = [{ numero: 20, codigo_silbeck: 'STD', categoria: 'STD', descricao: 'Cama de casal e cama de solteiro' }, { numero: 31, codigo_silbeck: 'STD1', categoria: 'CST', descricao: 'Só uma cama de casal' }];
+      const stds = real.biblioteca().find(g => g.grupo === 'STD').fotos.map(f => f.arquivo);
+      real.definirVivas([{ arquivo: stds[0], grupo: 'STD', origem: 'base', ativo: true, apartamento: 31 }, { arquivo: stds[1], grupo: 'STD', origem: 'base', ativo: true, apartamento: 20 }], APT);
+      const bibA = real.biblioteca();
+      assert.deepEqual(bibA.find(g => g.grupo === 'CST').fotos.map(f => [f.arquivo, f.apartamento]), [[stds[0], 31]], 'a foto ligada ao 31 passa para o Duplo Casa Standard');
+      assert.ok(!bibA.find(g => g.grupo === 'STD').fotos.some(f => f.arquivo === stds[0]), 'e sai do Standard');
+      const cst = real.escolherFotos({ codigo_acomodacao: 'CST', etiquetas: [], quantidade: 2 });
+      assert.ok(cst.length === 1 && cst[0].descricao.startsWith('Apto 31 (Só uma cama de casal): '), JSON.stringify(cst));
+      assert.equal(real.porApartamento([{ arquivo: 'a', apartamento: 11 }, { arquivo: 'b' }, { arquivo: 'c', apartamento: 20 }, { arquivo: 'd', apartamento: 20 }]).map(f => f.arquivo).join(''), 'cdba', 'um apartamento por vez');
+      real.definirVivas([], []);
       require.cache[k] = velho; process.env.FOTOS_DIR = dirAntes;
     }
     const { pagina } = require('./orcamento');

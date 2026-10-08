@@ -32,6 +32,7 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 | `023_documentos_gilberto.sql` | `gilberto_documentos` (documentos que ensinam o Gilberto: a equipe envia, o dono aprova) | (pendente: rodar no SQL Editor) |
 | `024_videos_biblioteca.sql` | `fotos_biblioteca` passa a aceitar vídeos (.mp4) do Drive | (pendente: rodar no SQL Editor) |
 | `025_pedidos_parceiro.sql` | `pedidos_parceiro` (massagem: pedido à parceira, opções e confirmação), novos alertas `parceiro_sem_resposta`/`parceiro_confirmou` e o número da parceira em `config` | (pendente: rodar no SQL Editor) |
+| `026_apartamentos.sql` | `apartamentos` (os 21 apartamentos pela numeração, com categoria e o que distingue cada um) e `fotos_biblioteca.apartamento` (foto ligada a um apartamento) | (pendente: rodar no SQL Editor) |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.

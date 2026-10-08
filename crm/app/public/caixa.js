@@ -821,7 +821,50 @@
     : el('img', { src: '/fotos/' + arquivo, alt, loading: 'lazy' });
   // modo: 'enviar' (escolher e mandar), 'gerenciar' (tirar/devolver fotos), 'drive' (trazer do banco de imagens)
   const gal = { cat: '', sel: [], modo: 'enviar', pasta: null, drive: null };
-  async function carregarBiblioteca() { biblioteca = (await chamarApi('/api/fotos', null, 'GET')).grupos; }
+  // Apartamentos pela numeração (dono, 08/10/2026): cada foto pode ser ligada a um apartamento da categoria
+  let aptos = [];
+  async function carregarBiblioteca() { const j = await chamarApi('/api/fotos', null, 'GET'); biblioteca = j.grupos; aptos = j.apartamentos || []; }
+  const rotuloApto = a => 'Apto ' + a.numero + ' · ' + a.nome + ' (' + a.codigo_silbeck + ')';
+  const marcaApto = f => f.apartamento != null ? 'Apto ' + f.apartamento + ' · ' : '';
+  function formApto(f) {
+    abrirForm('Apartamento da foto', [
+      { tipo: 'nota', rotulo: 'A foto passa para a categoria do apartamento escolhido. O Gilberto e a página do orçamento mostram primeiro as fotos de um mesmo apartamento.' },
+      { k: 'apartamento', rotulo: 'Apartamento', tipo: 'select', largo: true, valor: f.apartamento ?? '', opcoes: [['', 'Nenhum (vale para a categoria toda)'], ...aptos.map(a => [String(a.numero), rotuloApto(a) + (a.descricao ? ' · ' + a.descricao : '')])] },
+    ], async v => {
+      await chamarApi('/api/foto-apartamento', { arquivo: f.arquivo, apartamento: v.apartamento === '' ? null : Number(v.apartamento) });
+      await carregarBiblioteca(); pintarGaleria();
+      toast(v.apartamento ? 'Foto ligada ao apto ' + v.apartamento + '.' : 'Foto sem apartamento.');
+    });
+  }
+  async function ligarFoto(f, numero) {
+    try { await chamarApi('/api/foto-apartamento', { arquivo: f.arquivo, apartamento: numero }); await carregarBiblioteca(); pintarGaleria(); toast(numero ? 'Foto ligada ao apto ' + numero + '.' : 'Foto desligada do apartamento.'); }
+    catch (e) { toast(e.message); }
+  }
+  function formDescApto(a) {
+    abrirForm('Apto ' + a.numero + ' · ' + a.nome, [
+      { k: 'descricao', rotulo: 'O que distingue este apartamento', tipo: 'textarea', largo: true, valor: a.descricao || '', dica: 'Ex.: Só uma cama de casal; vista para a mata; andar de cima. O Gilberto usa isso ao mandar as fotos.' },
+    ], async v => { await chamarApi('/api/apartamento', { numero: a.numero, descricao: v.descricao }); await carregarBiblioteca(); pintarGaleria(); toast('Apto ' + a.numero + ' atualizado.'); });
+  }
+  function pintarApartamentos(grade) {
+    if (!aptos.length) { grade.append(el('p', { class: 'lat-txt', text: 'Os apartamentos ainda não estão no banco: falta rodar a migração 026 no Supabase (crm/banco/026_apartamentos.sql).' })); return; }
+    const fotos = biblioteca.flatMap(g => g.fotos.map(f => ({ ...f, grupo: g.grupo })));
+    aptos.forEach(a => {
+      const minhas = fotos.filter(f => f.apartamento === Number(a.numero));
+      const soltas = fotos.filter(f => f.grupo === a.categoria && f.apartamento == null);
+      const bloco = el('section', { class: 'apto-bloco' },
+        el('div', { class: 'apto-topo' }, el('b', { text: rotuloApto(a) }), el('span', { class: 'gal-nome', text: minhas.length + (minhas.length === 1 ? ' foto' : ' fotos') }),
+          el('button', { class: 'btn-mini', type: 'button', text: '✎ Descrição', onclick: () => formDescApto(a) }),
+          el('button', { class: 'btn-mini', type: 'button', text: '+ Do Drive', onclick: () => { gal.cat = a.categoria; gal.aptoDestino = a.numero; abrirDrive(null); } })),
+        el('p', { class: 'apto-desc', text: a.descricao || 'Sem descrição. Toque em ✎ para dizer o que distingue este apartamento (camas, vista, andar).' }),
+        el('div', { class: 'apto-fotos' }, minhas.length ? minhas.map(f => el('div', { class: 'gal-item' }, midiaBib(f.arquivo, f.descricao || a.nome), el('span', { class: 'gal-nome', text: f.descricao || a.nome }),
+          el('button', { class: 'btn-mini gal-tirar', type: 'button', text: '✕ Desligar', onclick: () => ligarFoto(f, null) }))) : el('p', { class: 'lat-txt', text: 'Nenhuma foto ligada.' })));
+      if (soltas.length) bloco.append(el('details', { class: 'apto-soltas' }, el('summary', { text: 'Ligar fotos de ' + a.nome + ' sem apartamento (' + soltas.length + ')' }),
+        el('div', { class: 'apto-fotos' }, soltas.map(f => el('div', { class: 'gal-item' }, midiaBib(f.arquivo, f.descricao || a.nome), el('span', { class: 'gal-nome', text: f.descricao || a.nome }),
+          el('button', { class: 'btn-mini gal-tirar', type: 'button', text: '+ Ligar ao ' + a.numero, onclick: () => ligarFoto(f, a.numero) }))))));
+      grade.append(bloco);
+    });
+    $('gal-sel').textContent = aptos.length + ' apartamentos. Ligue a cada um as fotos dele: o cliente recebe as fotos do quarto certo.';
+  }
   async function abrirGaleria() {
     if (!$('galeria').hidden) { fecharGaleria(); return; }
     $('galeria').hidden = false; $('abrir-fotos').setAttribute('aria-expanded', 'true');
@@ -841,14 +884,18 @@
     $('gal-enviar').hidden = gerenciar;
     const grupos = gruposVisiveis();
     if (!grupos.length) { grade.append(el('p', { class: 'lat-txt', text: 'A biblioteca de fotos ainda está vazia.' })); $('gal-sel').textContent = ''; return; }
+    if (gerenciar) cats.append(el('button', { class: 'chip', type: 'button', 'aria-pressed': String(gal.cat === '__aptos'), text: '🏠 Apartamentos', onclick: () => { gal.cat = '__aptos'; pintarGaleria(); } }));
+    if (gerenciar && gal.cat === '__aptos') { grupos.forEach(g => cats.append(el('button', { class: 'chip', type: 'button', 'aria-pressed': 'false', text: g.nome + ' (' + g.fotos.length + ')', onclick: () => { gal.cat = g.grupo; pintarGaleria(); } }))); grade.classList.add('gal-aptos'); pintarApartamentos(grade); return; }
+    grade.classList.remove('gal-aptos');
     if (!grupos.some(g => g.grupo === gal.cat)) gal.cat = grupos[0].grupo;
     grupos.forEach(g => cats.append(el('button', { class: 'chip', type: 'button', 'aria-pressed': String(g.grupo === gal.cat), text: g.nome + (gerenciar ? ' (' + g.fotos.length + ')' : ''), onclick: () => { gal.cat = g.grupo; pintarGaleria(); } })));
     const g = grupos.find(x => x.grupo === gal.cat);
     if (gerenciar) {
       grade.append(el('button', { class: 'gal-item gal-novo', type: 'button', onclick: () => abrirDrive(null) }, el('span', { class: 'gal-mais', text: '+' }), el('span', { class: 'gal-nome', text: 'Trazer do Drive' })));
       g.fotos.forEach(f => grade.append(el('div', { class: 'gal-item' }, midiaBib(f.arquivo, f.descricao || g.nome),
-        el('span', { class: 'gal-nome', text: f.descricao || g.nome }),
-        el('button', { class: 'btn-mini gal-tirar', type: 'button', text: '✕ Tirar', onclick: () => mudarFoto(f, false) }))));
+        el('span', { class: 'gal-nome', text: marcaApto(f) + (f.descricao || g.nome) }),
+        el('div', { class: 'gal-acoes' }, el('button', { class: 'btn-mini gal-tirar', type: 'button', text: '✕ Tirar', onclick: () => mudarFoto(f, false) }),
+          aptos.length ? el('button', { class: 'btn-mini gal-tirar', type: 'button', text: f.apartamento != null ? '🏠 ' + f.apartamento : '🏠 Apto', title: 'Ligar a um apartamento', onclick: () => formApto(f) }) : null))));
       (g.removidas || []).forEach(f => grade.append(el('div', { class: 'gal-item fora' }, midiaBib(f.arquivo, f.descricao || g.nome),
         el('span', { class: 'gal-nome', text: 'Fora da biblioteca · ' + (f.descricao || g.nome) }),
         el('button', { class: 'btn-mini gal-tirar', type: 'button', text: '↩ Devolver', onclick: () => mudarFoto(f, true) }))));
@@ -861,7 +908,7 @@
         if (on) gal.sel = gal.sel.filter(x => x !== f.arquivo); else if (gal.sel.length < 5) gal.sel.push(f.arquivo); else toast('Máximo de 5 fotos por envio.');
         pintarGaleria();
       } }, midiaBib(f.arquivo, f.descricao || g.nome), on ? el('span', { class: 'gal-n', text: String(gal.sel.indexOf(f.arquivo) + 1) }) : null,
-      el('span', { class: 'gal-nome', text: f.descricao || g.nome })));
+      el('span', { class: 'gal-nome', text: marcaApto(f) + (f.descricao || g.nome) })));
     });
     $('gal-sel').textContent = gal.sel.length ? gal.sel.length + ' selecionada(s)' : 'Nenhuma selecionada';
     $('gal-enviar').toggleAttribute('disabled', !gal.sel.length);
@@ -922,14 +969,15 @@
   function formTrazer(f) {
     abrirForm(f.video ? 'Trazer vídeo do Drive' : 'Trazer foto do Drive', [
       { k: 'grupo', rotulo: 'Categoria', tipo: 'select', valor: gal.cat, opcoes: biblioteca.map(g => [g.grupo, g.nome]) },
+      ...(aptos.length && !f.video ? [{ k: 'apartamento', rotulo: 'Apartamento (se a foto é de um quarto específico, a categoria passa a ser a dele)', tipo: 'select', largo: true, valor: gal.aptoDestino ?? '', opcoes: [['', 'Nenhum (vale para a categoria toda)'], ...aptos.map(a => [String(a.numero), rotuloApto(a)])] }] : []),
       { k: 'descricao', rotulo: f.video ? 'O que o vídeo mostra' : 'O que aparece na foto', tipo: 'textarea', largo: true, dica: f.video ? 'Ex.: Vídeo institucional: os dois rios, as cabanas e as atividades com monitor. O Gilberto usa esta descrição para escolher o que mandar.' : 'Ex.: Varanda da Cabana Casal com rede, vista para a mata. O Gilberto usa esta descrição para escolher o que mandar.' },
       { k: 'etiquetas', rotulo: 'Palavras-chave (separadas por vírgula)', dica: 'varanda, rede, mata', largo: true },
       { k: 'decoracao', rotulo: 'Mostra a decoração especial (pétalas, balões): opcional e cobrada à parte', tipo: 'check' },
     ], async v => {
       toast(f.video ? (f.mb > 16 ? 'Trazendo e reduzindo o vídeo para o WhatsApp… pode levar uns minutos.' : 'Trazendo o vídeo do Drive… pode levar até 1 minuto.') : 'Trazendo a foto do Drive…');
-      const j = await chamarApi('/api/foto', { drive_id: f.id, grupo: v.grupo, descricao: v.descricao, etiquetas: v.etiquetas.split(','), decoracao: v.decoracao, video: !!f.video });
+      const j = await chamarApi('/api/foto', { drive_id: f.id, grupo: v.grupo, descricao: v.descricao, etiquetas: v.etiquetas.split(','), decoracao: v.decoracao, video: !!f.video, apartamento: v.apartamento ? Number(v.apartamento) : null });
       await carregarBiblioteca();
-      gal.cat = j.foto.grupo; gal.modo = 'gerenciar'; pintarGaleria();
+      gal.cat = gal.aptoDestino != null ? '__aptos' : j.foto.grupo; gal.aptoDestino = null; gal.modo = 'gerenciar'; pintarGaleria();
       toast((j.foto.video ? 'Vídeo adicionado em ' : 'Foto adicionada em ') + ((biblioteca.find(g => g.grupo === j.foto.grupo) || {}).nome || 'categoria') + (j.reduzido ? ' (reduzido de ' + j.reduzido.de + ' MB para ' + j.reduzido.para + ' MB)' : '') + '.');
     });
   }

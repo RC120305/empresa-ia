@@ -590,3 +590,10 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
 .sug-prod-foto{width:56px;height:56px;flex:none;border-radius:var(--r-md);object-fit:cover;background:var(--cor-fundo);border:1px solid var(--cor-borda)}
 .sug-prod-foto.vazia{display:flex;align-items:center;justify-content:center;font-size:20px;opacity:.5}
 .tarefa .lancei{margin-top:6px;border:1px solid currentColor}
+.gal-grade.gal-aptos{display:flex;flex-direction:column;gap:12px}
+.apto-bloco{border:1px solid var(--cor-borda);border-radius:var(--r-md);padding:10px;display:flex;flex-direction:column;gap:6px}
+.apto-topo{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.apto-desc{margin:0;font-size:13px;color:var(--cor-texto-sec)}
+.apto-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.apto-soltas summary{cursor:pointer;font-size:13px;padding:4px 0}
+.gal-acoes{display:flex;flex-wrap:wrap;gap:4px}

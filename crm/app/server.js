@@ -877,16 +877,21 @@ async function enviarFotos(conv, para, fotos, legenda, autor, buscar = fetch) {
   return enviadas;
 }
 
+// Fotos ligadas a um apartamento (dono, 08/10/2026): o número ajuda a descrever, mas quem define o apartamento é o hotel
+const AVISO_APTO = ' Quando a descrição da foto traz "Apto N", use o que ela diz (camas, vista) para descrever a categoria, mas nunca prometa ao cliente um número de apartamento: ele é definido pelo hotel.';
 // ---------- Biblioteca de fotos: as fixas (public/fotos) + os ajustes da equipe (tabela fotos_biblioteca) ----------
 // Fotos trazidas do Drive ficam no Storage (midias/biblioteca/<arquivo>) e saem pelo mesmo /fotos/<arquivo>.
 let fotosCache = { ate: 0, linhas: [] };
 async function atualizarFotos(buscar = fetch, forcar = false) {
   if (!bancoLigado() || (!forcar && fotosCache.ate > Date.now())) return;
-  const r = await buscar(`${SUPABASE_URL}/rest/v1/fotos_biblioteca?select=arquivo,grupo,descricao,etiquetas,decoracao,drive_id,origem,ativo,ordem,criado_em&limit=1000`,
-    { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
-  if (r && r.ok) fotosCache = { ate: Date.now() + 60000, linhas: await r.json().catch(() => []) };
+  const ler = campos => buscar(`${SUPABASE_URL}/rest/v1/fotos_biblioteca?select=${campos}&limit=1000`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const base = 'arquivo,grupo,descricao,etiquetas,decoracao,drive_id,origem,ativo,ordem,criado_em';
+  let r = await ler(base + ',apartamento');
+  if (r && r.status === 400) r = await ler(base); // banco sem a migração 026
+  const ra = await buscar(`${SUPABASE_URL}/rest/v1/apartamentos?select=numero,codigo_silbeck,categoria,descricao,ativo&order=numero`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  if (r && r.ok) fotosCache = { ate: Date.now() + 60000, linhas: await r.json().catch(() => []), aptos: ra && ra.ok ? await ra.json().catch(() => []) : [] };
   else fotosCache.ate = Date.now() + 60000; // sem a migração 011 (ou banco fora): fica só com as fixas
-  orcamento.definirVivas(fotosCache.linhas);
+  orcamento.definirVivas(fotosCache.linhas, fotosCache.aptos || []);
 }
 const fotoDoDrive = f => fotosCache.linhas.find(v => v.arquivo === f && v.origem === 'drive');
 const fotoAtiva = f => orcamento.biblioteca().some(g => g.fotos.some(x => x.arquivo === f));
@@ -2546,7 +2551,10 @@ const API_EQUIPE = {
   }),
   // Traz uma foto do Drive para uma categoria da biblioteca (recorte 4:3, 1200x900)
   'POST /api/foto': errosDrive(async (corpo, eu) => {
-    const grupo = String(corpo.grupo || '');
+    await atualizarFotos(fetch, true);
+    const apto = corpo.apartamento != null && corpo.apartamento !== '' ? orcamento.apartamentos().find(a => Number(a.numero) === Number(corpo.apartamento)) : null;
+    if (corpo.apartamento != null && corpo.apartamento !== '' && !apto) throw new ErroEnvio(400, 'Apartamento não encontrado (falta rodar a migração 026?).');
+    const grupo = apto ? apto.categoria : String(corpo.grupo || '');
     if (!orcamento.GRUPOS.includes(grupo)) throw new ErroEnvio(400, 'Escolha a categoria.');
     if (!drive.idValido(corpo.drive_id)) throw new ErroEnvio(400, 'Escolha a foto do Drive.');
     const descricao = String(corpo.descricao || '').trim().slice(0, 300);
@@ -2568,9 +2576,9 @@ const API_EQUIPE = {
       await gravarNoStorage('biblioteca/' + arquivo, jpg, 'image/jpeg', fetch);
       bytesFotos.set(arquivo, jpg);
     }
-    await gravarFotoAjuste({ arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao, drive_id: corpo.drive_id, origem: 'drive', ativo: true, criado_por: eu.id });
+    await gravarFotoAjuste({ arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao, drive_id: corpo.drive_id, origem: 'drive', ativo: true, criado_por: eu.id, ...(apto ? { apartamento: Number(apto.numero) } : {}) });
     await atualizarFotos(fetch, true);
-    return { ok: true, foto: { arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao, video: orcamento.ehVideo(arquivo) }, ...(reduzido ? { reduzido } : {}) };
+    return { ok: true, foto: { arquivo, grupo, descricao, etiquetas, decoracao: !!corpo.decoracao, video: orcamento.ehVideo(arquivo), apartamento: apto ? Number(apto.numero) : null }, ...(reduzido ? { reduzido } : {}) };
   }),
   // Tira uma foto da biblioteca (ou devolve). Nada é apagado: some do envio, da página do orçamento e do Gilberto.
   'POST /api/foto-status': async corpo => {
@@ -2584,6 +2592,34 @@ const API_EQUIPE = {
     else await gravarFotoAjuste({ arquivo, grupo: g.grupo, origem: 'base', ativo });
     await atualizarFotos(fetch, true);
     return { ok: true, arquivo, ativo };
+  },
+  // Liga uma foto a um apartamento (ou desliga, com apartamento null): a foto passa para a categoria do apartamento
+  'POST /api/foto-apartamento': async corpo => {
+    const arquivo = String(corpo.arquivo || '');
+    await atualizarFotos(fetch, true);
+    const todas = orcamento.biblioteca({ todas: true });
+    const g = todas.find(x => [...x.fotos, ...x.removidas].some(f => f.arquivo === arquivo));
+    if (!g) throw new ErroEnvio(404, 'Foto não encontrada na biblioteca.');
+    const f = [...g.fotos, ...g.removidas].find(x => x.arquivo === arquivo);
+    const n = corpo.apartamento == null || corpo.apartamento === '' ? null : Number(corpo.apartamento);
+    const apto = n == null ? null : orcamento.apartamentos().find(a => Number(a.numero) === n);
+    if (n != null && !apto) throw new ErroEnvio(400, orcamento.apartamentos().length ? 'Apartamento não encontrado.' : 'Os apartamentos ainda não estão no banco: falta rodar a migração 026 no Supabase.');
+    const viva = fotoDoDrive(arquivo);
+    try {
+      if (viva) await patchBanco('fotos_biblioteca', 'arquivo=eq.' + encodeURIComponent(arquivo), { apartamento: n, ...(apto ? { grupo: apto.categoria } : {}), atualizado_em: new Date().toISOString() });
+      else await gravarFotoAjuste({ arquivo, grupo: g.grupo, origem: 'base', ativo: f.ativo !== false, apartamento: n });
+    } catch (e) { if (e instanceof ErroEnvio && ![400, 503].includes(e.http)) throw e; throw new ErroEnvio(503, 'O banco recusou: falta rodar a migração 026 no Supabase (crm/banco/026_apartamentos.sql).'); }
+    await atualizarFotos(fetch, true);
+    return { ok: true, arquivo, apartamento: n, grupo: apto ? apto.categoria : g.grupo };
+  },
+  // O que distingue cada apartamento (camas, vista, andar): vai junto com as fotos para o Gilberto
+  'POST /api/apartamento': async corpo => {
+    const n = Number(corpo.numero);
+    if (!orcamento.apartamentos().some(a => Number(a.numero) === n)) { await atualizarFotos(fetch, true); if (!orcamento.apartamentos().some(a => Number(a.numero) === n)) throw new ErroEnvio(404, 'Apartamento não encontrado (falta rodar a migração 026?).'); }
+    const descricao = String(corpo.descricao || '').trim().slice(0, 300) || null;
+    await patchBanco('apartamentos', 'numero=eq.' + n, { descricao, atualizado_em: new Date().toISOString() });
+    await atualizarFotos(fetch, true);
+    return { ok: true, numero: n, descricao };
   },
   // Vagas por tipo e dia (painel "Vagas")
   'GET /api/vagas': async (corpo, eu, url) => silbeck.vagas(url.searchParams.get('inicio'), url.searchParams.get('dias')),
@@ -2772,7 +2808,7 @@ async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null, 
       enviar_fotos: async entrada => {
         const fotos = orcamento.escolherFotos(entrada);
         return fotos.length
-          ? { ok: true, modo: 'sugestao', fotos: fotos.map(f => ({ arquivo: f.arquivo, descricao: f.descricao })), aviso: 'Nesta fase a equipe envia as fotos junto com a sua mensagem: escreva o texto como se as fotos fossem logo em seguida, sem descrevê-las como se você as tivesse tirado.' }
+          ? { ok: true, modo: 'sugestao', fotos: fotos.map(f => ({ arquivo: f.arquivo, descricao: f.descricao })), aviso: 'Nesta fase a equipe envia as fotos junto com a sua mensagem: escreva o texto como se as fotos fossem logo em seguida, sem descrevê-las como se você as tivesse tirado.' + AVISO_APTO }
           : { ok: false, erro: 'Não há foto na biblioteca para esse pedido. Não prometa foto: ofereça descrever ou avise a equipe nas notas_internas.' };
       },
     };
@@ -3148,7 +3184,7 @@ const servidor = http.createServer((req, res) => {
   if (url.pathname === '/api/fotos' && req.method === 'GET') {
     const auth = req.headers.authorization || '';
     if (!auth.startsWith('Bearer ')) return json(res, 401, { ok: false, erro: 'Entre de novo.' });
-    autenticarEquipe(auth.slice(7)).then(async () => { await atualizarFotos(); json(res, 200, { ok: true, grupos: orcamento.biblioteca({ todas: true }) }); })
+    autenticarEquipe(auth.slice(7)).then(async () => { await atualizarFotos(); json(res, 200, { ok: true, grupos: orcamento.biblioteca({ todas: true }), apartamentos: orcamento.apartamentos().map(a => ({ ...a, nome: orcamento.nomeGrupo(a.categoria) })) }); })
       .catch(e => json(res, e.http || 500, { ok: false, erro: e instanceof ErroEnvio ? e.message : 'Não deu agora.' }));
     return;
   }

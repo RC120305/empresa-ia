@@ -17,13 +17,14 @@ const CATALOGO = {
   QES: { nome: 'Superior Quádruplo', cap: '25 m² · até 4 pessoas', dest: ['Mais amplo que o standard', 'No andar de cima', 'Cama queen + 2 de solteiro'] },
   STD: { nome: 'Apartamento Standard', cap: '20 a 25 m² · de 2 a 3 pessoas', dest: ['O mais econômico', 'Térreo, com estacionamento em frente', 'Cama queen + solteiro'] },
   QST: { nome: 'Standard Quádruplo', cap: '20 a 25 m² · até 4 pessoas', dest: ['Ótimo custo para família ou grupo', 'Térreo, com estacionamento em frente', 'Cama queen + 2 de solteiro'] },
-  CST: { nome: 'Duplo Casa Standard', cap: 'para 2 pessoas', dest: ['Opção econômica para casal', 'Ar quente e frio, frigobar e Wi-Fi', 'Café da manhã incluso'] },
+  CST: { nome: 'Duplo Casa Standard', cap: 'para 2 pessoas', dest: ['Uma cama de casal, pensado para o casal', 'Ar quente e frio, frigobar e Wi-Fi', 'Café da manhã incluso'] },
 };
 // Bangalô Triplo e Quádruplo: no Silbeck real são dois tipos (BANG3 e BANG4), com a descrição e as fotos do Bangalô (dono, 08/10/2026)
 CATALOGO.BANG3 = { ...CATALOGO.BG, nome: 'Bangalô Triplo', cap: '40 m² · até 3 pessoas' };
 CATALOGO.BANG4 = { ...CATALOGO.BG, nome: 'Bangalô Quádruplo', cap: '40 m² · até 4 pessoas' };
 // Fotos: acomodações sem pasta própria usam a da equivalente
-const FOTO_DE = { QES: 'SUP', QST: 'STD', CST: 'STD', BANG3: 'BG', BANG4: 'BG' };
+// O Duplo Casa Standard (apto 31) NÃO usa as do Standard: lá é só cama de casal (dono, 08/10/2026)
+const FOTO_DE = { QES: 'SUP', QST: 'STD', BANG3: 'BG', BANG4: 'BG' };
 // Antes das opções e dos valores, os benefícios (dono, 04/10/2026). Fatos aprovados: contexto/hotel-operacional.md
 const PORQUE = 'O único hotel de Bonito cercado por dois rios, o Formoso e o Formosinho: 40 hectares de natureza a 6 km do centro, por acesso de asfalto. A diária já inclui o café da manhã e uma programação diária de atividades com acompanhamento de guia como: trilhas com banho de rio, tirolesa, stand up, caiaque e arco e flecha.';
 const SLOGAN = 'Seu lugar de conexão com a natureza'; // slogan do Código de Cultura, em destaque no topo (dono, 07/10/2026)
@@ -38,22 +39,29 @@ const ROTULOS = { INST: 'Institucional (o hotel)', ATIV: 'Atividades inclusas', 
 // Vídeos (dono, 06/10/2026): ficam na mesma biblioteca, com extensão .mp4 (vêm do Drive, pasta "Vídeos do hotel cabanas").
 const ehVideo = a => /\.mp4$/i.test(String(a || ''));
 // Categorias em que a equipe pode pôr fotos (as dos quádruplos usam as do duplo/triplo).
-const GRUPOS = [...new Set(['INST', 'ATIV', ...Object.keys(FOTOS), 'CBD', 'CBT', 'CBM', 'BG', 'BGE', 'CJ', 'SUP', 'STD', ...Object.keys(ROTULOS)])];
+const GRUPOS = [...new Set(['INST', 'ATIV', ...Object.keys(FOTOS), 'CBD', 'CBT', 'CBM', 'BG', 'BANG3', 'BANG4', 'BGE', 'CJ', 'SUP', 'QES', 'STD', 'QST', 'CST', ...Object.keys(ROTULOS)])];
 const nomeGrupo = g => (CATALOGO[g] && CATALOGO[g].nome) || ROTULOS[g] || g;
 // Ajustes da equipe (tabela fotos_biblioteca): fotos trazidas do Drive e fotos fixas tiradas da biblioteca.
 const FOTOS_FIXAS = new Set(Object.values(FOTOS).flat());
-let VIVAS = [];
-const definirVivas = linhas => { VIVAS = Array.isArray(linhas) ? linhas : []; };
+let VIVAS = [], APTOS = [];
+// Apartamentos pela numeração (tabela apartamentos, migração 026): foto ligada a um apartamento fica na categoria dele
+const definirVivas = (linhas, aptos) => { VIVAS = Array.isArray(linhas) ? linhas : []; if (Array.isArray(aptos)) APTOS = aptos; };
+const apartamentos = () => APTOS.slice();
+const aptoDe = n => n == null ? null : APTOS.find(a => Number(a.numero) === Number(n)) || null;
 // Biblioteca para a caixa e para o Gilberto: [{grupo, nome, fotos: [{arquivo, descricao, etiquetas, decoracao, origem}]}]
 // Com {todas: true}, cada grupo traz também as removidas (para poder devolver).
 function biblioteca({ todas = false } = {}) {
   const ajuste = new Map(VIVAS.map(v => [v.arquivo, v]));
-  const fixa = a => ({ arquivo: a, descricao: (DESCRICOES[a] && DESCRICOES[a].descricao) || '', etiquetas: (DESCRICOES[a] && DESCRICOES[a].etiquetas) || [],
+  const doApto = n => { const a = aptoDe(n); return a ? { apartamento: Number(a.numero), apto_descricao: a.descricao || '' } : {}; };
+  const fixa = a => ({ ...doApto(ajuste.get(a) && ajuste.get(a).apartamento), arquivo: a, descricao: (DESCRICOES[a] && DESCRICOES[a].descricao) || '', etiquetas: (DESCRICOES[a] && DESCRICOES[a].etiquetas) || [],
     decoracao: !!(DESCRICOES[a] && DESCRICOES[a].decoracao), origem: 'base', drive_id: (DESCRICOES[a] && DESCRICOES[a].drive_id) || null, ativo: !(ajuste.get(a) && ajuste.get(a).ativo === false) });
-  const nova = v => ({ arquivo: v.arquivo, descricao: v.descricao || '', etiquetas: v.etiquetas || [], decoracao: !!v.decoracao, origem: 'drive', drive_id: v.drive_id || null, ativo: v.ativo !== false, ...(ehVideo(v.arquivo) ? { video: true } : {}) });
+  const nova = v => ({ ...doApto(v.apartamento), arquivo: v.arquivo, descricao: v.descricao || '', etiquetas: v.etiquetas || [], decoracao: !!v.decoracao, origem: 'drive', drive_id: v.drive_id || null, ativo: v.ativo !== false, ...(ehVideo(v.arquivo) ? { video: true } : {}) });
   const novas = VIVAS.filter(v => v.origem === 'drive' && !FOTOS_FIXAS.has(v.arquivo)).sort((a, b) => (a.ordem || 0) - (b.ordem || 0) || String(a.criado_em || '').localeCompare(String(b.criado_em || '')));
+  // Categoria de cada foto: a do apartamento, se ligada a um; senão, a de origem
+  const comCategoria = [...Object.entries(FOTOS).flatMap(([g, l]) => l.map(a => ({ g, f: fixa(a) }))), ...novas.map(v => ({ g: v.grupo, f: nova(v) }))]
+    .map(({ g, f }) => ({ g: (aptoDe(f.apartamento) || {}).categoria || g, f }));
   return GRUPOS.map(grupo => {
-    const lista = [...(FOTOS[grupo] || []).map(fixa), ...novas.filter(v => v.grupo === grupo).map(nova)];
+    const lista = comCategoria.filter(x => x.g === grupo).map(x => x.f);
     const g = { grupo, nome: nomeGrupo(grupo), fotos: lista.filter(f => f.ativo) };
     if (todas) g.removidas = lista.filter(f => !f.ativo);
     return g;
@@ -63,25 +71,39 @@ function biblioteca({ todas = false } = {}) {
 // Acomodação (dono, 06/10/2026): primeiro uma foto de FORA (fachada/área externa, senão a varanda) e uma do QUARTO
 // (de preferência sem a decoração especial); banheiro nunca, a não ser que o cliente peça.
 const tem = (f, ...ts) => ts.some(t => f.etiquetas.some(e => e.toLowerCase() === t));
+// Fotos de uma acomodação: as da própria categoria; sem nenhuma, as da equivalente (FOTO_DE)
+function grupoFotos(cod, bib = biblioteca()) {
+  const temFotos = g => bib.some(x => x.grupo === g && x.fotos.some(f => !f.video));
+  return temFotos(cod) || !FOTO_DE[cod] ? cod : FOTO_DE[cod];
+}
+// Um apartamento por vez (dono, 08/10/2026): primeiro as fotos do apartamento com mais fotos, depois as da categoria sem
+// apartamento, por último as dos outros apartamentos. Assim o cliente vê um quarto coerente (camas, vista).
+function porApartamento(fotos) {
+  const n = {}; for (const f of fotos) if (f.apartamento != null) n[f.apartamento] = (n[f.apartamento] || 0) + 1;
+  const melhor = Object.keys(n).sort((a, b) => n[b] - n[a] || a - b)[0];
+  const peso = f => f.apartamento == null ? 1 : String(f.apartamento) === melhor ? 0 : 2;
+  return fotos.map((f, i) => ({ f, i })).sort((a, b) => peso(a.f) - peso(b.f) || a.i - b.i).map(x => x.f);
+}
+const comApto = f => f.apartamento != null ? { ...f, descricao: 'Apto ' + f.apartamento + (f.apto_descricao ? ' (' + f.apto_descricao + ')' : '') + ': ' + (f.descricao || '') } : f;
 function escolherFotos({ codigo_acomodacao, etiquetas, quantidade }) {
   const n = Math.min(5, Math.max(1, Number(quantidade) || 2));
-  const tudo = biblioteca().flatMap(g => g.fotos.filter(f => !f.video).map(f => ({ ...f, grupo: g.grupo })));
+  const bib = biblioteca();
+  const tudo = bib.flatMap(g => g.fotos.filter(f => !f.video).map(f => ({ ...f, grupo: g.grupo })));
   const cod = String(codigo_acomodacao || '').toUpperCase().split('+')[0];
   const termos = (etiquetas || []).map(t => String(t).toLowerCase()).filter(Boolean);
   const querBanheiro = termos.some(t => t.includes('banheiro'));
   const pode = f => querBanheiro || !tem(f, 'banheiro');
-  // Fotos de apartamento quádruplo usam a pasta do duplo/triplo correspondente.
-  const grupoDe = FOTO_DE[cod] || cod;
+  const grupoDe = cod ? grupoFotos(cod, bib) : '';
   const pontos = f => (f.grupo === grupoDe ? 10 : 0) + termos.filter(t => f.etiquetas.some(e => e.toLowerCase().includes(t)) || f.descricao.toLowerCase().includes(t)).length;
   const escolhidas = tudo.map(f => ({ f, p: pontos(f) })).filter(x => x.p > 0 && pode(x.f)).sort((a, b) => b.p - a.p).map(x => x.f);
   if (grupoDe && !termos.length) {
-    const da = tudo.filter(f => f.grupo === grupoDe);
+    const da = porApartamento(tudo.filter(f => f.grupo === grupoDe));
     const fora = da.find(f => tem(f, 'fachada', 'área externa')) || da.find(f => tem(f, 'varanda'));
     const quarto = da.find(f => tem(f, 'quarto') && !f.decoracao) || da.find(f => tem(f, 'quarto'));
     const primeiro = [fora, quarto].filter(Boolean);
-    return [...primeiro, ...escolhidas.filter(f => !primeiro.includes(f))].slice(0, n);
+    return [...primeiro, ...da.filter(f => !primeiro.includes(f) && pode(f)), ...escolhidas.filter(f => f.grupo !== grupoDe)].slice(0, n).map(comApto);
   }
-  return escolhidas.slice(0, n);
+  return escolhidas.slice(0, n).map(comApto);
 }
 
 // Vídeo para o Gilberto usar como argumento de venda: um por vez, sem repetir o que a conversa já recebeu.
@@ -89,7 +111,7 @@ function escolherFotos({ codigo_acomodacao, etiquetas, quantidade }) {
 function videos() { return biblioteca().flatMap(g => g.fotos.filter(f => f.video).map(f => ({ ...f, grupo: g.grupo, nome_grupo: g.nome }))); }
 function escolherVideo({ codigo_acomodacao, etiquetas }, ja = []) {
   const cod = String(codigo_acomodacao || '').toUpperCase().split('+')[0];
-  const grupoDe = FOTO_DE[cod] || cod;
+  const grupoDe = FOTO_DE[cod] && !videos().some(v => v.grupo === cod) ? FOTO_DE[cod] : cod;
   const termos = (etiquetas || []).map(t => String(t).toLowerCase()).filter(Boolean);
   const lista = videos().filter(v => !ja.includes(v.arquivo));
   const pontos = v => (grupoDe && v.grupo === grupoDe ? 10 : 0) + termos.filter(t => v.grupo.toLowerCase() === t || v.nome_grupo.toLowerCase().includes(t) || v.etiquetas.some(e => e.toLowerCase().includes(t)) || v.descricao.toLowerCase().includes(t)).length;
@@ -162,7 +184,7 @@ function pagina(o, { previa = false, produtos = null } = {}) {
   const n = noites(o.data_entrada, o.data_saida);
   const nome = o.primeiro_nome ? esc(o.primeiro_nome) : '';
   const bib = biblioteca();
-  const fotosDe = cod => ((bib.find(g => g.grupo === cod) || bib.find(g => g.grupo === FOTO_DE[cod]) || { fotos: [] }).fotos).filter(f => !f.video).slice(0, 5);
+  const fotosDe = cod => porApartamento(((bib.find(g => g.grupo === grupoFotos(cod, bib)) || { fotos: [] }).fotos).filter(f => !f.video)).slice(0, 5);
   const cards = emOrdemDeValor(o.opcoes).map((op, i) => {
     const acs = op.combinacao ? op.acomodacoes || [] : null;
     const cat = acs ? { nome: op.nome, cap: `${acs.length} acomodações para o grupo`, dest: [] }
@@ -213,4 +235,4 @@ ${cards}
 <script src="/o/orcamento.js?v=${VERSAO}"></script></body></html>`;
 }
 
-module.exports = { FOTO_DE, INCLUSO, ehVideo, videos, escolherVideo, resumo, resumoGrupo, MAX_OPCOES, montar, codigosDe, chaveCombinacao, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };
+module.exports = { apartamentos, grupoFotos, porApartamento, FOTO_DE, INCLUSO, ehVideo, videos, escolherVideo, resumo, resumoGrupo, MAX_OPCOES, montar, codigosDe, chaveCombinacao, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };
