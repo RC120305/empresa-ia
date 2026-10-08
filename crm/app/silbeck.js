@@ -497,4 +497,33 @@ async function diagnosticoCotacao({ entrada, saida, adultos = 2 } = {}, buscar =
     return { resultado: r.ok ? 'ok' : 'erro', erro: r.erro || null, opcoes: (r.opcoes || []).map(o => o.codigo + ' ' + o.valor_total), esgotados: (r.esgotados_no_periodo || []).length, naoComportam: (r.nao_comportam_o_grupo || []).length }; });
   return out;
 }
-module.exports = { _paraCRM: paraCRM, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
+// Preço por pensão (dono, 08/10/2026: o Gilberto cotou acima do motor de reservas). Para algumas acomodações, pede o
+// Tarifario/Valor sem pensão e com cada pensão cadastrada, mostrando diária, taxas e total. Sem dados de hóspedes.
+async function diagnosticoTarifa({ entrada, saida, adultos = 2, codigos = 'CBD,CBT,BGE' } = {}, buscar = fetch) {
+  const ini = /^\d{4}-\d{2}-\d{2}$/.test(entrada || '') ? entrada : somarDias(hojeBonito(), 45);
+  const fim = /^\d{4}-\d{2}-\d{2}$/.test(saida || '') && saida > ini ? saida : somarDias(ini, 2);
+  const n = Math.round((new Date(fim) - new Date(ini)) / 864e5), ad = Number(adultos) || 2;
+  const [tipos, categorias] = await Promise.all([cadastro('/v1/TipoApartamento', 'listaTipoApartamento', buscar), cadastro('/v1/CategoriaHospede', 'listaCategoriaHospede', buscar)]);
+  const pens = await chamar('GET', '/v1/TipoPensao', null, buscar).then(r => r.dados).catch(e => ({ erro: String(e.message || e).slice(0, 200) }));
+  const listaPensoes = Array.isArray(pens) ? pens : (pens && (pens.listaTipoPensao || pens.lista || Object.values(pens).find(Array.isArray))) || [];
+  const adulto = (categorias.find(c => Number(c.tipo) === 1) || {}).id;
+  const out = { pedido: { entrada: ini, saida: fim, noites: n, adultos: ad }, pensoes: listaPensoes.map(p => ({ id: p.id, nome: p.nome || p.descricao || null })), erroPensoes: pens && pens.erro || null, precos: {} };
+  const cotar1 = async (t, extra) => {
+    try {
+      const { dados } = await chamar('POST', '/v1/Tarifario/Valor', { dataEntrada: ini, dataSaida: fim, idTipoApartamento: t.id, listaCategoriaHospede: [{ id: adulto, quantidade: ad }], ...extra }, buscar);
+      const d = Array.isArray(dados) ? dados : [];
+      const soma = k => reais(d.reduce((x, y) => x + Number(y[k] || 0), 0));
+      const diarias = soma('valor'), taxas = reais(soma('valorTaxaServico') + soma('valorTaxaISS'));
+      return { diarias, servico: soma('valorTaxaServico'), iss: soma('valorTaxaISS'), total: reais(diarias + taxas), porNoite: reais((diarias + taxas) / (n || 1)), noitesDistintas: [...new Set(d.map(x => x.valor))].slice(0, 4), campos: Object.keys(d[0] || {}) };
+    } catch (e) { return { erro: String(e.message || e).slice(0, 160) }; }
+  };
+  for (const cod of String(codigos).split(',').map(x => x.trim().toUpperCase()).filter(Boolean).slice(0, 4)) {
+    const t = tipos.find(x => x.codigo === cod);
+    if (!t) { out.precos[cod] = { erro: 'tipo não encontrado' }; continue; }
+    const r = { nome: t.nome, codigo_silbeck: t.codigo_silbeck || t.codigo, semPensao: await cotar1(t, {}), comQuantidadeAdulto: await cotar1(t, { listaCategoriaHospede: undefined, quantidadeAdulto: ad }) };
+    for (const p of listaPensoes.slice(0, 6)) r['pensao_' + p.id] = await cotar1(t, { idTipoPensao: p.id });
+    out.precos[cod] = r;
+  }
+  return out;
+}
+module.exports = { diagnosticoTarifa, _paraCRM: paraCRM, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };

@@ -1908,6 +1908,8 @@ falso.listen(0, () => {
       const dc = await require('./silbeck').diagnosticoCotacao({ adultos: 2 });
       assert.ok(Object.values(dc.passos).every(p => p.ok), JSON.stringify(dc.passos));
       assert.equal(dc.passos.cotacaoCompleta.resultado, 'ok'); assert.ok(dc.passos.cotacaoCompleta.opcoes.length > 0);
+      const dt = await require('./silbeck').diagnosticoTarifa({ adultos: 2 });
+      assert.ok(dt.precos.CBD && dt.precos.CBD.semPensao.total > 0, JSON.stringify(dt).slice(0, 400));
       // Silbeck real (08/10/2026): tipo de hóspede como texto e códigos próprios das acomodações
       const S = require('./silbeck');
       assert.deepEqual(S._categoriasDoGrupo([{ id: 7, tipo: '1' }, { id: 8, tipo: '3' }, { id: 9, tipo: '4' }], 2, [3, 8]).lista, [{ id: 7, quantidade: 2 }, { id: 8, quantidade: 1 }, { id: 9, quantidade: 1 }]);
