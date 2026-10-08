@@ -1,6 +1,6 @@
 # Mapa do Banco de Imagens (Google Drive)
 
-> Levantado em 2026-09-26. Pasta raiz: **"Imagens do hotel cabanas"**, ID `1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5`.
+> Levantado em 2026-09-26; pastas das 12 categorias do Silbeck completadas em 2026-10-08 (mapa dos códigos e apartamentos em `crm/silbeck-api-detalhes.md` §7). Pasta raiz: **"Imagens do hotel cabanas"**, ID `1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5`.
 > Para listar uma pasta: `search_files` com `parentId = '<ID>'` (a resposta vem paginada; use o `pageToken`).
 > ⚠️ Os nomes dos arquivos **não descrevem a cena** (ex.: "2025.05 Hotel Cabanas Foto 189.jpg"). **Abra a foto** (download_file_content) antes de indicá-la num post.
 
@@ -13,8 +13,13 @@
 | ↳ Bangalô | `1Pu0dUQZMdbEohql-6tfu5UyfovEMvaF2` | **Todas as fotos são do Bangalô (40 m²)** (dono, 2026-09-27), inclusive a varanda com rede e banco (`bangalo_quadruplo_varanda_com_rede`) |
 | ↳ **Bangalô Especial** | `1YUf0Owu4N_CLydXjxDFs3lRr8GXYDofA` | 45 m², até 4 pessoas (2 camas king), para famílias. Ver `hotel-operacional.md` |
 | ↳ Conjugado | `1J3ER6_A3EngEuVKkWRVcEv7oHNd_Omkm` | |
-| ↳ Quádruplo superior | `1Zx2uw4jUTznM1T3GXOWztxYIZ-ocepXL` | Corresponde ao Apartamento Superior (2 a 4 pessoas) |
+| ↳ Quádruplo superior | `1Zx2uw4jUTznM1T3GXOWztxYIZ-ocepXL` | Quádruplo Superior (QSUP · apto 32). Até 08/10/2026 servia também ao Apartamento Superior, que agora tem pasta própria |
 | ↳ Apartamento Standard | `1d5hdiGRL3nVl4lrYaeb99E1TtjqqyAHr` | |
+| ↳ **Apartamento Superior (DPLS · aptos 14 e 15)** | `1OBLpgN0PTkiclWnOHy_itJw1Wzb2dP-N` | Criada em 2026-10-08 (vazia) |
+| ↳ **Duplo Casa Standard (STD1 · apto 31)** | `1ABp3Y-z6lNkssTeweZ97ow77zmotzU3u` | Criada em 2026-10-08 (vazia). Só cama de casal: **não** usar fotos do Standard |
+| ↳ **Quádruplo Standard (QSTD · aptos 12 e 13)** | `1p2DTUCJ005I5iVLBQvaCaoEmsTf1h8Lm` | Criada em 2026-10-08 (vazia) |
+| ↳ **Bangalô Triplo (BANG3 · apto 41)** | `1S6g8LSnhYccis1caflCP2gaSOFdgbqcL` | Criada em 2026-10-08 (vazia) |
+| ↳ **Bangalô Quádruplo (BANG4 · apto 40)** | `1MZOYLDCEwQdJCPYDbhnzichwCRTtxti2` | Criada em 2026-10-08 (vazia) |
 | **Atividades e balneário** | `1SFxgG3XFfYGktuGVXjKKOHBAOvwvxB-j` | Fotos soltas + subpasta |
 | ↳ Formosinho | `1wZN1lviJghYGOfuTK3ZzPD_HIevfSnEO` | Rio Formosinho (decks, balneário) |
 | **Boia Cross** | `1BJs4Fj2GHAa3KddhuZBDmIcAZvFTsPZ3` | |
