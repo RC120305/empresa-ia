@@ -23,3 +23,7 @@ No Silbeck do hotel: tarifários "TARIFA MOTOR DE RESERVAS BT 2026" (000027) e "
 > 2. Existe um campo no `Tarifario/Valor` para informar o agendamento (000003) ou o tarifário (000027/000028)? Testamos `idTarifario`, `codigoTarifario`, `idAgendamento` e `codigoAgendamento` e o valor não mudou.
 > 3. A promoção do motor (−41% a partir de 2 diárias) pode ser lida pela API?
 > Obrigado!
+
+## Causa encontrada (08/10/2026)
+O **"AGENDAMENTO PADRÃO" (000001)** termina com "000017 ALTA 2025" de 13/12/25 em diante, sem data final. A API usa esse agendamento: por isso devolve o mesmo valor (ALTA 2025) para qualquer data futura. O hotel só usa o "AGENDAMENTO RESERVA ONLINE" (000003), com os tarifários do motor BT/AT 2026 por período; segundo o Márcio, o desconto do motor está configurado na própria tarifa.
+**Correção (no Silbeck, pelo hotel):** encerrar a linha ALTA 2025 do Padrão e copiar para ele os mesmos períodos e tarifários do Reserva Online. Depois, conferir em `/saude/silbeck-tarifario` (1 e 2 diárias).
