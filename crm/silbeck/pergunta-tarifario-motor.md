@@ -12,10 +12,14 @@ Comparação feita pelo dono no motor de reservas (tarifa "Normal") e pela API (
 
 A API devolve o mesmo valor da Cabana Casal em outubro e no feriado de novembro, e o mesmo valor para CAB e CABT; o motor varia por temporada e por tipo. Conclusão: o `Tarifario/Valor` usa outro tarifário, não o "Normal" do motor. `idTipoPensao` (4, café da manhã) não muda o valor.
 
+## Teste das variações (08/10/2026)
+O `Tarifario/Valor` ignorou todos os campos não documentados: `idTarifario` 27/28, `codigoTarifario` 000027/000028, `idAgendamentoTarifa`/`idAgendamento` 3, `codigoAgendamento` 000003 e outros. Sempre R$ 1.350 (CAB), em 18/10 e em 20/11.
+No Silbeck do hotel: tarifários "TARIFA MOTOR DE RESERVAS BT 2026" (000027) e "AT 2026" (000028); agendamentos "AGENDAMENTO PADRÃO" (000001) e "AGENDAMENTO RESERVA ONLINE" (000003), que escolhe o tarifário do motor por período.
+
 ## Mensagem (para o suporte@silbeck.com.br)
 
-> Olá, equipe Silbeck! Aqui é o Ricardo, do Hotel Cabanas (Bonito/MS). Estamos integrando o nosso CRM pela API REST do SB Hotel e a consulta `POST /v1/Tarifario/Valor` está devolvendo valores diferentes da tarifa "Normal" do motor de reservas. Exemplos, 2 adultos, 1 diária: Standard em 18/10/2026, motor R$ 1.013,00 e API R$ 933,00; Cabana Casal em 18/10/2026, motor R$ 1.323,00 e API R$ 1.350,00; Cabana Casal em 20/11/2026, motor R$ 1.607,00 e API R$ 1.350,00 (o mesmo valor de outubro). Parece que a API usa outro tarifário, sem as temporadas.
-> 1. Qual tarifário o `Tarifario/Valor` usa quando não informamos nenhum?
-> 2. Podemos informar o tarifário (ex.: `idTarifario` da tarifa "Normal" do motor) no `Tarifario/Valor`? Se sim, qual o nome do campo e como achamos o ID?
-> 3. A promoção do motor (−41% a partir de 2 diárias) pode ser lida pela API, ou ela existe só no motor?
+> Olá, equipe Silbeck! Aqui é o Ricardo, do Hotel Cabanas (Bonito/MS). Estamos integrando o nosso CRM pela API REST do SB Hotel. A consulta `POST /v1/Tarifario/Valor` devolve sempre o mesmo valor (ex.: Cabana Casal, 2 adultos, R$ 1.350,00 em 18/10/2026 e em 20/11/2026), enquanto o motor de reservas, pelo "AGENDAMENTO RESERVA ONLINE" (000003), usa a "TARIFA MOTOR DE RESERVAS BT 2026" (000027) e a "AT 2026" (000028) e mostra R$ 1.323,00 em 18/10 e R$ 1.607,00 em 20/11.
+> 1. Qual agendamento/tarifário o `Tarifario/Valor` usa? É o "AGENDAMENTO PADRÃO" (000001)?
+> 2. Existe um campo no `Tarifario/Valor` para informar o agendamento (000003) ou o tarifário (000027/000028)? Testamos `idTarifario`, `codigoTarifario`, `idAgendamento` e `codigoAgendamento` e o valor não mudou.
+> 3. A promoção do motor (−41% a partir de 2 diárias) pode ser lida pela API?
 > Obrigado!
