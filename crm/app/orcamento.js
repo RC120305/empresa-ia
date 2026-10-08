@@ -19,6 +19,11 @@ const CATALOGO = {
   QST: { nome: 'Standard Quádruplo', cap: '20 a 25 m² · até 4 pessoas', dest: ['Ótimo custo para família ou grupo', 'Térreo, com estacionamento em frente', 'Cama queen + 2 de solteiro'] },
   CST: { nome: 'Duplo Casa Standard', cap: 'para 2 pessoas', dest: ['Opção econômica para casal', 'Ar quente e frio, frigobar e Wi-Fi', 'Café da manhã incluso'] },
 };
+// Bangalô Triplo e Quádruplo: no Silbeck real são dois tipos (BANG3 e BANG4); o hotel os apresenta como o Bangalô (08/10/2026)
+CATALOGO.BANG3 = { ...CATALOGO.BG, nome: 'Bangalô', cap: '40 m² · até 3 pessoas' };
+CATALOGO.BANG4 = { ...CATALOGO.BG, nome: 'Bangalô', cap: '40 m² · até 4 pessoas' };
+// Fotos: acomodações sem pasta própria usam a da equivalente
+const FOTO_DE = { QES: 'SUP', QST: 'STD', CST: 'STD', BANG3: 'BG', BANG4: 'BG' };
 // Antes das opções e dos valores, os benefícios (dono, 04/10/2026). Fatos aprovados: contexto/hotel-operacional.md
 const PORQUE = 'O único hotel de Bonito cercado por dois rios, o Formoso e o Formosinho: 40 hectares de natureza a 6 km do centro, por acesso de asfalto. A diária já inclui o café da manhã e uma programação diária de atividades com acompanhamento de guia como: trilhas com banho de rio, tirolesa, stand up, caiaque e arco e flecha.';
 const SLOGAN = 'Seu lugar de conexão com a natureza'; // slogan do Código de Cultura, em destaque no topo (dono, 07/10/2026)
@@ -66,7 +71,7 @@ function escolherFotos({ codigo_acomodacao, etiquetas, quantidade }) {
   const querBanheiro = termos.some(t => t.includes('banheiro'));
   const pode = f => querBanheiro || !tem(f, 'banheiro');
   // Fotos de apartamento quádruplo usam a pasta do duplo/triplo correspondente.
-  const grupoDe = { QES: 'SUP', QST: 'STD', CST: 'STD' }[cod] || cod;
+  const grupoDe = FOTO_DE[cod] || cod;
   const pontos = f => (f.grupo === grupoDe ? 10 : 0) + termos.filter(t => f.etiquetas.some(e => e.toLowerCase().includes(t)) || f.descricao.toLowerCase().includes(t)).length;
   const escolhidas = tudo.map(f => ({ f, p: pontos(f) })).filter(x => x.p > 0 && pode(x.f)).sort((a, b) => b.p - a.p).map(x => x.f);
   if (grupoDe && !termos.length) {
@@ -84,7 +89,7 @@ function escolherFotos({ codigo_acomodacao, etiquetas, quantidade }) {
 function videos() { return biblioteca().flatMap(g => g.fotos.filter(f => f.video).map(f => ({ ...f, grupo: g.grupo, nome_grupo: g.nome }))); }
 function escolherVideo({ codigo_acomodacao, etiquetas }, ja = []) {
   const cod = String(codigo_acomodacao || '').toUpperCase().split('+')[0];
-  const grupoDe = { QES: 'SUP', QST: 'STD', CST: 'STD' }[cod] || cod;
+  const grupoDe = FOTO_DE[cod] || cod;
   const termos = (etiquetas || []).map(t => String(t).toLowerCase()).filter(Boolean);
   const lista = videos().filter(v => !ja.includes(v.arquivo));
   const pontos = v => (grupoDe && v.grupo === grupoDe ? 10 : 0) + termos.filter(t => v.grupo.toLowerCase() === t || v.nome_grupo.toLowerCase().includes(t) || v.etiquetas.some(e => e.toLowerCase().includes(t)) || v.descricao.toLowerCase().includes(t)).length;
@@ -157,7 +162,7 @@ function pagina(o, { previa = false, produtos = null } = {}) {
   const n = noites(o.data_entrada, o.data_saida);
   const nome = o.primeiro_nome ? esc(o.primeiro_nome) : '';
   const bib = biblioteca();
-  const fotosDe = cod => ((bib.find(g => g.grupo === cod) || bib.find(g => g.grupo === { QES: 'SUP', QST: 'STD', CST: 'STD' }[cod]) || { fotos: [] }).fotos).filter(f => !f.video).slice(0, 5);
+  const fotosDe = cod => ((bib.find(g => g.grupo === cod) || bib.find(g => g.grupo === FOTO_DE[cod]) || { fotos: [] }).fotos).filter(f => !f.video).slice(0, 5);
   const cards = emOrdemDeValor(o.opcoes).map((op, i) => {
     const acs = op.combinacao ? op.acomodacoes || [] : null;
     const cat = acs ? { nome: op.nome, cap: `${acs.length} acomodações para o grupo`, dest: [] }
@@ -208,4 +213,4 @@ ${cards}
 <script src="/o/orcamento.js?v=${VERSAO}"></script></body></html>`;
 }
 
-module.exports = { INCLUSO, ehVideo, videos, escolherVideo, resumo, resumoGrupo, MAX_OPCOES, montar, codigosDe, chaveCombinacao, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };
+module.exports = { FOTO_DE, INCLUSO, ehVideo, videos, escolherVideo, resumo, resumoGrupo, MAX_OPCOES, montar, codigosDe, chaveCombinacao, pagina, novoToken, tokenValido, CATALOGO, periodo, biblioteca, escolherFotos, PASTA_FOTOS, GRUPOS, nomeGrupo, definirVivas, FOTOS_FIXAS };

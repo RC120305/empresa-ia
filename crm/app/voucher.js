@@ -23,7 +23,7 @@ function fotoDaAcomodacao(codigo) {
   const cods = String(codigo || '').toUpperCase().split('+').map(c => c.trim()).filter(Boolean);
   const bib = orcamento.biblioteca();
   for (const c of cods) {
-    const g = bib.find(x => x.grupo === c) || bib.find(x => x.grupo === { QES: 'SUP', QST: 'STD', CST: 'STD' }[c]);
+    const g = bib.find(x => x.grupo === c) || bib.find(x => x.grupo === orcamento.FOTO_DE[c]);
     const f = g && g.fotos.find(f => !f.video && !f.decoracao && fs.existsSync(path.join(orcamento.PASTA_FOTOS, f.arquivo)));
     if (f) return path.join(orcamento.PASTA_FOTOS, f.arquivo);
   }

@@ -102,7 +102,9 @@ function subirSimulador() {
 // Códigos do Silbeck REAL → códigos do CRM (fotos, descrições do orçamento, regra de menores de 5 anos).
 // Visto no Silbeck do hotel em 08/10/2026. Só os pares certos; os outros seguem com o código e o nome do Silbeck
 // até o dono confirmar (ver /saude/silbeck-cotacao). O simulador já usa os códigos do CRM.
-const CODIGO_DO_CRM = { CAB: 'CBD', CABT: 'CBT', CABMAS: 'CBM', CON: 'CJ', QSUP: 'QES', QSTD: 'QST', STD: 'STD' };
+const CODIGO_DO_CRM = { CAB: 'CBD', CABT: 'CBT', CABMAS: 'CBM', CON: 'CJ', QSUP: 'QES', QSTD: 'QST', STD: 'STD', STD1: 'CST', DPLS: 'SUP', BANG4C: 'BGE' };
+// BANG3 (Bangalô Triplo) e BANG4 (Bangalô Quádruplo) ficam com o código do Silbeck: os dois são o "Bangalô" do CRM
+// (fotos e descrição do BG, em orcamento.js); juntá-los num código só misturaria as vagas.
 const paraCRM = lista => Array.isArray(lista) ? lista.map(t => t && t.codigo && CODIGO_DO_CRM[t.codigo] ? { ...t, codigo: CODIGO_DO_CRM[t.codigo], codigo_silbeck: t.codigo } : t) : lista;
 class ErroSilbeck extends Error { constructor(msg, http) { super(msg); this.http = http; } }
 
