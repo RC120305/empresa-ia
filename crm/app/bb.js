@@ -127,8 +127,11 @@ async function diagnostico() {
     r.acesso = 'ok';
     const fim = new Date(), ini = new Date(fim - 3600e3);
     const l = await api(c, 'GET', `/cob?inicio=${encodeURIComponent(ini.toISOString().replace(/\.\d+Z$/, 'Z'))}&fim=${encodeURIComponent(fim.toISOString().replace(/\.\d+Z$/, 'Z'))}`);
-    r.leitura = l.status === 200 ? 'ok' : 'falhou (' + l.status + (l.json && (l.json.detail || l.json.title || l.json.message) ? ': ' + String(l.json.detail || l.json.title || l.json.message).slice(0, 160) : '') + ')';
-    r.etapa = l.status === 200 ? 'tudo certo' : 'leitura';
+    // O BB responde 404 "Nenhum resultado encontrado" quando não há cobrança no período: a API está certa, a lista é que está vazia.
+    const vazia = l.status === 404 && /nenhum resultado/i.test(String((l.json && (l.json.detail || l.json.title || l.json.message)) || ''));
+    const leituraOk = l.status === 200 || vazia;
+    r.leitura = l.status === 200 ? 'ok' : vazia ? 'ok (nenhuma cobrança na última hora)' : 'falhou (' + l.status + (l.json && (l.json.detail || l.json.title || l.json.message) ? ': ' + String(l.json.detail || l.json.title || l.json.message).slice(0, 160) : '') + ')';
+    r.etapa = leituraOk ? 'tudo certo' : 'leitura';
   } catch (e) { r.etapa = r.acesso === 'ok' ? 'leitura' : 'acesso'; r.erro = String(e.message || e).slice(0, 200); }
   ultimoDiag = { ate: Date.now() + 60e3, r };
   return r;
