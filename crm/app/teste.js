@@ -1354,6 +1354,8 @@ falso.listen(0, () => {
         const d = await (await fetch(base + '/saude/silbeck-reserva?id=' + rv.silbeck_id + '&entrada=' + rv.data_entrada)).json();
         assert.ok(d.ok && d.achou && String(d.itens[0].item_id) === String(item0) && d.itens[0].adiantamentos >= 1, JSON.stringify(d));
         assert.ok(!JSON.stringify(d).includes('Ana'), 'sem nomes');
+        const d2 = await (await fetch(base + '/saude/silbeck-reserva')).json();
+        assert.ok(d2.ok && d2.reserva === String(reservasF[0].silbeck_id) && d2.no_crm && d2.no_crm.item_guardado === !!reservasF[0].silbeck_item_id, 'sem número: a última reserva do CRM ' + JSON.stringify(d2));
       }
       // 1c) plano B: o CRM não consegue lançar no Silbeck → o Gilberto só avisa que a equipe está finalizando (não confirma);
       // a equipe lança no Silbeck e clica em "Já lancei no Silbeck": aí o Gilberto confirma e agradece

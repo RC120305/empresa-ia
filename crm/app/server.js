@@ -2981,8 +2981,16 @@ const servidor = http.createServer((req, res) => {
   // Itens de uma reserva no Silbeck (onde o pagamento é lançado). Sem nomes nem contatos.
   if (url.pathname === '/saude/silbeck-reserva' && req.method === 'GET') {
     if (limiteExcedido(req)) return json(res, 429, { ok: false });
-    silbeck.diagnosticoReserva({ id: url.searchParams.get('id'), entrada: url.searchParams.get('entrada') })
-      .then(r => json(res, 200, { ok: true, ...r })).catch(e => json(res, 200, { ok: false, erro: String(e.message || e).slice(0, 200) }));
+    (async () => {
+      let id = url.searchParams.get('id'), entrada = url.searchParams.get('entrada'), noCrm = null;
+      if (!/^\d+$/.test(String(id || ''))) { // sem número: a última reserva criada pelo CRM
+        const ult = (await getJson(`${SUPABASE_URL}/rest/v1/reservas?fonte=eq.silbeck&select=silbeck_id,silbeck_item_id,itens,data_entrada,situacao,criado_em&order=criado_em.desc&limit=1`, fetch))[0];
+        if (!ult) throw new Error('o CRM ainda não criou nenhuma reserva no Silbeck');
+        id = ult.silbeck_id; entrada = ult.data_entrada;
+        noCrm = { situacao: ult.situacao, criada_em: ult.criado_em, item_guardado: !!(ult.silbeck_item_id || (Array.isArray(ult.itens) && ult.itens.every(i => i.item_id))) };
+      }
+      return { ...(await silbeck.diagnosticoReserva({ id, entrada })), ...(noCrm ? { no_crm: noCrm } : {}) };
+    })().then(r => json(res, 200, { ok: true, ...r })).catch(e => json(res, 200, { ok: false, erro: String(e.message || e).slice(0, 200) }));
     return;
   }
   // Teste das credenciais do Pix do BB (cofre, acesso, uma leitura). Sem token, segredo nem chave; resultado guardado por 60 s.
