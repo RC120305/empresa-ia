@@ -70,6 +70,20 @@
   }
  },
  {
+  "id": "jalapao-legenda-desfoque",
+  "tipo": "video",
+  "nome": "Jalapão · legenda com desfoque",
+  "status": "em_teste",
+  "desc": "Uma cena aérea longa com zoom suave e frases curtas em Montserrat, minúsculas, com a palavra-chave em negrito, surgindo do desfocado palavra por palavra e trocando de lugar. Fecho \"LEIA A LEGENDA :)\" no centro.",
+  "quando": "Drone ou paisagem que fala sozinha, com uma frase de impacto dividida em 3 telas e chamada para a legenda.",
+  "exemplo": {
+   "video": "copia-jalapao-v2"
+  },
+  "obs": "Criado a partir do Reels do Jalapão que você mandou. A equipe troca só a imagem e o texto; fonte, negrito, posições, tempos e entrada ficam iguais.",
+  "animador": "receita",
+  "molde": "design/ferramentas/animador/moldes/jalapao-legenda-desfoque.json"
+ },
+ {
   "id": "arte-sem-faixa",
   "tipo": "criativo",
   "nome": "Sem faixa",
