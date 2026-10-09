@@ -1064,7 +1064,7 @@
       try {
         const j = await chamarApi('/api/fechar-reserva', { conversa_id: aberta, ...reserva, forma: pg.forma, percentual: pg.percentual, origem: 'gilberto' });
         if (j.cobranca) texto = texto.replace('[[PIX]]', textoPix(j.cobranca));
-        toast('Reserva ' + j.reserva.silbeck_id + ' criada no Silbeck (não confirmada)' + (j.simulador ? ' · SIMULADOR' : '') + (j.cobranca ? '. Pix gerado: revise e envie.' : '. Gere o link na Cielo e cole no lugar de [[link do cartão]].'));
+        toast('Reserva ' + j.reserva.silbeck_id + ' criada no Silbeck (não confirmada)' + (j.simulador ? ' · SIMULADOR' : '') + (j.cobranca ? '. Pix gerado: revise e envie.' : j.pix_pela_equipe ? '. Pix automático em teste: gere o Pix no app do banco e cole no lugar de [[PIX]] (tarefa criada).' : '. Gere o link na Cielo e cole no lugar de [[link do cartão]].'));
         if (painel === 'res') pintarPainel();
       } catch (e) { toast(e.message); }
     } else if (!reserva && pg && pg.forma === 'pix' && pg.reserva_id && texto.includes('[[PIX]]') && confirm('Gerar um novo Pix de ' + brl(pg.valor) + ' (' + pg.descricao + ')?')) {

@@ -77,7 +77,7 @@ jobs:
             --image "${IMAGE}:${GITHUB_SHA}" \
             --region "${REGION}" \
             --service-account "crm-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
-            --set-env-vars "VERSAO=${GITHUB_SHA::7},SUPABASE_URL=https://gpvhnclniolxxxjkslkf.supabase.co,SILBECK_MODO=real,BB_MODO=simulador" \
+            --set-env-vars "VERSAO=${GITHUB_SHA::7},SUPABASE_URL=https://gpvhnclniolxxxjkslkf.supabase.co,SILBECK_MODO=real,BB_MODO=simulador,RESERVAS_AUTO=liberadas" \
             --set-secrets "META_APP_SECRET=meta-app-secret:latest,META_VERIFY_TOKEN=meta-verify-token:latest,SUPABASE_SECRET_KEY=supabase-secret-key:latest,SUPABASE_PUBLISHABLE_KEY=supabase-publishable-key:latest,META_WHATSAPP_TOKEN=meta-whatsapp-token:latest,ANTHROPIC_API_KEY=anthropic-api-key:latest" \
             --network crm-vpc --subnet crm-sp --vpc-egress all-traffic \
             --allow-unauthenticated \

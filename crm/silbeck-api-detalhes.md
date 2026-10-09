@@ -154,3 +154,10 @@ O CRM traduz na entrada (`CODIGO_DO_CRM` em `app/silbeck.js`); fotos e descriç�
 | BANG4C | Bangalô Quádruplo Especial | 4 | 1 | BGE · Bangalô Especial |
 
 Outros pontos do Silbeck real: o tipo da categoria de hóspede vem como texto ("1" a "4"); `expires_in` do token = 30.
+
+## 8. Reservas automáticas no Silbeck real (liberadas para teste pelo dono, 09/10/2026)
+
+- `RESERVAS_AUTO=liberadas` (no `crm-deploy.yml`): o Gilberto cria a reserva **não confirmada** no Silbeck real quando o cliente aceita. `RESERVAS_AUTO=travadas` volta à etapa 1 (a equipe fecha a reserva).
+- O Pix do CRM continua travado enquanto `BB_MODO=simulador`: no Pix, o CRM cria a tarefa **"Enviar Pix"** e um alerta. A equipe gera o Pix no app do banco e, quando ele cair, lança o adiantamento no Silbeck. O cliente recebe "A equipe já está gerando o Pix…". No cartão, segue a tarefa do link da Cielo.
+- A reserva vai com `idTipoPensao` 4 (café da manhã incluído; troca por `SILBECK_ID_PENSAO`). Ainda sem `idReservaPortal` e `idFaturamento` (aguardando o Márcio).
+- A API não cancela reserva: as reservas de teste são canceladas à mão no Silbeck.

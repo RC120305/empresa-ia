@@ -1361,6 +1361,33 @@ falso.listen(0, () => {
         assert.equal((await api('/api/reserva-lancada', { tarefa_id: crypto.randomUUID() })).status, 409, 'não manda duas vezes');
         tarefaGetF = null; rv.silbeck_item_id = itemAntes;
       }
+      // 1d) reservas liberadas no Silbeck real com o Pix do BB em teste (dono, 09/10/2026): a reserva nasce no Silbeck,
+      // nenhum Pix fictício sai, a equipe recebe a tarefa e o alerta, e o [[PIX]] vira o aviso de que a equipe manda o Pix
+      {
+        const S = require('./silbeck'), modoAntes = S.MODO, { travaReservas, pixPelaEquipe } = require('./server');
+        S.MODO = () => 'real'; process.env.RESERVAS_AUTO = 'liberadas';
+        try {
+          assert.deepEqual([travaReservas(), pixPelaEquipe()], [false, true]);
+          reservasF.length = 0; alertasF.length = 0; iaAuto = 'pix';
+          const nCob = cobrancasF.length, nE = enviosMeta().length, nRes = reservasF.length;
+          await postar(msgCliente('wamid.AUTO1D', 'Pode reservar! Vou pagar no Pix'));
+          assert.ok(await aguardar(() => enviosMeta().length >= nE + 2), 'respondeu');
+          const tx = enviosMeta().slice(nE).map(c => c.corpo.text.body);
+          assert.equal(tx[0], 'Reserva garantida, Ana! 🌿');
+          assert.ok(/^A equipe já está gerando o Pix do sinal \(50%\) de \*R\$ [\d.,]+\* e te manda aqui em instantes/.test(tx[1]), JSON.stringify(tx));
+          assert.ok(!tx.some(t => t.includes('[[') || t.includes('copia e cola')), 'nada de Pix fictício nem marcador');
+          assert.equal(reservasF.length, nRes + 1, 'a reserva foi criada'); assert.equal(reservasF.at(-1).situacao, 'nao_confirmada');
+          assert.equal(cobrancasF.length, nCob, 'nenhuma cobrança no CRM');
+          const tp = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo;
+          assert.equal(tp.tipo, 'Enviar Pix'); assert.ok(tp.descricao.includes('reserva ' + reservasF.at(-1).silbeck_id) && tp.descricao.includes('app do banco'), tp.descricao);
+          assert.ok(await aguardar(() => alertasF.some(a => a.titulo === 'Gilberto: mandar o Pix')), 'a equipe é avisada');
+          assert.ok(JSON.stringify(pedidosIA.at(-1).messages).includes('PIX NESTA FASE'));
+          const res = pedidosIA.at(-1).messages.at(-1).content.map(x => x.content).join(' ');
+          assert.ok(res.includes('pix_pela_equipe'), res);
+          r = await api('/api/cobranca', { conversa_id: conv, tipo: 'sinal', valor: '100' });
+          assert.equal(r.status, 409, 'o Pix do CRM continua travado');
+        } finally { S.MODO = modoAntes; delete process.env.RESERVAS_AUTO; reservasF.length = 0; alertasF.length = 0; }
+      }
       // 2) trava: sem reserva no Silbeck, o Pix não sai
       reservasF.length = 0; iaAuto = 'sem_reserva';
       const nCob = cobrancasF.length, n2 = enviosMeta().length;

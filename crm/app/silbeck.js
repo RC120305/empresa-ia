@@ -399,6 +399,8 @@ async function vagas(inicio, dias, buscar = fetch) {
 // criar_reserva: confere a vaga e o preço de novo (na mesma hora) e cria a reserva NÃO CONFIRMADA no Silbeck.
 // O preço vai sempre do Tarifario/Valor (nunca digitado). Se mudou em relação ao orçamento, não cria (o cliente precisa
 // de um novo OK). A reserva confirma sozinha quando o adiantamento (pagamento) é lançado (regra da Silbeck, P46).
+// Pensão das reservas diretas: 4 = café da manhã incluído (cadastro TipoPensao do Silbeck do Cabanas)
+const PENSAO = Number(process.env.SILBECK_ID_PENSAO || 4);
 async function reservar(e, buscar = fetch) {
   const ini = e.data_entrada, fim = e.data_saida;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(ini || '') || !/^\d{4}-\d{2}-\d{2}$/.test(fim || '') || fim <= ini) return { ok: false, erro: 'Datas inválidas.' };
@@ -436,8 +438,8 @@ async function reservar(e, buscar = fetch) {
     const lugares = q.adultos + q.idades.length, hospedes = [];
     for (let h = 0; h < lugares && k < nomes.length; h++, k++) hospedes.push({ nome: nomes[k], adulto: h < q.adultos });
     return { idTipoApartamento: q.t.id, quantidadeAdulto: q.adultos, quantidadeCrianca: q.idades.length, dataEntrada: ini, dataSaida: fim, qtdeApartamento: 1,
-      valorTotalDiaria: precos[i].diarias, listaHospede: hospedes,
-      listaData: precos[i].dias.map(d => ({ data: d.data, valorDiaria: Number(d.valor), ...(d.idTarifario != null ? { idTarifario: d.idTarifario } : {}), ...(d.idTipoPensao != null ? { idTipoPensao: d.idTipoPensao } : {}) })) };
+      idTipoPensao: String(PENSAO), valorTotalDiaria: precos[i].diarias, listaHospede: hospedes,
+      listaData: precos[i].dias.map(d => ({ data: d.data, valorDiaria: Number(d.valor), ...(d.idTarifario != null ? { idTarifario: d.idTarifario } : {}), idTipoPensao: d.idTipoPensao != null ? d.idTipoPensao : PENSAO })) };
   });
   const corpo = {
     titular, email: e.email || undefined, telefone: e.telefone || undefined,
