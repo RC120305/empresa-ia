@@ -56,10 +56,16 @@ O dono mandou um vídeo de referência e quer **um vídeo novo igual** (mesmos c
 2. `python3 design/ferramentas/copiar-referencia.py analisar <referencia> design/videos/AAAA-MM/copia-<nome>/` → cenas (cortes e tempos) + `folha.jpg` (um quadro a cada 0,5 s com o tempo). **Abra a folha** e anote, por cena: tipo de plano (aéreo, close, pessoas, paisagem), movimento da câmera, e cada texto (tempo de entrada e saída, posição x/y, tamanho, maiúsculas ou não, palavra destacada e como: negrito ou cor, jeito de entrar: aparece, palavra por palavra, letra por letra).
 3. Para cada cena, escolha no **catálogo** (`design/videos/catalogo/catalogo.json`) o trecho mais parecido (mesmo tipo de plano; nunca "não usar") ou uma foto do banco; respeite a duração da cena.
 4. Textos: **mesma estrutura e posição**, conteúdo adaptado ao hotel e verdadeiro (fatos só de `contexto/hotel-operacional.md`; nada de copiar o texto de outra marca). Se a referência fala de outro lugar, troque pelo nosso.
+4b. **Legendas idênticas às da referência (o dono exige):** amplie os textos da referência (recorte 4–6x) e copie no bloco `legenda` da receita (padrão de todos) e em cada texto:
+   - **fonte**: compare as letras (ex.: "a" de dois andares e "g" de um andar, redonda e geométrica = `montserrat`; fina e geométrica, maiúscula espaçada = `josefin`; serifada itálica = `playfair`). Se for outra fonte, use a mais próxima e avise o dono;
+   - **pesos**: `peso` do texto comum e `pesoDestaque` (700/800) das palavras em negrito; `caixa` (alta ou normal) e `espacamento`;
+   - **cor** e **sombra** (suave/forte/nenhuma); **tamanho** medido (largura do texto na referência × 1080 / largura do vídeo); **alinhar**, **x**, **y**;
+   - **entrada e saída**: extraia 10 quadros/s em volta de cada texto (`ffmpeg -ss <t-0.5> -t 1.5 -vf fps=10`) e veja como surge: `desfoque-palavra` (borrado → nítido, palavra por palavra), `desfoque`, `palavra` (sobe), `letra` (máquina de escrever), `fade`, `linha`, `nenhuma`; `intervalo` entre palavras, `duracaoEntrada`, `atraso` por palavra (ex.: o ":)" entra 2 s depois), `saida`.
+   Efeitos que o animador ainda não faz (ex.: texto atrás de uma pessoa ou objeto do vídeo): avise o dono na resposta, nunca troque por outro sem dizer.
 5. Música: do catálogo pela nota do dono, com energia parecida com a da referência (nunca a música da referência).
-6. Escreva `receita.json` (formato no topo de `copiar-referencia.py`) e rode `montar` → MP4 1080x1920. Confira a folha de quadros contra a da referência; ajuste e refaça até ficar parecido.
+6. Escreva `receita.json` (formato no topo de `copiar-referencia.py`) e rode `montar` → MP4 1080x1920. **Conferência obrigatória lado a lado:** recorte a mesma legenda na referência e na cópia, ampliada, numa imagem só (fonte, negrito, tamanho, posição) e 3 a 4 quadros da entrada; ajuste e refaça até ficar igual.
 7. Siga os passos 6 (checagem), 7 (Central, grupo "Cópias de vídeos de referência") e marque o pedido `pronto` com uma resposta do que copiou e do que não deu.
-Exemplo real: `design/videos/2026-10/copia-jalapao/receita.json`.
+Exemplo real: `design/videos/2026-10/copia-jalapao/receita.json` (Montserrat, negrito 700, desfoque palavra por palavra).
 
 ## 8. Correção de vídeo
 db `videos`, pedidos com `situacao: "enviado"`: refaça com o Editor (passos 5 e 6), suba a nova versão com o **mesmo id** (passo 7, troca a url) e marque `situacao: "feito"` com `resposta`.

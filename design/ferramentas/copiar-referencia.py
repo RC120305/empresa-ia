@@ -13,6 +13,7 @@
 Receita: {"formato": {"w":1080,"h":1920,"fps":30},
   "cenas": [{"fonte": "design/videos/brutos/X.mp4", "ini": 3.2, "dur": 2.4, "zoom": "entrar|sair|vaivem|nenhum", "foco": 0.5}
             | {"foto": "caminho.jpg", "dur": 2.0, "zoom": "entrar"}],
+  "legenda": {padrões das legendas copiadas da referência: fonte, peso, pesoDestaque, cor, sombra, tamanho, entrada, saida...},
   "textos": [ ... campos do modelo receita, ver design/ferramentas/animador/modelos/receita.js ... ],
   "musica": {"arquivo": "...mp3", "inicioSeg": 0, "volume": 0.8}, "escurecer": 0.12, "logo": {"ini": 0, "fim": 2}}
 """
@@ -80,7 +81,7 @@ def montar(arq, saida, previa):
         subprocess.run([FF, "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", f"{d}/lista.txt", "-c", "copy", fundo], check=True)
     total = sum(c["dur"] for c in rc["cenas"])
     rot = {"modelo": "receita", "formato": rc["formato"], "video": fundo, "audioDoVideo": False, "duracaoSeg": total,
-           "textos": rc.get("textos", []), "escurecer": rc.get("escurecer", 0.12), "logo": rc.get("logo"), "crf": rc.get("crf", 23)}
+           "textos": rc.get("textos", []), "legenda": rc.get("legenda"), "escurecer": rc.get("escurecer", 0.12), "logo": rc.get("logo"), "crf": rc.get("crf", 23)}
     if rc.get("musica"): rot["musica"] = {**rc["musica"], "arquivo": caminho(rc["musica"]["arquivo"])}
     ra = os.path.join(base, "roteiro-animador.json"); json.dump(rot, open(ra, "w"), ensure_ascii=False, indent=1)
     cmd = ["node", os.path.join(RAIZ, "design/ferramentas/animador/animar.mjs"), ra, os.path.abspath(saida)] + (["--previa"] if previa else [])
