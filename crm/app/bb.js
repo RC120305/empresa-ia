@@ -38,7 +38,7 @@ function pedir(url, { method = 'GET', headers = {}, body = null } = {}, ag = nul
   });
 }
 
-let token = null;
+let token = null; // { valor, ate, oauth }: o token vale só para o endereço OAuth (homologação ou produção) em que foi pedido
 async function config() {
   const [id, sec, appKey, chave, amb] = await Promise.all(['bb-client-id', 'bb-client-secret', 'bb-app-key', 'bb-chave-pix'].map(n => segredo(n).catch(() => null)).concat([AMBIENTE()]));
   if (!id || !sec || !appKey || !chave) throw new ErroBB(503, 'Faltam as credenciais do Banco do Brasil no cofre (rodar crm/infra/segredos-bb.txt).');
@@ -46,11 +46,11 @@ async function config() {
   return { id, sec, appKey, chave, oauth: process.env.BB_OAUTH_URL || end.oauth, api: (process.env.BB_API_URL || end.api).replace(/\/$/, '') };
 }
 async function autorizar(c) {
-  if (token && token.ate > Date.now()) return token.valor;
+  if (token && token.oauth === c.oauth && token.ate > Date.now()) return token.valor;
   const r = await pedir(c.oauth, { method: 'POST', headers: { Authorization: 'Basic ' + Buffer.from(c.id + ':' + c.sec).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' },
     body: 'grant_type=client_credentials&scope=' + encodeURIComponent('cob.write cob.read pix.read') }, await agente());
   if (r.status !== 200 || !r.json.access_token) throw new ErroBB(502, 'O Banco do Brasil recusou o acesso (' + r.status + (r.json.error_description ? ': ' + r.json.error_description : '') + ').');
-  token = { valor: r.json.access_token, ate: Date.now() + Math.max(60, (r.json.expires_in || 600) - 60) * 1000 };
+  token = { oauth: c.oauth, valor: r.json.access_token, ate: Date.now() + Math.max(60, (r.json.expires_in || 600) - 60) * 1000 };
   return token.valor;
 }
 async function api(c, metodo, caminho, corpo) {
@@ -74,9 +74,13 @@ async function criarCobranca({ txid, valor, expiracaoSeg, descricao, devedor }) 
     sim.set(txid, { status: 'ATIVA', valor: valorTxt(valor), pix: [] });
     return { txid, status: 'ATIVA', copia_e_cola: copiaFicticia(txid, valor), fonte: 'simulador' };
   }
+  if (!/^[a-zA-Z0-9]{26,35}$/.test(String(txid))) throw new ErroBB(400, 'txid inválido: precisa ter de 26 a 35 letras/números.');
   const c = await config();
-  const corpo = { calendario: { expiracao: expiracaoSeg }, valor: { original: valorTxt(valor) }, chave: c.chave, solicitacaoPagador: String(descricao || '').slice(0, 140),
-    ...(devedor && devedor.nome && (devedor.cpf || devedor.cnpj) ? { devedor } : {}) };
+  // devedor: nome + (cpf OU cnpj), só números; o BB recusa os dois juntos
+  const doc = v => String(v || '').replace(/\D/g, '');
+  const dev = devedor && devedor.nome && (doc(devedor.cpf).length === 11 ? { cpf: doc(devedor.cpf) } : doc(devedor.cnpj).length === 14 ? { cnpj: doc(devedor.cnpj) } : null);
+  const corpo = { calendario: { expiracao: Math.max(1, Math.round(Number(expiracaoSeg) || 3600)) }, valor: { original: valorTxt(valor) }, chave: c.chave, solicitacaoPagador: String(descricao || '').slice(0, 140),
+    ...(dev ? { devedor: { nome: String(devedor.nome).slice(0, 200), ...dev } } : {}) };
   const r = await api(c, 'PUT', '/cob/' + txid, corpo);
   if (r.status !== 200 && r.status !== 201) throw new ErroBB(502, 'O Banco do Brasil não criou a cobrança (' + r.status + (r.json.detail || r.json.title ? ': ' + (r.json.detail || r.json.title) : '') + ').');
   return { txid, status: r.json.status, copia_e_cola: r.json.pixCopiaECola || r.json.textoImagemQRcode || null, fonte: 'bb' };
