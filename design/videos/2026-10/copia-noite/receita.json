@@ -1,0 +1,47 @@
+{
+ "referencia": "Reels @pousada_da_pedra (noite), enviado pelo dono na Central em 09/10/2026 (ref-mv0ada04, vídeo completo): 1 plano noturno contínuo; texto em caixa alta, fonte monoespaçada fina (IBM Plex Mono), letras bem espaçadas, centralizado a ~22% do topo, 3 linhas, entrando letra por letra a ~11 letras/s, começa 0,25 s depois do início e fica até o fim. Sem negrito, sem caixa.",
+ "formato": {
+  "w": 1080,
+  "h": 1920,
+  "fps": 30
+ },
+ "cenas": [
+  {
+   "foto": "design/videos/2026-10/copia-noite/foto-espaco-relaxamento.jpg",
+   "dur": 8,
+   "zoom": "entrar",
+   "foco": 0.5
+  }
+ ],
+ "legenda": {
+  "fonte": "plexmono",
+  "peso": 300,
+  "cor": "#F4F1EA",
+  "sombra": "forte",
+  "tamanho": 52,
+  "caixa": "alta",
+  "espacamento": 0.45,
+  "entrelinha": 0.95,
+  "alinhar": "centro",
+  "x": 0.5,
+  "largura": 1.0,
+  "entrada": "letra",
+  "intervalo": 0.1,
+  "saida": "nenhuma",
+  "espacoPalavra": 0.5
+ },
+ "textos": [
+  {
+   "ini": 0.45,
+   "fim": 8.0,
+   "texto": "Quando você relaxa,\ntudo fica ainda mais\nleve",
+   "y": 0.232
+  }
+ ],
+ "escurecer": 0.6,
+ "musica": {
+  "arquivo": "design/videos/musicas/nastelbom-piano-cinematic-304999.mp3",
+  "inicioSeg": 56,
+  "volume": 0.8
+ }
+}

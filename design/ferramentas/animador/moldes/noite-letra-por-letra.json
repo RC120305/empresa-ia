@@ -1,0 +1,52 @@
+{
+ "_sobre": "Molde do modelo 'Noite · letra por letra' (aba Modelos da Central), cópia exata do Reels de referência ref-mv0ada04 (design/videos/2026-10/copia-noite/). Para usar: copie para design/videos/AAAA-MM/<nome>/receita.json, troque a cena (trecho do catálogo ou foto do banco; de preferência noturna ou com luz quente) e o texto, MANTENDO o bloco 'legenda', o tempo e a posição. Depois: python3 design/ferramentas/copiar-referencia.py montar <receita.json>.",
+ "regras": {
+  "estrutura": "1 plano contínuo, calmo, com zoom lento; uma frase só, em 2 ou 3 linhas centralizadas no alto, digitada letra por letra (~10 letras/s) a partir de 0,45 s e parada até o fim",
+  "texto": "no máximo 21 caracteres por linha (com espaços), quebra com \\n; ritmo 'Quando ..., / tudo fica ainda mais / <palavra>'; fatos só de contexto/hotel-operacional.md",
+  "duracao": "8 s para ~45 letras; texto mais longo: some 1 s a cada 10 letras"
+ },
+ "formato": {
+  "w": 1080,
+  "h": 1920,
+  "fps": 30
+ },
+ "cenas": [
+  {
+   "foto": "<foto do banco ou trecho do catálogo>",
+   "dur": 8,
+   "zoom": "entrar",
+   "foco": 0.5
+  }
+ ],
+ "legenda": {
+  "fonte": "plexmono",
+  "peso": 300,
+  "cor": "#F4F1EA",
+  "sombra": "forte",
+  "tamanho": 52,
+  "caixa": "alta",
+  "espacamento": 0.45,
+  "entrelinha": 0.95,
+  "alinhar": "centro",
+  "x": 0.5,
+  "largura": 1.0,
+  "entrada": "letra",
+  "intervalo": 0.1,
+  "saida": "nenhuma",
+  "espacoPalavra": 0.5
+ },
+ "textos": [
+  {
+   "ini": 0.45,
+   "fim": 8.0,
+   "texto": "Quando você relaxa,\ntudo fica ainda mais\nleve",
+   "y": 0.232
+  }
+ ],
+ "escurecer": 0.6,
+ "musica": {
+  "arquivo": "<música do catálogo, calma, pela nota do dono>",
+  "inicioSeg": 0,
+  "volume": 0.8
+ }
+}

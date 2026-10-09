@@ -5,13 +5,13 @@
 //   ini, fim, texto ("\n" quebra a linha), destaque?: "palavra outra" (palavras em negrito/cor),
 //   x?: 0–1 (centro do bloco; ou a margem esquerda se alinhar=esquerda), y: 0–1 (centro vertical), largura?: 0–1,
 //   alinhar?: centro|esquerda|direita, tamanho?: px (em 1080 de largura), entrelinha?: 1.15,
-//   fonte?: montserrat|josefin|playfair, peso?: 400, pesoDestaque?: 800, caixa?: alta|normal, espacamento?: em,
+//   fonte?: montserrat|josefin|playfair|plexmono, peso?: 400, pesoDestaque?: 800, caixa?: alta|normal, espacamento?: em (entre letras), espacoPalavra?: em (entre palavras, padrão 0.27),
 //   cor?: "#hex", corDestaque?: "#hex" (só quando destaqueEstilo=cor), destaqueEstilo?: negrito|cor,
 //   sombra?: suave|forte|nenhuma,
 //   entrada?: fade|desfoque|desfoque-palavra|desfoque-letra|palavra|letra|linha|subir|nenhuma,
 //   duracaoEntrada?: s (fade/desfoque, padrão 0.5), intervalo?: s entre palavras/letras, atraso?: [s por palavra],
 //   saida?: fade|desfoque|nenhuma, duracaoSaida?: s}]}
-const FONTES_RECEITA = {montserrat: "Montserrat, sans-serif", josefin: "Josefin, 'Josefin Sans', sans-serif", playfair: "Playfair, 'Playfair Display', Georgia, serif"};
+const FONTES_RECEITA = {montserrat: "Montserrat, sans-serif", josefin: "Josefin, 'Josefin Sans', sans-serif", playfair: "Playfair, 'Playfair Display', Georgia, serif", plexmono: "PlexMono, 'IBM Plex Mono', monospace"};
 const SOMBRAS_RECEITA = {suave: "0 1px 10px rgba(0,0,0,.45), 0 0 2px rgba(0,0,0,.25)", forte: "0 2px 12px rgba(0,0,0,.65), 0 0 3px rgba(0,0,0,.5)", nenhuma: "none"};
 
 MODELOS["receita"] = (palco, r, {fps, w, h}) => {
@@ -30,7 +30,7 @@ MODELOS["receita"] = (palco, r, {fps, w, h}) => {
     const left = alinhar === "centro" ? (t.x ?? 0.5) * w - larg / 2 : alinhar === "esquerda" ? (t.x ?? 0.12) * w : (t.x ?? 0.88) * w - larg;
     const tam = t.tamanho || 46, fam = FONTES_RECEITA[t.fonte] || FONTES_RECEITA.josefin;
     const bloco = el("div", {position: "absolute", left: left + "px", width: larg + "px", top: Math.round((t.y ?? 0.7) * h) + "px", transform: "translateY(-50%)",
-      display: "flex", flexWrap: "wrap", justifyContent: {centro: "center", esquerda: "flex-start", direita: "flex-end"}[alinhar], gap: "0 " + Math.round(tam * 0.27) + "px",
+      display: "flex", flexWrap: "wrap", justifyContent: {centro: "center", esquerda: "flex-start", direita: "flex-end"}[alinhar], gap: "0 " + Math.round(tam * (t.espacoPalavra ?? 0.27)) + "px",
       textAlign: {centro: "center", esquerda: "left", direita: "right"}[alinhar], opacity: 0}, palco);
     const dest = (t.destaque || "").split(" ").map(limpa).filter(Boolean), alta = t.caixa === "alta";
     const porCor = t.destaqueEstilo === "cor";

@@ -1,5 +1,14 @@
 [
  {
+  "id": "copia-noite",
+  "titulo": "Cópia do Reels da noite: letra por letra",
+  "grupo": "Cópias de vídeos de referência",
+  "arquivo": "design/videos/2026-10/copia-noite/COPIA-NOITE-letra-por-letra.mp4",
+  "musica": "Piano cinematic (Pixabay, sua nota 4)",
+  "nota": "Copiado do Reels que você mandou: fonte de máquina de escrever fina (IBM Plex Mono), caixa alta bem espaçada, centralizada no alto, digitada letra por letra a ~10 letras/s e parada até o fim. Imagem: espaço de relaxamento (o banco não tem fotos do hotel à noite). Texto: \"Quando você relaxa, tudo fica ainda mais leve\".",
+  "duracao": "8"
+ },
+ {
   "id": "copia-jalapao-v2",
   "titulo": "Cópia do Jalapão v2: legendas iguais às da referência",
   "grupo": "Cópias de vídeos de referência",

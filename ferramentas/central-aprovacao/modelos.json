@@ -84,6 +84,20 @@
   "molde": "design/ferramentas/animador/moldes/jalapao-legenda-desfoque.json"
  },
  {
+  "id": "noite-letra-por-letra",
+  "tipo": "video",
+  "nome": "Noite · letra por letra",
+  "status": "em_teste",
+  "desc": "Uma frase em caixa alta, letra fina de máquina de escrever, bem espaçada, centralizada no alto e digitada letra por letra, devagar, sobre uma cena calma com zoom lento.",
+  "quando": "Clima de fim de dia, relaxamento, noite no hotel: uma frase curta de sensação.",
+  "exemplo": {
+   "video": "copia-noite"
+  },
+  "obs": "Cópia exata do Reels que você mandou (a pousada à noite): mesma fonte, espaçamento, posição e velocidade. O exemplo usa a foto do espaço de relaxamento, porque o banco ainda não tem fotos ou vídeos do hotel à noite.",
+  "animador": "receita",
+  "molde": "design/ferramentas/animador/moldes/noite-letra-por-letra.json"
+ },
+ {
   "id": "arte-sem-faixa",
   "tipo": "criativo",
   "nome": "Sem faixa",

@@ -1,10 +1,10 @@
 // Modelo "configurável": o mesmo motor serve a qualquer modelo criado pelo dono no construtor da Central
 // (aba Modelos → "+ Criar modelo novo"). A aparência vem de roteiro.config; o conteúdo, de roteiro.telas.
-// config: {entrada: palavra|linha|maquina|surgir, destaque: "#hex", posicao: baixo|meio|alto, tamanho: p|m|g,
-//          fonte: josefin|playfair, fundo: nenhum|faixa|caixa, movimento: zoom|deslize|parado|alternar,
+// config: {entrada: palavra|linha|maquina|surgir, destaque: "#hex", posicao: baixo|meio|alto, tamanho: pp|p|m|g,
+//          fonte: josefin|playfair|mono, velocidade: normal|lenta|bem-lenta (do texto), fundo: nenhum|faixa|caixa, movimento: zoom|deslize|parado|alternar,
 //          segundos: 1.2–3.5, transicao: fusao|corte, escurecer: 0–0.7, selo: bool, fecho: bool}
 // telas: [{foto, texto, destaque?, apoio?}] · fecho: {linha1, linha2, foto?} · logo?: caminho do logo
-const CONFIG_PADRAO = {entrada: "palavra", destaque: "#F58634", posicao: "baixo", tamanho: "m", fonte: "josefin", fundo: "nenhum",
+const CONFIG_PADRAO = {velocidade: "normal", entrada: "palavra", destaque: "#F58634", posicao: "baixo", tamanho: "m", fonte: "josefin", fundo: "nenhum",
   movimento: "alternar", segundos: 2.4, transicao: "fusao", escurecer: 0.35, selo: true, fecho: true};
 
 MODELOS["configuravel"] = (palco, r, {fps}) => {
@@ -13,10 +13,12 @@ MODELOS["configuravel"] = (palco, r, {fps}) => {
   const LOGO = r.logo || "recursos/logo.png";
   const FUS = c.transicao === "corte" ? 0 : 10, durTela = Math.round(Anim.clamp(+c.segundos || 2.4, 1, 4) * fps);
   const FECHO = c.fecho === false ? 0 : 90, total = r.telas.length * durTela + FECHO;
-  const fam = c.fonte === "playfair" ? "Playfair, 'Playfair Display', Georgia, serif" : "Josefin, 'Josefin Sans', sans-serif";
-  const tam = {p: 54, m: 66, g: 84}[c.tamanho] || 66;
-  const estiloPalavra = {fontFamily: fam, fontWeight: c.fonte === "playfair" ? 500 : 600, fontStyle: c.fonte === "playfair" ? "italic" : "normal",
-    fontSize: tam + "px", letterSpacing: c.fonte === "playfair" ? "0" : ".06em", textTransform: c.fonte === "playfair" ? "none" : "uppercase",
+  const mono = c.fonte === "mono";
+  const fam = c.fonte === "playfair" ? "Playfair, 'Playfair Display', Georgia, serif" : mono ? "PlexMono, 'IBM Plex Mono', monospace" : "Josefin, 'Josefin Sans', sans-serif";
+  const tam = {pp: 44, p: 54, m: 66, g: 84}[c.tamanho] || 66;
+  const lento = {lenta: 2, "bem-lenta": 3}[c.velocidade] || 1;  // multiplica o tempo de entrada do texto
+  const estiloPalavra = {fontFamily: fam, fontWeight: c.fonte === "playfair" ? 500 : mono ? 300 : 600, fontStyle: c.fonte === "playfair" ? "italic" : "normal",
+    fontSize: tam + "px", letterSpacing: c.fonte === "playfair" ? "0" : mono ? ".4em" : ".06em", textTransform: c.fonte === "playfair" ? "none" : "uppercase",
     lineHeight: 1.22, color: CORES.creme, textShadow: c.fundo === "nenhum" ? sombra : "none", display: "inline-block"};
   const movimentos = ["zoom", "esquerda", "direita"];
 
@@ -44,7 +46,7 @@ MODELOS["configuravel"] = (palco, r, {fps}) => {
     const bloco = el("div", {display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", boxSizing: "border-box",
       ...(c.fundo === "caixa" ? {background: "rgba(132,112,89,.94)", padding: "26px 38px", borderRadius: "6px"} : {}),
       ...(c.fundo === "faixa" ? {background: "rgba(20,14,8,.62)", padding: "28px 60px", width: "calc(100% + 160px)"} : {})}, area);
-    const linha = el("div", {display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 " + Math.round(tam * 0.3) + "px"}, bloco);
+    const linha = el("div", {display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 " + Math.round(tam * (mono ? 0.5 : 0.3)) + "px"}, bloco);
     const dest = (t.destaque || "").toLowerCase().split(" ").filter(Boolean);
     const palavras = t.texto.split(" ").map(p => el("span", {...estiloPalavra, color: dest.includes(p.toLowerCase()) ? c.destaque : CORES.creme, opacity: 0}, linha, p));
     // máquina de escrever: cada letra num <span> para revelar sem mexer no layout
@@ -57,10 +59,10 @@ MODELOS["configuravel"] = (palco, r, {fps}) => {
       camada.style.opacity = i === 0 || !FUS ? 1 : interp(lf, [0, FUS], [0, 1]);
       mexe(lf, durTela + FUS, mov);
       const t0 = FUS || 4;
-      if (c.entrada === "maquina") letras.forEach((s, k) => { s.style.opacity = lf - t0 >= k * (fps / 24) ? 1 : 0; });
-      else if (c.entrada === "linha") { const v = spring(lf - t0, fps, {damping: 16, stiffness: 110}); palavras.forEach(s => { s.style.opacity = Math.min(1, v); s.style.transform = `translateY(${(1 - v) * 50}px)`; }); }
+      if (c.entrada === "maquina") letras.forEach((s, k) => { s.style.opacity = lf - t0 >= k * (fps / 24) * lento ? 1 : 0; });
+      else if (c.entrada === "linha") { const v = spring((lf - t0) / lento, fps, {damping: 16, stiffness: 110}); palavras.forEach(s => { s.style.opacity = Math.min(1, v); s.style.transform = `translateY(${(1 - v) * 50}px)`; }); }
       else palavras.forEach((s, k) => {
-        const v = spring(lf - t0 - k * 4, fps, c.entrada === "surgir" ? {damping: 11, stiffness: 160} : {damping: 14, stiffness: 120});
+        const v = spring((lf - t0) / lento - k * 4, fps, c.entrada === "surgir" ? {damping: 11, stiffness: 160} : {damping: 14, stiffness: 120});
         s.style.opacity = Math.min(1, v);
         s.style.transform = c.entrada === "surgir" ? `scale(${0.55 + 0.45 * v})` : `translateY(${(1 - v) * 40}px)`;
       });

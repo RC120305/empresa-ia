@@ -1,6 +1,6 @@
 <title>Central de Aprovação Cabanas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Josefin+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Josefin+Sans:wght@400;600&family=IBM+Plex+Mono:wght@300;400&display=swap">
 <style>
 :root{
   --bg:#F7F1E6; --surface:#FFFDF8; --ink:#33291F; --muted:#76685A; --line:#E4D9C7;
@@ -1605,8 +1605,9 @@ const OPS = {
     ["entrada", "Como o texto entra", [["palavra", "Palavra por palavra"], ["linha", "Frase inteira"], ["maquina", "Letra por letra"], ["surgir", "Palavras saltando"]]],
     ["destaque", "Cor do destaque", CORES_OP, "cor"],
     ["posicao", "Posição do texto", [["baixo", "Embaixo"], ["meio", "No meio"], ["alto", "Em cima"]]],
-    ["tamanho", "Tamanho do texto", [["p", "Pequeno"], ["m", "Médio"], ["g", "Grande"]]],
-    ["fonte", "Letra", [["josefin", "Moderna (caixa alta)"], ["playfair", "Elegante (itálico)"]]],
+    ["velocidade", "Velocidade do texto", [["normal", "Normal"], ["lenta", "Lenta"], ["bem-lenta", "Bem lenta"]]],
+    ["tamanho", "Tamanho do texto", [["pp", "Bem pequeno"], ["p", "Pequeno"], ["m", "Médio"], ["g", "Grande"]]],
+    ["fonte", "Letra", [["josefin", "Moderna (caixa alta)"], ["playfair", "Elegante (itálico)"], ["mono", "Máquina de escrever (fina, espaçada)"]]],
     ["fundo", "Fundo do texto", [["nenhum", "Sem fundo"], ["caixa", "Caixa marrom"], ["faixa", "Faixa escura"]]],
     ["movimento", "Movimento da foto", [["alternar", "Alternar"], ["zoom", "Zoom lento"], ["deslize", "Deslizar"], ["parado", "Parada"]]],
     ["segundos", "Tempo por tela", [["0.9", "Muito rápido (0,9 s)"], ["1.4", "Rápido (1,4 s)"], ["2.2", "Médio (2,2 s)"], ["3", "Calmo (3 s)"]]],
@@ -1624,7 +1625,7 @@ const OPS = {
     ["moldura", "Moldura fina", SIMNAO], ["numeracao", "Numeração (2/5)", SIMNAO], ["seta", "\"Arraste →\" na capa", SIMNAO],
     ["logo", "Logo na capa", SIMNAO], ["final", "Tela final com logo e chamada", SIMNAO]]};
 const CFG0 = {
-  video: {entrada: "palavra", destaque: "#F58634", posicao: "baixo", tamanho: "m", fonte: "josefin", fundo: "nenhum", movimento: "alternar", segundos: "2.2", transicao: "fusao", escurecer: "0.35", selo: "sim", fecho: "sim"},
+  video: {entrada: "palavra", velocidade: "normal", destaque: "#F58634", posicao: "baixo", tamanho: "m", fonte: "josefin", fundo: "nenhum", movimento: "alternar", segundos: "2.2", transicao: "fusao", escurecer: "0.35", selo: "sim", fecho: "sim"},
   carrossel: {capa: "meio", posicao: "baixo", destaque: "#F58634", fonte: "playfair", tamanho: "m", fundo: "nenhum", escurecer: "0.35", moldura: "sim", numeracao: "sim", seta: "sim", logo: "sim", final: "sim"}};
 const BOOL = new Set(["selo", "fecho", "moldura", "numeracao", "seta", "logo", "final"]), NUM = new Set(["segundos", "escurecer"]);
 let consPendente = (() => { try { return localStorage.getItem("cons-pendente") || ""; } catch { return ""; } })();

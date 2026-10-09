@@ -6,6 +6,8 @@
 @font-face{font-family:Montserrat;font-weight:400;src:url(recursos/montserrat-latin-400-normal.woff2) format('woff2')}
 @font-face{font-family:Montserrat;font-weight:700;src:url(recursos/montserrat-latin-700-normal.woff2) format('woff2')}
 @font-face{font-family:Montserrat;font-weight:800;src:url(recursos/montserrat-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:PlexMono;font-weight:300;src:url(recursos/ibm-plex-mono-latin-300-normal.woff2) format('woff2')}
+@font-face{font-family:PlexMono;font-weight:400;src:url(recursos/ibm-plex-mono-latin-400-normal.woff2) format('woff2')}
 @font-face{font-family:Playfair;font-style:italic;src:url(recursos/playfair-display-latin-400-italic.woff2) format('woff2')}
 html,body{margin:0;padding:0;background:#140e08;overflow:hidden}
 #palco{position:relative;overflow:hidden;background:#140e08}
@@ -23,7 +25,7 @@ async function iniciar(roteiro) {
   const ctx = {w, h, fps, palco};
   window.__inst = MODELOS[roteiro.modelo](palco, roteiro, ctx);
   // carrega todas as fontes já (textos que começam escondidos não disparam o carregamento sozinhos)
-  await Promise.all(["400 40px Josefin", "600 40px Josefin", "italic 400 40px Playfair", "400 40px Montserrat", "700 40px Montserrat", "800 40px Montserrat"].map(f => document.fonts.load(f).catch(() => {})));
+  await Promise.all(["400 40px Josefin", "600 40px Josefin", "italic 400 40px Playfair", "400 40px Montserrat", "700 40px Montserrat", "800 40px Montserrat", "300 40px PlexMono", "400 40px PlexMono"].map(f => document.fonts.load(f).catch(() => {})));
   await document.fonts.ready;
   await Promise.all([...document.images].filter(i => i.getAttribute("src")).map(i => i.decode().catch(() => { throw new Error("imagem não carregou: " + i.src); })));
   return {quadros: window.__inst.duracao, fps, w, h};
