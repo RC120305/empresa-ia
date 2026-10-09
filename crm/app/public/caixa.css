@@ -249,9 +249,12 @@ section[data-painel]{flex:1;min-height:0;display:flex;flex-direction:column}
 .vg-legenda{font-size:13px;color:var(--cor-texto-sec);margin:10px 0}
 .vg-chip{display:inline-block;min-width:18px;padding:0 4px;border-radius:4px;text-align:center;font-weight:700}
 .vg-chip.zero{color:var(--cor-erro);background:var(--cor-erro-suave)}.vg-chip.pouca{color:var(--cor-alerta);background:var(--cor-alerta-suave)}
-.vg-mapa{flex:1;min-height:0;overflow:auto;border:1px solid var(--cor-borda);border-radius:var(--r-md);background:var(--cor-superficie)}
+.vg-mapa{position:relative;flex:1;min-height:0;overflow:auto;border:1px solid var(--cor-borda);border-radius:var(--r-md);background:var(--cor-superficie)}
 .vg-mapa .aviso-sim,.vg-mapa .vg-msg{margin:10px}
 .vg-msg{font-size:14px;color:var(--cor-texto-sec)}
+.vg-dica{position:absolute;z-index:5;pointer-events:none;background:var(--cor-texto);color:var(--cor-fundo);font-size:13px;font-weight:600;padding:6px 10px;border-radius:var(--r-sm);box-shadow:var(--sombra-2);white-space:nowrap}
+.vg-dica[hidden]{display:none}
+.vg-tab td[data-dica]{cursor:default}
 .vg-tab{border-collapse:separate;border-spacing:0;font-size:12px}
 .vg-tab th,.vg-tab td{padding:5px 6px;text-align:center;white-space:nowrap;border-bottom:1px solid var(--cor-borda);min-width:26px;font-variant-numeric:tabular-nums}
 .vg-tab thead th{position:sticky;top:0;z-index:2;background:var(--cor-superficie);font-weight:600;color:var(--cor-texto-sec)}

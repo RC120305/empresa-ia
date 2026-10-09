@@ -1253,13 +1253,29 @@
       el('tbody', {},
         r.tipos.map(t => el('tr', {},
           el('th', { class: 'vg-nome', scope: 'row', title: (t.capacidade ? 'Até ' + t.capacidade + ' pessoas' : '') + (t.total ? ' · ' + t.total + ' no hotel' : '') }, t.nome, el('small', { text: t.codigo + (t.total ? ' · ' + t.total + ' un.' : '') })),
-          t.vagas.map((v, i) => el('td', { class: cls(info[i], v === 0 ? 'zero' : v === 1 && Number(t.total) > 1 ? 'pouca' : ''), title: t.nome + ' · ' + dataLonga(info[i]) + ' · ' + (v == null ? 'sem dado' : v + (t.total ? ' de ' + t.total : '') + (v === 1 ? ' livre' : ' livres')), text: v == null ? '–' : String(v) })))),
+          t.vagas.map((v, i) => el('td', { class: cls(info[i], v === 0 ? 'zero' : v === 1 && Number(t.total) > 1 ? 'pouca' : ''), 'data-dica': t.nome + ' · ' + dataLonga(info[i]) + ' · ' + (v == null ? 'sem dado' : v + (t.total ? ' de ' + t.total : '') + (v === 1 ? ' livre' : ' livres')), text: v == null ? '–' : String(v) })))),
         el('tr', { class: 'vg-total' }, el('th', { class: 'vg-nome', scope: 'row', text: 'Livres no hotel' }),
-          livres.map((v, i) => el('td', { class: cls(info[i], semDado[i] ? '' : v === 0 ? 'zero' : ''), text: semDado[i] ? '–' : String(v) }))),
+          livres.map((v, i) => el('td', { class: cls(info[i], semDado[i] ? '' : v === 0 ? 'zero' : ''), 'data-dica': semDado[i] ? null : dataLonga(info[i]) + ' · ' + v + (totalHotel ? ' de ' + totalHotel : '') + (v === 1 ? ' acomodação livre' : ' acomodações livres') + ' no hotel', text: semDado[i] ? '–' : String(v) }))),
         totalHotel ? el('tr', { class: 'vg-ocup' }, el('th', { class: 'vg-nome', scope: 'row' }, 'Ocupação', el('small', { text: totalHotel + ' acomodações' })),
-          livres.map((v, i) => { const p = Math.round((1 - v / totalHotel) * 100); return el('td', { class: cls(info[i], !semDado[i] && p >= 100 ? 'cheio' : ''), text: semDado[i] ? '–' : Math.max(0, p) + '%' }); })) : null));
-    corpo.append(tab);
+          livres.map((v, i) => { const p = Math.round((1 - v / totalHotel) * 100); return el('td', { class: cls(info[i], !semDado[i] && p >= 100 ? 'cheio' : ''), 'data-dica': semDado[i] ? null : dataLonga(info[i]) + ' · ' + Math.max(0, p) + '% ocupado (' + (totalHotel - v) + ' de ' + totalHotel + ')', text: semDado[i] ? '–' : Math.max(0, p) + '%' }); })) : null));
+    corpo.append(tab, el('div', { class: 'vg-dica', id: 'vg-dica', role: 'tooltip', hidden: true }));
   }
+  // Dica da casa: aparece na hora ao passar o mouse e também ao tocar (celular e tablet não têm "passar o mouse")
+  function mostrarDicaVaga(td) {
+    const dica = $('vg-dica');
+    if (!dica) return;
+    if (!td || !td.dataset.dica) { dica.hidden = true; return; }
+    dica.textContent = td.dataset.dica; dica.hidden = false;
+    const c = td.getBoundingClientRect(), m = $('vg-corpo').getBoundingClientRect(), d = dica.getBoundingClientRect();
+    let x = c.left - m.left + $('vg-corpo').scrollLeft + c.width / 2 - d.width / 2, y = c.top - m.top + $('vg-corpo').scrollTop - d.height - 6;
+    x = Math.max($('vg-corpo').scrollLeft + 4, Math.min(x, $('vg-corpo').scrollLeft + m.width - d.width - 4));
+    if (c.top - d.height - 6 < m.top + 50) y = c.bottom - m.top + $('vg-corpo').scrollTop + 6; // perto do topo: mostra embaixo
+    dica.style.left = x + 'px'; dica.style.top = y + 'px';
+  }
+  $('vg-corpo').addEventListener('pointerover', e => { if (e.pointerType === 'mouse') mostrarDicaVaga(e.target.closest('td[data-dica]')); });
+  $('vg-corpo').addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') mostrarDicaVaga(null); });
+  $('vg-corpo').addEventListener('click', e => mostrarDicaVaga(e.target.closest('td[data-dica]')));
+  $('vg-corpo').addEventListener('scroll', () => { const d = $('vg-dica'); if (d) d.hidden = true; }, { passive: true });
   $('vg-inicio').addEventListener('change', carregarMapaVagas);
   $('vg-hoje').addEventListener('click', () => { $('vg-inicio').value = hojeBonito(); carregarMapaVagas(); });
   $('vg-ant').addEventListener('click', () => { $('vg-inicio').value = somarDiasIso($('vg-inicio').value || hojeBonito(), -30); carregarMapaVagas(); });
