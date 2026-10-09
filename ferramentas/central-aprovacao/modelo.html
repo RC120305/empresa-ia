@@ -1626,6 +1626,7 @@ const CFG0 = {
   video: {entrada: "palavra", destaque: "#F58634", posicao: "baixo", tamanho: "m", fonte: "josefin", fundo: "nenhum", movimento: "alternar", segundos: "2.2", transicao: "fusao", escurecer: "0.35", selo: "sim", fecho: "sim"},
   carrossel: {capa: "meio", posicao: "baixo", destaque: "#F58634", fonte: "playfair", tamanho: "m", fundo: "nenhum", escurecer: "0.35", moldura: "sim", numeracao: "sim", seta: "sim", logo: "sim", final: "sim"}};
 const BOOL = new Set(["selo", "fecho", "moldura", "numeracao", "seta", "logo", "final"]), NUM = new Set(["segundos", "escurecer"]);
+let consPendente = (() => { try { return localStorage.getItem("cons-pendente") || ""; } catch { return ""; } })();
 let consTipo = "video", cfg = {...CFG0.video}, consEdit = null, consParar = null, sampleApi = null, sampleImgs = null, consRefs = [];
 const cardParar = new Map();
 const toConfig = c => Object.fromEntries(Object.entries(c).map(([k, v]) => [k, BOOL.has(k) ? v === "sim" : NUM.has(k) ? +v : v]));
@@ -1825,10 +1826,17 @@ async function enviarRefParaEquipe(desc, m){
       agora = true;
     }
   } catch {}
-  m.textContent = agora ? "A IA deste aparelho não lê imagens, então mandei a referência para a equipe. O modelo aparece no Mostruário em alguns minutos, e a resposta chega na lista de Referências." : "A IA deste aparelho não lê imagens, então guardei a referência para a equipe. O modelo aparece no Mostruário na próxima rodada (7h58, 12h58 ou 17h58).";
+  consPendente = id; try { localStorage.setItem("cons-pendente", id); } catch {}
+  m.textContent = agora ? "⏳ A IA deste aparelho não vê imagens, então mandei o vídeo para a equipe. Em alguns minutos a prévia aqui muda sozinha para o modelo montado (pode deixar esta tela aberta ou voltar depois: ele também aparece no Mostruário)." : "⏳ A IA deste aparelho não vê imagens, então guardei o vídeo para a equipe. O modelo montado aparece na próxima rodada (7h58, 12h58 ou 17h58), aqui e no Mostruário.";
   b.disabled = false;
 }
 function syncCustom(docs){
+  // modelo que a equipe montou a partir da referência enviada daqui: abre no construtor e a prévia muda
+  const pronto = consPendente && docs.find(d => d && d.refOrigem === consPendente);
+  if (pronto) {
+    consPendente = ""; try { localStorage.removeItem("cons-pendente"); } catch {}
+    setTimeout(() => { abrirCons({...pronto, custom: true}); document.getElementById("cons-msg").textContent = `✅ A equipe montou "${pronto.nome}" a partir da sua referência. Esta é a prévia; ajuste o que quiser e salve, ou só feche: ele já está no Mostruário.`; }, 0);
+  }
   for (let i = MODELOS.length - 1; i >= 0; i--) if (MODELOS[i].custom) MODELOS.splice(i, 1);
   docs.filter(d => d && d.id && d.config).sort((a, b) => (a.criadoEm || "").localeCompare(b.criadoEm || "")).forEach(d => MODELOS.push({...d, custom: true}));
   renderModelos(); renderRefsSelect();
