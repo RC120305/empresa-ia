@@ -1389,7 +1389,24 @@ falso.listen(0, () => {
           assert.ok(res.includes('pix_pela_equipe'), res);
           r = await api('/api/cobranca', { conversa_id: conv, tipo: 'sinal', valor: '100' });
           assert.equal(r.status, 409, 'o Pix do CRM continua travado');
-        } finally { S.MODO = modoAntes; delete process.env.RESERVAS_AUTO; reservasF.length = 0; alertasF.length = 0; }
+          // 1e) número de teste da equipe: Pix SIMULADO mesmo com o Silbeck real; o pagamento simulado não lança nada no Silbeck
+          configF.numeros_teste = { numeros: ['6799990000'] };
+          reservasF.length = 0; alertasF.length = 0;
+          const nCobT = cobrancasF.length, nET = enviosMeta().length;
+          await postar(msgCliente('wamid.AUTO1E', 'Pode reservar! Vou pagar no Pix'));
+          assert.ok(await aguardar(() => enviosMeta().length >= nET + 3), 'texto, Pix e copia e cola');
+          const txT = enviosMeta().slice(nET).map(c => c.corpo.text.body);
+          assert.ok(txT[1].startsWith('Segue o Pix do sinal (50%)') && txT[2].includes('SIMULADOR'), JSON.stringify(txT));
+          assert.equal(cobrancasF.length, nCobT + 1); assert.equal(cobrancasF.at(-1).reserva_id, reservasF.at(-1).id);
+          assert.ok(!JSON.stringify(pedidosIA.at(-1).messages).includes('PIX NESTA FASE'), 'na conversa de teste o Gilberto segue o fluxo normal do Pix');
+          const rT = await api('/api/cobranca-acao', { id: cobrancasF.at(-1).id, acao: 'simular_pagamento' });
+          assert.equal(rT.status, 200, await rT.clone().text());
+          assert.equal(reservasF.at(-1).situacao, 'nao_confirmada', 'nada lançado no Silbeck: a reserva não confirma sozinha');
+          const tT = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo;
+          assert.equal(tT.tipo, 'Confirmar a reserva'); assert.ok(tT.descricao.includes('Pix SIMULADO (teste): nada foi lançado no Silbeck') && !tT.descricao.includes('Depois de conferir'), tT.descricao);
+          delete configF.numeros_teste;
+          assert.equal((await api('/api/cobranca-acao', { id: cobrancasF.at(-1).id, acao: 'simular_pagamento' })).status, 409, 'fora dos números de teste, nada de pagamento simulado no Silbeck real');
+        } finally { S.MODO = modoAntes; delete process.env.RESERVAS_AUTO; delete configF.numeros_teste; reservasF.length = 0; alertasF.length = 0; }
       }
       // 2) trava: sem reserva no Silbeck, o Pix não sai
       reservasF.length = 0; iaAuto = 'sem_reserva';

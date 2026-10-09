@@ -159,5 +159,6 @@ Outros pontos do Silbeck real: o tipo da categoria de hóspede vem como texto ("
 
 - `RESERVAS_AUTO=liberadas` (no `crm-deploy.yml`): o Gilberto cria a reserva **não confirmada** no Silbeck real quando o cliente aceita. `RESERVAS_AUTO=travadas` volta à etapa 1 (a equipe fecha a reserva).
 - O Pix do CRM continua travado enquanto `BB_MODO=simulador`: no Pix, o CRM cria a tarefa **"Enviar Pix"** e um alerta. A equipe gera o Pix no app do banco e, quando ele cair, lança o adiantamento no Silbeck. O cliente recebe "A equipe já está gerando o Pix…". No cartão, segue a tarefa do link da Cielo.
+- **Números de teste da equipe** (Ajustes do agente): nessas conversas o Pix sai **simulado** (copia e cola com "SIMULADOR"), para testar o fluxo inteiro. O pagamento simulado **não lança nada no Silbeck**: a reserva fica não confirmada e a tarefa "Confirmar a reserva" explica como ver a confirmação e o voucher ("Já lancei no Silbeck" sem lançar). Clientes de verdade seguem com o Pix pela equipe.
 - A reserva vai com `idTipoPensao` 4 (café da manhã incluído; troca por `SILBECK_ID_PENSAO`). Ainda sem `idReservaPortal` e `idFaturamento` (aguardando o Márcio).
 - A API não cancela reserva: as reservas de teste são canceladas à mão no Silbeck.

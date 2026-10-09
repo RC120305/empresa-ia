@@ -1251,9 +1251,19 @@ async function responderSozinho(conversa, mensagemId, buscar = fetch, { retomada
 const travaReservas = () => silbeck.MODO() === 'real' && (process.env.RESERVAS_AUTO === 'travadas' || (bb.MODO() === 'simulador' && process.env.RESERVAS_AUTO !== 'liberadas'));
 const pixFicticioComSilbeckReal = () => silbeck.MODO() === 'real' && bb.MODO() === 'simulador';
 const pixPelaEquipe = () => pixFicticioComSilbeckReal() && !travaReservas();
+// Dono, 09/10/2026: nas conversas dos números de teste da equipe (Ajustes do agente), o Pix SIMULADO sai mesmo com o
+// Silbeck real, para testar o fluxo inteiro até o Pix do BB entrar. Clientes de verdade seguem com o Pix pela equipe.
+async function conversaDeTeste(conversa, buscar = fetch) {
+  if (!conversa) return false;
+  const c = (await getJson(`${SUPABASE_URL}/rest/v1/conversas?id=eq.${conversa}&select=contato:contatos(contato_identificadores(tipo,valor))`, buscar))[0];
+  const wa = ((c && c.contato && c.contato.contato_identificadores) || []).find(i => i.tipo === 'whatsapp');
+  if (!wa) return false;
+  return (((await lerConfig('numeros_teste', buscar)) || {}).numeros || []).includes(chaveNumero(wa.valor));
+}
+const pixTravadoPara = async (conversa, buscar = fetch) => pixFicticioComSilbeckReal() && !(await conversaDeTeste(conversa, buscar));
 const ERRO_PIX_TESTE = 'O Pix do BB ainda está em modo de teste: com o Silbeck real, o CRM não gera Pix (seria um código que não paga). Gere o Pix pelo app do banco ou use o link do cartão.';
 async function criarCobrancaPix(conversa, corpo, porId, buscar = fetch) {
-  if (pixFicticioComSilbeckReal()) throw new ErroEnvio(409, ERRO_PIX_TESTE);
+  if (await pixTravadoPara(conversa, buscar)) throw new ErroEnvio(409, ERRO_PIX_TESTE);
   const valor = Math.round(Number(String(corpo.valor || '').replace(',', '.')) * 100) / 100;
   if (!(valor >= 1 && valor <= 100000)) throw new ErroEnvio(400, 'Valor inválido (de R$ 1 a R$ 100.000).');
   const tipo = ['sinal', 'total', 'outro'].includes(corpo.tipo) ? corpo.tipo : 'sinal';
@@ -1332,12 +1342,13 @@ async function fecharReserva(conversa, d, { usuario, origem }, buscar = fetch) {
   const forma = d.forma === 'cartao' ? 'cartao' : d.forma === 'pix' ? 'pix' : null;
   if (!forma) throw new ErroEnvio(400, 'Escolha a forma de pagamento (Pix ou cartão).');
   const pct = Number(d.percentual) === 100 ? 100 : 50;
-  if (forma === 'pix' && pixFicticioComSilbeckReal() && !pixPelaEquipe()) throw new ErroEnvio(409, ERRO_PIX_TESTE); // antes de criar a reserva
+  const pixTravado = forma === 'pix' && await pixTravadoPara(conversa, buscar);
+  if (pixTravado && !pixPelaEquipe()) throw new ErroEnvio(409, ERRO_PIX_TESTE); // antes de criar a reserva
   const reserva = await criarReservaSilbeck(conversa, { ...d, forma, percentual: pct }, { usuario, origem }, buscar);
   const valor = Math.round(Number(reserva.valor_total) * pct) / 100;
   const descricao = (pct === 100 ? 'Valor total' : 'Sinal 50%') + ' · ' + reserva.acomodacao + ' (' + reserva.periodo + ')';
   let cobranca = null, pix_pela_equipe = false;
-  if (forma === 'pix' && pixPelaEquipe()) { await tarefaPixPeloBanco(reserva, valor, pct, usuario, buscar); pix_pela_equipe = true; }
+  if (pixTravado) { await tarefaPixPeloBanco(reserva, valor, pct, usuario, buscar); pix_pela_equipe = true; }
   else if (forma === 'pix') cobranca = await criarCobrancaPix(conversa, { tipo: pct === 100 ? 'total' : 'sinal', valor, descricao, reserva_id: reserva.id }, usuario, buscar);
   else await tarefaLinkCartao(reserva, valor, pct, usuario, buscar);
   return { reserva, cobranca, valor_cobranca: valor, forma, simulador: reserva.simulador, ...(pix_pela_equipe ? { pix_pela_equipe } : {}) };
@@ -1688,7 +1699,10 @@ async function baixaCobranca(cob, pg, buscar = fetch) {
   // Combinação: um item por acomodação; cada um recebe a sua parte do pagamento (proporcional ao valor dele)
   const partes = res ? partesDoPagamento(res, valor) : [];
   let confirmada = false;
-  if (res && partes.length && partes.every(p => p.item_id)) {
+  // Pix SIMULADO com o Silbeck real (teste da equipe): nunca lança pagamento de mentira no Silbeck do hotel
+  const simuladoNoReal = cob.fonte === 'simulador' && silbeck.MODO() === 'real';
+  if (res && simuladoNoReal) silb = `Pix SIMULADO (teste): nada foi lançado no Silbeck. Para ver a confirmação e o voucher chegarem ao cliente, clique em "Já lancei no Silbeck" na tarefa "Confirmar a reserva" sem lançar nada. No fim, cancele a reserva de teste ${res.silbeck_id} no Silbeck.`;
+  else if (res && partes.length && partes.every(p => p.item_id)) {
     const feitas = [];
     try {
       for (const p of partes) { await silbeck.lancarAdiantamento({ item_id: p.item_id, valor: p.valor, observacao: 'Pix BB ' + cob.txid + (pg.e2e ? ' · ' + pg.e2e : '') + (partes.length > 1 ? ' · ' + p.nome : '') }, buscar); feitas.push(p); }
@@ -1704,7 +1718,7 @@ async function baixaCobranca(cob, pg, buscar = fetch) {
   if (cob.negocio_id) await patchBanco('negocios', `id=eq.${cob.negocio_id}`, { etapa: 'res', etapa_desde: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
   const aviso = await confirmarAoCliente(cob, res, confirmada, valor, buscar);
   if (aviso && confirmada) silb = silb.replace(/ e mandar a confirmação ao cliente\.| Mandar a confirmação ao cliente\./, '.') + ' O Gilberto já mandou a confirmação ao cliente no WhatsApp' + (aviso.extras ? ' e o link de extras (' + aviso.extras + ')' : '') + '.';
-  else if (res) silb = silb.replace(/ e mandar a confirmação ao cliente\.| Mandar a confirmação ao cliente\./, '.') + (aviso ? ' O Gilberto avisou o cliente que a equipe está finalizando.' : '') + ' ' + DEPOIS_DE_LANCAR;
+  else if (res) silb = silb.replace(/ e mandar a confirmação ao cliente\.| Mandar a confirmação ao cliente\./, '.') + (aviso ? ' O Gilberto avisou o cliente que a equipe está finalizando.' : '') + (simuladoNoReal ? '' : ' ' + DEPOIS_DE_LANCAR);
   if (cob.negocio_id) {
     await eventoNegocio(cob.negocio_id, txt + ' · card em Reserva concluída' + (aviso ? ' · confirmação enviada pelo Gilberto' : ''), 'CRM', buscar);
     await buscar(`${SUPABASE_URL}/rest/v1/tarefas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, signal: AbortSignal.timeout(5000),
@@ -2351,7 +2365,7 @@ const API_EQUIPE = {
     }
     if (corpo.acao === 'simular_pagamento') {
       if (cob.fonte !== 'simulador') throw new ErroEnvio(400, 'Só cobranças do simulador.');
-      if (silbeck.MODO() === 'real') throw new ErroEnvio(409, 'Com o Silbeck real ligado, simular pagamento lançaria um pagamento de mentira no Silbeck do hotel.');
+      if (silbeck.MODO() === 'real' && !(await conversaDeTeste(cob.conversa_id))) throw new ErroEnvio(409, 'Com o Silbeck real ligado, só dá para simular o pagamento em conversas dos números de teste da equipe (Ajustes do agente).');
       bb.simularPagamento(cob.txid);
       ultimaVerificacaoPix = 0;
       return { ok: true, ...(await verificarCobrancas()) };
@@ -2802,7 +2816,7 @@ async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null, 
         const valor = Math.round(Number(base.valor_total) * pct) / 100;
         const descricao = (pct === 100 ? 'Valor total' : 'Sinal 50%') + ' · ' + base.acomodacao + ' (' + (base.periodo || orcamento.periodo(base.data_entrada, base.data_saida)) + ')';
         if (auto) {
-          if (forma === 'pix' && pixPelaEquipe()) { // reserva real liberada, Pix do BB ainda em teste: a equipe manda pelo app do banco
+          if (forma === 'pix' && pixPelaEquipe() && !(await conversaDeTeste(conv.id, buscar))) { // reserva real liberada, Pix do BB ainda em teste: a equipe manda pelo app do banco
             if (!pixPedido) {
               pixPedido = { valor, percentual: pct };
               await tarefaPixPeloBanco(existente, valor, pct, null, buscar);
@@ -2850,7 +2864,7 @@ async function gerarResposta(id, { modo, eu, mensagemId = null, gatilho = null, 
     const retomar = neg && neg.etapa === 'orc' && (await getJson(`${SUPABASE_URL}/rest/v1/tarefas?negocio_id=eq.${neg.id}&tipo=eq.${encodeURIComponent(TIPO_RETOMAR)}&feita=eq.false&select=id&limit=1`, buscar)).length;
     const jaVideos = historico.filter(m => m.midia_caminho && orcamento.ehVideo(m.midia_caminho)).map(m => m.midia_caminho.slice('biblioteca/'.length));
     const listaVideos = orcamento.videos().map(v => ({ categoria: v.nome_grupo, descricao: v.descricao, enviado: jaVideos.includes(v.arquivo) }));
-    const r = await gilberto.sugerir(historico, { modo: auto ? 'automatico' : 'sugestao', canal: conv.canal, nome, videos: listaVideos, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, retomada, reservasPelaEquipe: auto && travaReservas(), pixPelaEquipe: auto && pixPelaEquipe(), gatilho: gatilho || (retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null) }, executores, await catalogo(buscar));
+    const r = await gilberto.sugerir(historico, { modo: auto ? 'automatico' : 'sugestao', canal: conv.canal, nome, videos: listaVideos, ofertas: await ofertasDaConversa(conv.id, buscar), reservaPaga: !!(neg && neg.etapa === 'res'), perfil: neg && neg.perfil, retomada, reservasPelaEquipe: auto && travaReservas(), pixPelaEquipe: auto && pixPelaEquipe() && !(await conversaDeTeste(conv.id, buscar)), gatilho: gatilho || (retomar ? 'retomar o orçamento enviado, sem resposta do cliente há mais de 24 h (follow-up, regra 10): traga algo novo e útil, sem repetir o orçamento nem pressionar' : null) }, executores, await catalogo(buscar));
     // Registro para a revisão (Ajustes do agente): o que o cliente perguntou e o que o Gilberto sugeriu
     const ultimaDoCliente = [...historico].reverse().find(m => m.direcao === 'entrada');
     const reg = await buscar(`${SUPABASE_URL}/rest/v1/sugestoes`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
