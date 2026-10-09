@@ -232,8 +232,13 @@ async function tarifa(corpo, buscar) {
   r.promocao = pct;
   return r;
 }
+// Preço ao cliente igual ao do site (dono, 09/10/2026): o motor de reservas mostra só as diárias, sem somar a taxa de
+// serviço nem o ISS que o Tarifario/Valor devolve à parte (ex.: Cabana Casal 18 a 20/10: 2 × R$ 780,57 = R$ 1.561,14).
+// As taxas seguem no resultado (campo taxas), só para consulta.
+const SOMAR_TAXAS = false;
+const precoAoCliente = (diarias, taxas) => reais(diarias + (SOMAR_TAXAS ? taxas : 0));
 // Preço cheio (sem a promoção) de uma lista de diárias devolvida por tarifa()
-const cheio = dias => reais(dias.reduce((s, d) => s + (d.valorCheio != null ? d.valorCheio + d.taxasCheias : Number(d.valor || 0) + Number(d.valorTaxaServico || 0) + Number(d.valorTaxaISS || 0)), 0));
+const cheio = dias => reais(dias.reduce((s, d) => s + (d.valorCheio != null ? d.valorCheio + (SOMAR_TAXAS ? d.taxasCheias : 0) : Number(d.valor || 0) + (SOMAR_TAXAS ? Number(d.valorTaxaServico || 0) + Number(d.valorTaxaISS || 0) : 0)), 0));
 // Preço de uma acomodação para uma ocupação (Tarifario/Valor), com cache dentro da mesma consulta
 async function precoQuarto(t, ini, fim, adultos, idades, categorias, cache, buscar) {
   const { lista } = categoriasDoGrupo(categorias, adultos, idades);
@@ -243,7 +248,7 @@ async function precoQuarto(t, ini, fim, adultos, idades, categorias, cache, busc
     if (!dias.length) return null;
     const diarias = reais(dias.reduce((s, d) => s + Number(d.valor || 0), 0));
     const taxas = reais(dias.reduce((s, d) => s + Number(d.valorTaxaServico || 0) + Number(d.valorTaxaISS || 0), 0));
-    return { diarias, taxas, valor_total: reais(diarias + taxas), dias, ...(p.promocao ? { valor_cheio: cheio(dias), promocao: p.promocao } : {}) };
+    return { diarias, taxas, valor_total: precoAoCliente(diarias, taxas), dias, ...(p.promocao ? { valor_cheio: cheio(dias), promocao: p.promocao } : {}) };
   }).catch(() => null));
   return cache.get(chave);
 }
@@ -354,7 +359,7 @@ async function cotar(entrada, buscar = fetch) {
     if (!p || p.erro || !Array.isArray(p.dados)) return;
     const diarias = p.dados.reduce((s, d) => s + Number(d.valor || 0), 0);
     const taxas = p.dados.reduce((s, d) => s + Number(d.valorTaxaServico || 0) + Number(d.valorTaxaISS || 0), 0);
-    const total = reais(diarias + taxas);
+    const total = precoAoCliente(diarias, taxas);
     opcoes.push({ codigo: t.codigo, nome: t.nome, capacidade: t.maximoOcupantes, vagas_no_periodo: vagas[t.codigo],
       valor_total: total, media_por_noite: reais(total / noites), parcela_6x: reais(total / 6), diarias: reais(diarias), taxas: reais(taxas),
       ...(p.promocao ? { valor_cheio: cheio(p.dados), promocao: p.promocao } : {}) });

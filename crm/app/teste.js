@@ -1916,6 +1916,7 @@ falso.listen(0, () => {
         const S2 = require('./silbeck'), dia = d => { const x = new Date(); x.setDate(x.getDate() + d); return x.toISOString().slice(0, 10); };
         const base2 = await S2.cotar({ data_entrada: dia(50), data_saida: dia(52), adultos: 2, idades_criancas: [] });
         assert.ok(base2.ok && !base2.opcoes[0].valor_cheio && !base2.promocao, 'desligada: nada muda');
+        assert.ok(base2.opcoes.every(o => o.valor_total === o.diarias), 'preço igual ao do site: só as diárias, sem somar ISS e taxa de serviço');
         S2.definirFontePromocao(async () => ({ ligada: true, percentual: 41, minimo_diarias: 2 }));
         const p2 = await S2.cotar({ data_entrada: dia(50), data_saida: dia(52), adultos: 2, idades_criancas: [] });
         const o = p2.opcoes.find(x => x.codigo === base2.opcoes[0].codigo);
