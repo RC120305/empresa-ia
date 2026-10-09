@@ -1811,6 +1811,7 @@ async function montarPorTexto(desc, m){
 }
 async function enviarRefParaEquipe(desc, m){
   if (!db) { m.textContent = "Abra pelo claude.ai com a sua conta para enviar."; return; }
+  if (consRefs.every(r => r.enviado)) { m.textContent = "⏳ Esta referência já foi enviada para a equipe. Aguarde: a prévia muda sozinha quando o modelo ficar pronto (alguns minutos)."; return; }
   const b = document.getElementById("cons-ia"); b.disabled = true; m.textContent = "Enviando a referência para a equipe…";
   const arquivos = [];
   if (assets) for (const r of consRefs) for (const blob of (r.video ? r.quadros : [r.file])) { try { const up = await assets.upload(blob); arquivos.push({id: up.id, nome: r.video ? "quadro do vídeo" : (r.file.name || "print"), tipo: "image/jpeg"}); } catch {} }
@@ -1826,6 +1827,7 @@ async function enviarRefParaEquipe(desc, m){
       agora = true;
     }
   } catch {}
+  consRefs.forEach(r => { r.enviado = true; });
   consPendente = id; try { localStorage.setItem("cons-pendente", id); } catch {}
   m.textContent = agora ? "⏳ A IA deste aparelho não vê imagens, então mandei o vídeo para a equipe. Em alguns minutos a prévia aqui muda sozinha para o modelo montado (pode deixar esta tela aberta ou voltar depois: ele também aparece no Mostruário)." : "⏳ A IA deste aparelho não vê imagens, então guardei o vídeo para a equipe. O modelo montado aparece na próxima rodada (7h58, 12h58 ou 17h58), aqui e no Mostruário.";
   b.disabled = false;
