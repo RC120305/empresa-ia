@@ -1,0 +1,47 @@
+{
+  "modelo": "carrossel",
+  "formato": {
+    "w": 1080,
+    "h": 1440
+  },
+  "config": {
+    "capa": "baixo",
+    "posicao": "meio",
+    "destaque": "#F2C14E",
+    "fonte": "josefin",
+    "tamanho": "m",
+    "fundo": "faixa",
+    "escurecer": 0.35,
+    "moldura": true,
+    "numeracao": true,
+    "seta": true,
+    "logo": true,
+    "final": true
+  },
+  "logo": "recursos/logo.png",
+  "telas": [
+    {
+      "foto": "fotos/1.jpg",
+      "texto": "Um refúgio entre as árvores",
+      "destaque": "árvores",
+      "apoio": "CABANA MASTER"
+    },
+    {
+      "foto": "fotos/3.jpg",
+      "texto": "Sem pressa, só vocês dois",
+      "destaque": "dois",
+      "apoio": "BANHEIRA DE HIDROMASSAGEM PARA 2"
+    },
+    {
+      "foto": "fotos/2.jpg",
+      "texto": "Uma casa de madeira só para vocês",
+      "destaque": "madeira",
+      "apoio": "85 M² · DOIS AMBIENTES"
+    }
+  ],
+  "fecho": {
+    "linha1": "BONITO · MS",
+    "linha2": "Reserve direto pelo link da bio",
+    "foto": "fotos/4.jpg"
+  }
+}

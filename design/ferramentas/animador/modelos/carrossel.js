@@ -28,7 +28,7 @@ MODELOS["carrossel"] = (palco, r) => {
   };
   const texto = (pai, t, pos, mult) => {
     const area = el("div", {position: "absolute", inset: 0, display: "flex", flexDirection: "column", justifyContent: POS[pos][0], alignItems: "center", padding: POS[pos][1], boxSizing: "border-box"}, pai);
-    const bloco = el("div", {display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", maxWidth: "100%", boxSizing: "border-box",
+    const bloco = el("div", {display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", boxSizing: "border-box", ...(c.fundo === "faixa" ? {} : {maxWidth: "100%"}),
       ...(c.fundo === "caixa" ? {background: "rgba(132,112,89,.94)", padding: "30px 44px", borderRadius: "6px"} : {}),
       ...(c.fundo === "faixa" ? {background: "rgba(20,14,8,.62)", padding: "32px 70px", width: "calc(100% + 180px)"} : {})}, area);
     const linha = el("div", {display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0 " + Math.round(tam * mult * 0.28) + "px"}, bloco);

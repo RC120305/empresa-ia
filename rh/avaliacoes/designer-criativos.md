@@ -70,3 +70,8 @@ Carrossel da Cabana Casal (5 telas 4:5), pedido direto do dono: `design/pecas/20
 
 ## Ajuste v1.2 (aprovado pelo dono em 2026-09-26; v1.1 em `rh/avaliacoes/versoes/designer-criativos-v1.1.md`)
 Feed orgânico passa para **3:4 (1080 × 1440)**; anúncio de feed segue 4:5 (`feed45`). `renderizar.js` e os dois modelos adaptados e testados em 3:4.
+
+## Ajuste v1.7 (09/10/2026, aprovado pelo dono: "Pode")
+- **Antes → depois:** só montava com os 3 layouts oficiais → quando o pedido usa um carrossel criado pelo dono no construtor da Central (id `meu-…`), gera as artes com esse desenho pelo Animador (`animar.mjs --png`, modelo `carrossel`), com a config exata; não muda a config sem OK (sugere na entrega).
+- **Reteste (simulado):** carrossel "Cabana Master para casais" com config de exemplo (faixa escura, destaque amarelo), em `design/pecas/2026-10-instagram/TESTE-MODELO-DONO/`. **Aprovado:** config usada sem alteração, conferiu as 4 PNG e trocou a ordem das fotos para a faixa não cobrir o balanço, fatos do contexto (85 m², dois ambientes, banheira para 2), sinalizou que as pétalas são decoração especial opcional (legenda), que as amostras precisam ser confirmadas como Master e refeitas com os originais do Drive, e listou sugestões para o modelo (logo ≥ 100 px, linha laranja da assinatura) sem aplicá-las. Observação do RH: evitar "só para vocês" sem fonte (adjetivo de exclusividade) e manter a chamada padrão "Reserve pelo link da bio". O teste revelou um defeito do kit (a "faixa escura" não ocupava a largura toda), corrigido em `carrossel.js`.
+- Versão anterior: `rh/avaliacoes/versoes/designer-criativos-v1.6.md`.
