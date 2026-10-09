@@ -1289,6 +1289,11 @@ falso.listen(0, () => {
       const fc = await r.json();
       assert.equal(r.status, 200, JSON.stringify(fc)); assert.equal(fc.cobranca, null);
       assert.equal(chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.tipo, 'Enviar link do cartão');
+      // Pix gerado à mão no painel 💳: liga sozinho à reserva não confirmada da conversa (o CRM lança no Silbeck quando cair)
+      r = await api('/api/cobranca', { conversa_id: conv, tipo: 'sinal', valor: '1' });
+      assert.equal(r.status, 200); assert.equal(cobrancasF.at(-1).reserva_id, reservasF.at(-1).id, 'Pix manual ligado à reserva');
+      r = await api('/api/cobranca', { conversa_id: conv, tipo: 'outro', valor: '1', descricao: 'Extra' });
+      assert.equal(cobrancasF.at(-1).reserva_id, undefined, 'cobrança avulsa (outro) não se liga à reserva');
       reservasF.length = 0; alertasF.length = 0;
     }
     // Gilberto automático: responde sozinho à mensagem do cliente; reserva no Silbeck e só então manda o Pix

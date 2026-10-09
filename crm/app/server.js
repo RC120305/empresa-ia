@@ -2360,7 +2360,14 @@ const API_EQUIPE = {
   'POST /api/cobranca': async (corpo, eu) => {
     const conversa = String(corpo.conversa_id || '');
     if (!uuidOk(conversa)) throw new ErroEnvio(400, 'Conversa inválida.');
-    return { ok: true, cobranca: await criarCobrancaPix(conversa, { ...corpo, reserva_id: uuidOk(corpo.reserva_id) ? corpo.reserva_id : null }, eu.id) };
+    let reserva_id = uuidOk(corpo.reserva_id) ? corpo.reserva_id : null;
+    // Pix de sinal ou total gerado à mão no painel: liga à reserva não confirmada da conversa (se houver uma só),
+    // para o CRM lançar o pagamento no Silbeck e confirmar sozinho quando cair
+    if (!reserva_id && corpo.tipo !== 'outro') {
+      const abertas = await getJson(`${SUPABASE_URL}/rest/v1/reservas?conversa_id=eq.${conversa}&situacao=eq.nao_confirmada&select=id&order=criado_em.desc&limit=2`, fetch);
+      if (abertas.length === 1) reserva_id = abertas[0].id;
+    }
+    return { ok: true, cobranca: await criarCobrancaPix(conversa, { ...corpo, reserva_id }, eu.id) };
   },
   // Aceite do cliente: cria a reserva NÃO CONFIRMADA no Silbeck (vaga e preço conferidos na hora) e já gera o Pix
   // (ou a tarefa do link do cartão). Usada quando a equipe aprova a sugestão do Gilberto ou fecha pela tela.
