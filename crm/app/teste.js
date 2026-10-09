@@ -86,6 +86,7 @@ const falso = http.createServer((req, res) => {
     }
     // Banco do Brasil falso (API Pix v2)
     if (req.url === '/bb/oauth' && req.method === 'POST') return req.headers.authorization === 'Basic ' + Buffer.from('bb-id:bb-sec').toString('base64') && corpo.includes('grant_type=client_credentials') ? responder(200, { access_token: 'tok-bb', expires_in: 600 }) : responder(401, {});
+    if (req.url.startsWith('/bb/pix/cob?')) return req.headers.authorization === 'Bearer tok-bb' && req.url.includes('gw-dev-app-key=bb-key') && req.url.includes('inicio=') ? responder(200, { parametros: {}, cobs: [] }) : responder(401, {});
     if (req.url.startsWith('/bb/pix/cob/')) {
       if (req.headers.authorization !== 'Bearer tok-bb' || !req.url.includes('gw-dev-app-key=bb-key')) return responder(401, {});
       const tx = req.url.split('/bb/pix/cob/')[1].split('?')[0];
@@ -806,6 +807,12 @@ falso.listen(0, () => {
     r = await fetch(base + '/cron/pix', { method: 'POST' });
     assert.equal((await r.json()).pagas, 1);
     assert.deepEqual([cobrancasF.at(-1).situacao, cobrancasF.at(-1).e2e_id, cobrancasF.at(-1).pagador, cobrancasF.at(-1).valor_pago], ['paga', 'E123', 'ANA SOUZA', 500]);
+    // Diagnóstico das credenciais (/saude/bb): cofre, acesso e leitura, sem devolver segredo, token nem chave
+    {
+      const d = await (await fetch(base + '/saude/bb')).json();
+      assert.deepEqual([d.etapa, d.acesso, d.leitura, d.tipoChavePix, d.cofre['bb-client-secret'], d.cofre['bb-certificado']], ['tudo certo', 'ok', 'ok', 'CNPJ', true, false], JSON.stringify(d));
+      assert.ok(!JSON.stringify(d).includes('bb-sec') && !JSON.stringify(d).includes('tok-bb') && !JSON.stringify(d).includes('12345678000199'), 'nada sensível');
+    }
     process.env.BB_MODO = 'simulador';
     // Entrada da equipe: o CRM cria/confirma o login de quem está liberado em "usuarios" (e só dessa pessoa)
     const prep = email => fetch(base + '/entrar/preparar', { method: 'POST', body: JSON.stringify({ email }) });

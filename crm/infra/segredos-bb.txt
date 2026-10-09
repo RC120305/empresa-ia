@@ -35,6 +35,6 @@ if [ -n "$PFX" ]; then
   echo "  (pode apagar o .pfx do Cloud Shell agora: rm \"$PFX\")"
 fi
 echo "----------------------------------------------------------------"
-echo "Pronto! Mande 'credenciais do BB no cofre' no chat (sem nenhum valor)."
+echo "Pronto! Abra https://crm-377803250649.southamerica-east1.run.app/saude/bb e mande o resultado no chat (não tem nenhum segredo)."
 echo "----------------------------------------------------------------"
 FIM

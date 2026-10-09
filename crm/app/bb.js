@@ -106,4 +106,28 @@ function simularPagamento(txid) {
   s.pix = [{ e2e: 'E' + crypto.randomBytes(15).toString('hex').toUpperCase(), valor: Number(s.valor), horario: new Date().toISOString(), pagador: 'Cliente de teste' }];
 }
 
-module.exports = { MODO, novoTxid, criarCobranca, consultar, cancelar, simularPagamento, ErroBB, _sim: sim };
+// Diagnóstico das credenciais reais (vale mesmo com BB_MODO=simulador): cofre, acesso (OAuth) e uma leitura de cobranças.
+// Nunca devolve token, segredo nem a chave Pix (só o tipo dela).
+let ultimoDiag = null;
+async function diagnostico() {
+  if (ultimoDiag && ultimoDiag.ate > Date.now()) return ultimoDiag.r;
+  const nomes = ['bb-client-id', 'bb-client-secret', 'bb-app-key', 'bb-chave-pix', 'bb-certificado', 'bb-certificado-senha'];
+  const vals = await Promise.all(nomes.map(n => segredo(n).catch(() => null)));
+  const cofre = Object.fromEntries(nomes.map((n, i) => [n, !!vals[i]]));
+  const chave = vals[3] ? String(vals[3]).trim() : '';
+  const r = { modo: MODO(), ambiente: await AMBIENTE(), cofre, tipoChavePix: !chave ? null : /^\d{14}$/.test(chave) ? 'CNPJ' : /^\d{11}$/.test(chave) ? 'CPF' : chave.includes('@') ? 'e-mail' : /^\+?\d{12,13}$/.test(chave) ? 'telefone' : /^[0-9a-f-]{36}$/i.test(chave) ? 'aleatória' : 'formato estranho', etapa: null };
+  try {
+    const c = await config();
+    token = null; // testa o acesso de verdade, sem o token guardado
+    await autorizar(c);
+    r.acesso = 'ok';
+    const fim = new Date(), ini = new Date(fim - 3600e3);
+    const l = await api(c, 'GET', `/cob?inicio=${encodeURIComponent(ini.toISOString().replace(/\.\d+Z$/, 'Z'))}&fim=${encodeURIComponent(fim.toISOString().replace(/\.\d+Z$/, 'Z'))}`);
+    r.leitura = l.status === 200 ? 'ok' : 'falhou (' + l.status + (l.json && (l.json.detail || l.json.title || l.json.message) ? ': ' + String(l.json.detail || l.json.title || l.json.message).slice(0, 160) : '') + ')';
+    r.etapa = l.status === 200 ? 'tudo certo' : 'leitura';
+  } catch (e) { r.etapa = r.acesso === 'ok' ? 'leitura' : 'acesso'; r.erro = String(e.message || e).slice(0, 200); }
+  ultimoDiag = { ate: Date.now() + 60e3, r };
+  return r;
+}
+
+module.exports = { diagnostico, MODO, novoTxid, criarCobranca, consultar, cancelar, simularPagamento, ErroBB, _sim: sim };

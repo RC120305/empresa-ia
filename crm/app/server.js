@@ -2958,6 +2958,12 @@ const servidor = http.createServer((req, res) => {
       .then(r => json(res, 200, { ok: true, ...r })).catch(e => json(res, 500, { ok: false, erro: String(e.message || e).slice(0, 200) }));
     return;
   }
+  // Teste das credenciais do Pix do BB (cofre, acesso, uma leitura). Sem token, segredo nem chave; resultado guardado por 60 s.
+  if (url.pathname === '/saude/bb' && req.method === 'GET') {
+    if (limiteExcedido(req)) return json(res, 429, { ok: false });
+    bb.diagnostico().then(r => json(res, 200, r)).catch(e => json(res, 200, { etapa: 'erro', erro: String(e.message || e).slice(0, 150) }));
+    return;
+  }
   // Teste da ponte com o Silbeck (porta, login, uma leitura). Sem dados sensíveis; resultado guardado por 60 s.
   if (url.pathname === '/saude/silbeck') {
     silbeck.diagnosticoCache()
