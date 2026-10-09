@@ -1343,11 +1343,23 @@ falso.listen(0, () => {
         assert.ok(tf.includes('O Gilberto já mandou a confirmação ao cliente no WhatsApp') && !tf.includes('mandar a confirmação'), tf);
         assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/negocios?id=eq.') && c.corpo.etapa === 'res'), 'card em Reserva concluída');
       }
+      // 1c0) o item da reserva não veio na criação: na hora do pagamento o CRM procura de novo no Silbeck e lança sozinho
+      {
+        const cobA = cobrancasF.at(-1);
+        rv.situacao = 'nao_confirmada'; const item0 = rv.silbeck_item_id; rv.silbeck_item_id = null; delete rv.itens;
+        cobrancasF.push({ ...cobA, id: crypto.randomUUID(), txid: 'CAB' + 'R'.repeat(26), situacao: 'ativa', valor_pago: null, pago_em: null });
+        assert.equal((await (await api('/api/cobranca-acao', { id: cobrancasF.at(-1).id, acao: 'simular_pagamento' })).json()).pagas, 1);
+        assert.equal(rv.situacao, 'confirmada', 'achou o item no Silbeck e lançou o pagamento');
+        assert.equal(String(rv.silbeck_item_id), String(item0), 'o item fica guardado na reserva do CRM');
+        const d = await (await fetch(base + '/saude/silbeck-reserva?id=' + rv.silbeck_id + '&entrada=' + rv.data_entrada)).json();
+        assert.ok(d.ok && d.achou && String(d.itens[0].item_id) === String(item0) && d.itens[0].adiantamentos >= 1, JSON.stringify(d));
+        assert.ok(!JSON.stringify(d).includes('Ana'), 'sem nomes');
+      }
       // 1c) plano B: o CRM não consegue lançar no Silbeck → o Gilberto só avisa que a equipe está finalizando (não confirma);
       // a equipe lança no Silbeck e clica em "Já lancei no Silbeck": aí o Gilberto confirma e agradece
       {
         const cob0 = cobrancasF.at(-1);
-        rv.situacao = 'nao_confirmada'; const itemAntes = rv.silbeck_item_id; rv.silbeck_item_id = null; delete rv.itens;
+        rv.situacao = 'nao_confirmada'; const itemAntes = rv.silbeck_item_id, idAntes = rv.silbeck_id; rv.silbeck_item_id = null; rv.silbeck_id = '987654'; delete rv.itens; // reserva que o Silbeck não acha
         cobrancasF.push({ ...cob0, id: crypto.randomUUID(), txid: 'CAB' + 'P'.repeat(26), situacao: 'ativa', valor_pago: null, pago_em: null });
         const nB = enviosMeta().length;
         assert.equal((await (await api('/api/cobranca-acao', { id: cobrancasF.at(-1).id, acao: 'simular_pagamento' })).json()).pagas, 1);
@@ -1355,7 +1367,7 @@ falso.listen(0, () => {
         const avB = enviosMeta().slice(nB).map(c => c.corpo.text.body);
         assert.ok(avB.length === 1 && avB[0].includes('A equipe está finalizando'), JSON.stringify(avB));
         const tB = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo;
-        assert.ok(tB.descricao.includes('Já lancei no Silbeck') && !tB.descricao.includes('já mandou a confirmação'), tB.descricao);
+        assert.ok(tB.descricao.includes('Já lancei no Silbeck') && !tB.descricao.includes('já mandou a confirmação') && tB.descricao.includes('não achou a reserva 987654'), tB.descricao);
         tarefaGetF = { negocio_id: cob0.negocio_id, tipo: 'Ligar', feita: false };
         assert.equal((await api('/api/reserva-lancada', { tarefa_id: crypto.randomUUID() })).status, 404, 'só na tarefa de confirmar a reserva');
         tarefaGetF = { negocio_id: cob0.negocio_id, tipo: 'Confirmar a reserva', feita: false };
@@ -1369,7 +1381,7 @@ falso.listen(0, () => {
         assert.ok(chamadas.some(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/tarefas?id=eq.') && c.corpo.feita === true), 'tarefa concluída');
         tarefaGetF = { negocio_id: cob0.negocio_id, tipo: 'Confirmar a reserva', feita: true };
         assert.equal((await api('/api/reserva-lancada', { tarefa_id: crypto.randomUUID() })).status, 409, 'não manda duas vezes');
-        tarefaGetF = null; rv.silbeck_item_id = itemAntes;
+        tarefaGetF = null; rv.silbeck_item_id = itemAntes; rv.silbeck_id = idAntes;
       }
       // 1d) reservas liberadas no Silbeck real com o Pix do BB em teste (dono, 09/10/2026): a reserva nasce no Silbeck,
       // nenhum Pix fictício sai, a equipe recebe a tarefa e o alerta, e o [[PIX]] vira o aviso de que a equipe manda o Pix

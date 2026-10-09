@@ -401,6 +401,23 @@ async function vagas(inicio, dias, buscar = fetch) {
 // criar_reserva: confere a vaga e o preço de novo (na mesma hora) e cria a reserva NÃO CONFIRMADA no Silbeck.
 // O preço vai sempre do Tarifario/Valor (nunca digitado). Se mudou em relação ao orçamento, não cria (o cliente precisa
 // de um novo OK). A reserva confirma sozinha quando o adiantamento (pagamento) é lançado (regra da Silbeck, P46).
+// Itens da reserva no Silbeck (o id de cada item é a "conta" onde o pagamento é lançado). Procura pela data de
+// entrada (a mais segura) e, se não achar, pela data de cadastro de hoje. Devolve só ids, tipo e situação.
+async function itensDaReserva(idReserva, dataEntrada, buscar = fetch) {
+  const filtros = [];
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dataEntrada || '')) filtros.push(`dataInicial=${dataEntrada}&dataFinal=${dataEntrada}&tipoData=entrada`);
+  filtros.push(`dataInicial=${hojeBonito()}&dataFinal=${hojeBonito()}&tipoData=cadastro`);
+  let erro = null;
+  for (const f of filtros) {
+    const lr = await chamar('GET', `/v1/ListaReserva?${f}&idReserva=${idReserva}`, null, buscar).catch(e => { erro = e; return null; });
+    const lista = (lr && lr.dados && (lr.dados.listaReserva || lr.dados)) || [];
+    const r = (Array.isArray(lista) ? lista : []).find(x => String(x.id) === String(idReserva));
+    const itens = (r && r.listaReservaItem) || [];
+    if (itens.length) return itens.map(x => ({ ...x, codigo_crm: CODIGO_DO_CRM[x.codigoTipoApartamento] || x.codigoTipoApartamento || null }));
+  }
+  if (erro) throw erro;
+  return [];
+}
 // Pensão das reservas diretas: 4 = café da manhã incluído (cadastro TipoPensao do Silbeck do Cabanas)
 const PENSAO = Number(process.env.SILBECK_ID_PENSAO || 4);
 async function reservar(e, buscar = fetch) {
@@ -452,10 +469,7 @@ async function reservar(e, buscar = fetch) {
   const id = r.dados && r.dados.id;
   if (!id) throw new ErroSilbeck('o Silbeck não devolveu o número da reserva');
   // Cada item da reserva (idConta) recebe a sua parte do pagamento depois
-  const hoje = hojeBonito();
-  const lr = await chamar('GET', `/v1/ListaReserva?dataInicial=${hoje}&dataFinal=${hoje}&tipoData=cadastro&idReserva=${id}`, null, buscar).catch(() => null);
-  const res = ((lr && lr.dados && (lr.dados.listaReserva || lr.dados)) || []);
-  const doSilbeck = [...((((Array.isArray(res) ? res : []).find(x => String(x.id) === String(id)) || {}).listaReservaItem) || [])];
+  const doSilbeck = [...await itensDaReserva(id, ini, buscar).catch(() => [])];
   const saida = qs.map((q, i) => {
     const pos = doSilbeck.findIndex(x => Number(x.idTipoApartamento) === Number(q.t.id) && (x.quantidadeAdulto == null || Number(x.quantidadeAdulto) === q.adultos));
     const it = pos >= 0 ? doSilbeck.splice(pos, 1)[0] : null;
@@ -593,4 +607,11 @@ async function diagnosticoTarifario({ entrada, saida, adultos = 2, codigo = 'CBD
   }
   return out;
 }
-module.exports = { definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _diaISO: diaISO, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
+// Diagnóstico de uma reserva (/saude/silbeck-reserva): itens, situação e adiantamentos, sem nomes nem contatos
+async function diagnosticoReserva({ id, entrada } = {}, buscar = fetch) {
+  if (!/^\d+$/.test(String(id || ''))) throw new ErroSilbeck('informe o número da reserva (id)', 400);
+  const itens = await itensDaReserva(id, entrada, buscar);
+  return { reserva: String(id), achou: itens.length > 0, itens: itens.map(x => ({ item_id: x.id, codigo: x.codigoTipoApartamento, codigo_crm: x.codigo_crm, status: x.statusDescricao || x.status,
+    entrada: x.dataEntrada, saida: x.dataSaida, adiantamentos: (x.listaAdiantamento || []).length })) };
+}
+module.exports = { diagnosticoReserva, itensDaReserva, definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _diaISO: diaISO, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };

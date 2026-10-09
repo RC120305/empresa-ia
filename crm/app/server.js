@@ -1701,6 +1701,25 @@ async function baixaCobranca(cob, pg, buscar = fetch) {
   let confirmada = false;
   // Pix SIMULADO com o Silbeck real (teste da equipe): nunca lança pagamento de mentira no Silbeck do hotel
   const simuladoNoReal = cob.fonte === 'simulador' && silbeck.MODO() === 'real';
+  // Falta o item da reserva no Silbeck (não veio na criação): procura de novo agora, antes de pedir à equipe
+  let semItem = '';
+  if (res && !simuladoNoReal && res.silbeck_id && partes.length && partes.some(p => !p.item_id)) {
+    try {
+      const doSilbeck = (await silbeck.itensDaReserva(res.silbeck_id, res.data_entrada, buscar)).filter(x => Number(x.status) !== 3);
+      const livres = [...doSilbeck];
+      const codigos = Array.isArray(res.itens) && res.itens.length ? res.itens.map(i => i.codigo) : [res.codigo];
+      partes.forEach((p, k) => {
+        if (p.item_id) return;
+        const pos = livres.length === 1 && partes.length === 1 ? 0 : livres.findIndex(x => x.codigo_crm === codigos[k]);
+        if (pos >= 0) p.item_id = String(livres.splice(pos, 1)[0].id);
+      });
+      if (partes.every(p => p.item_id)) {
+        const it = partes.length === 1 ? { silbeck_item_id: partes[0].item_id } : { itens: res.itens.map((i, k) => ({ ...i, item_id: partes[k].item_id })) };
+        await patchBanco('reservas', `id=eq.${res.id}`, { ...it, atualizado_em: new Date().toISOString() }).catch(() => {});
+      } else semItem = doSilbeck.length ? ' (o CRM não conseguiu casar os itens da reserva no Silbeck)' : ' (o CRM não achou a reserva ' + res.silbeck_id + ' na consulta do Silbeck)';
+    } catch (e) { semItem = ' (o CRM não conseguiu consultar a reserva no Silbeck: ' + String(e.message || e).slice(0, 100) + ')'; }
+    if (semItem) console.warn(JSON.stringify({ evento: 'adiantamento_sem_item', reserva: res.silbeck_id, motivo: semItem.trim() }));
+  }
   if (res && simuladoNoReal) silb = `Pix SIMULADO (teste): nada foi lançado no Silbeck. Para ver a confirmação e o voucher chegarem ao cliente, clique em "Já lancei no Silbeck" na tarefa "Confirmar a reserva" sem lançar nada. No fim, cancele a reserva de teste ${res.silbeck_id} no Silbeck.`;
   else if (res && partes.length && partes.every(p => p.item_id)) {
     const feitas = [];
@@ -1713,7 +1732,8 @@ async function baixaCobranca(cob, pg, buscar = fetch) {
       const falta = partes.filter(p => !feitas.includes(p));
       silb = `O CRM NÃO conseguiu lançar ${feitas.length ? 'todo o pagamento' : 'o pagamento'} no Silbeck (${String(e.message || e).slice(0, 120)}): lançar o adiantamento na reserva ${res.silbeck_id}${partes.length > 1 ? ' (falta: ' + falta.map(p => p.nome + ' ' + produtos.brl(p.valor)).join(', ') + ')' : ''} e mandar a confirmação ao cliente.`;
     }
-  } else if (res && partes.length > 1) silb = `Reserva ${res.silbeck_id} com ${partes.length} acomodações: lançar o adiantamento no Silbeck dividido entre elas (${partes.map(p => p.nome + ' ' + produtos.brl(p.valor)).join(', ')}) e mandar a confirmação ao cliente.`;
+  } else if (res && semItem) silb = `Lançar o adiantamento e confirmar a reserva ${res.silbeck_id} no Silbeck${semItem}, e mandar a confirmação ao cliente.`;
+  else if (res && partes.length > 1) silb = `Reserva ${res.silbeck_id} com ${partes.length} acomodações: lançar o adiantamento no Silbeck dividido entre elas (${partes.map(p => p.nome + ' ' + produtos.brl(p.valor)).join(', ')}) e mandar a confirmação ao cliente.`;
   // Card em "Reserva concluída" antes de avisar o cliente (o Gilberto já sabe que a reserva está paga)
   if (cob.negocio_id) await patchBanco('negocios', `id=eq.${cob.negocio_id}`, { etapa: 'res', etapa_desde: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
   const aviso = await confirmarAoCliente(cob, res, confirmada, valor, buscar);
@@ -2956,6 +2976,13 @@ const servidor = http.createServer((req, res) => {
     if (limiteExcedido(req)) return json(res, 429, { ok: false });
     silbeck.diagnosticoCotacao({ entrada: url.searchParams.get('entrada'), saida: url.searchParams.get('saida'), adultos: url.searchParams.get('adultos') })
       .then(r => json(res, 200, { ok: true, ...r })).catch(e => json(res, 500, { ok: false, erro: String(e.message || e).slice(0, 200) }));
+    return;
+  }
+  // Itens de uma reserva no Silbeck (onde o pagamento é lançado). Sem nomes nem contatos.
+  if (url.pathname === '/saude/silbeck-reserva' && req.method === 'GET') {
+    if (limiteExcedido(req)) return json(res, 429, { ok: false });
+    silbeck.diagnosticoReserva({ id: url.searchParams.get('id'), entrada: url.searchParams.get('entrada') })
+      .then(r => json(res, 200, { ok: true, ...r })).catch(e => json(res, 200, { ok: false, erro: String(e.message || e).slice(0, 200) }));
     return;
   }
   // Teste das credenciais do Pix do BB (cofre, acesso, uma leitura). Sem token, segredo nem chave; resultado guardado por 60 s.
