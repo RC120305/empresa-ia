@@ -13,12 +13,13 @@ node design/ferramentas/animador/animar.mjs <roteiro.json> [saida.mp4] [--previa
 2. O modelo monta a cena uma vez (fotos, textos, logo) e expõe `quadro(f)`: cada quadro é **função do número do quadro**, então o resultado é sempre igual (dá para refazer só um pedaço, paralelizar e corrigir sem surpresa).
 3. `animar.mjs` fotografa os quadros em paralelo, monta o MP4 e junta a música (com início, volume e fade de saída do roteiro).
 
-Ferramentas do motor para os modelos (`Anim`): `interp` (valor por quadro, com easing), `spring` (mola, igual à do Remotion), `ease`, `el` (cria elementos), `CORES` (creme, laranja, marrom da marca) e `sombra`. Fontes e logo em `recursos/`.
+Ferramentas do motor para os modelos (`Anim`, em `anim.js`, compartilhado com a Central): `interp` (valor por quadro, com easing), `spring` (mola, igual à do Remotion), `ease`, `el` (cria elementos), `CORES` (creme, laranja, marrom da marca) e `sombra`. Fontes e logo em `recursos/`.
 
 ## Modelos
 | Modelo | Arquivo | O que faz |
 |---|---|---|
 | Copy que acende | `modelos/copy-que-acende.js` | Foto com zoom ou deslize, copy palavra por palavra com a palavra-chave em laranja, contador opcional, selo do logo e fecho com chamada. |
+| Configurável | `modelos/configuravel.js` | Motor dos modelos criados pelo dono no construtor da Central: a aparência vem de `config` (entrada do texto, cor do destaque, posição, tamanho, letra, fundo, movimento, tempo por tela, transição, escurecer, logo, fecho). A Central roda este mesmo arquivo para a prévia ao vivo. |
 | Legenda da fala | `modelos/legenda-fala.js` | Vídeo de alguém falando com a legenda palavra por palavra (1 a 3 palavras por vez; a palavra falada acende em laranja). Roteiro com `video` e `transcricao` (JSON de `design/ferramentas/legendar-fala.py`), `destaques`, `selo`, `fecho`. A fala do vídeo vai para o MP4; `musica` entra baixinha por baixo (volume padrão 0,15). |
 
 Exemplo de roteiro: `design/videos/2026-10/piloto-legendas/roteiro-animador.json`.

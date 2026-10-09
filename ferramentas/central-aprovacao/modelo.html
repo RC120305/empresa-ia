@@ -273,6 +273,20 @@ details summary{cursor:pointer;padding:4px 0}
 .ped .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
 .st.novo{background:var(--wait-soft);color:var(--wait)}.st.producao{background:var(--chip);color:var(--ink)}.st.pronto{background:var(--green-soft);color:var(--green)}
 /* ---------- abas Vídeos e Acervo ---------- */
+.cons{background:var(--surface);border:1px solid var(--brown);border-radius:8px;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:18px;align-items:start}
+.cons .campos{display:flex;flex-direction:column;gap:12px;min-width:0}
+.cons label.t{font-size:13px;font-weight:600}
+.cons input[type=text],.cons textarea{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:5px;padding:8px 10px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box}
+.cons .op{display:flex;flex-wrap:wrap;gap:6px}
+.cons .op button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 11px;cursor:pointer}
+.cons .op button[aria-pressed="true"]{background:var(--brown);color:var(--brown-ink);border-color:var(--brown)}
+.cons .cor{width:30px;height:30px;border-radius:50%;padding:0!important;border:2px solid var(--line)!important}
+.cons .cor[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:2px}
+.cons .lado{position:sticky;top:60px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.tela916{width:270px;height:480px;border-radius:10px;overflow:hidden;background:#140e08;position:relative}
+.tela916>.palco{position:absolute;left:0;top:0;width:1080px;height:1920px;transform:scale(.25);transform-origin:0 0;overflow:hidden}
+.mcard .tela916{width:100%;height:auto;aspect-ratio:9/16;border-radius:0}
+@media (max-width:640px){.cons{grid-template-columns:1fr}.cons .lado{position:static;order:-1}}
 .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:22px;align-items:start}
 .mcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
 .mcard.aprovado{border-color:var(--green)}
@@ -406,6 +420,21 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
     </section>
     <section style="display:flex;flex-direction:column;gap:14px" aria-labelledby="mos-t">
       <div class="week-head"><h2 id="mos-t">Mostruário de modelos</h2></div>
+      <div><button class="btn ok" type="button" id="cons-abrir">+ Criar modelo novo</button> <span class="note">Monte o modelo aqui e veja a prévia na hora.</span></div>
+      <div class="cons" id="cons" hidden>
+        <div class="campos">
+          <div><label class="t" for="cons-nome">Nome do modelo</label><input type="text" id="cons-nome" placeholder="Ex.: Letreiro elegante" maxlength="40"></div>
+          <div data-ia><label class="t" for="cons-desc">Descreva com suas palavras (opcional)</label><textarea id="cons-desc" rows="2" placeholder="Ex.: texto grande no meio, aparecendo letra por letra, numa caixa marrom, destaque amarelo, cortes secos e rápidos"></textarea>
+            <div class="vacts" style="margin-top:6px"><button class="btn ghost" type="button" id="cons-ia">✨ Montar pela descrição</button><span class="note" id="cons-ia-msg"></span></div></div>
+          <div id="cons-ops"></div>
+        </div>
+        <div class="lado">
+          <div class="tela916" id="cons-tela"></div>
+          <span class="note">Prévia ao vivo com fotos de exemplo</span>
+          <div class="vacts"><button class="btn ok" type="button" id="cons-salvar">Salvar no mostruário</button><button class="btn ghost" type="button" id="cons-fechar">Fechar</button></div>
+          <p class="msg" id="cons-msg"></p>
+        </div>
+      </div>
       <div class="subtabs" role="group" aria-label="Tipo de modelo"><button type="button" data-mtipo="video" aria-pressed="true">Vídeo</button><button type="button" data-mtipo="criativo" aria-pressed="false">Criativo (arte)</button></div>
       <div class="mgrid" id="mod-list"></div>
     </section>
@@ -490,6 +519,9 @@ const VIDEOS = __VIDEOS__;
 const CATALOGO = __CATALOGO__;
 const MUSICAS = __MUSICAS__;
 const MODELOS = __MODELOS__;
+const ANIM_MODELOS = (() => {
+/*__ANIMADOR__*/
+return {Anim, MODELOS, CONFIG_PADRAO}; })();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const byId = Object.fromEntries(POSTS.map(p => [p.n, p]));
 const ADCARDS = (ANUNCIOS && ANUNCIOS.cards) || [];
@@ -1446,11 +1478,11 @@ function statusModelo(m){ return modState[m.id]?.status || m.status; }
 const ST_MOD = {aprovado: ["aprovado", "aprovado"], em_teste: ["pendente", "em teste"], pausado: ["corrigir", "pausado"]};
 function modCardHtml(m){
   const ex = m.exemplo?.video ? VIDEOS.find(v => v.id === m.exemplo.video) : null;
-  const midia = ex ? `<video controls playsinline preload="none" poster="${esc(ex.capa)}" src="${esc(ex.video)}"></video>` : exModelo(m) ? `<img class="mimg" src="${esc(exModelo(m))}" alt="Exemplo do modelo ${esc(m.nome)}" loading="lazy">` : "";
+  const midia = m.config ? `<div class="tela916" data-mprev><button class="btn ok" type="button" data-mplay style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2">▶ Ver prévia</button></div>` : ex ? `<video controls playsinline preload="none" poster="${esc(ex.capa)}" src="${esc(ex.video)}"></video>` : exModelo(m) ? `<img class="mimg" src="${esc(exModelo(m))}" alt="Exemplo do modelo ${esc(m.nome)}" loading="lazy">` : "";
   return `<article class="mcard" id="mod-${esc(m.id)}">${midia}<div class="vbody">
     <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h3>${esc(m.nome)}</h3><span class="st" data-mst></span></div>
     <p class="note" style="color:var(--ink)">${esc(m.desc)}</p>${m.quando ? `<p class="note"><b>Quando usar:</b> ${esc(m.quando)}</p>` : ""}${m.obs ? `<p class="note">${esc(m.obs)}</p>` : ""}
-    <div class="vacts" data-actions><button class="btn ok" type="button" data-mok>Aprovar modelo</button><button class="btn ghost" type="button" data-mpausa>Pausar</button><button class="btn fix" type="button" data-mdel>Excluir</button></div>
+    <div class="vacts" data-actions><button class="btn ok" type="button" data-mok>Aprovar modelo</button><button class="btn ghost" type="button" data-mpausa>Pausar</button>${m.custom ? '<button class="btn ghost" type="button" data-medit>Editar</button>' : ""}<button class="btn fix" type="button" data-mdel>Excluir</button></div>
     <details data-mdet><summary class="note"><b>Sugerir alteração</b> <span data-mn></span></summary>
       <div class="mthread" data-mthread></div>
       <form class="mform" data-mform data-actions><label class="note" for="mt-${esc(m.id)}">O que mudar neste modelo?</label><textarea id="mt-${esc(m.id)}" rows="2" placeholder="Ex.: texto um pouco menor, laranja mais forte, cortes mais lentos"></textarea><div class="vacts"><button class="btn fix" type="submit">Enviar sugestão</button></div></form>
@@ -1458,6 +1490,7 @@ function modCardHtml(m){
 }
 function renderModelos(){
   const box = document.getElementById("mod-list"); if (!box) return;
+  cardParar.forEach(f => f()); cardParar.clear();
   const lista = MODELOS.filter(m => m.tipo === modTipo && statusModelo(m) !== "excluido"), excl = MODELOS.filter(m => m.tipo === modTipo && statusModelo(m) === "excluido");
   box.innerHTML = (lista.map(modCardHtml).join("") || '<p class="note">Nenhum modelo ativo deste tipo.</p>')
     + (excl.length ? `<details class="ped" style="grid-column:1/-1"><summary class="note"><b>Modelos excluídos (${excl.length})</b>: não aparecem no pedido; toque para restaurar</summary>${excl.map(m => `<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding-top:8px"><span>${esc(m.nome)}</span><button class="btn ghost" type="button" data-mrest="${esc(m.id)}">Restaurar</button></div>`).join("")}</details>` : "");
@@ -1466,6 +1499,8 @@ function renderModelos(){
     const c = document.getElementById("mod-" + m.id);
     c.querySelector("[data-mok]").addEventListener("click", () => saveModelo(m, statusModelo(m) === "aprovado" ? "em_teste" : "aprovado"));
     c.querySelector("[data-mpausa]").addEventListener("click", () => saveModelo(m, statusModelo(m) === "pausado" ? "em_teste" : "pausado"));
+    const pl = c.querySelector("[data-mplay]"); if (pl) pl.addEventListener("click", () => { pl.remove(); cardParar.set(m.id, montarPrevia(c.querySelector("[data-mprev]"), m.config)); });
+    const ed = c.querySelector("[data-medit]"); if (ed) ed.addEventListener("click", () => abrirCons(m));
     c.querySelector("[data-mdel]").addEventListener("click", () => { if (confirm(`Excluir o modelo "${m.nome}"? Ele sai do mostruário e do pedido. Dá para restaurar depois em "Modelos excluídos".`)) saveModelo(m, "excluido"); });
     c.querySelector("[data-mform]").addEventListener("submit", async ev => {
       ev.preventDefault(); if (!db) return; const ta = c.querySelector("textarea"), t = ta.value.trim(); if (!t) return;
@@ -1495,9 +1530,17 @@ function paintModelos(){
   });
 }
 function renderRefs(){
-  const sel = document.getElementById("ref-mod");
-  if (sel && !sel.options.length) sel.innerHTML = `<option value="novo">Para um modelo novo</option><option value="">Ainda não sei</option>` + MODELOS.map(m => `<option value="${esc(m.id)}">Ajustar: ${esc(m.nome)} (${m.tipo === "video" ? "vídeo" : "arte"})</option>`).join("");
+  renderRefsSelect(true);
   const box = document.getElementById("ref-list"); if (!box) return;
+  return renderRefsLista(box);
+}
+function renderRefsSelect(soSeVazio){
+  const sel = document.getElementById("ref-mod"); if (!sel || (soSeVazio && sel.options.length)) return;
+  const atual = sel.value;
+  sel.innerHTML = `<option value="novo">Para um modelo novo</option><option value="">Ainda não sei</option>` + MODELOS.map(m => `<option value="${esc(m.id)}">Ajustar: ${esc(m.nome)} (${m.tipo === "video" ? "vídeo" : "arte"})</option>`).join("");
+  if (atual) sel.value = atual;
+}
+function renderRefsLista(box){
   const ST = {enviado: ["pendente", "enviada"], analisada: ["aprovado", "analisada"], virou_modelo: ["aprovado", "virou modelo"]};
   box.innerHTML = refs.map(r => { const [c, t] = ST[r.status] || ST.enviado; const mod = r.modelo === "novo" ? "modelo novo" : (MODELOS.find(m => m.id === r.modelo) || {}).nome || "sem modelo definido";
     return `<article class="ref"><div class="ped"><div class="top"><b>Referência · ${esc(mod)}</b><span class="st ${c}">${t}</span></div></div>
@@ -1528,6 +1571,96 @@ document.getElementById("ref-form").addEventListener("submit", async e => {
   } catch { m.textContent = "Não consegui enviar. Tente de novo."; }
   btn.disabled = false;
 });
+// ---------- construtor de modelos: prévia ao vivo com o motor do Animador (o mesmo que gera o MP4) ----------
+const AMOSTRA = [
+  {foto: "img/modelo/1.jpg", texto: "Cabana Master", destaque: "Master", apoio: "a maior acomodação do Cabanas"},
+  {foto: "img/modelo/2.jpg", texto: "dois ambientes", destaque: "ambientes"},
+  {foto: "img/modelo/3.jpg", texto: "banheira de hidromassagem para 2", destaque: "hidromassagem"},
+  {foto: "img/modelo/4.jpg", texto: "varanda com balanço", destaque: "balanço"}];
+const CONS_OPS = [
+  ["entrada", "Como o texto entra", [["palavra", "Palavra por palavra"], ["linha", "Frase inteira"], ["maquina", "Letra por letra"], ["surgir", "Palavras saltando"]]],
+  ["destaque", "Cor do destaque", [["#F58634", "Laranja"], ["#F2C14E", "Amarelo"], ["#F7F1E6", "Creme"], ["#A9C266", "Verde"], ["#FFFFFF", "Branco"]], "cor"],
+  ["posicao", "Posição do texto", [["baixo", "Embaixo"], ["meio", "No meio"], ["alto", "Em cima"]]],
+  ["tamanho", "Tamanho do texto", [["p", "Pequeno"], ["m", "Médio"], ["g", "Grande"]]],
+  ["fonte", "Letra", [["josefin", "Moderna (caixa alta)"], ["playfair", "Elegante (itálico)"]]],
+  ["fundo", "Fundo do texto", [["nenhum", "Sem fundo"], ["caixa", "Caixa marrom"], ["faixa", "Faixa escura"]]],
+  ["movimento", "Movimento da foto", [["alternar", "Alternar"], ["zoom", "Zoom lento"], ["deslize", "Deslizar"], ["parado", "Parada"]]],
+  ["segundos", "Tempo por tela", [["1.4", "Rápido (1,4 s)"], ["2.2", "Médio (2,2 s)"], ["3", "Calmo (3 s)"]]],
+  ["transicao", "Troca de tela", [["fusao", "Fusão suave"], ["corte", "Corte seco"]]],
+  ["escurecer", "Escurecer a foto", [["0.15", "Pouco"], ["0.35", "Médio"], ["0.55", "Bastante"]]],
+  ["selo", "Logo no alto", [["sim", "Sim"], ["nao", "Não"]]],
+  ["fecho", "Fecho com logo e chamada", [["sim", "Sim"], ["nao", "Não"]]]];
+const CFG0 = {entrada: "palavra", destaque: "#F58634", posicao: "baixo", tamanho: "m", fonte: "josefin", fundo: "nenhum", movimento: "alternar", segundos: "2.2", transicao: "fusao", escurecer: "0.35", selo: "sim", fecho: "sim"};
+let cfg = {...CFG0}, consEdit = null, consParar = null, sampleApi = null;
+const cardParar = new Map();
+const toConfig = c => ({...c, segundos: +c.segundos, escurecer: +c.escurecer, selo: c.selo === "sim", fecho: c.fecho === "sim"});
+const fromConfig = c => ({...CFG0, ...c, segundos: String(c.segundos ?? CFG0.segundos), escurecer: String(c.escurecer ?? CFG0.escurecer), selo: c.selo === false ? "nao" : "sim", fecho: c.fecho === false ? "nao" : "sim"});
+const rotulo = (k, v) => ((CONS_OPS.find(o => o[0] === k) || [, , []])[2].find(x => x[0] === String(v)) || [, v])[1];
+function descreverCfg(c){
+  return `Texto ${rotulo("entrada", c.entrada).toLowerCase()}, ${rotulo("posicao", c.posicao).toLowerCase()}, destaque ${rotulo("destaque", c.destaque).toLowerCase()}, letra ${rotulo("fonte", c.fonte).toLowerCase()}, ${rotulo("fundo", c.fundo).toLowerCase()}. Fotos: ${rotulo("movimento", c.movimento).toLowerCase()}, ${rotulo("segundos", c.segundos).toLowerCase()} por tela, ${rotulo("transicao", c.transicao).toLowerCase()}.`;
+}
+function montarPrevia(tela, config){
+  tela.querySelectorAll(".palco").forEach(p => p.remove());
+  const palco = document.createElement("div"); palco.className = "palco"; tela.appendChild(palco);
+  palco.style.transform = `scale(${(tela.clientWidth || 270) / 1080})`;
+  const inst = ANIM_MODELOS.MODELOS.configuravel(palco, {config, telas: AMOSTRA, logo: "img/modelo/logo.png", fecho: {}}, {fps: 30, w: 1080, h: 1920});
+  let t0 = performance.now(), raf = 0;
+  const passo = agora => { let f = Math.floor((agora - t0) * 0.03); if (f >= inst.duracao + 30) { t0 = agora; f = 0; } inst.quadro(Math.min(f, inst.duracao - 1)); raf = requestAnimationFrame(passo); };
+  raf = requestAnimationFrame(passo);
+  return () => cancelAnimationFrame(raf);
+}
+function renderCons(){
+  document.getElementById("cons-ops").innerHTML = CONS_OPS.map(([k, t, ops, tipo]) => `<div><span class="t" style="font-size:13px;font-weight:600">${esc(t)}</span><div class="op" role="group" aria-label="${esc(t)}">${ops.map(([v, n]) => tipo === "cor"
+    ? `<button type="button" class="cor" data-ck="${k}" data-cv="${esc(v)}" aria-pressed="${String(cfg[k] === v)}" title="${esc(n)}" aria-label="${esc(n)}" style="background:${esc(v)}"></button>`
+    : `<button type="button" data-ck="${k}" data-cv="${esc(v)}" aria-pressed="${String(cfg[k] === v)}">${esc(n)}</button>`).join("")}</div></div>`).join("");
+  if (consParar) consParar();
+  consParar = montarPrevia(document.getElementById("cons-tela"), toConfig(cfg));
+}
+function abrirCons(m){
+  consEdit = m || null; cfg = m ? fromConfig(m.config) : {...CFG0};
+  document.getElementById("cons-nome").value = m ? m.nome : ""; document.getElementById("cons-desc").value = m?.descricaoDono || "";
+  document.getElementById("cons-msg").textContent = m ? `Editando "${m.nome}". Salvar substitui o modelo.` : "";
+  const box = document.getElementById("cons"); box.hidden = false; renderCons(); box.scrollIntoView({block: "start", behavior: "smooth"});
+}
+function fecharCons(){ document.getElementById("cons").hidden = true; if (consParar) { consParar(); consParar = null; } }
+document.getElementById("cons-abrir").addEventListener("click", () => abrirCons(null));
+document.getElementById("cons-fechar").addEventListener("click", fecharCons);
+document.getElementById("cons-ops").addEventListener("click", e => { const b = e.target.closest("[data-ck]"); if (!b) return; cfg[b.dataset.ck] = b.dataset.cv; renderCons(); });
+document.getElementById("cons-salvar").addEventListener("click", async () => {
+  const msg = document.getElementById("cons-msg"), nome = document.getElementById("cons-nome").value.trim();
+  if (!db) { msg.textContent = "Abra pelo claude.ai com a sua conta para salvar."; return; }
+  if (!nome) { msg.textContent = "Dê um nome ao modelo."; document.getElementById("cons-nome").focus(); return; }
+  const slug = norm(nome).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30) || "modelo";
+  const id = consEdit?.id || `meu-${slug}-${Date.now().toString(36).slice(-4)}`, agora = new Date().toISOString();
+  const doc = {id, nome, tipo: "video", desc: descreverCfg(cfg), quando: "Modelo criado por você no construtor.", animador: "configuravel", config: toConfig(cfg),
+    status: "em_teste", autor: "dono", descricaoDono: document.getElementById("cons-desc").value.trim(), criadoEm: consEdit?.criadoEm || agora, atualizadoEm: agora};
+  const b = document.getElementById("cons-salvar"); b.disabled = true;
+  try { await db.collection("modelos_custom").doc(id).set(doc); msg.textContent = `"${nome}" salvo no mostruário (em teste). Já dá para escolher no + Novo pedido.`; consEdit = doc; }
+  catch { msg.textContent = "Não consegui salvar. Tente de novo."; }
+  b.disabled = false;
+});
+document.getElementById("cons-ia").addEventListener("click", async () => {
+  const m = document.getElementById("cons-ia-msg"), desc = document.getElementById("cons-desc").value.trim();
+  if (!sampleApi) { m.textContent = "Indisponível nesta visualização."; return; }
+  if (desc.length < 5) { m.textContent = "Escreva a descrição primeiro."; return; }
+  const b = document.getElementById("cons-ia"); b.disabled = true; m.textContent = "Montando…";
+  const permitido = Object.fromEntries(CONS_OPS.map(([k, , ops]) => [k, ops.map(o => o[0])]));
+  const prompt = `Você configura um modelo de Reels (vídeo 9:16) para o Instagram de um hotel. Converta a descrição do dono em um objeto JSON com estas chaves e SOMENTE estes valores:\n${CONS_OPS.map(([k, t, ops]) => `- ${k} (${t}): ${ops.map(([v, n]) => `"${v}" = ${n}`).join("; ")}`).join("\n")}\n- nome: um nome curto (até 4 palavras, em português) para o modelo.\nO que a descrição não disser, mantenha como está agora: ${JSON.stringify(cfg)}.\nResponda só com o JSON.\n\nDescrição do dono: ${desc.slice(0, 1500)}`;
+  try {
+    const r = await sampleApi.json(prompt, {modelTier: "quick", cache: false});
+    let n = 0; for (const k in permitido) { const v = r && r[k] != null ? String(r[k]) : null; if (v && permitido[k].includes(v) && cfg[k] !== v) { cfg[k] = v; n++; } }
+    const campoNome = document.getElementById("cons-nome"); if (!campoNome.value.trim() && r && typeof r.nome === "string") campoNome.value = r.nome.slice(0, 40);
+    renderCons(); m.textContent = n ? `Pronto: ${n} ajuste(s) aplicados. Confira a prévia e mude o que quiser.` : "Nada mudou; tente descrever de outro jeito.";
+  } catch (e) {
+    m.textContent = ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(e?.code) ? "A IA não está liberada nesta visualização; use as opções abaixo." : e?.code === "rate_limited" ? "Muitos pedidos agora; tente em instantes." : "Não consegui montar agora. Tente de novo ou use as opções.";
+  }
+  b.disabled = false;
+});
+function syncCustom(docs){
+  for (let i = MODELOS.length - 1; i >= 0; i--) if (MODELOS[i].custom) MODELOS.splice(i, 1);
+  docs.filter(d => d && d.id && d.config).sort((a, b) => (a.criadoEm || "").localeCompare(b.criadoEm || "")).forEach(d => MODELOS.push({...d, custom: true}));
+  renderModelos(); renderRefsSelect();
+}
 renderRefs(); renderModelos();
 // ---------- aba Pedidos: guia passo a passo ----------
 const PED_PERSONAS = [["casais","Casais"],["familias","Famílias"],["aventureiros","Aventureiros"],["eco","Amantes da natureza"],["55","55+ (tranquilidade)"],["equipe","Equipe decide"]];
@@ -1661,6 +1794,8 @@ tally();
   try { assets = await claude.use("assets"); } catch { assets = null; }
   try { comments = await claude.use("comments"); } catch { comments = null; }
   try { downloads = await claude.use("downloads"); } catch { downloads = null; }
+  try { sampleApi = await claude.use("sample"); } catch { sampleApi = null; }
+  if (!sampleApi) document.querySelector("[data-ia]").hidden = true;
   if (!db) {
     document.getElementById("offline").hidden = false;
     document.querySelectorAll("[data-actions]").forEach(a => a.hidden = true);
@@ -1688,6 +1823,7 @@ tally();
   renderModelos();
   if (!assets) document.querySelector("[data-ref-up]").hidden = true;
   db.collection("modelos").onSnapshot(snap => { snap.docs.forEach(d => { const b = d.data(); if (b && b.modelo) modState[b.modelo] = b; }); renderModelos(); if (document.getElementById("sec-ped").hidden === false) renderWiz(); }, () => {});
+  db.collection("modelos_custom").onSnapshot(snap => syncCustom(snap.docs.map(d => d.data())), () => {});
   db.collection("modelos_chat").onSnapshot(snap => { modChat = snap.docs.map(d => d.data()).filter(x => x && x.texto).sort((a, b) => (a.criadoEm || "").localeCompare(b.criadoEm || "")); paintModelos(); }, () => {});
   db.collection("referencias").onSnapshot(snap => { refs = snap.docs.map(d => d.data()).filter(x => x && x.id).sort((a, b) => (b.criadoEm || "").localeCompare(a.criadoEm || "")); renderRefs(); }, () => {});
   db.collection("musicas").onSnapshot(snap => { snap.docs.forEach(d => { const b = d.data(); if (b && b.musica) mstate[b.musica] = b; }); renderMusicas(); }, () => {});

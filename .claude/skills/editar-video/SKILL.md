@@ -17,7 +17,7 @@ Central: https://claude.ai/artifact/9MZa4dNUHTXm3ANwXjwPYB · referência comple
 
 ## 2. Conferir o modelo
 - `ferramentas/central-aprovacao/modelos.json` + db `modelos` (o db vale sobre o JSON). **Nunca** use modelo `pausado` ou `excluido`; se o pedido apontar para um, use o mais próximo e diga qual.
-- Modelo com `"animador"` → Animador Cabanas (`design/ferramentas/animador/`). Sem animador → kit atual (`design/ferramentas/reels-de-fotos.py`). `estilo: "novo"` → leia `obs` e as referências (db `referencias`); proponha o modelo novo ao dono antes de criar.
+- Modelo com `"animador"` → Animador Cabanas (`design/ferramentas/animador/`). Modelo criado pelo dono no construtor (id `meu-…`, db `modelos_custom`): roteiro `{"modelo": "configuravel", "config": <config do db>, "telas": [...], "fecho": {...}}`. Sem animador → kit atual (`design/ferramentas/reels-de-fotos.py`). `estilo: "novo"` → leia `obs` e as referências (db `referencias`); proponha o modelo novo ao dono antes de criar.
 - Leia as sugestões já respondidas do modelo (db `modelos_chat`): o que o dono pediu ali vale para todo vídeo do modelo.
 
 ## 3. Imagens
