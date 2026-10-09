@@ -158,7 +158,7 @@ mj = os.path.join(os.path.dirname(os.path.abspath(__file__)), "modelos.json")
 modelos = json.load(open(mj, encoding="utf-8")) if os.path.exists(mj) else []
 # construtor de modelos (aba Modelos): o motor do Animador roda na própria página para a prévia ao vivo
 adir = "design/ferramentas/animador"
-animador = open(f"{adir}/anim.js", encoding="utf-8").read() + "\n" + open(f"{adir}/modelos/configuravel.js", encoding="utf-8").read()
+animador = open(f"{adir}/anim.js", encoding="utf-8").read() + "\n" + open(f"{adir}/modelos/configuravel.js", encoding="utf-8").read() + "\n" + open(f"{adir}/modelos/carrossel.js", encoding="utf-8").read()
 os.makedirs(f"{out}/img/modelo", exist_ok=True)
 for f in glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), "amostras", "*")):
     shutil.copy(f, f"{out}/img/modelo/" + os.path.basename(f))

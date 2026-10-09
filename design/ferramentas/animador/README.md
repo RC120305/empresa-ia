@@ -6,7 +6,7 @@ Sem licença paga e sem baixar nada novo: usa o Chromium do ambiente (Playwright
 ```bash
 node design/ferramentas/animador/animar.mjs <roteiro.json> [saida.mp4] [--previa] [--trabalhadores 4]
 ```
-`--previa` gera em 540x960 para conferir rápido. O Reels de 15 s leva cerca de 45 s.
+`--previa` gera em metade do tamanho para conferir rápido. `--png` salva cada quadro como PNG numa pasta (carrossel: uma tela por quadro). O Reels de 15 s leva cerca de 45 s.
 
 ## Como funciona
 1. `motor.html` abre no Chromium com o tamanho do vídeo e carrega o **modelo** pedido no roteiro (`modelos/<modelo>.js`).
@@ -20,6 +20,7 @@ Ferramentas do motor para os modelos (`Anim`, em `anim.js`, compartilhado com a 
 |---|---|---|
 | Copy que acende | `modelos/copy-que-acende.js` | Foto com zoom ou deslize, copy palavra por palavra com a palavra-chave em laranja, contador opcional, selo do logo e fecho com chamada. |
 | Configurável | `modelos/configuravel.js` | Motor dos modelos criados pelo dono no construtor da Central: a aparência vem de `config` (entrada do texto, cor do destaque, posição, tamanho, letra, fundo, movimento, tempo por tela, transição, escurecer, logo, fecho). A Central roda este mesmo arquivo para a prévia ao vivo. |
+| Carrossel | `modelos/carrossel.js` | Carrosséis 3:4 criados no construtor da Central (capa, telas de texto, numeração, moldura, tela final). Gere as artes com `--png` e `"formato": {"w": 1080, "h": 1440}`. |
 | Legenda da fala | `modelos/legenda-fala.js` | Vídeo de alguém falando com a legenda palavra por palavra (1 a 3 palavras por vez; a palavra falada acende em laranja). Roteiro com `video` e `transcricao` (JSON de `design/ferramentas/legendar-fala.py`), `destaques`, `selo`, `fecho`. A fala do vídeo vai para o MP4; `musica` entra baixinha por baixo (volume padrão 0,15). |
 
 Exemplo de roteiro: `design/videos/2026-10/piloto-legendas/roteiro-animador.json`.

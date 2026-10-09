@@ -282,6 +282,17 @@ details summary{cursor:pointer;padding:4px 0}
 .cons .op button[aria-pressed="true"]{background:var(--brown);color:var(--brown-ink);border-color:var(--brown)}
 .cons .cor{width:30px;height:30px;border-radius:50%;padding:0!important;border:2px solid var(--line)!important}
 .cons .cor[aria-pressed="true"]{outline:3px solid var(--ink);outline-offset:2px}
+.cons .tipos{display:flex;gap:6px}
+.refimgs{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.refimgs img{width:56px;height:56px;object-fit:cover;border-radius:5px;border:1px solid var(--line)}
+.refimgs .x{font:inherit;font-size:11px;border:none;background:none;color:var(--fix);cursor:pointer}
+.colar{border:1.5px dashed var(--line);border-radius:8px;padding:10px;font-size:13px;color:var(--muted);text-align:center;background:var(--bg)}
+.tela916.t34{height:360px}
+.mcard .tela916.t34{height:auto;aspect-ratio:3/4}
+.carnav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,253,248,.85);color:#33291F;font-size:16px;cursor:pointer}
+.carnav.e{left:6px}.carnav.d{right:6px}
+.cardots{position:absolute;bottom:8px;left:0;right:0;display:flex;justify-content:center;gap:5px;z-index:3}
+.cardots i{width:6px;height:6px;border-radius:50%;background:rgba(255,253,248,.5)}.cardots i.on{background:#fff}
 .cons .lado{position:sticky;top:60px;display:flex;flex-direction:column;gap:8px;align-items:center}
 .tela916{width:270px;height:480px;border-radius:10px;overflow:hidden;background:#140e08;position:relative}
 .tela916>.palco{position:absolute;left:0;top:0;width:1080px;height:1920px;transform:scale(.25);transform-origin:0 0;overflow:hidden}
@@ -423,14 +434,18 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
       <div><button class="btn ok" type="button" id="cons-abrir">+ Criar modelo novo</button> <span class="note">Monte o modelo aqui e veja a prévia na hora.</span></div>
       <div class="cons" id="cons" hidden>
         <div class="campos">
+          <div><span class="t" style="font-size:13px;font-weight:600">O que você quer criar?</span><div class="op tipos" role="group" aria-label="Tipo de modelo" id="cons-tipo"><button type="button" data-tipo="video" aria-pressed="true">Vídeo (Reels)</button><button type="button" data-tipo="carrossel" aria-pressed="false">Carrossel</button></div></div>
           <div><label class="t" for="cons-nome">Nome do modelo</label><input type="text" id="cons-nome" placeholder="Ex.: Letreiro elegante" maxlength="40"></div>
           <div data-ia><label class="t" for="cons-desc">Descreva com suas palavras (opcional)</label><textarea id="cons-desc" rows="2" placeholder="Ex.: texto grande no meio, aparecendo letra por letra, numa caixa marrom, destaque amarelo, cortes secos e rápidos"></textarea>
-            <div class="vacts" style="margin-top:6px"><button class="btn ghost" type="button" id="cons-ia">✨ Montar pela descrição</button><span class="note" id="cons-ia-msg"></span></div></div>
+            <div data-ia-img style="margin-top:8px"><span class="t" style="font-size:13px;font-weight:600">Prints de referência (opcional)</span>
+              <div class="colar" id="cons-colar" tabindex="0">Cole aqui (Ctrl+V / colar) ou <label class="linkbtn filebtn" style="display:inline">escolha imagens<input type="file" id="cons-file" accept="image/jpeg,image/png,image/webp" multiple aria-label="Escolher prints de referência"></label></div>
+              <div class="refimgs" id="cons-refs"></div></div>
+            <div class="vacts" style="margin-top:6px"><button class="btn ghost" type="button" id="cons-ia">✨ Montar pela referência</button><span class="note" id="cons-ia-msg"></span></div></div>
           <div id="cons-ops"></div>
         </div>
         <div class="lado">
           <div class="tela916" id="cons-tela"></div>
-          <span class="note">Prévia ao vivo com fotos de exemplo</span>
+          <span class="note" id="cons-nota-tela">Prévia ao vivo com fotos de exemplo</span>
           <div class="vacts"><button class="btn ok" type="button" id="cons-salvar">Salvar no mostruário</button><button class="btn ghost" type="button" id="cons-fechar">Fechar</button></div>
           <p class="msg" id="cons-msg"></p>
         </div>
@@ -521,7 +536,7 @@ const MUSICAS = __MUSICAS__;
 const MODELOS = __MODELOS__;
 const ANIM_MODELOS = (() => {
 /*__ANIMADOR__*/
-return {Anim, MODELOS, CONFIG_PADRAO}; })();
+return {Anim, MODELOS, CONFIG_PADRAO, CARROSSEL_PADRAO}; })();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const byId = Object.fromEntries(POSTS.map(p => [p.n, p]));
 const ADCARDS = (ANUNCIOS && ANUNCIOS.cards) || [];
@@ -1478,7 +1493,7 @@ function statusModelo(m){ return modState[m.id]?.status || m.status; }
 const ST_MOD = {aprovado: ["aprovado", "aprovado"], em_teste: ["pendente", "em teste"], pausado: ["corrigir", "pausado"]};
 function modCardHtml(m){
   const ex = m.exemplo?.video ? VIDEOS.find(v => v.id === m.exemplo.video) : null;
-  const midia = m.config ? `<div class="tela916" data-mprev><button class="btn ok" type="button" data-mplay style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2">▶ Ver prévia</button></div>` : ex ? `<video controls playsinline preload="none" poster="${esc(ex.capa)}" src="${esc(ex.video)}"></video>` : exModelo(m) ? `<img class="mimg" src="${esc(exModelo(m))}" alt="Exemplo do modelo ${esc(m.nome)}" loading="lazy">` : "";
+  const midia = m.config ? `<div class="tela916${m.animador === "carrossel" ? " t34" : ""}" data-mprev><button class="btn ok" type="button" data-mplay style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2">▶ Ver prévia</button></div>` : ex ? `<video controls playsinline preload="none" poster="${esc(ex.capa)}" src="${esc(ex.video)}"></video>` : exModelo(m) ? `<img class="mimg" src="${esc(exModelo(m))}" alt="Exemplo do modelo ${esc(m.nome)}" loading="lazy">` : "";
   return `<article class="mcard" id="mod-${esc(m.id)}">${midia}<div class="vbody">
     <div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h3>${esc(m.nome)}</h3><span class="st" data-mst></span></div>
     <p class="note" style="color:var(--ink)">${esc(m.desc)}</p>${m.quando ? `<p class="note"><b>Quando usar:</b> ${esc(m.quando)}</p>` : ""}${m.obs ? `<p class="note">${esc(m.obs)}</p>` : ""}
@@ -1499,7 +1514,7 @@ function renderModelos(){
     const c = document.getElementById("mod-" + m.id);
     c.querySelector("[data-mok]").addEventListener("click", () => saveModelo(m, statusModelo(m) === "aprovado" ? "em_teste" : "aprovado"));
     c.querySelector("[data-mpausa]").addEventListener("click", () => saveModelo(m, statusModelo(m) === "pausado" ? "em_teste" : "pausado"));
-    const pl = c.querySelector("[data-mplay]"); if (pl) pl.addEventListener("click", () => { pl.remove(); cardParar.set(m.id, montarPrevia(c.querySelector("[data-mprev]"), m.config)); });
+    const pl = c.querySelector("[data-mplay]"); if (pl) pl.addEventListener("click", () => { pl.remove(); cardParar.set(m.id, previaDe(c.querySelector("[data-mprev]"), m)); });
     const ed = c.querySelector("[data-medit]"); if (ed) ed.addEventListener("click", () => abrirCons(m));
     c.querySelector("[data-mdel]").addEventListener("click", () => { if (confirm(`Excluir o modelo "${m.nome}"? Ele sai do mostruário e do pedido. Dá para restaurar depois em "Modelos excluídos".`)) saveModelo(m, "excluido"); });
     c.querySelector("[data-mform]").addEventListener("submit", async ev => {
@@ -1571,36 +1586,60 @@ document.getElementById("ref-form").addEventListener("submit", async e => {
   } catch { m.textContent = "Não consegui enviar. Tente de novo."; }
   btn.disabled = false;
 });
-// ---------- construtor de modelos: prévia ao vivo com o motor do Animador (o mesmo que gera o MP4) ----------
+// ---------- construtor de modelos: prévia ao vivo com o motor do Animador (o mesmo que gera o MP4 e os PNG) ----------
 const AMOSTRA = [
   {foto: "img/modelo/1.jpg", texto: "Cabana Master", destaque: "Master", apoio: "a maior acomodação do Cabanas"},
   {foto: "img/modelo/2.jpg", texto: "dois ambientes", destaque: "ambientes"},
   {foto: "img/modelo/3.jpg", texto: "banheira de hidromassagem para 2", destaque: "hidromassagem"},
   {foto: "img/modelo/4.jpg", texto: "varanda com balanço", destaque: "balanço"}];
-const CONS_OPS = [
-  ["entrada", "Como o texto entra", [["palavra", "Palavra por palavra"], ["linha", "Frase inteira"], ["maquina", "Letra por letra"], ["surgir", "Palavras saltando"]]],
-  ["destaque", "Cor do destaque", [["#F58634", "Laranja"], ["#F2C14E", "Amarelo"], ["#F7F1E6", "Creme"], ["#A9C266", "Verde"], ["#FFFFFF", "Branco"]], "cor"],
-  ["posicao", "Posição do texto", [["baixo", "Embaixo"], ["meio", "No meio"], ["alto", "Em cima"]]],
-  ["tamanho", "Tamanho do texto", [["p", "Pequeno"], ["m", "Médio"], ["g", "Grande"]]],
-  ["fonte", "Letra", [["josefin", "Moderna (caixa alta)"], ["playfair", "Elegante (itálico)"]]],
-  ["fundo", "Fundo do texto", [["nenhum", "Sem fundo"], ["caixa", "Caixa marrom"], ["faixa", "Faixa escura"]]],
-  ["movimento", "Movimento da foto", [["alternar", "Alternar"], ["zoom", "Zoom lento"], ["deslize", "Deslizar"], ["parado", "Parada"]]],
-  ["segundos", "Tempo por tela", [["1.4", "Rápido (1,4 s)"], ["2.2", "Médio (2,2 s)"], ["3", "Calmo (3 s)"]]],
-  ["transicao", "Troca de tela", [["fusao", "Fusão suave"], ["corte", "Corte seco"]]],
-  ["escurecer", "Escurecer a foto", [["0.15", "Pouco"], ["0.35", "Médio"], ["0.55", "Bastante"]]],
-  ["selo", "Logo no alto", [["sim", "Sim"], ["nao", "Não"]]],
-  ["fecho", "Fecho com logo e chamada", [["sim", "Sim"], ["nao", "Não"]]]];
-const CFG0 = {entrada: "palavra", destaque: "#F58634", posicao: "baixo", tamanho: "m", fonte: "josefin", fundo: "nenhum", movimento: "alternar", segundos: "2.2", transicao: "fusao", escurecer: "0.35", selo: "sim", fecho: "sim"};
-let cfg = {...CFG0}, consEdit = null, consParar = null, sampleApi = null;
+const AMOSTRA_CAR = [
+  {foto: "img/modelo/1.jpg", texto: "Cabana Master por dentro", destaque: "Master", apoio: "a maior acomodação do Cabanas"},
+  {foto: "img/modelo/2.jpg", texto: "85 m², dois ambientes", destaque: "85"},
+  {foto: "img/modelo/3.jpg", texto: "banheira de hidromassagem para 2", destaque: "hidromassagem"},
+  {foto: "img/modelo/4.jpg", texto: "varanda com balanço", destaque: "balanço"}];
+const CORES_OP = [["#F58634", "Laranja"], ["#F2C14E", "Amarelo"], ["#F7F1E6", "Creme"], ["#A9C266", "Verde"], ["#FFFFFF", "Branco"]];
+const SIMNAO = [["sim", "Sim"], ["nao", "Não"]];
+const OPS = {
+  video: [
+    ["entrada", "Como o texto entra", [["palavra", "Palavra por palavra"], ["linha", "Frase inteira"], ["maquina", "Letra por letra"], ["surgir", "Palavras saltando"]]],
+    ["destaque", "Cor do destaque", CORES_OP, "cor"],
+    ["posicao", "Posição do texto", [["baixo", "Embaixo"], ["meio", "No meio"], ["alto", "Em cima"]]],
+    ["tamanho", "Tamanho do texto", [["p", "Pequeno"], ["m", "Médio"], ["g", "Grande"]]],
+    ["fonte", "Letra", [["josefin", "Moderna (caixa alta)"], ["playfair", "Elegante (itálico)"]]],
+    ["fundo", "Fundo do texto", [["nenhum", "Sem fundo"], ["caixa", "Caixa marrom"], ["faixa", "Faixa escura"]]],
+    ["movimento", "Movimento da foto", [["alternar", "Alternar"], ["zoom", "Zoom lento"], ["deslize", "Deslizar"], ["parado", "Parada"]]],
+    ["segundos", "Tempo por tela", [["1.4", "Rápido (1,4 s)"], ["2.2", "Médio (2,2 s)"], ["3", "Calmo (3 s)"]]],
+    ["transicao", "Troca de tela", [["fusao", "Fusão suave"], ["corte", "Corte seco"]]],
+    ["escurecer", "Escurecer a foto", [["0.15", "Pouco"], ["0.35", "Médio"], ["0.55", "Bastante"]]],
+    ["selo", "Logo no alto", SIMNAO], ["fecho", "Fecho com logo e chamada", SIMNAO]],
+  carrossel: [
+    ["capa", "Título da capa", [["meio", "No meio"], ["baixo", "Embaixo"], ["alto", "Em cima"]]],
+    ["posicao", "Texto das outras telas", [["baixo", "Embaixo"], ["meio", "No meio"], ["alto", "Em cima"]]],
+    ["destaque", "Cor do destaque", CORES_OP, "cor"],
+    ["fonte", "Letra", [["playfair", "Elegante (itálico)"], ["josefin", "Moderna (caixa alta)"]]],
+    ["tamanho", "Tamanho do texto", [["p", "Pequeno"], ["m", "Médio"], ["g", "Grande"]]],
+    ["fundo", "Fundo do texto", [["nenhum", "Sem fundo"], ["caixa", "Caixa marrom"], ["faixa", "Faixa escura"]]],
+    ["escurecer", "Escurecer a foto", [["0.15", "Pouco"], ["0.35", "Médio"], ["0.55", "Bastante"]]],
+    ["moldura", "Moldura fina", SIMNAO], ["numeracao", "Numeração (2/5)", SIMNAO], ["seta", "\"Arraste →\" na capa", SIMNAO],
+    ["logo", "Logo na capa", SIMNAO], ["final", "Tela final com logo e chamada", SIMNAO]]};
+const CFG0 = {
+  video: {entrada: "palavra", destaque: "#F58634", posicao: "baixo", tamanho: "m", fonte: "josefin", fundo: "nenhum", movimento: "alternar", segundos: "2.2", transicao: "fusao", escurecer: "0.35", selo: "sim", fecho: "sim"},
+  carrossel: {capa: "meio", posicao: "baixo", destaque: "#F58634", fonte: "playfair", tamanho: "m", fundo: "nenhum", escurecer: "0.35", moldura: "sim", numeracao: "sim", seta: "sim", logo: "sim", final: "sim"}};
+const BOOL = new Set(["selo", "fecho", "moldura", "numeracao", "seta", "logo", "final"]), NUM = new Set(["segundos", "escurecer"]);
+let consTipo = "video", cfg = {...CFG0.video}, consEdit = null, consParar = null, sampleApi = null, sampleImgs = null, consRefs = [];
 const cardParar = new Map();
-const toConfig = c => ({...c, segundos: +c.segundos, escurecer: +c.escurecer, selo: c.selo === "sim", fecho: c.fecho === "sim"});
-const fromConfig = c => ({...CFG0, ...c, segundos: String(c.segundos ?? CFG0.segundos), escurecer: String(c.escurecer ?? CFG0.escurecer), selo: c.selo === false ? "nao" : "sim", fecho: c.fecho === false ? "nao" : "sim"});
-const rotulo = (k, v) => ((CONS_OPS.find(o => o[0] === k) || [, , []])[2].find(x => x[0] === String(v)) || [, v])[1];
+const toConfig = c => Object.fromEntries(Object.entries(c).map(([k, v]) => [k, BOOL.has(k) ? v === "sim" : NUM.has(k) ? +v : v]));
+const fromConfig = (c, tipo) => ({...CFG0[tipo], ...Object.fromEntries(Object.entries(c || {}).map(([k, v]) => [k, BOOL.has(k) ? (v === false ? "nao" : "sim") : String(v)]))});
+const rotulo = (k, v) => ((OPS[consTipo].find(o => o[0] === k) || [, , []])[2].find(x => x[0] === String(v)) || [, v])[1];
 function descreverCfg(c){
-  return `Texto ${rotulo("entrada", c.entrada).toLowerCase()}, ${rotulo("posicao", c.posicao).toLowerCase()}, destaque ${rotulo("destaque", c.destaque).toLowerCase()}, letra ${rotulo("fonte", c.fonte).toLowerCase()}, ${rotulo("fundo", c.fundo).toLowerCase()}. Fotos: ${rotulo("movimento", c.movimento).toLowerCase()}, ${rotulo("segundos", c.segundos).toLowerCase()} por tela, ${rotulo("transicao", c.transicao).toLowerCase()}.`;
+  const r = k => String(rotulo(k, c[k])).toLowerCase();
+  return consTipo === "carrossel"
+    ? `Carrossel 3:4. Capa com título ${r("capa")}; nas outras telas o texto fica ${r("posicao")}. Letra ${r("fonte")}, ${r("fundo")}, destaque ${r("destaque")}.${c.numeracao === "sim" ? " Com numeração." : ""}${c.final === "sim" ? " Tela final com logo e chamada." : ""}`
+    : `Texto ${r("entrada")}, ${r("posicao")}, destaque ${r("destaque")}, letra ${r("fonte")}, ${r("fundo")}. Fotos: ${r("movimento")}, ${r("segundos")} por tela, ${r("transicao")}.`;
 }
+// prévia de vídeo: roda o modelo "configuravel" quadro a quadro, em loop
 function montarPrevia(tela, config){
-  tela.querySelectorAll(".palco").forEach(p => p.remove());
+  tela.querySelectorAll(".palco,.carnav,.cardots").forEach(p => p.remove());
   const palco = document.createElement("div"); palco.className = "palco"; tela.appendChild(palco);
   palco.style.transform = `scale(${(tela.clientWidth || 270) / 1080})`;
   const inst = ANIM_MODELOS.MODELOS.configuravel(palco, {config, telas: AMOSTRA, logo: "img/modelo/logo.png", fecho: {}}, {fps: 30, w: 1080, h: 1920});
@@ -1609,50 +1648,99 @@ function montarPrevia(tela, config){
   raf = requestAnimationFrame(passo);
   return () => cancelAnimationFrame(raf);
 }
+// prévia de carrossel: telas 3:4 com setas e bolinhas (arrastar com o dedo também passa)
+function montarCarrossel(tela, config){
+  tela.querySelectorAll(".palco,.carnav,.cardots").forEach(p => p.remove());
+  tela.classList.add("t34");
+  const palco = document.createElement("div"); palco.className = "palco"; palco.style.height = "1440px"; tela.appendChild(palco);
+  palco.style.transform = `scale(${(tela.clientWidth || 270) / 1080})`;
+  const inst = ANIM_MODELOS.MODELOS.carrossel(palco, {config, telas: AMOSTRA_CAR, logo: "img/modelo/logo.png", fecho: {}}, {fps: 30, w: 1080, h: 1440});
+  let i = 0; const n = inst.duracao;
+  const dots = document.createElement("div"); dots.className = "cardots"; dots.innerHTML = "<i></i>".repeat(n); tela.appendChild(dots);
+  const ir = k => { i = (k + n) % n; inst.quadro(i); [...dots.children].forEach((d, j) => d.classList.toggle("on", j === i)); };
+  [["e", "‹", -1], ["d", "›", 1]].forEach(([cl, t, d]) => { const b = document.createElement("button"); b.type = "button"; b.className = "carnav " + cl; b.textContent = t; b.setAttribute("aria-label", d < 0 ? "Tela anterior" : "Próxima tela"); b.onclick = () => ir(i + d); tela.appendChild(b); });
+  let x0 = null; tela.ontouchstart = e => { x0 = e.touches[0].clientX; }; tela.ontouchend = e => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 30) ir(i + (dx < 0 ? 1 : -1)); x0 = null; };
+  ir(0);
+  return () => {};
+}
+const previaDe = (tela, m) => (m.animador === "carrossel" ? montarCarrossel : montarPrevia)(tela, m.config);
 function renderCons(){
-  document.getElementById("cons-ops").innerHTML = CONS_OPS.map(([k, t, ops, tipo]) => `<div><span class="t" style="font-size:13px;font-weight:600">${esc(t)}</span><div class="op" role="group" aria-label="${esc(t)}">${ops.map(([v, n]) => tipo === "cor"
+  document.querySelectorAll("#cons-tipo [data-tipo]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tipo === consTipo)));
+  document.getElementById("cons-ops").innerHTML = OPS[consTipo].map(([k, t, ops, tipo]) => `<div><span class="t" style="font-size:13px;font-weight:600">${esc(t)}</span><div class="op" role="group" aria-label="${esc(t)}">${ops.map(([v, n]) => tipo === "cor"
     ? `<button type="button" class="cor" data-ck="${k}" data-cv="${esc(v)}" aria-pressed="${String(cfg[k] === v)}" title="${esc(n)}" aria-label="${esc(n)}" style="background:${esc(v)}"></button>`
     : `<button type="button" data-ck="${k}" data-cv="${esc(v)}" aria-pressed="${String(cfg[k] === v)}">${esc(n)}</button>`).join("")}</div></div>`).join("");
   if (consParar) consParar();
-  consParar = montarPrevia(document.getElementById("cons-tela"), toConfig(cfg));
+  const tela = document.getElementById("cons-tela"); tela.classList.toggle("t34", consTipo === "carrossel");
+  consParar = consTipo === "carrossel" ? montarCarrossel(tela, toConfig(cfg)) : montarPrevia(tela, toConfig(cfg));
+  document.getElementById("cons-nota-tela").textContent = consTipo === "carrossel" ? "Prévia ao vivo · passe as telas pelas setas" : "Prévia ao vivo com fotos de exemplo";
+}
+function renderConsRefs(){
+  document.getElementById("cons-refs").innerHTML = consRefs.map((r, k) => `<span style="display:inline-flex;flex-direction:column;align-items:center"><img src="${esc(r.url)}" alt="Referência ${k + 1}"><button type="button" class="x" data-xref="${k}">remover</button></span>`).join("");
+}
+function addRefs(files){
+  const max = sampleImgs?.maxCount || 4;
+  for (const f of files) {
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) continue;
+    if (consRefs.length >= max) { document.getElementById("cons-ia-msg").textContent = `Até ${max} imagens por vez.`; break; }
+    consRefs.push({file: f, url: URL.createObjectURL(f)});
+  }
+  renderConsRefs();
 }
 function abrirCons(m){
-  consEdit = m || null; cfg = m ? fromConfig(m.config) : {...CFG0};
+  consEdit = m || null; consTipo = m?.animador === "carrossel" ? "carrossel" : "video"; cfg = m ? fromConfig(m.config, consTipo) : {...CFG0[consTipo]};
+  consRefs = []; renderConsRefs();
   document.getElementById("cons-nome").value = m ? m.nome : ""; document.getElementById("cons-desc").value = m?.descricaoDono || "";
   document.getElementById("cons-msg").textContent = m ? `Editando "${m.nome}". Salvar substitui o modelo.` : "";
+  document.getElementById("cons-ia-msg").textContent = "";
   const box = document.getElementById("cons"); box.hidden = false; renderCons(); box.scrollIntoView({block: "start", behavior: "smooth"});
 }
 function fecharCons(){ document.getElementById("cons").hidden = true; if (consParar) { consParar(); consParar = null; } }
 document.getElementById("cons-abrir").addEventListener("click", () => abrirCons(null));
 document.getElementById("cons-fechar").addEventListener("click", fecharCons);
+document.getElementById("cons-tipo").addEventListener("click", e => { const b = e.target.closest("[data-tipo]"); if (!b || b.dataset.tipo === consTipo) return; consTipo = b.dataset.tipo; cfg = {...CFG0[consTipo]}; consEdit = null; renderCons(); });
 document.getElementById("cons-ops").addEventListener("click", e => { const b = e.target.closest("[data-ck]"); if (!b) return; cfg[b.dataset.ck] = b.dataset.cv; renderCons(); });
+document.getElementById("cons-file").addEventListener("change", e => { addRefs([...e.target.files]); e.target.value = ""; });
+document.getElementById("cons-refs").addEventListener("click", e => { const b = e.target.closest("[data-xref]"); if (!b) return; consRefs.splice(+b.dataset.xref, 1); renderConsRefs(); });
+document.getElementById("cons").addEventListener("paste", e => { const fs = [...(e.clipboardData?.files || [])]; if (fs.length) { e.preventDefault(); addRefs(fs); } });
 document.getElementById("cons-salvar").addEventListener("click", async () => {
   const msg = document.getElementById("cons-msg"), nome = document.getElementById("cons-nome").value.trim();
   if (!db) { msg.textContent = "Abra pelo claude.ai com a sua conta para salvar."; return; }
   if (!nome) { msg.textContent = "Dê um nome ao modelo."; document.getElementById("cons-nome").focus(); return; }
+  const b = document.getElementById("cons-salvar"); b.disabled = true;
+  // os prints de referência ficam guardados junto do modelo (assets), para a equipe consultar
+  const refIds = [...(consEdit?.referencias || [])];
+  if (assets) for (const r of consRefs) { if (r.id) continue; try { const up = await assets.upload(r.file); r.id = up.id; refIds.push(up.id); } catch {} }
   const slug = norm(nome).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30) || "modelo";
   const id = consEdit?.id || `meu-${slug}-${Date.now().toString(36).slice(-4)}`, agora = new Date().toISOString();
-  const doc = {id, nome, tipo: "video", desc: descreverCfg(cfg), quando: "Modelo criado por você no construtor.", animador: "configuravel", config: toConfig(cfg),
-    status: "em_teste", autor: "dono", descricaoDono: document.getElementById("cons-desc").value.trim(), criadoEm: consEdit?.criadoEm || agora, atualizadoEm: agora};
-  const b = document.getElementById("cons-salvar"); b.disabled = true;
-  try { await db.collection("modelos_custom").doc(id).set(doc); msg.textContent = `"${nome}" salvo no mostruário (em teste). Já dá para escolher no + Novo pedido.`; consEdit = doc; }
+  const car = consTipo === "carrossel";
+  const doc = {id, nome, tipo: car ? "criativo" : "video", formato: car ? "carrossel" : "reels", desc: descreverCfg(cfg), quando: "Modelo criado por você no construtor.",
+    animador: car ? "carrossel" : "configuravel", config: toConfig(cfg), status: "em_teste", autor: "dono", referencias: refIds,
+    descricaoDono: document.getElementById("cons-desc").value.trim(), criadoEm: consEdit?.criadoEm || agora, atualizadoEm: agora};
+  try { await db.collection("modelos_custom").doc(id).set(doc); msg.textContent = `"${nome}" salvo no mostruário (${car ? "aba Criativo" : "aba Vídeo"}, em teste). Já dá para escolher no + Novo pedido.`; consEdit = doc; }
   catch { msg.textContent = "Não consegui salvar. Tente de novo."; }
   b.disabled = false;
 });
 document.getElementById("cons-ia").addEventListener("click", async () => {
   const m = document.getElementById("cons-ia-msg"), desc = document.getElementById("cons-desc").value.trim();
   if (!sampleApi) { m.textContent = "Indisponível nesta visualização."; return; }
-  if (desc.length < 5) { m.textContent = "Escreva a descrição primeiro."; return; }
-  const b = document.getElementById("cons-ia"); b.disabled = true; m.textContent = "Montando…";
-  const permitido = Object.fromEntries(CONS_OPS.map(([k, , ops]) => [k, ops.map(o => o[0])]));
-  const prompt = `Você configura um modelo de Reels (vídeo 9:16) para o Instagram de um hotel. Converta a descrição do dono em um objeto JSON com estas chaves e SOMENTE estes valores:\n${CONS_OPS.map(([k, t, ops]) => `- ${k} (${t}): ${ops.map(([v, n]) => `"${v}" = ${n}`).join("; ")}`).join("\n")}\n- nome: um nome curto (até 4 palavras, em português) para o modelo.\nO que a descrição não disser, mantenha como está agora: ${JSON.stringify(cfg)}.\nResponda só com o JSON.\n\nDescrição do dono: ${desc.slice(0, 1500)}`;
+  if (desc.length < 5 && !consRefs.length) { m.textContent = "Cole um print ou escreva a descrição primeiro."; return; }
+  if (consRefs.length && !sampleImgs && desc.length < 5) { m.textContent = "Nesta visualização a IA não lê imagens: descreva o estilo com palavras. Os prints ficam salvos com o modelo."; return; }
+  const b = document.getElementById("cons-ia"); b.disabled = true; m.textContent = consRefs.length ? "Olhando as referências…" : "Montando…";
+  const ops = OPS[consTipo], permitido = Object.fromEntries(ops.map(([k, , o]) => [k, o.map(x => x[0])]));
+  const oQue = consTipo === "carrossel" ? "um modelo de carrossel (telas 3:4) para o Instagram de um hotel" : "um modelo de Reels (vídeo 9:16) para o Instagram de um hotel";
+  const prompt = `Você configura ${oQue}. ${consRefs.length ? `As ${consRefs.length} imagem(ns) anexada(s) são prints de referência que o dono gostou: observe o estilo (onde fica o texto, tipo de letra, se há caixa ou faixa atrás do texto, cor de destaque, quanto a foto é escurecida, moldura, numeração, logo) e reproduza o mais parecido possível com as opções abaixo. ` : ""}${desc ? `A descrição do dono vale mais que as imagens quando houver conflito. ` : ""}Responda com um objeto JSON com estas chaves e SOMENTE estes valores:\n${ops.map(([k, t, o]) => `- ${k} (${t}): ${o.map(([v, n]) => `"${v}" = ${n}`).join("; ")}`).join("\n")}\n- nome: um nome curto (até 4 palavras, em português) para o modelo.\n- observacao: uma frase curta, em português, sobre o que da referência não deu para reproduzir (ou "").\nO que não der para saber, mantenha como está agora: ${JSON.stringify(cfg)}.\nResponda só com o JSON.${desc ? `\n\nDescrição do dono: ${desc.slice(0, 1500)}` : ""}`;
   try {
-    const r = await sampleApi.json(prompt, {modelTier: "quick", cache: false});
+    const opts = {modelTier: consRefs.length ? "default" : "quick", cache: false};
+    if (consRefs.length && sampleImgs) opts.images = consRefs.map(r => r.file);
+    const r = await sampleApi.json(prompt, opts);
     let n = 0; for (const k in permitido) { const v = r && r[k] != null ? String(r[k]) : null; if (v && permitido[k].includes(v) && cfg[k] !== v) { cfg[k] = v; n++; } }
     const campoNome = document.getElementById("cons-nome"); if (!campoNome.value.trim() && r && typeof r.nome === "string") campoNome.value = r.nome.slice(0, 40);
-    renderCons(); m.textContent = n ? `Pronto: ${n} ajuste(s) aplicados. Confira a prévia e mude o que quiser.` : "Nada mudou; tente descrever de outro jeito.";
+    renderCons();
+    const obs = r && typeof r.observacao === "string" && r.observacao.trim() ? ` Observação: ${r.observacao.trim().slice(0, 200)}` : "";
+    m.textContent = (n ? `Pronto: ${n} ajuste(s) aplicados. Confira a prévia e mude o que quiser.` : "Nada mudou; tente outro print ou descreva com palavras.") + obs;
   } catch (e) {
-    m.textContent = ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(e?.code) ? "A IA não está liberada nesta visualização; use as opções abaixo." : e?.code === "rate_limited" ? "Muitos pedidos agora; tente em instantes." : "Não consegui montar agora. Tente de novo ou use as opções.";
+    m.textContent = ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(e?.code) ? "A IA não está liberada nesta visualização; use as opções abaixo."
+      : e?.code === "image_rejected" ? "Uma das imagens não foi aceita; tente outro print (JPG ou PNG)." : e?.code === "rate_limited" ? "Muitos pedidos agora; tente em instantes." : "Não consegui montar agora. Tente de novo ou use as opções.";
   }
   b.disabled = false;
 });
@@ -1795,7 +1883,9 @@ tally();
   try { comments = await claude.use("comments"); } catch { comments = null; }
   try { downloads = await claude.use("downloads"); } catch { downloads = null; }
   try { sampleApi = await claude.use("sample"); } catch { sampleApi = null; }
+  if (sampleApi) { try { sampleImgs = (await sampleApi.limits()).images || null; } catch { sampleImgs = null; } }
   if (!sampleApi) document.querySelector("[data-ia]").hidden = true;
+  if (!sampleImgs && !assets) document.querySelector("[data-ia-img]").hidden = true;
   if (!db) {
     document.getElementById("offline").hidden = false;
     document.querySelectorAll("[data-actions]").forEach(a => a.hidden = true);

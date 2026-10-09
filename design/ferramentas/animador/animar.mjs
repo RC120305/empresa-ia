@@ -1,5 +1,6 @@
 // Animador Cabanas: transforma um roteiro JSON em MP4 9:16, quadro a quadro (inspirado no Remotion, feito em casa).
 // Uso: node design/ferramentas/animador/animar.mjs <roteiro.json> [saida.mp4] [--trabalhadores 4] [--previa]
+//   --png: em vez de vídeo, salva cada quadro como PNG na pasta [saida] (modelo "carrossel": uma tela por quadro).
 //   --previa: renderiza em 540x960 (metade), mais rápido, para conferir.
 // O roteiro diz o modelo (arquivo em modelos/) e o conteúdo; fotos e música com caminho relativo ao roteiro.
 // Requer: Playwright (npm global) + Chromium do ambiente, e o ffmpeg do imageio-ffmpeg (pip install imageio-ffmpeg).
@@ -9,12 +10,14 @@ import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'
 
 const args = process.argv.slice(2), opc = n => { const i = args.indexOf(n); return i >= 0 ? args.splice(i, 2)[1] : null; };
 const previa = args.includes('--previa'); if (previa) args.splice(args.indexOf('--previa'), 1);
+const png = args.includes('--png'); if (png) args.splice(args.indexOf('--png'), 1);
 const nTrab = Number(opc('--trabalhadores') || Math.min(4, os.cpus().length));
 const [arqRoteiro, saidaArg] = args;
 if (!arqRoteiro) { console.error('Uso: node animar.mjs <roteiro.json> [saida.mp4] [--trabalhadores N] [--previa]'); process.exit(1); }
 const dirMotor = path.dirname(fileURLToPath(import.meta.url)), dirRot = path.dirname(path.resolve(arqRoteiro));
 const roteiro = JSON.parse(fs.readFileSync(arqRoteiro, 'utf8'));
-const saida = path.resolve(saidaArg || path.join(dirRot, roteiro.saida || 'saida.mp4'));
+const saida = path.resolve(saidaArg || path.join(dirRot, roteiro.saida || (png ? 'telas' : 'saida.mp4')));
+if (png) fs.mkdirSync(saida, {recursive: true});
 const abs = p => (/^(https?|file|data):/.test(p) ? p : pathToFileURL(path.resolve(dirRot, p)).href);
 // troca todo campo "foto"/"fotos" por caminho absoluto, para o motor achar a partir da pasta dele
 // "foto" e "video" viram caminho absoluto; "transcricao" (arquivo JSON do legendar-fala.py) entra no roteiro já lido
@@ -55,12 +58,13 @@ let feitos = 0;
 await Promise.all(pags.map(async ({pg, erros}, k) => {
   for (let f = k; f < quadros; f += nTrab) {
     await pg.evaluate(n => quadro(n), f);
-    await pg.screenshot({path: path.join(tmp, `q${String(f).padStart(5, '0')}.jpg`), type: 'jpeg', quality: 92});
+    await pg.screenshot(png ? {path: path.join(saida, `${String(f + 1).padStart(2, '0')}.png`), type: 'png'} : {path: path.join(tmp, `q${String(f).padStart(5, '0')}.jpg`), type: 'jpeg', quality: 92});
     if (erros.length) throw new Error(erros.join(' | '));
     if (++feitos % 60 === 0) process.stdout.write(`${Math.round(100 * feitos / quadros)}% `);
   }
 }));
 await nav.close();
+if (png) { fs.rmSync(tmp, {recursive: true, force: true}); console.log(`\nOK: ${quadros} tela(s) PNG em ${saida}`); process.exit(0); }
 
 // áudio: a fala do vídeo de fundo (roteiro.video, quando "audioDoVideo" não é false) e/ou a música (mais baixa sob a fala)
 const m = roteiro.musica, dur = quadros / fps, fala = roteiro.video && roteiro.audioDoVideo !== false;
