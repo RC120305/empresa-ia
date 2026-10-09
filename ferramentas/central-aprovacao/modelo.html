@@ -1680,26 +1680,40 @@ function renderConsRefs(){
   document.getElementById("cons-refs").innerHTML = consRefs.map((r, k) => `<span style="display:inline-flex;flex-direction:column;align-items:center;max-width:120px"><img src="${esc(r.capa || r.url)}" alt="Referência ${k + 1}">${r.video ? `<small class="note" style="text-align:center">vídeo · ${fmtS(Math.round(r.dur))} s${r.ritmo ? ` · cena a cada ~${fmtS(r.ritmo.toFixed(1))} s` : ""}</small>` : ""}<button type="button" class="x" data-xref="${k}">remover</button></span>`).join("");
 }
 // vídeo de referência: o navegador tira até 4 quadros espalhados e mede o ritmo dos cortes (troca brusca de imagem)
-function esperar(el, ev){ return new Promise((ok, erro) => { el.addEventListener(ev, ok, {once: true}); el.addEventListener("error", () => erro(new Error("vídeo")), {once: true}); }); }
-async function analisarVideo(file, nQuadros){
-  const v = document.createElement("video"); v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = URL.createObjectURL(file);
-  await esperar(v, "loadedmetadata");
-  const dur = v.duration || 0, ate = Math.min(dur, 15), ir = async t => { v.currentTime = Math.min(t, Math.max(0, dur - 0.05)); await esperar(v, "seeked"); };
-  const mini = document.createElement("canvas"); mini.width = 24; mini.height = 42; const mc = mini.getContext("2d", {willReadFrequently: true});
-  let ant = null, passos = 0; const difs = [];
-  for (let t = 0.1; t < ate; t += 0.2) {
-    await ir(t); mc.drawImage(v, 0, 0, 24, 42); const px = mc.getImageData(0, 0, 24, 42).data; passos++;
-    if (ant) { let d = 0; for (let i = 0; i < px.length; i += 4) d += Math.abs(px[i] - ant[i]) + Math.abs(px[i + 1] - ant[i + 1]) + Math.abs(px[i + 2] - ant[i + 2]); difs.push(d / (px.length / 4) / 3); }
-    ant = px;
-  }
-  // corte = salto bem maior que o movimento normal da cena (limiar adaptativo: 2,5x a mediana, mínimo 15)
-  const med = [...difs].sort((a, b) => a - b)[Math.floor(difs.length / 2)] || 0, cortes = difs.filter(d => d > Math.max(15, med * 2.5)).length;
-  const ritmo = passos > 3 ? (passos * 0.2) / (cortes + 1) : null;
-  const tela = document.createElement("canvas"), w = 360, h = Math.round(w * (v.videoHeight || 640) / (v.videoWidth || 360)); tela.width = w; tela.height = h;
-  const tc = tela.getContext("2d"), quadros = [];
-  for (let k = 0; k < nQuadros; k++) { await ir((ate || dur) * (k + 0.5) / nQuadros); tc.drawImage(v, 0, 0, w, h); quadros.push(await new Promise(ok => tela.toBlob(ok, "image/jpeg", 0.8))); }
-  URL.revokeObjectURL(v.src);
-  return {dur, ritmo, quadros, intervalo: (ate || dur) / nQuadros};
+// espera um evento do vídeo, com limite de tempo (no iPhone alguns eventos não chegam): resolve false se estourar
+function esperar(el, ev, ms = 4000){ return new Promise((ok, erro) => { const t = setTimeout(() => ok(false), ms); el.addEventListener(ev, () => { clearTimeout(t); ok(true); }, {once: true}); el.addEventListener("error", () => { clearTimeout(t); erro(new Error("vídeo")); }, {once: true}); }); }
+async function analisarVideo(file, nQuadros, progresso = () => {}){
+  // o vídeo precisa estar na página (invisível) e "acordado" com play/pause para o Safari do iPhone liberar os quadros
+  const v = document.createElement("video"); v.muted = true; v.defaultMuted = true; v.playsInline = true; v.setAttribute("playsinline", ""); v.setAttribute("muted", ""); v.preload = "auto";
+  Object.assign(v.style, {position: "fixed", left: "-10px", top: "0", width: "2px", height: "2px", opacity: "0", pointerEvents: "none"});
+  document.body.appendChild(v); v.src = URL.createObjectURL(file); v.load();
+  try {
+    if (!(await esperar(v, "loadedmetadata", 15000))) throw new Error("metadata");
+    try { await v.play(); v.pause(); } catch {}
+    if (v.readyState < 2) await esperar(v, "loadeddata", 6000);
+    const dur = isFinite(v.duration) ? v.duration : 0, ate = Math.min(dur || 10, 12);
+    const ir = async t => { const alvo = Math.min(t, Math.max(0, (dur || ate) - 0.05)); if (Math.abs(v.currentTime - alvo) < 0.01) return; v.currentTime = alvo; await esperar(v, "seeked", 2500); };
+    // ritmo: compara miniaturas a cada 0,25 s; corte = salto bem maior que o movimento normal (2,5x a mediana, mínimo 15)
+    const mini = document.createElement("canvas"); mini.width = 24; mini.height = 42; const mc = mini.getContext("2d", {willReadFrequently: true});
+    let ant = null, passos = 0; const difs = [], inicio = Date.now();
+    for (let t = 0.1; t < ate && Date.now() - inicio < 20000; t += 0.25) {
+      await ir(t); progresso(Math.round(70 * t / ate));
+      try { mc.drawImage(v, 0, 0, 24, 42); } catch { continue; }
+      const px = mc.getImageData(0, 0, 24, 42).data; passos++;
+      if (ant) { let d = 0; for (let i = 0; i < px.length; i += 4) d += Math.abs(px[i] - ant[i]) + Math.abs(px[i + 1] - ant[i + 1]) + Math.abs(px[i + 2] - ant[i + 2]); difs.push(d / (px.length / 4) / 3); }
+      ant = px;
+    }
+    const med = [...difs].sort((a, b) => a - b)[Math.floor(difs.length / 2)] || 0, cortes = difs.filter(d => d > Math.max(15, med * 2.5)).length;
+    const ritmo = passos > 4 && difs.some(d => d > 0) ? (passos * 0.25) / (cortes + 1) : null;
+    const w = 360, h = Math.round(w * (v.videoHeight || 640) / (v.videoWidth || 360)), tela = document.createElement("canvas"); tela.width = w; tela.height = h;
+    const tc = tela.getContext("2d"), quadros = [];
+    for (let k = 0; k < nQuadros; k++) {
+      await ir(ate * (k + 0.5) / nQuadros); progresso(70 + Math.round(30 * (k + 1) / nQuadros));
+      try { tc.drawImage(v, 0, 0, w, h); const b = await new Promise(ok => tela.toBlob(ok, "image/jpeg", 0.8)); if (b && b.size > 2000) quadros.push(b); } catch {}
+    }
+    if (!quadros.length) throw new Error("sem quadros");
+    return {dur: dur || ate, ritmo, quadros, intervalo: ate / nQuadros};
+  } finally { URL.revokeObjectURL(v.src); v.remove(); }
 }
 async function addRefs(files){
   const max = sampleImgs?.maxCount || 4, m = document.getElementById("cons-ia-msg");
@@ -1709,11 +1723,11 @@ async function addRefs(files){
       if (f.size > 200 * 1024 * 1024) { m.textContent = "Vídeo grande demais: use um trecho de até 1 minuto."; continue; }
       m.textContent = "Analisando o vídeo…";
       try {
-        const a = await analisarVideo(f, Math.max(1, max - consRefs.filter(r => !r.video).length));
+        const a = await analisarVideo(f, Math.max(1, max - consRefs.filter(r => !r.video).length), pct => { m.textContent = `Analisando o vídeo… ${pct}%`; });
         consRefs.push({file: f, video: true, ...a, capa: URL.createObjectURL(a.quadros[0])});
         if (a.ritmo) { const alvo = a.ritmo < 1.8 ? "1.4" : a.ritmo < 2.6 ? "2.2" : "3"; if (consTipo === "video") { cfg.segundos = alvo; if (a.ritmo < 1.5) cfg.transicao = "corte"; renderCons(); } }
         m.textContent = a.ritmo ? `Vídeo lido: uma cena a cada ~${fmtS(a.ritmo.toFixed(1))} s (já ajustei o tempo por tela). Toque em "Montar pela referência" para copiar o estilo.` : "Vídeo lido. Toque em \"Montar pela referência\".";
-      } catch { m.textContent = "Não consegui ler esse vídeo neste aparelho. Tente um print da tela ou um MP4 do celular."; }
+      } catch { m.textContent = "Não consegui ler esse vídeo neste aparelho. Tente de novo pelo computador, ou cole 2 ou 3 prints de momentos diferentes do vídeo."; }
       continue;
     }
     if (!/^image\/(jpeg|png|webp)$/.test(f.type)) continue;
