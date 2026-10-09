@@ -1608,7 +1608,7 @@ const OPS = {
     ["fonte", "Letra", [["josefin", "Moderna (caixa alta)"], ["playfair", "Elegante (itálico)"]]],
     ["fundo", "Fundo do texto", [["nenhum", "Sem fundo"], ["caixa", "Caixa marrom"], ["faixa", "Faixa escura"]]],
     ["movimento", "Movimento da foto", [["alternar", "Alternar"], ["zoom", "Zoom lento"], ["deslize", "Deslizar"], ["parado", "Parada"]]],
-    ["segundos", "Tempo por tela", [["1.4", "Rápido (1,4 s)"], ["2.2", "Médio (2,2 s)"], ["3", "Calmo (3 s)"]]],
+    ["segundos", "Tempo por tela", [["0.9", "Muito rápido (0,9 s)"], ["1.4", "Rápido (1,4 s)"], ["2.2", "Médio (2,2 s)"], ["3", "Calmo (3 s)"]]],
     ["transicao", "Troca de tela", [["fusao", "Fusão suave"], ["corte", "Corte seco"]]],
     ["escurecer", "Escurecer a foto", [["0.15", "Pouco"], ["0.35", "Médio"], ["0.55", "Bastante"]]],
     ["selo", "Logo no alto", SIMNAO], ["fecho", "Fecho com logo e chamada", SIMNAO]],
@@ -1725,7 +1725,7 @@ async function addRefs(files){
       try {
         const a = await analisarVideo(f, Math.max(1, max - consRefs.filter(r => !r.video).length), pct => { m.textContent = `Analisando o vídeo… ${pct}%`; });
         consRefs.push({file: f, video: true, ...a, capa: URL.createObjectURL(a.quadros[0])});
-        if (a.ritmo) { const alvo = a.ritmo < 1.8 ? "1.4" : a.ritmo < 2.6 ? "2.2" : "3"; if (consTipo === "video") { cfg.segundos = alvo; if (a.ritmo < 1.5) cfg.transicao = "corte"; renderCons(); } }
+        if (a.ritmo) { const alvo = a.ritmo < 1.1 ? "0.9" : a.ritmo < 1.8 ? "1.4" : a.ritmo < 2.6 ? "2.2" : "3"; if (consTipo === "video") { cfg.segundos = alvo; if (a.ritmo < 1.5) cfg.transicao = "corte"; renderCons(); } }
         m.textContent = a.ritmo ? `Vídeo lido: uma cena a cada ~${fmtS(a.ritmo.toFixed(1))} s (já ajustei o tempo por tela). Toque em "Montar pela referência" para copiar o estilo.` : "Vídeo lido. Toque em \"Montar pela referência\".";
       } catch { m.textContent = "Não consegui ler esse vídeo neste aparelho. Tente de novo pelo computador, ou cole 2 ou 3 prints de momentos diferentes do vídeo."; }
       continue;
