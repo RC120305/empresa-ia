@@ -440,7 +440,8 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
             <div data-ia-img style="margin-top:8px"><span class="t" style="font-size:13px;font-weight:600" id="cons-ref-t">Referência (opcional)</span>
               <div class="colar" id="cons-colar" tabindex="0"><span id="cons-ref-dica">Cole um print aqui (Ctrl+V / colar) ou</span> <label class="linkbtn filebtn" style="display:inline"><span id="cons-ref-btn">escolha o arquivo</span><input type="file" id="cons-file" accept="image/jpeg,image/png,image/webp,video/*" multiple aria-label="Escolher referência"></label></div>
               <div class="refimgs" id="cons-refs"></div></div>
-            <div class="vacts" style="margin-top:6px"><button class="btn ghost" type="button" id="cons-ia">✨ Montar pela referência</button><span class="note" id="cons-ia-msg"></span></div></div>
+            <div class="vacts" style="margin-top:6px"><button class="btn ghost" type="button" id="cons-ia">✨ Montar pela referência</button><button class="btn ok" type="button" id="cons-copiar" hidden>🎬 Copiar este vídeo com nossas imagens</button><span class="note" id="cons-ia-msg"></span></div>
+            <p class="note" id="cons-copiar-nota" hidden><b>Montar pela referência</b> cria um modelo (o estilo) para usar depois. <b>Copiar este vídeo</b> faz um vídeo novo igual à referência (mesmos cortes, tempos e textos), com imagens do nosso acervo, e manda para a aba Vídeos.</p></div>
           <div id="cons-ops"></div>
         </div>
         <div class="lado">
@@ -1673,11 +1674,17 @@ function renderCons(){
   if (consParar) consParar();
   const tela = document.getElementById("cons-tela"); tela.classList.toggle("t34", consTipo === "carrossel");
   consParar = consTipo === "carrossel" ? montarCarrossel(tela, toConfig(cfg)) : montarPrevia(tela, toConfig(cfg));
+  atualizaCopiar();
   document.getElementById("cons-ref-dica").textContent = consTipo === "video" ? "Envie um vídeo de referência (MP4 do celular ou gravação de tela) ou cole um print:" : "Cole um print aqui (Ctrl+V / colar) ou";
   document.getElementById("cons-ref-btn").textContent = consTipo === "video" ? "escolher vídeo ou imagem" : "escolha imagens";
   document.getElementById("cons-nota-tela").textContent = consTipo === "carrossel" ? "Prévia ao vivo · passe as telas pelas setas" : "Prévia ao vivo com fotos de exemplo";
 }
+function atualizaCopiar(){
+  const temVideo = consTipo === "video" && consRefs.some(r => r.video);
+  document.getElementById("cons-copiar").hidden = !temVideo; document.getElementById("cons-copiar-nota").hidden = !temVideo;
+}
 function renderConsRefs(){
+  setTimeout(atualizaCopiar, 0);
   document.getElementById("cons-refs").innerHTML = consRefs.map((r, k) => `<span style="display:inline-flex;flex-direction:column;align-items:center;max-width:120px"><img src="${esc(r.capa || r.url)}" alt="Referência ${k + 1}">${r.video ? `<small class="note" style="text-align:center">vídeo · ${fmtS(Math.round(r.dur))} s${r.ritmo ? ` · cena a cada ~${fmtS(r.ritmo.toFixed(1))} s` : ""}</small>` : ""}<button type="button" class="x" data-xref="${k}">remover</button></span>`).join("");
 }
 // vídeo de referência: o navegador tira até 4 quadros espalhados e mede o ritmo dos cortes (troca brusca de imagem)
@@ -1832,6 +1839,32 @@ async function enviarRefParaEquipe(desc, m){
   m.textContent = agora ? "⏳ A IA deste aparelho não vê imagens, então mandei o vídeo para a equipe. Em alguns minutos a prévia aqui muda sozinha para o modelo montado (pode deixar esta tela aberta ou voltar depois: ele também aparece no Mostruário)." : "⏳ A IA deste aparelho não vê imagens, então guardei o vídeo para a equipe. O modelo montado aparece na próxima rodada (7h58, 12h58 ou 17h58), aqui e no Mostruário.";
   b.disabled = false;
 }
+// cópia de vídeo de referência: vira um pedido de vídeo (modo "copia") para a equipe montar com o acervo
+async function pedirCopia(refVideo, desc, m, b){
+  if (!db) { m.textContent = "Abra pelo claude.ai com a sua conta para enviar."; return; }
+  if (refVideo.copiaEnviada) { m.textContent = "⏳ A cópia deste vídeo já foi pedida. Ela aparece na aba Vídeos quando ficar pronta."; return; }
+  b.disabled = true; m.textContent = "Enviando o vídeo de referência…";
+  let videoId = null; const quadros = [];
+  if (assets) {
+    if (refVideo.file.size <= 20 * 1024 * 1024) { try { videoId = (await assets.upload(refVideo.file)).id; } catch {} }
+    for (const q of refVideo.quadros || []) { try { quadros.push((await assets.upload(q)).id); } catch {} }
+  }
+  const id = "ped-" + Date.now().toString(36);
+  const doc = {id, tipo: "video", formato: "reels", modo: "copia", estilo: "copia", tema: desc || "Copiar o vídeo de referência com imagens do nosso acervo", obs: desc,
+    referencia: {video: videoId, nome: refVideo.file.name || "referência", quadros, duracao: Math.round(refVideo.dur || 0), ritmoSeg: refVideo.ritmo ? +refVideo.ritmo.toFixed(1) : null},
+    midia: "equipe", musica: "equipe", copy: "equipe", letreiro: "sim", status: "novo", criadoEm: new Date().toISOString(),
+    resumo: `Pedido: Vídeo (cópia de referência)\nReferência: ${refVideo.file.name || "vídeo"} (${Math.round(refVideo.dur || 0)} s${refVideo.ritmo ? `, cena a cada ~${refVideo.ritmo.toFixed(1)} s` : ""})${videoId ? "" : " · vídeo grande: só os quadros foram enviados"}\nObservação: ${desc || "-"}`};
+  try { await db.collection("pedidos").doc(id).set(doc); } catch { m.textContent = "Não consegui enviar. Tente de novo."; b.disabled = false; return; }
+  refVideo.copiaEnviada = true;
+  let agora = false;
+  try { if (comments && await comments.canSendToClaude() === "available") { await comments.sendToClaude({anchor: await comments.anchorFor(document.getElementById("cons")), text: `Pedido de vídeo ${id}: COPIAR o vídeo de referência com imagens do nosso acervo (skill editar-video, modo cópia). Referência: asset ${videoId || "(grande demais; só quadros)"}; quadros: ${quadros.join(", ")}. Observação: ${desc || "(nenhuma)"}`.slice(0, 3900) }); agora = true; } } catch {}
+  m.textContent = (agora ? "🎬 Pedido enviado! A equipe está montando a cópia com imagens do nosso acervo." : "🎬 Pedido salvo! A equipe monta a cópia na próxima rodada (7h58, 12h58 ou 17h58).") + ` Ela aparece na aba Vídeos para você aprovar e o andamento fica em "+ Novo pedido → Seus pedidos".${videoId ? "" : " (O vídeo passou de 20 MB: mandei só os quadros; se quiser a cópia mais fiel, coloque o vídeo na pasta do Drive \"Referências de vídeo\".)"}`;
+  b.disabled = false;
+}
+document.getElementById("cons-copiar").addEventListener("click", () => {
+  const v = consRefs.find(r => r.video); if (!v) return;
+  pedirCopia(v, document.getElementById("cons-desc").value.trim(), document.getElementById("cons-ia-msg"), document.getElementById("cons-copiar"));
+});
 function syncCustom(docs){
   // modelo que a equipe montou a partir da referência enviada daqui: abre no construtor e a prévia muda
   const pronto = consPendente && docs.find(d => d && d.refOrigem === consPendente);
@@ -1853,6 +1886,7 @@ const exPost = (() => { const p = POSTS.find(p => p.estilos && p.estilos["1"] &&
 const exModelo = m => m.exemplo?.video ? capaVid(m.exemplo.video) : m.exemplo?.estilo ? exPost(m.exemplo.estilo) : "";
 const estilosPedido = () => { const tipo = ehVideo() ? "video" : "criativo";
   return [...MODELOS.filter(m => m.tipo === tipo && !["pausado", "excluido"].includes(statusModelo(m))).map(m => [m.id, m.nome, (statusModelo(m) === "aprovado" ? "" : "Em teste · ") + m.desc.split(".")[0], () => exModelo(m)]),
+    ...(ehVideo() ? [["copia", "🎬 Copiar um vídeo", "Igual a uma referência, com nossas imagens", () => ""]] : []),
     ["novo", "Modelo novo", "Explique ou mande a referência no fim", () => ""], ["equipe", "Equipe decide", ehVideo() ? "O Editor escolhe o melhor" : "O Designer escolhe o melhor", () => ""]]; };
 const PNOVO = () => ({tipo:"", formato:"", duracao:"", telas:"", tema:"", objetivo:"", persona:"", data:"", estilo:"", midia:"equipe", fotos:[], trechos:[], uploads:[], copy:"equipe", textoTela:"", legenda:"", letreiro:"sim", transcricao:"nao", musica:"app", faixa:"", obs:""});
 let P = PNOVO(), passo = 0, pedidos = [];
@@ -1873,7 +1907,7 @@ const PASSOS = [
       <div class="q"><b>Para quem?</b><div class="opts">${PED_PERSONAS.map(([v,t]) => opt("persona",v,t)).join("")}</div></div>
       <div class="q"><label for="w-data"><b>Para quando? (opcional)</b></label><input type="date" id="w-data" data-txt="data" value="${esc(P.data)}" style="max-width:220px"></div>`},
   {t: "Estilo", ok: () => !!P.estilo, h: () => `<div class="opts cards${ehVideo() ? "" : " r34"}">${estilosPedido().map(([v,t,d,img]) => opt("estilo",v,t,d,img())).join("")}</div><p class="note">Veja os exemplos completos e sugira mudanças na aba <b>Modelos</b>.</p>`},
-  {t: ehVideoT => "Imagens e vídeos", ok: () => P.midia === "equipe" || P.fotos.length + P.trechos.length + P.uploads.length > 0, h: () => `<div class="opts">${opt("midia","equipe","A equipe escolhe","usa o acervo catalogado")}${opt("midia","eu","Eu escolho","do acervo ou do celular")}</div>
+  {t: ehVideoT => "Imagens e vídeos", ok: () => (P.estilo !== "copia" || !!P.refVideo) && (P.midia === "equipe" || P.fotos.length + P.trechos.length + P.uploads.length > 0), h: () => `${P.estilo === "copia" ? `<div class="q" data-up-ped><b>Vídeo de referência (o que vamos copiar)</b><input type="file" id="w-ref" accept="video/*"><span class="note" id="w-refn">${P.refVideo ? `✓ ${esc(P.refVideo.nome)}` : "MP4 do celular ou gravação de tela, até 20 MB. Maior: coloque na pasta do Drive \"Referências de vídeo\" e cite o nome em \"Mais alguma coisa?\"."}</span></div>` : ""}<div class="opts">${opt("midia","equipe","A equipe escolhe","usa o acervo catalogado")}${opt("midia","eu","Eu escolho","do acervo ou do celular")}</div>
       ${P.midia === "eu" ? `${(CATALOGO.videos||[]).length ? `<div class="q"><b>Trechos de vídeo do acervo</b><div class="trlist">${CATALOGO.videos.flatMap(v => v.trechos.filter(t => !t.uso_sugerido.includes("não usar")).map(t => { const k = v.id_drive + ":" + t.id; return `<button type="button" class="tr" data-trecho="${esc(k)}" aria-pressed="${String(P.trechos.includes(k))}"><b style="white-space:nowrap">${esc(t.id)} · ${fmtS(t.ini)}–${fmtS(t.fim)} s</b><span>${esc(v.local?.nome || v.titulo_drive)}: ${esc(t.descricao)}</span></button>`; })).join("")}</div></div>` : ""}
         <div class="q"><b>Fotos do banco</b> <input type="text" id="w-fq" placeholder="Buscar foto por nome ou pasta" aria-label="Buscar foto"><div class="picker" id="w-fotos"></div></div>
         <div class="q" data-up-ped><b>Do celular ou computador</b><input type="file" id="w-up" accept="image/*,video/*" multiple><span class="note" id="w-upn">${P.uploads.length ? P.uploads.length + " arquivo(s) enviado(s)" : "Fotos e vídeos curtos (até 20 MB). Vídeo maior: coloque na pasta do Drive \"Vídeos novos (para catalogar)\"."}</span></div>
@@ -1895,6 +1929,7 @@ function resumo(){
     ["Tema", P.tema || "-"], ["Objetivo", nomeDe(PED_OBJETIVOS, P.objetivo) || "equipe decide"], ["Para quem", nomeDe(PED_PERSONAS, P.persona) || "equipe decide"], ["Data", P.data ? P.data.split("-").reverse().join("/") : "sem data"],
     ["Modelo", nomeDe(estilosPedido(), P.estilo) || "-"], ["Imagens", P.midia === "equipe" ? "a equipe escolhe" : `${P.trechos.length} trecho(s), ${P.fotos.length} foto(s) do banco, ${P.uploads.length} enviada(s)`],
     ["Texto", {equipe:"a equipe escreve", eu:"eu escrevo", juntos:"eu dou a ideia"}[P.copy] + (P.textoTela ? ` · "${P.textoTela}"` : "")]];
+  if (P.estilo === "copia") r.push(["Referência", P.refVideo ? P.refVideo.nome : "-"]);
   if (ehVideo()) r.push(["Letreiro", P.letreiro === "sim" ? "sim" : "não"], ["Transcrição", P.transcricao === "sim" ? "sim" : "não"], ["Música", P.musica === "app" ? "sem música (escolho no app)" : P.musica === "equipe" ? "a equipe escolhe" : (MUSICAS.find(m => m.id === P.faixa) || {}).nome || "-"]);
   return r;
 }
@@ -1937,6 +1972,13 @@ wiz.addEventListener("input", e => {
   if (el.id === "w-fq") renderPicker();
 });
 wiz.addEventListener("change", async e => {
+  if (e.target.id === "w-ref" && assets) {
+    const f = e.target.files[0], n = document.getElementById("w-refn"); if (!f) return;
+    if (f.size > 20 * 1024 * 1024) { n.textContent = "Passa de 20 MB: coloque na pasta do Drive \"Referências de vídeo\" e cite o nome no último passo."; P.refVideo = {id: null, nome: f.name + " (no Drive)"}; guarda(); atualizaSeguir(); return; }
+    n.textContent = `Enviando ${f.name}…`;
+    try { const r = await assets.upload(f); P.refVideo = {id: r.id, nome: f.name}; guarda(); n.textContent = `✓ ${f.name}`; atualizaSeguir(); } catch { n.textContent = "Não consegui enviar. Tente de novo."; }
+    return;
+  }
   if (e.target.id !== "w-up" || !assets) return;
   const n = document.getElementById("w-upn");
   for (const f of e.target.files) {
@@ -1951,7 +1993,7 @@ wiz.addEventListener("submit", async e => {
   const id = "ped-" + Date.now().toString(36);
   const btn = wiz.querySelector('[type="submit"]'); btn.disabled = true; btn.textContent = "Enviando…";
   try {
-    await db.collection("pedidos").doc(id).set({...P, id, resumo: resumo().map(([k, v]) => `${k}: ${v}`).join("\n"), status: "novo", criadoEm: new Date().toISOString()});
+    await db.collection("pedidos").doc(id).set({...P, id, ...(P.estilo === "copia" ? {modo: "copia", referencia: {video: P.refVideo?.id || null, nome: P.refVideo?.nome || ""}} : {}), resumo: resumo().map(([k, v]) => `${k}: ${v}`).join("\n"), status: "novo", criadoEm: new Date().toISOString()});
     P = PNOVO(); passo = 0; guarda(); renderWiz();
     document.getElementById("peds").scrollIntoView({block: "start", behavior: "smooth"});
   } catch { btn.disabled = false; btn.textContent = "Enviar pedido"; alert("Não consegui enviar. Tente de novo."); }

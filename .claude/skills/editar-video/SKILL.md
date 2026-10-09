@@ -50,6 +50,17 @@ Falhou algum → volta ao Editor. Só passa com tudo marcado.
 4. `python3 ferramentas/central-aprovacao/gerar.py 2026-10 <pasta de prévia>` e republique a Central (mesma url, `file_path` do `index.html`).
 5. No pedido: `status: "pronto"` e `resposta` curta ("Pronto na aba Vídeos: <título>. Confirme: ..."), com `if_version`.
 
+## 7b. Pedido "copiar referência" (`modo: "copia"`)
+O dono mandou um vídeo de referência e quer **um vídeo novo igual** (mesmos cortes, tempos, jeito e lugar dos textos, mesmo ritmo), **com as nossas imagens**. Não é criar modelo.
+1. Baixe a referência: `Artifact` read com `path` = `referencia.video` (asset). Se veio só com quadros (vídeo > 20 MB), procure o arquivo na pasta do Drive "Referências de vídeo" (`1rfhfoxSbR9RS9dPMIvCykls2ioF9GuQ7`) ou use os quadros.
+2. `python3 design/ferramentas/copiar-referencia.py analisar <referencia> design/videos/AAAA-MM/copia-<nome>/` → cenas (cortes e tempos) + `folha.jpg` (um quadro a cada 0,5 s com o tempo). **Abra a folha** e anote, por cena: tipo de plano (aéreo, close, pessoas, paisagem), movimento da câmera, e cada texto (tempo de entrada e saída, posição x/y, tamanho, maiúsculas ou não, palavra destacada e como: negrito ou cor, jeito de entrar: aparece, palavra por palavra, letra por letra).
+3. Para cada cena, escolha no **catálogo** (`design/videos/catalogo/catalogo.json`) o trecho mais parecido (mesmo tipo de plano; nunca "não usar") ou uma foto do banco; respeite a duração da cena.
+4. Textos: **mesma estrutura e posição**, conteúdo adaptado ao hotel e verdadeiro (fatos só de `contexto/hotel-operacional.md`; nada de copiar o texto de outra marca). Se a referência fala de outro lugar, troque pelo nosso.
+5. Música: do catálogo pela nota do dono, com energia parecida com a da referência (nunca a música da referência).
+6. Escreva `receita.json` (formato no topo de `copiar-referencia.py`) e rode `montar` → MP4 1080x1920. Confira a folha de quadros contra a da referência; ajuste e refaça até ficar parecido.
+7. Siga os passos 6 (checagem), 7 (Central, grupo "Cópias de vídeos de referência") e marque o pedido `pronto` com uma resposta do que copiou e do que não deu.
+Exemplo real: `design/videos/2026-10/copia-jalapao/receita.json`.
+
 ## 8. Correção de vídeo
 db `videos`, pedidos com `situacao: "enviado"`: refaça com o Editor (passos 5 e 6), suba a nova versão com o **mesmo id** (passo 7, troca a url) e marque `situacao: "feito"` com `resposta`.
 

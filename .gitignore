@@ -13,3 +13,6 @@ design/videos/remotion-piloto/out/
 design/videos/remotion-piloto/public/fotos/
 design/videos/remotion-piloto/public/musica.mp3
 design/videos/2026-10/piloto-legendas/fotos/
+
+# copiar-referencia: intermediários
+design/videos/**/roteiro-animador.json

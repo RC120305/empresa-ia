@@ -1,5 +1,14 @@
 [
  {
+  "id": "copia-jalapao",
+  "titulo": "Cópia da referência do Jalapão, com o nosso drone",
+  "grupo": "Cópias de vídeos de referência",
+  "arquivo": "design/videos/2026-10/copia-jalapao/COPIA-JALAPAO-salobra.mp4",
+  "musica": "Piano cinematic (Pixabay, sua nota 4)",
+  "nota": "Mesma estrutura do Reels que você mandou: uma cena aérea longa com zoom que entra e volta, textos pequenos em minúsculas com uma palavra em negrito mudando de lugar, e 'LEIA A LEGENDA :)' letra por letra no meio. Imagens: drone do Cânion do Salobra (passeio da região; direitos da Ecotrip a confirmar).",
+  "duracao": "15"
+ },
+ {
   "id": "teste-legenda-fala",
   "titulo": "Teste: legenda da fala (voz sintética)",
   "grupo": "Teste: kit de vídeo com fala",

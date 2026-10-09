@@ -1,0 +1,12 @@
+{
+ "referencia": "Reels @mundosemmuros (Jalapão), enviado pelo dono na Central em 09/10/2026 (ref-mv0dgfzm): 1 cena aérea longa com zoom que entra e volta; texto pequeno em minúsculas com 1 palavra em negrito, mudando de lugar; 'LEIA A LEGENDA :)' em caixa alta no meio, letra por letra.",
+ "formato": {"w": 1080, "h": 1920, "fps": 30},
+ "cenas": [{"fonte": "design/videos/brutos/DJI_0113.mp4", "ini": 0.5, "dur": 15, "zoom": "vaivem", "foco": 0.5}],
+ "textos": [
+  {"ini": 0.4, "fim": 3.4, "texto": "Bonito é, sem dúvida,\num dos lugares", "destaque": "lugares", "x": 0.56, "y": 0.33, "alinhar": "esquerda", "largura": 0.42, "tamanho": 44, "entrada": "fade"},
+  {"ini": 3.7, "fim": 6.7, "texto": "mais lindos\ndo Brasil", "destaque": "lindos", "x": 0.12, "y": 0.62, "alinhar": "esquerda", "largura": 0.42, "tamanho": 44, "entrada": "fade"},
+  {"ini": 7.1, "fim": 14.6, "texto": "Leia a legenda :)", "destaque": "", "y": 0.5, "alinhar": "centro", "largura": 0.9, "tamanho": 52, "caixa": "alta", "peso": 600, "entrada": "letra"}
+ ],
+ "escurecer": 0.1,
+ "musica": {"arquivo": "design/videos/musicas/nastelbom-piano-cinematic-304999.mp3", "inicioSeg": 56, "volume": 0.8}
+}

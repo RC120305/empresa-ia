@@ -71,7 +71,7 @@ const m = roteiro.musica, dur = quadros / fps, fala = roteiro.video && roteiro.a
 const a = ['-y', '-loglevel', 'error', '-framerate', String(fps), '-i', path.join(tmp, 'q%05d.jpg')];
 if (fala) a.push('-ss', String(roteiro.inicioVideoSeg || 0), '-i', path.resolve(dirRot, roteiro.video));
 if (m) a.push('-ss', String(m.inicioSeg || 0), '-i', path.resolve(dirRot, m.arquivo));
-a.push('-c:v', 'libx264', '-preset', 'medium', '-crf', '20', '-pix_fmt', 'yuv420p', '-r', String(fps), '-movflags', '+faststart');
+a.push('-c:v', 'libx264', '-preset', 'medium', '-crf', String(roteiro.crf || 20), '-pix_fmt', 'yuv420p', '-r', String(fps), '-movflags', '+faststart');
 const fadeM = `afade=t=in:d=0.4,afade=t=out:st=${(dur - 1.3).toFixed(2)}:d=1.3`;
 if (fala && m) a.push('-filter_complex', `[1:a]volume=1[f];[2:a]volume=${m.volume ?? 0.15},${fadeM}[mu];[f][mu]amix=inputs=2:duration=first:normalize=0[aout]`, '-map', '0:v', '-map', '[aout]', '-c:a', 'aac', '-b:a', '160k');
 else if (fala) a.push('-map', '0:v', '-map', '1:a', '-c:a', 'aac', '-b:a', '160k');
