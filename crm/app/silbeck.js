@@ -385,6 +385,8 @@ async function cotar(entrada, buscar = fetch) {
 }
 
 // Vagas por tipo e por dia (painel "Vagas" da conversa). Só leitura.
+// Data do dia como AAAA-MM-DD, venha ela "2026-10-18", "2026-10-18T00:00:00" ou "18/10/2026"
+const diaISO = x => { const t = String(x || ''); const br = t.match(/^(\d{2})\/(\d{2})\/(\d{4})/); return br ? `${br[3]}-${br[2]}-${br[1]}` : t.slice(0, 10); };
 async function vagas(inicio, dias, buscar = fetch) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(inicio || '')) throw new ErroSilbeck('data inicial inválida', 400);
   const n = Math.min(31, Math.max(1, Number(dias) || 14));
@@ -392,8 +394,8 @@ async function vagas(inicio, dias, buscar = fetch) {
     chamar('GET', `/v1/Disponibilidade?dataInicial=${inicio}&DataFinal=${somarDias(inicio, n - 1)}&DetalharDiaADia=true`, null, buscar)]);
   const porCod = Object.fromEntries(((disp.dados && disp.dados.listaTipoApto) || []).map(t => [t.codigo, t]));
   return { ok: true, fonte: disp.fonte, inicio, dias: Array.from({ length: n }, (_, i) => somarDias(inicio, i)),
-    tipos: tipos.map(t => ({ codigo: t.codigo, nome: t.nome, total: t.quantidade, capacidade: t.maximoOcupantes,
-      vagas: Array.from({ length: n }, (_, i) => { const d = somarDias(inicio, i); const x = ((porCod[t.codigo] || {}).listaSituacaoTipoApto || []).find(y => y.data === d); return x ? x.qtdeDisponivel : null; }) })) };
+    tipos: tipos.map(t => ({ codigo: t.codigo, nome: t.nome, total: t.quantidade ?? (porCod[t.codigo] || {}).qtdeMapa, capacidade: t.maximoOcupantes,
+      vagas: Array.from({ length: n }, (_, i) => { const d = somarDias(inicio, i); const x = ((porCod[t.codigo] || {}).listaSituacaoTipoApto || []).find(y => diaISO(y.data) === d); return x ? Number(x.qtdeDisponivel) : null; }) })) };
 }
 
 // criar_reserva: confere a vaga e o preço de novo (na mesma hora) e cria a reserva NÃO CONFIRMADA no Silbeck.
@@ -591,4 +593,4 @@ async function diagnosticoTarifario({ entrada, saida, adultos = 2, codigo = 'CBD
   }
   return out;
 }
-module.exports = { definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
+module.exports = { definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _diaISO: diaISO, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };

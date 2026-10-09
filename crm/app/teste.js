@@ -1962,6 +1962,7 @@ falso.listen(0, () => {
       // Silbeck real (08/10/2026): tipo de hóspede como texto e códigos próprios das acomodações
       const S = require('./silbeck');
       assert.deepEqual(S._categoriasDoGrupo([{ id: 7, tipo: '1' }, { id: 8, tipo: '3' }, { id: 9, tipo: '4' }], 2, [3, 8]).lista, [{ id: 7, quantidade: 2 }, { id: 8, quantidade: 1 }, { id: 9, quantidade: 1 }]);
+      assert.deepEqual(['2026-10-18', '2026-10-18T00:00:00', '18/10/2026'].map(S._diaISO), ['2026-10-18', '2026-10-18', '2026-10-18'], 'data do dia em qualquer formato');
       assert.deepEqual(S._paraCRM([{ codigo: 'CAB', id: 1 }, { codigo: 'BANG3', id: 2 }, { codigo: 'STD1', id: 3 }, { codigo: 'DPLS', id: 4 }, { codigo: 'BANG4C', id: 5 }]).map(t => [t.codigo, t.codigo_silbeck || null, t.id]),
         [['CBD', 'CAB', 1], ['BANG3', null, 2], ['CST', 'STD1', 3], ['SUP', 'DPLS', 4], ['BGE', 'BANG4C', 5]]);
       const O = require('./orcamento');
