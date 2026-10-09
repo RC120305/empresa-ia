@@ -1772,9 +1772,13 @@ document.getElementById("cons-salvar").addEventListener("click", async () => {
 });
 document.getElementById("cons-ia").addEventListener("click", async () => {
   const m = document.getElementById("cons-ia-msg"), desc = document.getElementById("cons-desc").value.trim();
+  if (desc.length < 5 && !consRefs.length) { m.textContent = "Cole um print, envie um vídeo ou escreva a descrição primeiro."; return; }
+  // a IA deste aparelho não vê imagens (ex.: app do iPhone): a referência vai para a equipe montar o modelo
+  if (consRefs.length && (!sampleApi || !sampleImgs)) {
+    if (desc.length >= 5 && sampleApi) await montarPorTexto(desc, m);
+    return enviarRefParaEquipe(desc, m);
+  }
   if (!sampleApi) { m.textContent = "Indisponível nesta visualização."; return; }
-  if (desc.length < 5 && !consRefs.length) { m.textContent = "Cole um print ou escreva a descrição primeiro."; return; }
-  if (consRefs.length && !sampleImgs && desc.length < 5) { m.textContent = "Nesta visualização a IA não lê imagens: descreva o estilo com palavras. Os prints ficam salvos com o modelo."; return; }
   const b = document.getElementById("cons-ia"); b.disabled = true; m.textContent = consRefs.length ? "Olhando as referências…" : "Montando…";
   const ops = OPS[consTipo], permitido = Object.fromEntries(ops.map(([k, , o]) => [k, o.map(x => x[0])]));
   const oQue = consTipo === "carrossel" ? "um modelo de carrossel (telas 3:4) para o Instagram de um hotel" : "um modelo de Reels (vídeo 9:16) para o Instagram de um hotel";
@@ -1796,6 +1800,34 @@ document.getElementById("cons-ia").addEventListener("click", async () => {
   }
   b.disabled = false;
 });
+async function montarPorTexto(desc, m){
+  const ops = OPS[consTipo], permitido = Object.fromEntries(ops.map(([k, , o]) => [k, o.map(x => x[0])]));
+  try {
+    const r = await sampleApi.json(`Você configura um modelo de ${consTipo === "carrossel" ? "carrossel 3:4" : "Reels 9:16"} para o Instagram de um hotel. Converta a descrição em JSON com estas chaves e SOMENTE estes valores:\n${ops.map(([k, t, o]) => `- ${k} (${t}): ${o.map(([v, n]) => `"${v}" = ${n}`).join("; ")}`).join("\n")}\nO que não disser, mantenha: ${JSON.stringify(cfg)}. Só o JSON.\n\nDescrição: ${desc.slice(0, 1500)}`, {modelTier: "quick", cache: false});
+    for (const k in permitido) { const v = r && r[k] != null ? String(r[k]) : null; if (v && permitido[k].includes(v)) cfg[k] = v; }
+    renderCons();
+  } catch {}
+}
+async function enviarRefParaEquipe(desc, m){
+  if (!db) { m.textContent = "Abra pelo claude.ai com a sua conta para enviar."; return; }
+  const b = document.getElementById("cons-ia"); b.disabled = true; m.textContent = "Enviando a referência para a equipe…";
+  const arquivos = [];
+  if (assets) for (const r of consRefs) for (const blob of (r.video ? r.quadros : [r.file])) { try { const up = await assets.upload(blob); arquivos.push({id: up.id, nome: r.video ? "quadro do vídeo" : (r.file.name || "print"), tipo: "image/jpeg"}); } catch {} }
+  const vid = consRefs.find(r => r.video), nome = document.getElementById("cons-nome").value.trim(), id = "ref-" + Date.now().toString(36);
+  const pedidoModelo = {tipo: consTipo, nome, configAtual: toConfig(cfg), ...(vid ? {videoDuracao: Math.round(vid.dur), ritmoSeg: vid.ritmo ? +vid.ritmo.toFixed(1) : null, quadrosACada: +vid.intervalo.toFixed(1)} : {})};
+  try {
+    await db.collection("referencias").doc(id).set({id, nota: desc || "(sem descrição)", link: "", modelo: "novo", arquivos, status: "enviado", pedidoModelo, criadoEm: new Date().toISOString()});
+  } catch { m.textContent = "Não consegui enviar. Tente de novo."; b.disabled = false; return; }
+  let agora = false;
+  try {
+    if (comments && await comments.canSendToClaude() === "available") {
+      await comments.sendToClaude({anchor: await comments.anchorFor(document.getElementById("cons")), text: `Montar modelo pela referência (construtor da Central): referencia ${id}, tipo ${consTipo}${nome ? `, nome "${nome}"` : ""}${vid?.ritmo ? `, ritmo medido ~${vid.ritmo.toFixed(1)} s por cena` : ""}. ${arquivos.length} imagem(ns) nos assets: ${arquivos.map(a => a.id).join(", ")}. Descrição: ${desc || "(nenhuma)"}`.slice(0, 3900)});
+      agora = true;
+    }
+  } catch {}
+  m.textContent = agora ? "A IA deste aparelho não lê imagens, então mandei a referência para a equipe. O modelo aparece no Mostruário em alguns minutos, e a resposta chega na lista de Referências." : "A IA deste aparelho não lê imagens, então guardei a referência para a equipe. O modelo aparece no Mostruário na próxima rodada (7h58, 12h58 ou 17h58).";
+  b.disabled = false;
+}
 function syncCustom(docs){
   for (let i = MODELOS.length - 1; i >= 0; i--) if (MODELOS[i].custom) MODELOS.splice(i, 1);
   docs.filter(d => d && d.id && d.config).sort((a, b) => (a.criadoEm || "").localeCompare(b.criadoEm || "")).forEach(d => MODELOS.push({...d, custom: true}));
