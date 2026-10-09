@@ -176,13 +176,13 @@
     tarefas: ['Tarefas'],
     produtos: ['Produtos'],
     agencias: ['Agências'],
-    vagas: ['Vagas', 'O mapa de vagas completo depende do Silbeck real (ponte com o hotel). Por enquanto, as vagas aparecem no painel 🛏 de cada conversa.'],
+    vagas: ['Vagas'],
     pagamentos: ['Pagamentos'],
     painel: ['Painel'],
     regua: ['Régua de mensagens', 'Mensagens automáticas antes e depois da estadia, com modelos aprovados pela Meta. Chega na etapa F, com o 99117.'],
     ajustes: ['Ajustes do agente'],
   };
-  const PRONTAS = ['conversas', 'funil', 'tarefas', 'produtos', 'agencias', 'pagamentos', 'painel', 'ajustes'];
+  const PRONTAS = ['conversas', 'funil', 'tarefas', 'produtos', 'agencias', 'vagas', 'pagamentos', 'painel', 'ajustes'];
   function irPara(v) {
     document.querySelectorAll('.nav [data-vista]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.vista === v)));
     const [titulo, texto] = SECOES[v];
@@ -195,6 +195,7 @@
     if (v === 'agencias') carregarAgencias();
     if (v === 'painel') pintarPainelIndicadores();
     if (v === 'pagamentos') carregarPagamentos();
+    if (v === 'vagas') carregarMapaVagas();
     if (v === 'ajustes') abrirSub(subAtual);
   }
   document.querySelector('.nav').addEventListener('click', e => { const b = e.target.closest('[data-vista]'); if (b) irPara(b.dataset.vista); });
@@ -1216,6 +1217,54 @@
     lat.append(el('label', { class: 'campo' }, 'A partir de', ini), el('p', { class: 'lat-txt', text: 'Quantas acomodações de cada tipo estão livres por noite.' }), box);
     carregar();
   }
+
+  // ================= Aba Vagas: mapa de 60 noites por tipo de acomodação (Silbeck) =================
+  const NOITES_MAPA = 60;
+  const hojeBonito = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Campo_Grande' });
+  const somarDiasIso = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+  let vgVez = 0;
+  async function carregarMapaVagas() {
+    const ini = $('vg-inicio');
+    if (!ini.value) ini.value = hojeBonito();
+    const vez = ++vgVez, corpo = $('vg-corpo');
+    corpo.textContent = ''; corpo.append(el('p', { class: 'vg-msg', text: 'Consultando o Silbeck…' }));
+    try {
+      const r = await chamarApi('/api/vagas?inicio=' + encodeURIComponent(ini.value) + '&dias=' + NOITES_MAPA, null, 'GET');
+      if (vez === vgVez) pintarMapaVagas(r);
+    } catch (e) { if (vez === vgVez) { corpo.textContent = ''; corpo.append(el('p', { class: 'vg-msg', text: 'Não deu para consultar o Silbeck: ' + e.message })); } }
+  }
+  function pintarMapaVagas(r) {
+    const corpo = $('vg-corpo'); corpo.textContent = '';
+    if (r.fonte === 'simulador') corpo.append(el('div', { class: 'aviso-sim', text: '⚠ Vagas do SIMULADOR (fictícias).' }));
+    const hoje = hojeBonito(), SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'], MES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+    const info = r.dias.map((d, i) => { const w = new Date(d + 'T12:00:00Z').getUTCDay(); return { d, w, fds: w === 0 || w === 6, ini: i > 0 && d.slice(8) === '01', hoje: d === hoje }; });
+    const cls = (x, extra = '') => [extra, x.fds ? 'fds' : '', x.ini ? 'ini-mes' : ''].filter(Boolean).join(' ');
+    // Linha dos meses (colspan) e linha dos dias
+    const meses = [];
+    info.forEach(x => { const m = x.d.slice(0, 7); if (!meses.length || meses.at(-1).m !== m) meses.push({ m, n: 0 }); meses.at(-1).n++; });
+    const totalHotel = r.tipos.reduce((s, t) => s + (Number(t.total) || 0), 0);
+    const livres = info.map((_, i) => r.tipos.reduce((s, t) => s + (t.vagas[i] == null ? 0 : t.vagas[i]), 0));
+    const semDado = info.map((_, i) => r.tipos.every(t => t.vagas[i] == null));
+    const dataLonga = x => SEM[x.w] + ' ' + x.d.slice(8) + '/' + x.d.slice(5, 7);
+    const tab = el('table', { class: 'vg-tab' },
+      el('thead', {},
+        el('tr', {}, el('th', { class: 'vg-nome', text: '' }), meses.map((m, k) => el('th', { class: 'vg-mes', colspan: String(m.n), text: MES[Number(m.m.slice(5)) - 1] + ' ' + m.m.slice(0, 4), style: k === 0 ? 'border-left:0' : '' }))),
+        el('tr', {}, el('th', { class: 'vg-nome', text: 'Acomodação' }), info.map(x => el('th', { class: cls(x, 'vg-dia' + (x.hoje ? ' hoje' : '')), title: dataLonga(x) + (x.hoje ? ' (hoje)' : '') }, SEM[x.w].slice(0, 3), el('b', { text: x.d.slice(8) }))))),
+      el('tbody', {},
+        r.tipos.map(t => el('tr', {},
+          el('th', { class: 'vg-nome', scope: 'row', title: (t.capacidade ? 'Até ' + t.capacidade + ' pessoas' : '') + (t.total ? ' · ' + t.total + ' no hotel' : '') }, t.nome, el('small', { text: t.codigo + (t.total ? ' · ' + t.total + ' un.' : '') })),
+          t.vagas.map((v, i) => el('td', { class: cls(info[i], v === 0 ? 'zero' : v === 1 && Number(t.total) > 1 ? 'pouca' : ''), title: t.nome + ' · ' + dataLonga(info[i]) + ' · ' + (v == null ? 'sem dado' : v + (t.total ? ' de ' + t.total : '') + (v === 1 ? ' livre' : ' livres')), text: v == null ? '–' : String(v) })))),
+        el('tr', { class: 'vg-total' }, el('th', { class: 'vg-nome', scope: 'row', text: 'Livres no hotel' }),
+          livres.map((v, i) => el('td', { class: cls(info[i], semDado[i] ? '' : v === 0 ? 'zero' : ''), text: semDado[i] ? '–' : String(v) }))),
+        totalHotel ? el('tr', { class: 'vg-ocup' }, el('th', { class: 'vg-nome', scope: 'row' }, 'Ocupação', el('small', { text: totalHotel + ' acomodações' })),
+          livres.map((v, i) => { const p = Math.round((1 - v / totalHotel) * 100); return el('td', { class: cls(info[i], !semDado[i] && p >= 100 ? 'cheio' : ''), text: semDado[i] ? '–' : Math.max(0, p) + '%' }); })) : null));
+    corpo.append(tab);
+  }
+  $('vg-inicio').addEventListener('change', carregarMapaVagas);
+  $('vg-hoje').addEventListener('click', () => { $('vg-inicio').value = hojeBonito(); carregarMapaVagas(); });
+  $('vg-ant').addEventListener('click', () => { $('vg-inicio').value = somarDiasIso($('vg-inicio').value || hojeBonito(), -30); carregarMapaVagas(); });
+  $('vg-prox').addEventListener('click', () => { $('vg-inicio').value = somarDiasIso($('vg-inicio').value || hojeBonito(), 30); carregarMapaVagas(); });
+  $('vg-atualizar').addEventListener('click', carregarMapaVagas);
 
   // ================= Respostas rápidas ("/" na conversa) =================
   let respostas = [], atalhoItens = [], atalhoIdx = 0, atalhoTodos = false;

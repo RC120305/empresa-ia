@@ -257,6 +257,18 @@
     </section>
 
     <!-- PAGAMENTOS -->
+    <section data-painel="vagas" hidden>
+      <div class="barra-ferr">
+        <label class="vg-campo">A partir de <input type="date" id="vg-inicio" aria-label="Primeira noite do mapa"></label>
+        <button class="btn btn-editar" type="button" id="vg-ant" aria-label="30 dias antes">◀ 30 dias</button>
+        <button class="btn btn-editar" type="button" id="vg-hoje">Hoje</button>
+        <button class="btn btn-editar" type="button" id="vg-prox" aria-label="30 dias depois">30 dias ▶</button>
+        <button class="btn btn-editar" type="button" id="vg-atualizar">Atualizar</button>
+      </div>
+      <p class="vg-legenda">Acomodações livres por noite, direto do Silbeck. <span class="vg-chip zero">0</span> esgotado · <span class="vg-chip pouca">1</span> última do tipo · sábado e domingo em destaque.</p>
+      <div class="vg-mapa" id="vg-corpo"></div>
+    </section>
+
     <section data-painel="pagamentos" hidden>
       <div class="barra-ferr">
         <input type="search" id="pg-busca" placeholder="Buscar por cliente ou descrição" aria-label="Buscar cobrança">

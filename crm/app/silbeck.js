@@ -389,7 +389,7 @@ async function cotar(entrada, buscar = fetch) {
 const diaISO = x => { const t = String(x || ''); const br = t.match(/^(\d{2})\/(\d{2})\/(\d{4})/); return br ? `${br[3]}-${br[2]}-${br[1]}` : t.slice(0, 10); };
 async function vagas(inicio, dias, buscar = fetch) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(inicio || '')) throw new ErroSilbeck('data inicial inválida', 400);
-  const n = Math.min(31, Math.max(1, Number(dias) || 14));
+  const n = Math.min(62, Math.max(1, Number(dias) || 14)); // até 62 noites (o mapa da aba Vagas mostra 60)
   const [tipos, disp] = await Promise.all([cadastro('/v1/TipoApartamento', 'listaTipoApartamento', buscar),
     chamar('GET', `/v1/Disponibilidade?dataInicial=${inicio}&DataFinal=${somarDias(inicio, n - 1)}&DetalharDiaADia=true`, null, buscar)]);
   const porCod = Object.fromEntries(((disp.dados && disp.dados.listaTipoApto) || []).map(t => [t.codigo, t]));

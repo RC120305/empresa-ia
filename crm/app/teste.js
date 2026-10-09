@@ -611,6 +611,9 @@ falso.listen(0, () => {
     const vj = await r.json();
     assert.equal(r.status, 200); assert.equal(vj.dias.length, 14); assert.ok(vj.tipos.some(t => t.codigo === 'CBM' && t.vagas.every(v => Number.isInteger(v))));
     assert.equal((await api('/api/vagas?inicio=ontem', null, 'token-equipe', 'GET')).status, 400);
+    r = await api('/api/vagas?inicio=' + emDias(1) + '&dias=60', null, 'token-equipe', 'GET');
+    const vm = await r.json();
+    assert.equal(r.status, 200); assert.equal(vm.dias.length, 60, 'mapa da aba Vagas: 60 noites numa consulta'); assert.ok(vm.tipos.every(t => t.vagas.length === 60 && Number(t.total) > 0));
 
     // Funil: mover de etapa, perdido exige motivo, novo lead; tarefas: criar e concluir (com histórico)
     const NEG = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
