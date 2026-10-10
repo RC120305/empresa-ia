@@ -1397,7 +1397,7 @@ const cachePainel = new Map();
 function canalDaReserva(r, doCrm) {
   if (doCrm.has(r.silbeck_id) || /crm|whats/i.test(r.portal || '')) return 'WhatsApp (CRM)';
   if (r.codigo_empresa) return 'Agências e operadoras';
-  if (r.portal) return /booking/i.test(r.portal) ? 'Booking' : /expedia|hoteis\.com/i.test(r.portal) ? 'Expedia' : /decolar/i.test(r.portal) ? 'Decolar' : /airbnb/i.test(r.portal) ? 'Airbnb' : /motor|site|omnibees|asksuite/i.test(r.portal) ? 'Site (motor de reservas)' : r.portal;
+  if (r.portal) return /booking/i.test(r.portal) ? 'Booking' : /expedia|hoteis\.com/i.test(r.portal) ? 'Expedia' : /decolar/i.test(r.portal) ? 'Decolar' : /airbnb/i.test(r.portal) ? 'Airbnb' : /motor|site|omnibees|asksuite|reserva ?on|reservaon/i.test(r.portal) ? 'Site (motor de reservas)' : r.portal;
   return 'Direto (balcão, telefone, WhatsApp)';
 }
 async function painelHotel(ini, fim, buscar = fetch) {
@@ -1444,7 +1444,8 @@ async function painelHotel(ini, fim, buscar = fetch) {
     const soma = f => vivas.reduce((t, r) => t + (Number(f(r)) || 0), 0);
     return { reservas: vivas.length, canceladas: l.length - vivas.length, receita: r2(soma(r => r.valor_total)), hospedes: soma(r => r.pax), noites: soma(r => r.noites),
       pax_por_reserva: vivas.length ? Math.round(10 * soma(r => r.pax) / vivas.length) / 10 : null,
-      noites_por_reserva: vivas.length ? Math.round(10 * soma(r => r.noites) / vivas.length) / 10 : null,
+      noites_por_reserva: vivas.length ? Math.round(10 * soma(r => r.estadia) / vivas.length) / 10 : null, // permanência (noites do hóspede)
+      diarias_por_reserva: vivas.length ? Math.round(10 * soma(r => r.noites) / vivas.length) / 10 : null, // apartamento × noite
       ticket_medio: vivas.length ? r2(soma(r => r.valor_total) / vivas.length) : null,
       antecedencia_media: ant.length ? Math.round(ant.reduce((a, b) => a + b, 0) / ant.length) : null,
       canais: [...canais.values()].sort((a, b) => b.receita - a.receita) };

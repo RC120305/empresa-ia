@@ -2864,7 +2864,7 @@
       a ? pnTile('Faturamento de hospedagem', pnBrl0(a.receita), 'diárias do período (sem extras e sem taxas)', pnDeltaV(a.receita, b && b.receita, pnBrl0)) : null,
       a ? pnTile('Diária média (ADR)', pnBrl(a.adr), 'faturamento ÷ diárias vendidas', pnDeltaV(a.adr, b && b.adr, pnBrl)) : null,
       a ? pnTile('RevPAR', pnBrl(a.revpar), 'faturamento ÷ apartamentos disponíveis por noite', pnDeltaV(a.revpar, b && b.revpar, pnBrl)) : null,
-      r ? pnTile('Diárias por reserva', pnNum1(r.noites_por_reserva), 'permanência média (noites por reserva)' + (a && a.permanencia ? ' · Silbeck: ' + pnNum1(a.permanencia) : ''), pnDeltaV(r.noites_por_reserva, ra && ra.noites_por_reserva, pnNum1)) : null,
+      r ? pnTile('Permanência média', pnNum1(r.noites_por_reserva) + ' noites', 'quantas noites o hóspede fica' + (r.diarias_por_reserva && r.diarias_por_reserva !== r.noites_por_reserva ? ' · ' + pnNum1(r.diarias_por_reserva) + ' diárias por reserva (com mais de um apto)' : '') + (a && a.permanencia ? ' · Silbeck: ' + pnNum1(a.permanencia) : ''), pnDeltaV(r.noites_por_reserva, ra && ra.noites_por_reserva, pnNum1)) : null,
       r ? pnTile('Hóspedes por reserva', pnNum1(r.pax_por_reserva), r.hospedes + ' hóspedes em ' + r.reservas + ' reservas com entrada no período') : null,
       r ? pnTile('Valor médio da reserva', pnBrl0(r.ticket_medio), 'hospedagem por reserva', pnDeltaV(r.ticket_medio, ra && ra.ticket_medio, pnBrl0)) : null,
       r ? pnTile('Antecedência média', r.antecedencia_media != null ? r.antecedencia_media + ' dias' : '—', 'entre a reserva e o check-in') : null,

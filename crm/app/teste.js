@@ -956,6 +956,10 @@ falso.listen(0, () => {
       const rsm = S._resumoReserva({ id: 9, codigoEmpresa: ' 901 ', percentualComissaoEmpresa: 0, titular: 'X', listaReservaItem: [
         { status: 2, statusDescricao: 'CONFIRMADA', nomeTipoApartamento: 'STANDARD', dataEntrada: '2026-11-01T00:00:00', dataSaida: '2026-11-03', valorTotalDiaria: 600, listaAdiantamento: [{ valor: 100, situacao: 'Ativo' }, { valor: 50, situacao: 'Estornado' }] },
         { status: 3, nomeTipoApartamento: 'CABANA', dataEntrada: '2026-11-01', dataSaida: '2026-11-05', valorTotalDiaria: 900, listaAdiantamento: [] }] });
+      // Silbeck real: valorTotalDiaria zerado na lista → total das diárias (listaTotal) ou soma dia a dia (listaData)
+      assert.equal(S._resumoReserva({ id: 1, listaReservaItem: [{ status: 2, dataEntrada: '2026-11-01', dataSaida: '2026-11-03', valorTotalDiaria: 0, listaTotal: [{ diaria: { valor: 1500 } }], listaData: [{ valorDiaria: 1 }] }] }).valor_total, 1500);
+      const rz = S._resumoReserva({ id: 2, listaReservaItem: [{ status: 2, dataEntrada: '2026-11-01', dataSaida: '2026-11-04', qtdeApartamento: 2, listaData: [{ valorDiaria: 700 }, { valorDiaria: 700 }, { valorDiaria: 800 }] }] });
+      assert.deepEqual([rz.valor_total, rz.noites, rz.estadia], [4400, 6, 3]);
       assert.deepEqual([rsm.codigo_empresa, rsm.comissao_pct, rsm.valor_total, rsm.sinal_pago, rsm.data_entrada, rsm.data_saida, rsm.cancelada, rsm.acomodacao], ['901', null, 600, 100, '2026-11-01', '2026-11-03', false, 'STANDARD']);
       const AG = 'abababab-abab-abab-abab-abababababab', passado = emDias(-10), saida = emDias(-8);
       agenciasF = [{ id: AG, nome: 'Rio Azul', codigo_silbeck: '901', comissao: 10, cobra_sinal: true, sinal_percentual: 30, fatura: true, fatura_prazo_dias: 30, eh_agencia: true }];

@@ -626,6 +626,16 @@ async function empresas(buscar = fetch) {
 }
 // Reservas do Silbeck num período (tipoData: cadastro, entrada...), resumidas para o controle das agências:
 // empresa (agência), comissão, datas, diárias, adiantamentos ativos e situação. Em blocos de até 31 dias.
+// Valor de hospedagem de um item: o Silbeck real pode deixar o valorTotalDiaria zerado na lista; aí vale o total das
+// diárias (listaTotal) ou a soma dia a dia (listaData)
+function valorDoItem(x) {
+  const v = Number(x.valorTotalDiaria);
+  if (v > 0) return v;
+  const tot = (x.listaTotal || []).reduce((t, y) => t + (Number(y && y.diaria && y.diaria.valor) || 0), 0);
+  if (tot > 0) return tot;
+  return (x.listaData || []).reduce((t, y) => t + (Number(y.valorDiaria) || 0), 0) * (Number(x.qtdeApartamento) || 1);
+}
+const noitesDoItem = x => Math.max(0, Math.round((Date.parse(diaISO(x.dataSaida)) - Date.parse(diaISO(x.dataEntrada))) / 864e5));
 function resumoReserva(r) {
   const itens = r.listaReservaItem || [];
   const vivos = itens.filter(x => Number(x.status) !== 3);
@@ -638,12 +648,13 @@ function resumoReserva(r) {
     comissao_pct: Number(r.percentualComissaoEmpresa) > 0 ? Number(r.percentualComissaoEmpresa) : null, titular: r.titular || null,
     acomodacao: [...new Set(base.map(x => x.nomeTipoApartamento || x.codigoTipoApartamento).filter(Boolean))].join(' + ') || null,
     data_entrada: base.length ? base.map(x => dia(x.dataEntrada)).sort()[0] : null, data_saida: base.length ? base.map(x => dia(x.dataSaida)).sort().at(-1) : null,
-    valor_total: soma(base, x => x.valorTotalDiaria), sinal_pago: adiant, status_silbeck: st, status_descricao: base.length ? (base[0].statusDescricao || null) : null,
+    valor_total: soma(base, valorDoItem), sinal_pago: adiant, status_silbeck: st, status_descricao: base.length ? (base[0].statusDescricao || null) : null,
     cancelada: itens.length > 0 && !vivos.length,
     // Para o Painel: canal, data de cadastro, hóspedes e noites (apartamento × noite)
     portal: String(r.nomePortal || '').trim() || null, cadastro: r.dataHora ? dia(r.dataHora) : null,
     pax: base.reduce((t, x) => t + ((Number(x.quantidadeAdulto) || 0) + (Number(x.quantidadeCrianca) || 0)) * (Number(x.qtdeApartamento) || 1), 0),
-    noites: base.reduce((t, x) => t + Math.max(0, Math.round((Date.parse(dia(x.dataSaida)) - Date.parse(dia(x.dataEntrada))) / 864e5)) * (Number(x.qtdeApartamento) || 1), 0) };
+    noites: base.reduce((t, x) => t + noitesDoItem(x) * (Number(x.qtdeApartamento) || 1), 0), // diárias vendidas (apartamento × noite)
+    estadia: base.length ? Math.max(...base.map(noitesDoItem)) : 0 }; // noites que o hóspede fica
 }
 // Relatório de ocupação do Silbeck (geral): por dia e totais do período
 async function ocupacao({ de, ate }, buscar = fetch) {
@@ -666,6 +677,7 @@ async function diagnosticoReserva({ id, entrada } = {}, buscar = fetch) {
   if (!/^\d+$/.test(String(id || ''))) throw new ErroSilbeck('informe o número da reserva (id)', 400);
   const itens = await itensDaReserva(id, entrada, buscar);
   return { reserva: String(id), achou: itens.length > 0, itens: itens.map(x => ({ item_id: x.id, codigo: x.codigoTipoApartamento, codigo_crm: x.codigo_crm, status: x.statusDescricao || x.status,
-    entrada: x.dataEntrada, saida: x.dataSaida, adiantamentos: (x.listaAdiantamento || []).length })) };
+    entrada: x.dataEntrada, saida: x.dataSaida, adiantamentos: (x.listaAdiantamento || []).length,
+    valores: { valorTotalDiaria: x.valorTotalDiaria ?? null, listaTotal_diaria: (x.listaTotal || []).map(y => y && y.diaria ? y.diaria.valor : null), listaData_soma: (x.listaData || []).reduce((t, y) => t + (Number(y.valorDiaria) || 0), 0), usado: valorDoItem(x) } })) };
 }
 module.exports = { ocupacao, somarDias, listaReservas, _resumoReserva: resumoReserva, empresas, diagnosticoReserva, itensDaReserva, definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _diaISO: diaISO, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
