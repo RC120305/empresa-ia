@@ -1362,6 +1362,21 @@ falso.listen(0, () => {
         const d2 = await (await fetch(base + '/saude/silbeck-reserva')).json();
         assert.ok(d2.ok && d2.reserva === String(reservasF[0].silbeck_id) && d2.no_crm && d2.no_crm.item_guardado === !!reservasF[0].silbeck_item_id, 'sem número: a última reserva do CRM ' + JSON.stringify(d2));
       }
+      // 1c1) o Silbeck recebe o pagamento mas responde que a reserva NÃO confirmou: o CRM não confirma ao cliente
+      {
+        const S = require('./silbeck'), lancar = S.lancarAdiantamento, cobA = cobrancasF.at(-1);
+        S.lancarAdiantamento = async () => ({ ok: true, id: 1, confirmado: false });
+        try {
+          rv.situacao = 'nao_confirmada';
+          cobrancasF.push({ ...cobA, id: crypto.randomUUID(), txid: 'CAB' + 'N'.repeat(26), situacao: 'ativa', valor_pago: null, pago_em: null });
+          const nN = enviosMeta().length;
+          assert.equal((await (await api('/api/cobranca-acao', { id: cobrancasF.at(-1).id, acao: 'simular_pagamento' })).json()).pagas, 1);
+          assert.equal(rv.situacao, 'nao_confirmada', 'sem confirmação no Silbeck, o CRM não confirma');
+          const tN = chamadas.findLast(c => c.url === '/rest/v1/tarefas' && c.metodo === 'POST').corpo.descricao;
+          assert.ok(tN.includes('NÃO ficou confirmada lá') && tN.includes('Já lancei no Silbeck'), tN);
+          assert.ok(!enviosMeta().slice(nN).some(c => /está confirmada/.test(c.corpo.text.body)), 'nada de confirmação ao cliente');
+        } finally { S.lancarAdiantamento = lancar; }
+      }
       // 1c) plano B: o CRM não consegue lançar no Silbeck → o Gilberto só avisa que a equipe está finalizando (não confirma);
       // a equipe lança no Silbeck e clica em "Já lancei no Silbeck": aí o Gilberto confirma e agradece
       {

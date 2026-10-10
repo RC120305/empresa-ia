@@ -1724,10 +1724,16 @@ async function baixaCobranca(cob, pg, buscar = fetch) {
   else if (res && partes.length && partes.every(p => p.item_id)) {
     const feitas = [];
     try {
-      for (const p of partes) { await silbeck.lancarAdiantamento({ item_id: p.item_id, valor: p.valor, observacao: 'Pix BB ' + cob.txid + (pg.e2e ? ' · ' + pg.e2e : '') + (partes.length > 1 ? ' · ' + p.nome : '') }, buscar); feitas.push(p); }
-      await patchBanco('reservas', `id=eq.${res.id}`, { situacao: 'confirmada', confirmada_em: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
-      confirmada = true;
-      silb = `Pagamento lançado no Silbeck${partes.length > 1 ? ' (dividido entre as ' + partes.length + ' acomodações: ' + partes.map(p => p.nome + ' ' + produtos.brl(p.valor)).join(', ') + ')' : ''} e reserva ${res.silbeck_id} confirmada automaticamente. Mandar a confirmação ao cliente.`;
+      let naoConfirmou = false;
+      for (const p of partes) { const a = await silbeck.lancarAdiantamento({ item_id: p.item_id, valor: p.valor, observacao: 'Pix BB ' + cob.txid + (pg.e2e ? ' · ' + pg.e2e : '') + (partes.length > 1 ? ' · ' + p.nome : '') }, buscar); feitas.push(p); if (a && a.confirmado === false) naoConfirmou = true; }
+      const dividido = partes.length > 1 ? ' (dividido entre as ' + partes.length + ' acomodações: ' + partes.map(p => p.nome + ' ' + produtos.brl(p.valor)).join(', ') + ')' : '';
+      if (naoConfirmou) { // o Silbeck recebeu o pagamento, mas não confirmou a reserva: nada de confirmar ao cliente (dono, 07/10/2026)
+        silb = `Pagamento lançado no Silbeck${dividido}, mas a reserva ${res.silbeck_id} NÃO ficou confirmada lá: confirmar a reserva no Silbeck e mandar a confirmação ao cliente.`;
+      } else {
+        await patchBanco('reservas', `id=eq.${res.id}`, { situacao: 'confirmada', confirmada_em: new Date().toISOString(), atualizado_em: new Date().toISOString() }).catch(() => {});
+        confirmada = true;
+        silb = `Pagamento lançado no Silbeck${dividido} e reserva ${res.silbeck_id} confirmada automaticamente. Mandar a confirmação ao cliente.`;
+      }
     } catch (e) {
       const falta = partes.filter(p => !feitas.includes(p));
       silb = `O CRM NÃO conseguiu lançar ${feitas.length ? 'todo o pagamento' : 'o pagamento'} no Silbeck (${String(e.message || e).slice(0, 120)}): lançar o adiantamento na reserva ${res.silbeck_id}${partes.length > 1 ? ' (falta: ' + falta.map(p => p.nome + ' ' + produtos.brl(p.valor)).join(', ') + ')' : ''} e mandar a confirmação ao cliente.`;
