@@ -25,6 +25,7 @@
       if (k === 'text') e.textContent = v;
       else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
       else if (k === 'class') e.className = v;
+      else if (k === 'style') e.style.cssText = v; // pelo CSSOM: a política de segurança (style-src 'self') bloqueia o atributo style
       else e.setAttribute(k, v === true ? '' : v);
     }
     filhos.flat().forEach(f => { if (f != null && f !== false) e.append(f); });
@@ -2851,6 +2852,15 @@
     return el('span', { class: 'pn-delta ' + (d > 0 ? 'sobe' : d < 0 ? 'desce' : 'igual'), text: (d > 0 ? '▲ ' : d < 0 ? '▼ ' : '') + Math.abs(d) + '% vs período anterior (' + fmt(antes) + ')' });
   }
   const META_OCUPACAO = 60; // meta do dono (entrevista)
+  // Porcentagens inteiras que somam 100 (maiores restos): 49,7 + 26,7 + 23,6 vira 50 + 27 + 23, não 50 + 27 + 24
+  function pctSoma100(vals) {
+    const tot = vals.reduce((a, b) => a + b, 0);
+    if (!tot) return vals.map(() => 0);
+    const brutos = vals.map(v => 100 * v / tot), base = brutos.map(Math.floor);
+    let falta = 100 - base.reduce((a, b) => a + b, 0);
+    brutos.map((b, i) => [b - base[i], i]).sort((x, y) => y[0] - x[0]).forEach(([, i]) => { if (falta > 0) { base[i]++; falta--; } });
+    return base;
+  }
   // Onde subir é ruim (cancelamentos): a seta continua certa, a cor inverte
   const pnInverte = d => { if (d) d.className = d.className.replace(/\b(sobe|desce)\b/, m => m === 'sobe' ? 'desce' : 'sobe'); return d; };
   function pintarPainelHotel(box, h, hIni, hFim) {
@@ -2876,10 +2886,10 @@
       ...pnColunas(a.por_dia.map(d => [d.data, d.ocupacao != null ? d.ocupacao : (h.unidades ? Math.round(1000 * d.ocupados / h.unidades) / 10 : 0)]), { aria: 'Ocupação por dia', coluna: 'Ocupação', topo: 100, passo: 25, mE: 38, meta: META_OCUPACAO, metaTxt: 'meta',
         eixo: v => v + '%', fmt: v => pnNum1(v) + '%', dica: (dia, v) => dia.slice(8, 10) + '/' + dia.slice(5, 7) + ' · ' + pnNum1(v) + '% ocupado' + ((x => x ? ' · ' + x.ocupados + ' aptos · ' + pnBrl0(x.receita) : '')(a.por_dia.find(z => z.data === dia))) })));
     if (r && r.canais.length) grade.append(pnBloco('Canais de venda', 'Por onde vieram as reservas com entrada no período (faturamento de hospedagem).',
-      pnBarras(r.canais.map(c => [c.canal + ' (' + c.reservas + ')', c.receita, null, (r.receita ? Math.round(100 * c.receita / r.receita) : 0) + '%', pnBrl0(c.receita)])),
+      (pc => pnBarras(r.canais.map((c, i) => [c.canal + ' (' + c.reservas + ')', c.receita, null, pc[i] + '%', pnBrl0(c.receita)])))(pctSoma100(r.canais.map(c => c.receita))),
       el('p', { class: 'dica', text: 'Entre parênteses, o número de reservas.' })));
     if (r && r.antecedencia_n) grade.append(pnBloco('Antecedência das reservas', 'Com quantos dias antes do check-in as reservas do período foram feitas (data de cadastro no Silbeck). A mediana não é puxada por poucas reservas feitas muito antes.',
-      pnBarras(r.antecedencia_faixas.map(f => [f.faixa, f.reservas, null, null, f.reservas + ' · ' + Math.round(100 * f.reservas / r.antecedencia_n) + '%'])),
+      (pc => pnBarras(r.antecedencia_faixas.map((f, i) => [f.faixa, f.reservas, null, null, f.reservas + ' · ' + pc[i] + '%'])))(pctSoma100(r.antecedencia_faixas.map(f => f.reservas))),
       el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela' },
         el('thead', {}, el('tr', {}, ...['Canal', 'Reservas', 'Mediana', 'Média'].map((t, i) => el('th', { class: i ? 'n' : '', text: t })))),
         el('tbody', {}, ...r.antecedencia_canais.map(c => el('tr', {}, el('td', { text: c.canal }), el('td', { class: 'n', text: String(c.reservas) }), el('td', { class: 'n', text: c.mediana + ' d' }), el('td', { class: 'n', text: c.media + ' d' }))))))));
