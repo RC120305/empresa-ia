@@ -565,8 +565,13 @@ section[data-painel="painel"]{gap:10px;overflow:hidden}
 .pn-col .barra{fill:var(--cor-primaria);pointer-events:none}.pn-col text{pointer-events:none}
 .pn-col .alvo{fill:transparent;cursor:default}
 .pn-col .barra.on{fill:var(--cor-destaque)}
+.pn-col .meta{stroke:var(--cor-texto-sec);stroke-width:1.5;stroke-dasharray:5 4}
+.pn-col .meta-txt{fill:var(--cor-texto-sec);font-weight:600}
+.pn-sec{margin:4px 0 0;font-size:17px;font-family:var(--f-marca)}
+.pn-hotel{display:flex;flex-direction:column;gap:12px}
+@media (max-width:600px){.pn-hotel .pn-tiles{grid-template-columns:repeat(2,1fr);gap:8px}.pn-hotel .pn-num{font-size:20px}.pn-hotel .pn-tile{padding:10px}.pn-hotel .pn-tile .pn-sub{font-size:12px}.pn-hbar{grid-template-columns:minmax(80px,40%) minmax(40px,1fr) auto;font-size:13px}}
 .pn-dica{position:absolute;pointer-events:none;background:var(--cor-elevada);border:1px solid var(--cor-borda);box-shadow:var(--sombra-2);border-radius:var(--r-sm);padding:6px 9px;font-size:13px;white-space:nowrap;transform:translate(-50%,-100%);z-index:2}
-.pn-hbar{display:grid;grid-template-columns:minmax(110px,auto) 1fr auto;gap:6px 10px;align-items:center;font-size:14px}
+.pn-hbar{display:grid;grid-template-columns:minmax(90px,max-content) minmax(60px,1fr) auto;gap:6px 10px;align-items:center;font-size:14px}
 .pn-hbar .trilha{height:12px;background:var(--cor-primaria-suave);border-radius:4px;overflow:hidden}
 .pn-hbar .enche{height:100%;background:var(--c,var(--cor-primaria));border-radius:0 4px 4px 0;min-width:2px}
 .pn-hbar .v{font-variant-numeric:tabular-nums;text-align:right;min-width:2.5em}

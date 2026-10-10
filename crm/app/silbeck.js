@@ -639,7 +639,16 @@ function resumoReserva(r) {
     acomodacao: [...new Set(base.map(x => x.nomeTipoApartamento || x.codigoTipoApartamento).filter(Boolean))].join(' + ') || null,
     data_entrada: base.length ? base.map(x => dia(x.dataEntrada)).sort()[0] : null, data_saida: base.length ? base.map(x => dia(x.dataSaida)).sort().at(-1) : null,
     valor_total: soma(base, x => x.valorTotalDiaria), sinal_pago: adiant, status_silbeck: st, status_descricao: base.length ? (base[0].statusDescricao || null) : null,
-    cancelada: itens.length > 0 && !vivos.length };
+    cancelada: itens.length > 0 && !vivos.length,
+    // Para o Painel: canal, data de cadastro, hóspedes e noites (apartamento × noite)
+    portal: String(r.nomePortal || '').trim() || null, cadastro: r.dataHora ? dia(r.dataHora) : null,
+    pax: base.reduce((t, x) => t + ((Number(x.quantidadeAdulto) || 0) + (Number(x.quantidadeCrianca) || 0)) * (Number(x.qtdeApartamento) || 1), 0),
+    noites: base.reduce((t, x) => t + Math.max(0, Math.round((Date.parse(dia(x.dataSaida)) - Date.parse(dia(x.dataEntrada))) / 864e5)) * (Number(x.qtdeApartamento) || 1), 0) };
+}
+// Relatório de ocupação do Silbeck (geral): por dia e totais do período
+async function ocupacao({ de, ate }, buscar = fetch) {
+  const { dados } = await chamar('GET', `/v1/Ocupacao?dataInicial=${de}&dataFinal=${ate}&tipoLista=0`, null, buscar);
+  return dados || {};
 }
 async function listaReservas({ de, ate, tipoData = 'cadastro', idReserva } = {}, buscar = fetch) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(de || '') || !/^\d{4}-\d{2}-\d{2}$/.test(ate || '') || ate < de) throw new ErroSilbeck('período inválido', 400);
@@ -659,4 +668,4 @@ async function diagnosticoReserva({ id, entrada } = {}, buscar = fetch) {
   return { reserva: String(id), achou: itens.length > 0, itens: itens.map(x => ({ item_id: x.id, codigo: x.codigoTipoApartamento, codigo_crm: x.codigo_crm, status: x.statusDescricao || x.status,
     entrada: x.dataEntrada, saida: x.dataSaida, adiantamentos: (x.listaAdiantamento || []).length })) };
 }
-module.exports = { somarDias, listaReservas, _resumoReserva: resumoReserva, empresas, diagnosticoReserva, itensDaReserva, definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _diaISO: diaISO, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
+module.exports = { ocupacao, somarDias, listaReservas, _resumoReserva: resumoReserva, empresas, diagnosticoReserva, itensDaReserva, definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _diaISO: diaISO, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };

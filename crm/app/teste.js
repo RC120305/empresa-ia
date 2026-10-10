@@ -635,6 +635,18 @@ falso.listen(0, () => {
     const vj = await r.json();
     assert.equal(r.status, 200); assert.equal(vj.dias.length, 14); assert.ok(vj.tipos.some(t => t.codigo === 'CBM' && t.vagas.every(v => Number.isInteger(v))));
     assert.equal((await api('/api/vagas?inicio=ontem', null, 'token-equipe', 'GET')).status, 400);
+    // Painel do hotel (Silbeck): ocupação, faturamento, ADR, RevPAR, canais, antecedência e ocupação por acomodação
+    r = await api('/api/painel-hotel?ini=' + emDias(-30) + '&fim=' + emDias(30), null, 'token-equipe', 'GET');
+    const ph = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(ph).slice(0, 300));
+    if (process.env.PAINEL_JSON) require('fs').writeFileSync(process.env.PAINEL_JSON, JSON.stringify(ph)); // para conferir a tela
+    assert.deepEqual(ph.erros, []); assert.equal(ph.periodo.dias, 61);
+    assert.ok(ph.unidades > 0 && ph.atual.ocupacao >= 0 && ph.atual.ocupacao <= 100 && ph.atual.por_dia.length === 61, JSON.stringify(ph.atual).slice(0, 300));
+    assert.ok(ph.atual.receita > 0 && ph.atual.adr > 0 && ph.atual.revpar > 0 && ph.atual.revpar <= ph.atual.adr, 'RevPAR nunca passa da diária média');
+    assert.ok(ph.reservas.reservas > 0 && ph.reservas.canais.length && ph.reservas.noites_por_reserva > 0 && ph.reservas.pax_por_reserva > 0, JSON.stringify(ph.reservas).slice(0, 300));
+    assert.ok(ph.por_tipo.length > 3 && ph.por_tipo.every(t => t.ocupacao >= 0 && t.ocupacao <= 100));
+    assert.ok(!/Ana|Souza|@/.test(JSON.stringify(ph)), 'sem dados pessoais');
+    assert.equal((await api('/api/painel-hotel?ini=' + emDias(0) + '&fim=' + emDias(400), null, 'token-equipe', 'GET')).status, 400);
     r = await api('/api/vagas?inicio=' + emDias(1) + '&dias=60', null, 'token-equipe', 'GET');
     const vm = await r.json();
     assert.equal(r.status, 200); assert.equal(vm.dias.length, 60, 'mapa da aba Vagas: 60 noites numa consulta'); assert.ok(vm.tipos.every(t => t.vagas.length === 60 && Number(t.total) > 0));

@@ -2829,6 +2829,7 @@
   function pnIntervalo(p) {
     const fim = new Date();
     let ini;
+    if (p === 'f30' || p === 'f90') { const i = new Date(); i.setHours(0, 0, 0, 0); const f = new Date(i); f.setDate(f.getDate() + (p === 'f30' ? 29 : 89)); return { ini: i, fim: f, ant: i, futuro: true }; }
     if (p === 'mes') ini = new Date(fim.getFullYear(), fim.getMonth(), 1);
     else { ini = new Date(fim); ini.setHours(0, 0, 0, 0); ini.setDate(ini.getDate() - Number(p) + 1); }
     const ant = new Date(ini.getTime() - (fim - ini)); // período anterior, mesmo tamanho
@@ -2838,6 +2839,48 @@
     const c = e.target.closest('[data-d]'); if (!c) return;
     pnPeriodo = c.dataset.d; guardar('crm-painel-periodo', pnPeriodo); pintarPainelIndicadores();
   });
+  const fmtDataBR = d => d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4);
+  const pnBrl = v => v == null ? '—' : 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const pnNum1 = v => v == null ? '—' : Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+  // Variação contra o período anterior para valores (R$, %, noites): mostra o valor de antes já formatado
+  function pnDeltaV(agora, antes, fmt, pontos) {
+    if (agora == null || antes == null) return null;
+    if (pontos) { const d = Math.round((agora - antes) * 10) / 10; return el('span', { class: 'pn-delta ' + (d > 0 ? 'sobe' : d < 0 ? 'desce' : 'igual'), text: (d > 0 ? '▲ ' : d < 0 ? '▼ ' : '') + pnNum1(Math.abs(d)) + ' ponto' + (Math.abs(d) === 1 ? '' : 's') + ' vs período anterior (' + fmt(antes) + ')' }); }
+    if (!antes) return agora ? el('span', { class: 'pn-delta sobe', text: '▲ nada no período anterior' }) : null;
+    const d = Math.round(100 * (agora - antes) / antes);
+    return el('span', { class: 'pn-delta ' + (d > 0 ? 'sobe' : d < 0 ? 'desce' : 'igual'), text: (d > 0 ? '▲ ' : d < 0 ? '▼ ' : '') + Math.abs(d) + '% vs período anterior (' + fmt(antes) + ')' });
+  }
+  const META_OCUPACAO = 60; // meta do dono (entrevista)
+  // Onde subir é ruim (cancelamentos): a seta continua certa, a cor inverte
+  const pnInverte = d => { if (d) d.className = d.className.replace(/\b(sobe|desce)\b/, m => m === 'sobe' ? 'desce' : 'sobe'); return d; };
+  function pintarPainelHotel(box, h, hIni, hFim) {
+    const a = h.atual, b = h.anterior, r = h.reservas, ra = h.reservas_ant;
+    box.replaceChildren(el('h2', { class: 'pn-sec', text: 'Hotel · ' + fmtDataBR(hIni) + ' a ' + fmtDataBR(hFim) + (h.fonte === 'simulador' ? ' · SIMULADOR' : '') }));
+    if (h.erros && h.erros.length) box.append(el('div', { class: 'pn-falta', text: '⚠ Parte dos números não veio do Silbeck: ' + h.erros.join(' · ') }));
+    if (!a && !r) return;
+    const crm = r && r.canais.find(c => c.canal === 'WhatsApp (CRM)');
+    box.append(el('div', { class: 'pn-tiles' },
+      a ? pnTile('Ocupação', a.ocupacao != null ? pnNum1(a.ocupacao) + '%' : '—', 'meta ' + META_OCUPACAO + '% · ' + a.room_nights + ' diárias vendidas de ' + (h.unidades * h.periodo.dias) + ' possíveis', pnDeltaV(a.ocupacao, b && b.ocupacao, v => pnNum1(v) + '%', true)) : null,
+      a ? pnTile('Faturamento de hospedagem', pnBrl0(a.receita), 'diárias do período (sem extras e sem taxas)', pnDeltaV(a.receita, b && b.receita, pnBrl0)) : null,
+      a ? pnTile('Diária média (ADR)', pnBrl(a.adr), 'faturamento ÷ diárias vendidas', pnDeltaV(a.adr, b && b.adr, pnBrl)) : null,
+      a ? pnTile('RevPAR', pnBrl(a.revpar), 'faturamento ÷ apartamentos disponíveis por noite', pnDeltaV(a.revpar, b && b.revpar, pnBrl)) : null,
+      r ? pnTile('Diárias por reserva', pnNum1(r.noites_por_reserva), 'permanência média (noites por reserva)' + (a && a.permanencia ? ' · Silbeck: ' + pnNum1(a.permanencia) : ''), pnDeltaV(r.noites_por_reserva, ra && ra.noites_por_reserva, pnNum1)) : null,
+      r ? pnTile('Hóspedes por reserva', pnNum1(r.pax_por_reserva), r.hospedes + ' hóspedes em ' + r.reservas + ' reservas com entrada no período') : null,
+      r ? pnTile('Valor médio da reserva', pnBrl0(r.ticket_medio), 'hospedagem por reserva', pnDeltaV(r.ticket_medio, ra && ra.ticket_medio, pnBrl0)) : null,
+      r ? pnTile('Antecedência média', r.antecedencia_media != null ? r.antecedencia_media + ' dias' : '—', 'entre a reserva e o check-in') : null,
+      r ? pnTile('Vendido pelo WhatsApp (CRM)', pnBrl0(crm ? crm.receita : 0), (crm ? crm.reservas : 0) + ' reserva(s) · ' + (r.receita ? Math.round(100 * (crm ? crm.receita : 0) / r.receita) : 0) + '% do faturamento') : null,
+      r ? pnTile('Cancelamentos', String(r.canceladas), r.reservas + r.canceladas ? Math.round(100 * r.canceladas / (r.reservas + r.canceladas)) + '% das reservas com entrada no período' : 'nenhuma reserva no período', pnInverte(pnDelta(r.canceladas, ra && ra.canceladas))) : null));
+    const grade = el('div', { class: 'pn-grade' });
+    if (a && a.por_dia.length) grade.append(pnBloco('!Ocupação por dia', 'Apartamentos ocupados em cada noite, em % do hotel. A linha tracejada é a meta de ' + META_OCUPACAO + '%.',
+      ...pnColunas(a.por_dia.map(d => [d.data, d.ocupacao != null ? d.ocupacao : (h.unidades ? Math.round(1000 * d.ocupados / h.unidades) / 10 : 0)]), { aria: 'Ocupação por dia', coluna: 'Ocupação', topo: 100, passo: 25, mE: 38, meta: META_OCUPACAO, metaTxt: 'meta',
+        eixo: v => v + '%', fmt: v => pnNum1(v) + '%', dica: (dia, v) => dia.slice(8, 10) + '/' + dia.slice(5, 7) + ' · ' + pnNum1(v) + '% ocupado' + ((x => x ? ' · ' + x.ocupados + ' aptos · ' + pnBrl0(x.receita) : '')(a.por_dia.find(z => z.data === dia))) })));
+    if (r && r.canais.length) grade.append(pnBloco('Canais de venda', 'Por onde vieram as reservas com entrada no período (faturamento de hospedagem).',
+      pnBarras(r.canais.map(c => [c.canal + ' (' + c.reservas + ')', c.receita, null, (r.receita ? Math.round(100 * c.receita / r.receita) : 0) + '%', pnBrl0(c.receita)])),
+      el('p', { class: 'dica', text: 'Entre parênteses, o número de reservas.' })));
+    if (h.por_tipo.length) grade.append(pnBloco('Ocupação por acomodação', 'Quanto de cada tipo foi ocupado no período.',
+      pnBarras(h.por_tipo.map(t => [t.nome, t.ocupacao, null, t.unidades + ' un.', pnNum1(t.ocupacao) + '%']))));
+    box.append(grade);
+  }
   function pnTile(rotulo, num, sub, delta) {
     return el('div', { class: 'cartao pn-tile' }, el('span', { class: 'rotulo', text: rotulo }), el('span', { class: 'pn-num', text: num }),
       delta || null, sub ? el('span', { class: 'pn-sub', text: sub }) : null);
@@ -2857,23 +2900,27 @@
   // Barras horizontais com o valor escrito ao lado (uma série; a cor da etapa repete a do funil)
   function pnBarras(linhas) {
     const max = Math.max(1, ...linhas.map(l => l[1]));
-    return el('div', { class: 'pn-hbar', role: 'table' }, ...linhas.flatMap(([nome, v, cor, extra]) => [
+    return el('div', { class: 'pn-hbar', role: 'table' }, ...linhas.flatMap(([nome, v, cor, extra, txt]) => [
       el('span', { role: 'cell', text: nome }),
       el('div', { class: 'trilha', 'aria-hidden': 'true' }, el('div', { class: 'enche', style: `width:${(100 * v / max).toFixed(1)}%${cor ? ';--c:var(' + cor + ')' : ''}` })),
-      el('span', { class: 'v', role: 'cell', text: String(v) + (extra ? ' · ' + extra : '') })]));
+      el('span', { class: 'v', role: 'cell', text: (txt != null ? txt : String(v)) + (extra ? ' · ' + extra : '') })]));
   }
   // Colunas por dia (uma série), com dica ao passar o mouse e tabela para quem prefere ler os números
-  function pnColunas(dias) {
+  function pnColunas(dias, o = {}) { // o: aria, coluna, dica(dia, v), eixo(v), fmt(v), topo, passo, meta, metaTxt, mE
     const NS = 'http://www.w3.org/2000/svg', s = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); return e; };
     const caixa = el('div', { class: 'pn-col' }), dica = el('div', { class: 'pn-dica', hidden: true });
     const desenhar = W => { // desenha na largura real (texto sem distorcer); refaz se a tela mudar de tamanho
-      const H = 180, mE = 26, mB = 22, mT = 8, larg = (W - mE) / dias.length;
-      const max = Math.max(1, ...dias.map(d => d[1])), passo = max <= 4 ? 1 : Math.ceil(max / 4), topo = Math.ceil(max / passo) * passo;
-      const y = v => mT + (H - mT - mB) * (1 - v / topo);
-      const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Novos leads por dia' });
+      const H = 180, mE = o.mE || 26, mB = 22, mT = 8, larg = (W - mE) / dias.length;
+      const max = Math.max(1, ...dias.map(d => d[1])), passo = o.passo || (max <= 4 ? 1 : Math.ceil(max / 4)), topo = o.topo || Math.ceil(max / passo) * passo;
+      const y = v => mT + (H - mT - mB) * (1 - Math.min(v, topo) / topo);
+      const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': o.aria || 'Novos leads por dia' });
       for (let v = 0; v <= topo; v += passo) {
         svg.append(s('line', { class: v ? 'grade' : 'eixo', x1: mE, x2: W, y1: y(v), y2: y(v) }));
-        const t = s('text', { x: mE - 6, y: y(v) + 4, 'text-anchor': 'end' }); t.textContent = v; svg.append(t);
+        const t = s('text', { x: mE - 6, y: y(v) + 4, 'text-anchor': 'end' }); t.textContent = o.eixo ? o.eixo(v) : v; svg.append(t);
+      }
+      if (o.meta != null) { // linha de referência (meta), tracejada, com rótulo
+        svg.append(s('line', { class: 'meta', x1: mE, x2: W, y1: y(o.meta), y2: y(o.meta) }));
+        const t = s('text', { class: 'meta-txt', x: mE - 6, y: y(o.meta) + 4, 'text-anchor': 'end' }); t.textContent = o.metaTxt || 'meta'; svg.append(t); // no eixo, sem cobrir as barras
       }
       const marcar = [0, dias.length >> 1, dias.length - 1];
       dias.forEach(([dia, v], i) => {
@@ -2883,7 +2930,7 @@
         const barra = s('path', { class: 'barra', d: v ? `M${bx},${y(0)}V${y(v) + r}Q${bx},${y(v)} ${bx + r},${y(v)}H${bx + bw - r}Q${bx + bw},${y(v)} ${bx + bw},${y(v) + r}V${y(0)}Z` : '' });
         alvo.addEventListener('mouseenter', () => {
           barra.classList.add('on');
-          dica.textContent = dia.slice(8, 10) + '/' + dia.slice(5, 7) + ' · ' + v + (v === 1 ? ' lead' : ' leads'); dica.hidden = false;
+          dica.textContent = o.dica ? o.dica(dia, v) : dia.slice(8, 10) + '/' + dia.slice(5, 7) + ' · ' + v + (v === 1 ? ' lead' : ' leads'); dica.hidden = false;
           dica.style.left = Math.min(W - 50, Math.max(50, bx + bw / 2)) + 'px'; dica.style.top = (y(v) - 6) + 'px';
         });
         alvo.addEventListener('mouseleave', () => { dica.hidden = true; barra.classList.remove('on'); });
@@ -2894,15 +2941,21 @@
     };
     let ultima = 0;
     new ResizeObserver(() => { const w = Math.round(caixa.clientWidth); if (w && w !== ultima) { ultima = w; desenhar(w); } }).observe(caixa);
-    const tab = el('table', { class: 'pn-tabela' }, el('thead', {}, el('tr', {}, el('th', { text: 'Dia' }), el('th', { class: 'n', text: 'Novos leads' }))),
-      el('tbody', {}, ...dias.filter(d => d[1]).map(([d, v]) => el('tr', {}, el('td', { text: d.slice(8, 10) + '/' + d.slice(5, 7) }), el('td', { class: 'n', text: String(v) })))));
+    const tab = el('table', { class: 'pn-tabela' }, el('thead', {}, el('tr', {}, el('th', { text: 'Dia' }), el('th', { class: 'n', text: o.coluna || 'Novos leads' }))),
+      el('tbody', {}, ...dias.filter(d => o.fmt || d[1]).map(([d, v]) => el('tr', {}, el('td', { text: d.slice(8, 10) + '/' + d.slice(5, 7) }), el('td', { class: 'n', text: o.fmt ? o.fmt(v) : String(v) })))));
     return [caixa, el('details', { class: 'pn-tabela-ver' }, el('summary', { text: 'Ver em tabela' }), tab)];
   }
   async function pintarPainelIndicadores() {
     const vez = ++pnVez, corpo = $('pn-corpo');
     document.querySelectorAll('#pn-periodo [data-d]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.d === pnPeriodo)));
-    const { ini, fim, ant } = pnIntervalo(pnPeriodo), iso = ini.toISOString(), isoAnt = ant.toISOString();
+    const { ini, fim, ant, futuro } = pnIntervalo(pnPeriodo), iso = ini.toISOString(), isoAnt = ant.toISOString();
     $('pn-intervalo').textContent = ini.toLocaleDateString('pt-BR') + ' a ' + fim.toLocaleDateString('pt-BR');
+    // Hotel (Silbeck): "Este mês" é o mês inteiro (inclui o que já está reservado); carrega em paralelo
+    const hIni = pnDia(ini), hFim = pnPeriodo === 'mes' ? pnDia(new Date(ini.getFullYear(), ini.getMonth() + 1, 0)) : pnDia(fim);
+    const hotel = el('div', { class: 'pn-hotel' }, el('h2', { class: 'pn-sec', text: 'Hotel · ' + fmtDataBR(hIni) + ' a ' + fmtDataBR(hFim) }), el('p', { class: 'lat-txt', text: 'Consultando o Silbeck…' }));
+    chamarApi('/api/painel-hotel?ini=' + hIni + '&fim=' + hFim, null, 'GET').then(h => { if (vez === pnVez) pintarPainelHotel(hotel, h, hIni, hFim); })
+      .catch(e => { if (vez === pnVez) hotel.replaceChildren(el('h2', { class: 'pn-sec', text: 'Hotel' }), el('div', { class: 'vazio', text: 'Não deu para consultar o Silbeck agora: ' + e.message })); });
+    if (futuro) { corpo.replaceChildren(hotel, el('p', { class: 'dica', text: 'Próximos dias: só os números do hotel (o que já está reservado). Os números de vendas e atendimento aparecem nos períodos passados.' })); return; }
     if (!corpo.children.length) corpo.append(el('p', { class: 'lat-txt', text: 'Calculando…' }));
     if (!modoPix) modoPix = await fetch('/saude').then(r => r.json()).then(j => j.pix || 'simulador').catch(() => 'simulador');
     const [neg, orc, ven, cob, sug, ale] = await Promise.all([
@@ -2915,6 +2968,7 @@
     ]);
     if (vez !== pnVez) return;
     corpo.textContent = '';
+    corpo.append(hotel, el('h2', { class: 'pn-sec', text: 'Vendas e atendimento (CRM)' }));
     if (neg.error) { corpo.append(pnFalta('008')); return; }
     const noPer = d => d && new Date(d) >= ini, noAnt = d => d && new Date(d) >= ant && new Date(d) < ini;
     const leads = neg.data.filter(n => noPer(n.criado_em)), leadsAnt = neg.data.filter(n => noAnt(n.criado_em));
@@ -2975,7 +3029,7 @@
             el('td', { class: 'n', text: pnMin(pnMediana(x.tempos)) }), el('td', { class: 'n', text: String(x.esc) }), el('td', { class: 'n', text: String(x.abertos) })); }))))
           : el('div', { class: 'vazio', text: 'Nenhum chamado no período.' })));
     }
-    corpo.append(grade, el('p', { class: 'dica', text: 'Valores de hospedagem vêm do orçamento enviado (valor previsto). O faturamento real e a ocupação entram quando o Silbeck estiver ligado.' }));
+    corpo.append(grade, el('p', { class: 'dica', text: 'Na parte de vendas, o valor das reservas vem do orçamento enviado (valor previsto). O faturamento real de hospedagem está na parte Hotel, direto do Silbeck.' }));
   }
 
   // ---------- Avisos no celular: notificação mesmo com o CRM fechado (CRM instalado na tela inicial) ----------

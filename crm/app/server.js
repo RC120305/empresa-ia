@@ -1390,6 +1390,74 @@ async function sincronizarAgencias(buscar = fetch) {
   console.log(JSON.stringify({ evento: 'agencias_sincronizadas', ...resumo }));
   return resumo;
 }
+// ---------- Painel do hotel (dono, 10/10/2026): números do Silbeck ----------
+// Ocupação, faturamento de hospedagem, diária média (ADR), RevPAR, permanência, hóspedes, canais, antecedência e
+// ocupação por acomodação. Sem dados pessoais. Guardado por 10 min por período.
+const cachePainel = new Map();
+function canalDaReserva(r, doCrm) {
+  if (doCrm.has(r.silbeck_id) || /crm|whats/i.test(r.portal || '')) return 'WhatsApp (CRM)';
+  if (r.codigo_empresa) return 'Agências e operadoras';
+  if (r.portal) return /booking/i.test(r.portal) ? 'Booking' : /expedia|hoteis\.com/i.test(r.portal) ? 'Expedia' : /decolar/i.test(r.portal) ? 'Decolar' : /airbnb/i.test(r.portal) ? 'Airbnb' : /motor|site|omnibees|asksuite/i.test(r.portal) ? 'Site (motor de reservas)' : r.portal;
+  return 'Direto (balcão, telefone, WhatsApp)';
+}
+async function painelHotel(ini, fim, buscar = fetch) {
+  const chave = ini + '|' + fim, c = cachePainel.get(chave);
+  if (c && c.ate > Date.now()) return c.r;
+  const dias = Math.round((Date.parse(fim) - Date.parse(ini)) / 864e5) + 1;
+  const antFim = silbeck.somarDias(ini, -1), antIni = silbeck.somarDias(ini, -dias);
+  const erros = [];
+  const tentar = (nome, p) => p.catch(e => { erros.push(nome + ': ' + String(e.message || e).slice(0, 120)); return null; });
+  const [oc, ocAnt, lista, listaAnt, crm] = await Promise.all([
+    tentar('ocupação', silbeck.ocupacao({ de: ini, ate: fim }, buscar)), tentar('ocupação anterior', silbeck.ocupacao({ de: antIni, ate: antFim }, buscar)),
+    tentar('reservas', silbeck.listaReservas({ de: ini, ate: fim, tipoData: 'entrada' }, buscar)), tentar('reservas anteriores', silbeck.listaReservas({ de: antIni, ate: antFim, tipoData: 'entrada' }, buscar)),
+    getJson(`${SUPABASE_URL}/rest/v1/reservas?fonte=eq.silbeck&data_entrada=gte.${antIni}&data_entrada=lte.${fim}&select=silbeck_id&limit=5000`, buscar)]);
+  // Apartamentos do hotel e ocupação por tipo (Disponibilidade: livres por dia), em blocos de 62 dias
+  let unidades = 0, porTipo = [];
+  try {
+    const blocos = [];
+    for (let d = ini; d <= fim; d = silbeck.somarDias(d, 62)) blocos.push(silbeck.vagas(d, Math.min(62, Math.round((Date.parse(fim) - Date.parse(d)) / 864e5) + 1), buscar));
+    const vs = await Promise.all(blocos), tipos = new Map();
+    for (const v of vs) for (const t of v.tipos) {
+      const x = tipos.get(t.codigo) || { codigo: t.codigo, nome: t.nome, total: Number(t.total) || 0, livres: 0, dias: 0 };
+      t.vagas.forEach(n => { if (n != null) { x.livres += Number(n); x.dias++; } });
+      tipos.set(t.codigo, x);
+    }
+    porTipo = [...tipos.values()].filter(t => t.total > 0 && t.dias).map(t => ({ codigo: t.codigo, nome: t.nome, unidades: t.total, ocupacao: Math.round(1000 * Math.max(0, 1 - t.livres / (t.total * t.dias))) / 10 }));
+    unidades = porTipo.reduce((s, t) => s + t.unidades, 0);
+  } catch (e) { erros.push('acomodações: ' + String(e.message || e).slice(0, 120)); }
+  const resumoOc = (o, nDias) => {
+    if (!o) return null;
+    const lst = Array.isArray(o.listaOcupacao) ? o.listaOcupacao : [];
+    const ocupados = Number(o.aptoTotal) || lst.reduce((s, d) => s + (Number(d.apto && d.apto.total) || 0), 0);
+    const receita = r2(Number(o.totalDiaria) || lst.reduce((s, d) => s + (Number(d.totalDiaria) || 0), 0));
+    const pct = o.aptoTotalPercentual != null ? Number(o.aptoTotalPercentual) : unidades ? 100 * ocupados / (unidades * nDias) : null;
+    return { ocupacao: pct != null ? Math.round(pct * 10) / 10 : null, receita, room_nights: ocupados, hospedes_noite: Number(o.paxTotal) || null,
+      adr: ocupados ? r2(receita / ocupados) : null, revpar: unidades ? r2(receita / (unidades * nDias)) : null, permanencia: o.mediaPermanencia != null ? Number(o.mediaPermanencia) : null,
+      por_dia: lst.map(d => ({ data: String(d.data || '').slice(0, 10), ocupacao: d.apto && d.apto.percentual != null ? Number(d.apto.percentual) : null, ocupados: d.apto ? Number(d.apto.total) || 0 : 0, receita: r2(d.totalDiaria) })) };
+  };
+  const doCrm = new Set(crm.map(x => String(x.silbeck_id)));
+  const resumoRes = l => {
+    if (!l) return null;
+    const vivas = l.filter(r => !r.cancelada), canais = new Map();
+    for (const r of vivas) { const k = canalDaReserva(r, doCrm), x = canais.get(k) || { canal: k, reservas: 0, noites: 0, receita: 0 }; x.reservas++; x.noites += r.noites; x.receita = r2(x.receita + Number(r.valor_total)); canais.set(k, x); }
+    const ant = vivas.filter(r => r.cadastro && r.data_entrada).map(r => Math.max(0, (Date.parse(r.data_entrada) - Date.parse(r.cadastro)) / 864e5));
+    const soma = f => vivas.reduce((t, r) => t + (Number(f(r)) || 0), 0);
+    return { reservas: vivas.length, canceladas: l.length - vivas.length, receita: r2(soma(r => r.valor_total)), hospedes: soma(r => r.pax), noites: soma(r => r.noites),
+      pax_por_reserva: vivas.length ? Math.round(10 * soma(r => r.pax) / vivas.length) / 10 : null,
+      noites_por_reserva: vivas.length ? Math.round(10 * soma(r => r.noites) / vivas.length) / 10 : null,
+      ticket_medio: vivas.length ? r2(soma(r => r.valor_total) / vivas.length) : null,
+      antecedencia_media: ant.length ? Math.round(ant.reduce((a, b) => a + b, 0) / ant.length) : null,
+      canais: [...canais.values()].sort((a, b) => b.receita - a.receita) };
+  };
+  const r = { ok: true, periodo: { ini, fim, dias, ant_ini: antIni, ant_fim: antFim }, fonte: silbeck.MODO(), unidades,
+    atual: resumoOc(oc, dias), anterior: resumoOc(ocAnt, dias), reservas: resumoRes(lista), reservas_ant: resumoRes(listaAnt), por_tipo: porTipo.sort((a, b) => b.ocupacao - a.ocupacao), erros };
+  if (r.anterior) delete r.anterior.por_dia;
+  if (r.reservas_ant) delete r.reservas_ant.canais;
+  cachePainel.set(chave, { ate: Date.now() + (erros.length ? 60e3 : 10 * 60e3), r });
+  if (cachePainel.size > 50) cachePainel.delete(cachePainel.keys().next().value);
+  return r;
+}
+
 // ---------- Financeiro das agências (dono, 10/10/2026) ----------
 // Reservas da agência vêm do Silbeck pelo código da empresa (motor, balcão ou CRM). Valores sobre o LÍQUIDO (a comissão
 // já vem descontada): sinal = % do líquido; o saldo (líquido menos o sinal pago) entra na fatura, fechada por período.
@@ -1411,9 +1479,10 @@ async function sincronizarReservasAgencias({ de, ate, tipoData = 'cadastro' }, b
   if (!porCodigo.size) return { lidas: 0, da_agencia: 0 };
   const lista = await silbeck.listaReservas({ de, ate, tipoData }, buscar).catch(e => { throw new ErroEnvio(502, 'Não deu para ler as reservas do Silbeck: ' + String(e.message || e).slice(0, 150)); });
   const agora = new Date().toISOString();
+  const COLUNAS = ['silbeck_id', 'titular', 'acomodacao', 'data_entrada', 'data_saida', 'valor_total', 'sinal_pago', 'status_silbeck', 'status_descricao', 'cancelada'];
   const linhas = lista.filter(r => r.codigo_empresa && porCodigo.has(r.codigo_empresa)).map(r => {
-    const ag = porCodigo.get(r.codigo_empresa), { codigo_empresa, ...resto } = r;
-    return { ...resto, agencia_id: ag.id, ...valoresDaReserva(r, ag), sincronizado_em: agora, atualizado_em: agora };
+    const ag = porCodigo.get(r.codigo_empresa);
+    return { ...Object.fromEntries(COLUNAS.map(k => [k, r[k]])), agencia_id: ag.id, ...valoresDaReserva(r, ag), sincronizado_em: agora, atualizado_em: agora };
   });
   for (let i = 0; i < linhas.length; i += 200) {
     const g = await buscar(`${SUPABASE_URL}/rest/v1/agencia_reservas?on_conflict=silbeck_id`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'resolution=merge-duplicates,return=minimal' },
@@ -2696,6 +2765,13 @@ const API_EQUIPE = {
       if (a.negocio_id) await eventoNegocio(a.negocio_id, 'Alerta resolvido: ' + a.titulo + ' · ' + String(a.info || '').split(' · ')[0], eu.id);
     }
     return { ok: true };
+  },
+  // Painel do hotel (Silbeck): ocupação, faturamento, ADR, RevPAR, canais... de um período (até 366 dias)
+  'GET /api/painel-hotel': async (corpo, eu, url) => {
+    const ini = url.searchParams.get('ini'), fim = url.searchParams.get('fim');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ini || '') || !/^\d{4}-\d{2}-\d{2}$/.test(fim || '') || fim < ini) throw new ErroEnvio(400, 'Período inválido.');
+    if ((Date.parse(fim) - Date.parse(ini)) / 864e5 > 366) throw new ErroEnvio(400, 'Período de no máximo 1 ano.');
+    return painelHotel(ini, fim);
   },
   // Financeiro das agências: importar reservas do Silbeck por período de check-in, pagamentos e faturas
   'POST /api/agencia-reservas/importar': async corpo => {
