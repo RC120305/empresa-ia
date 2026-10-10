@@ -1354,6 +1354,52 @@ async function fecharReserva(conversa, d, { usuario, origem }, buscar = fetch) {
   return { reserva, cobranca, valor_cobranca: valor, forma, simulador: reserva.simulador, ...(pix_pela_equipe ? { pix_pela_equipe } : {}) };
 }
 
+// ---------- Agências e operadoras: cadastro de Empresas do Silbeck (dono, 10/10/2026, opção 2) ----------
+// O Silbeck é a fonte do cadastro (nome, CNPJ, código); o CRM guarda contatos, comissão e observações. Ligação pelo
+// id do Silbeck ou, para os pré-cadastros feitos no CRM, pelo CNPJ. Empresas novas entram fora da aba Agências
+// (eh_agencia = false) até a equipe marcar. Contatos do Silbeck só preenchem o que o CRM ainda não tem.
+const fmtCnpj = d => d && d.length === 14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : d || null;
+async function sincronizarAgencias(buscar = fetch) {
+  const lidas = await buscar(`${SUPABASE_URL}/rest/v1/agencias?select=id,nome,cnpj,telefone,email,codigo_silbeck,silbeck_id&limit=10000`, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(8000) }).catch(() => null);
+  if (!lidas || !lidas.ok) throw new ErroEnvio(503, 'O banco ainda não tem a sincronização das agências: falta rodar a migração 027 no Supabase.');
+  const atuais = await lidas.json();
+  const doSilbeck = await silbeck.empresas(buscar).catch(e => { throw new ErroEnvio(502, 'Não deu para ler as empresas do Silbeck: ' + String(e.message || e).slice(0, 150)); });
+  const porId = new Map(atuais.filter(a => a.silbeck_id).map(a => [String(a.silbeck_id), a]));
+  const porCnpj = new Map(atuais.filter(a => !a.silbeck_id && a.cnpj && String(a.cnpj).replace(/\D/g, '').length >= 11).map(a => [String(a.cnpj).replace(/\D/g, ''), a]));
+  const agora = new Date().toISOString(), novas = [];
+  let atualizadas = 0, ligadas = 0;
+  for (const e of doSilbeck) {
+    const a = porId.get(e.silbeck_id) || (e.cnpj && porCnpj.get(e.cnpj)) || null;
+    if (!a) { novas.push({ nome: e.nome, cnpj: fmtCnpj(e.cnpj), telefone: e.telefone, email: e.email, codigo_silbeck: e.codigo, silbeck_id: e.silbeck_id, eh_agencia: false, sincronizado_em: agora }); continue; }
+    const mud = {};
+    if (!a.silbeck_id) { mud.silbeck_id = e.silbeck_id; ligadas++; if (e.cnpj) porCnpj.delete(e.cnpj); }
+    if (a.nome !== e.nome) mud.nome = e.nome;
+    if (e.cnpj && String(a.cnpj || '').replace(/\D/g, '') !== e.cnpj) mud.cnpj = fmtCnpj(e.cnpj);
+    if ((a.codigo_silbeck || null) !== e.codigo && e.codigo) mud.codigo_silbeck = e.codigo;
+    if (!a.telefone && e.telefone) mud.telefone = e.telefone;
+    if (!a.email && e.email) mud.email = e.email;
+    if (Object.keys(mud).length) { await patchBanco('agencias', `id=eq.${a.id}`, { ...mud, sincronizado_em: agora, atualizado_em: agora }); atualizadas++; }
+  }
+  for (let i = 0; i < novas.length; i += 200) {
+    const r = await buscar(`${SUPABASE_URL}/rest/v1/agencias`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(novas.slice(i, i + 200)), signal: AbortSignal.timeout(10000) }).catch(() => null);
+    if (!r || !r.ok) throw new ErroEnvio(502, 'Não deu para gravar as empresas novas do Silbeck (' + (r ? r.status : 'sem resposta') + ').');
+  }
+  const pendentes = atuais.filter(a => !a.silbeck_id && !doSilbeck.some(e => e.cnpj && String(a.cnpj || '').replace(/\D/g, '') === e.cnpj)).length;
+  const resumo = { quando: agora, empresas: doSilbeck.length, novas: novas.length, atualizadas, ligadas, pendentes };
+  await gravarConfig('agencias_sync', resumo, buscar).catch(() => null);
+  console.log(JSON.stringify({ evento: 'agencias_sincronizadas', ...resumo }));
+  return resumo;
+}
+// A cada hora (pelo agendador de 2 em 2 min): lembra a última vez no config, porque o servidor reinicia
+let tentouSyncAgencias = 0;
+async function sincronizarAgenciasDeHora(buscar = fetch, agora = Date.now()) {
+  if (agora - tentouSyncAgencias < 10 * 60e3) return null;
+  tentouSyncAgencias = agora;
+  const ult = await lerConfig('agencias_sync', buscar).catch(() => null);
+  if (ult && ult.quando && agora - Date.parse(ult.quando) < 3600e3) return null;
+  return sincronizarAgencias(buscar);
+}
+
 // ---------- Oportunidades (sem sino): retomar orçamentos parados e o resumo do dia ----------
 // Dono, 04/10/2026: o sino é só para urgência. Orçamento sem resposta em 24 h vira tarefa para o responsável;
 // às 8h, um único aviso no celular com o que há para hoje (quem quiser, desliga no sino).
@@ -2525,6 +2571,8 @@ const API_EQUIPE = {
     }
     return { ok: true };
   },
+  // Agências e operadoras: traz o cadastro de Empresas do Silbeck agora (botão "Sincronizar com o Silbeck")
+  'POST /api/agencias/sincronizar': async () => ({ ok: true, ...(await sincronizarAgencias()) }),
   // Agências e operadoras parceiras
   'POST /api/agencia': async corpo => {
     const dados = {};
@@ -2532,6 +2580,7 @@ const API_EQUIPE = {
     if (dados.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(dados.email)) throw new ErroEnvio(400, 'E-mail inválido.');
     if (corpo.comissao !== undefined) { const c = corpo.comissao === '' || corpo.comissao === null ? null : Number(corpo.comissao); if (c !== null && !(c >= 0 && c <= 100)) throw new ErroEnvio(400, 'Comissão de 0 a 100%.'); dados.comissao = c; }
     if (corpo.ativo !== undefined) dados.ativo = !!corpo.ativo;
+    if (corpo.eh_agencia !== undefined) dados.eh_agencia = !!corpo.eh_agencia;
     if (corpo.id) {
       if (!/^[0-9a-f-]{36}$/i.test(corpo.id)) throw new ErroEnvio(400, 'Agência inválida.');
       if (dados.nome === null) throw new ErroEnvio(400, 'Diga o nome da agência.');
@@ -3273,6 +3322,7 @@ const servidor = http.createServer((req, res) => {
   // Agendador do Google (a cada 2 min): confere as cobranças Pix ativas. Não devolve dado nenhum, só contagens.
   if (url.pathname === '/cron/pix' && req.method === 'POST') {
     if (!bancoLigado()) return json(res, 503, { ok: false });
+    if (silbeck.MODO() === 'real') sincronizarAgenciasDeHora().catch(e => console.warn(JSON.stringify({ evento: 'agencias_sync_falhou', erro: String(e.message || e).slice(0, 150) })));
     Promise.all([verificarCobrancas(), escalarAlertas().catch(() => 0)]).then(async ([r, escalados]) => json(res, 200, { ok: true, ...r, escalados, avisos: await notificarAlertas().catch(() => 0),
       retomar: await retomarOrcamentos().catch(() => ({ criadas: 0, fechadas: 0 })), retomadas: await retomadaAutomatica().catch(() => 0), resumo: await resumoDoDia().catch(() => 0),
       massagem: await verificarPedidosParceiro().catch(() => ({ avisos: 0, expirados: 0 })) })).catch(() => json(res, 500, { ok: false }));
@@ -3415,4 +3465,4 @@ const servidor = http.createServer((req, res) => {
 });
 
 if (require.main === module) servidor.listen(porta, () => { console.log('CRM Cabanas ouvindo na porta ' + porta); conferirIpSaida(); });
-module.exports = { travaReservas, pixPelaEquipe, zerarCacheAuto: () => { autoCache.ate = 0; }, emOrdemDeLeitura, servidor, retomarOrcamentos, retomadaAutomatica, motivoRetomada, ehRobo, resumoDoDia, sinalQuente, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca, catalogoParaTeste: () => { limparCatalogo(); return catalogo(); } };
+module.exports = { sincronizarAgencias, travaReservas, pixPelaEquipe, zerarCacheAuto: () => { autoCache.ate = 0; }, emOrdemDeLeitura, servidor, retomarOrcamentos, retomadaAutomatica, motivoRetomada, ehRobo, resumoDoDia, sinalQuente, proximoExpediente, notificarAlertas, avisarCelulares, assinaturaValida, registrar, corpoDe, numeroParaEnvio, extDe, fotosDoProduto, prazoCobranca, catalogoParaTeste: () => { limparCatalogo(); return catalogo(); } };

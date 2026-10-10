@@ -316,6 +316,7 @@ section[data-painel="funil"],section[data-painel="tarefas"]{gap:10px;overflow:hi
 .barra-ferr input[type=search]{flex:1;min-width:180px}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .dica{margin:0;font-size:13px;color:var(--cor-texto-sec)}
+.ag-pendente{color:var(--cor-alerta)!important}
 .funil{flex:1;min-height:0;display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));gap:10px;overflow:auto;padding-bottom:6px;align-items:start}
 .coluna{background:color-mix(in srgb,var(--cor-superficie) 55%,var(--cor-fundo));border:1px solid var(--cor-borda);border-radius:var(--r-lg);padding:8px;display:flex;flex-direction:column;gap:8px;border-top:3px solid var(--c);min-height:120px}
 .coluna.alvo{background:var(--cor-primaria-suave);outline:2px dashed var(--cor-primaria);outline-offset:-2px}

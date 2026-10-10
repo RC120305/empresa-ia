@@ -44,6 +44,7 @@ const VIDEO_GRANDE = (() => { // vídeo de 4 s com imagem pesada (~2 MB), para t
 const MP4_DRIVE = Buffer.concat([Buffer.from('\x00\x00\x00\x18ftypmp42'), Buffer.alloc(3000, 7)]);
 let bbPago = false;
 const configF = {}, pedidosParceiroF = [];
+let agenciasF = null;
 const pushF = [], pushRecebidos = []; // inscrições de avisos no celular e o que o "serviço de push" recebeu
 let iaOferta = '';
 const RAIZ_DRIVE = '1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5';
@@ -255,6 +256,7 @@ const falso = http.createServer((req, res) => {
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/rest/v1/produtos?ativo=eq.true')) return responder(200, PRODS);
     if (req.url.startsWith('/rest/v1/respostas?ativo=eq.true')) return responder(200, [{ id: 'r-1', pergunta: 'Aceita pet?', resposta: 'Não aceitamos pets, {nome}.', fixa: true }, { id: 'r-2', pergunta: 'Fica longe do centro?', resposta: 'São 6 km de asfalto.', fixa: false }, { id: 'r-3', pergunta: 'Qual o horário do café?', resposta: 'O café é das 7h às 10h.', fixa: false, origem: 'correcao' }]);
+    if (req.url.startsWith('/rest/v1/agencias?select=') && req.method === 'GET') return agenciasF ? responder(200, agenciasF) : responder(400, { message: 'column agencias.silbeck_id does not exist' });
     if ((req.url === '/rest/v1/produtos' || req.url === '/rest/v1/agencias' || req.url === '/rest/v1/respostas') && req.method === 'POST') { if (json && json.codigo === 'DUP') return responder(409, {}); res.writeHead(201); return res.end(); }
     if (/^\/rest\/v1\/(produtos|agencias|respostas|sugestoes)\?id=eq\./.test(req.url) && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/rest/v1/respostas?id=eq.') && req.method === 'GET') return responder(200, [{ usos: 4 }]);
@@ -880,6 +882,29 @@ falso.listen(0, () => {
     assert.equal(chamadas.findLast(c => c.url === '/rest/v1/agencias').corpo.comissao, 12.5);
     assert.equal((await api('/api/agencia', { nome: 'X', comissao: 150 })).status, 400);
     assert.equal((await api('/api/agencia', { nome: '' })).status, 400);
+    // Agências sincronizadas com as Empresas do Silbeck (simulador: 4 empresas); opção 2 do dono: entram fora da aba
+    {
+      assert.equal((await api('/api/agencias/sincronizar', {})).status, 503, 'sem a migração 027');
+      agenciasF = [{ id: 'a1', nome: 'Rio Azul (pré-cadastro)', cnpj: '00.000.000/0001-01', telefone: '(67) 99999-1111', email: null, codigo_silbeck: null, silbeck_id: null },
+        { id: 'a2', nome: 'Pendente Ltda', cnpj: '11.111.111/0001-11', telefone: null, email: null, codigo_silbeck: null, silbeck_id: null }];
+      const nS = chamadas.length;
+      r = await api('/api/agencias/sincronizar', {});
+      const js = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(js));
+      assert.deepEqual([js.empresas, js.novas, js.ligadas, js.atualizadas, js.pendentes], [4, 3, 1, 1, 1], JSON.stringify(js));
+      const ins = chamadas.slice(nS).find(c => c.url === '/rest/v1/agencias' && c.metodo === 'POST').corpo;
+      assert.ok(Array.isArray(ins) && ins.length === 3 && ins.every(x => x.eh_agencia === false && x.silbeck_id && x.nome), JSON.stringify(ins));
+      const pt = chamadas.slice(nS).find(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/agencias?id=eq.a1')).corpo;
+      assert.deepEqual([pt.silbeck_id, pt.nome, pt.codigo_silbeck, pt.telefone, pt.email], ['501', 'AGÊNCIA FICTÍCIA RIO AZUL TURISMO', '901', undefined, 'reservas@rioazul.exemplo.test'], 'Silbeck prevalece no cadastro; o telefone do CRM fica');
+      assert.equal(configF.agencias_sync.empresas, 4);
+      // Segunda vez: nada muda (ligada pelo id do Silbeck)
+      agenciasF = [{ ...agenciasF[0], ...pt }, agenciasF[1], ...ins.map((x, i) => ({ id: 'n' + i, ...x }))];
+      const j2 = await (await api('/api/agencias/sincronizar', {})).json();
+      assert.deepEqual([j2.novas, j2.atualizadas, j2.ligadas], [0, 0, 0], JSON.stringify(j2));
+      r = await api('/api/agencia', { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', eh_agencia: true });
+      assert.equal(r.status, 200); assert.equal(chamadas.findLast(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/agencias?id=eq.')).corpo.eh_agencia, true);
+      agenciasF = null; delete configF.agencias_sync;
+    }
     r = await api('/api/resposta', { pergunta: 'Aceita pet?', resposta: 'Não aceitamos pets.', atalho: '/Pet!', fixa: true });
     assert.equal(r.status, 200, await r.clone().text());
     const rr = chamadas.findLast(c => c.url === '/rest/v1/respostas' && c.metodo === 'POST').corpo;

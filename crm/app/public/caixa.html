@@ -185,8 +185,10 @@
 
     <!-- AGÊNCIAS -->
     <section data-painel="agencias" hidden>
-      <div class="barra-ferr"><input type="search" id="ag-busca" placeholder="Buscar por nome, CNPJ ou telefone" aria-label="Buscar agência"><button class="btn btn-enviar" type="button" id="ag-nova">+ Nova agência</button></div>
-      <p class="dica">O cadastro oficial das agências fica no Silbeck. Aqui ficam os contatos e os dados comerciais; a ligação automática com o Silbeck chega com a ponte do hotel.</p>
+      <div class="barra-ferr"><input type="search" id="ag-busca" placeholder="Buscar por nome, CNPJ ou telefone" aria-label="Buscar agência">
+        <div class="chips" role="group" aria-label="Mostrar" id="ag-ver"><button class="chip" type="button" aria-pressed="true" data-v="agencias">Agências e operadoras</button><button class="chip" type="button" aria-pressed="false" data-v="todas">Todas as empresas do Silbeck</button></div>
+        <button class="btn btn-editar" type="button" id="ag-sync">Sincronizar com o Silbeck</button><button class="btn btn-enviar" type="button" id="ag-nova">+ Nova agência</button></div>
+      <p class="dica" id="ag-dica">O cadastro oficial (nome, CNPJ e código) vem do Silbeck e é atualizado a cada hora. Aqui ficam os contatos, a comissão e as observações. Em "Todas as empresas do Silbeck", marque quais são agências ou operadoras.</p>
       <div class="lista-cartoes" id="ag-grade"></div>
     </section>
 

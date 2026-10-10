@@ -1514,39 +1514,66 @@
   $('prod-novo').addEventListener('click', () => formProduto(null));
 
   // ================= Agências =================
-  let agencias = [];
+  // Dono, 10/10/2026 (opção 2): o CRM traz todas as Empresas do Silbeck; a aba mostra só as marcadas como agência.
+  let agencias = [], agVer = 'agencias', agSemSync = false;
   async function carregarAgencias() {
-    const { data, error } = await sb.from('agencias').select('*').order('ativo', { ascending: false }).order('nome');
-    if (error) { $('ag-grade').replaceChildren(el('div', { class: 'vazio', text: 'As agências ainda não estão no banco: falta rodar a migração 009 no Supabase.' })); return; }
-    agencias = data || []; pintarAgencias();
+    let r = await sb.from('agencias').select('*').order('ativo', { ascending: false }).order('nome').limit(5000);
+    agSemSync = false;
+    if (r.error) { $('ag-grade').replaceChildren(el('div', { class: 'vazio', text: 'As agências ainda não estão no banco: falta rodar a migração 009 no Supabase.' })); return; }
+    agencias = r.data || [];
+    agSemSync = agencias.length > 0 && !('eh_agencia' in agencias[0]);
+    const { data: cfg } = await sb.from('config').select('valor').eq('chave', 'agencias_sync').maybeSingle();
+    const u = cfg && cfg.valor;
+    $('ag-dica').textContent = agSemSync ? 'Para sincronizar com o Silbeck, falta rodar a migração 027 no Supabase.'
+      : 'O cadastro oficial (nome, CNPJ e código) vem do Silbeck e é atualizado a cada hora' + (u && u.quando ? ' (última vez: ' + quandoBR(u.quando) + ', ' + u.empresas + ' empresas)' : '') + '. Aqui ficam os contatos, a comissão e as observações. Em "Todas as empresas do Silbeck", marque quais são agências ou operadoras.';
+    pintarAgencias();
   }
+  const ehAgencia = a => a.eh_agencia !== false;
   function pintarAgencias() {
-    const q = semAcento($('ag-busca').value.trim());
-    const ls = agencias.filter(a => !q || semAcento([a.nome, a.cnpj, a.telefone, a.email].join(' ')).includes(q));
+    const q = semAcento($('ag-busca').value.trim()), qd = q.replace(/\D/g, '');
+    const base = agVer === 'agencias' ? agencias.filter(ehAgencia) : agencias.filter(a => a.silbeck_id);
+    const todasQ = base.filter(a => !q || semAcento([a.nome, a.cnpj, a.telefone, a.email, a.codigo_silbeck].join(' ')).includes(q) || (qd.length >= 4 && String(a.cnpj || '').replace(/\D/g, '').includes(qd)));
+    const ls = todasQ.slice(0, 200);
     const box = $('ag-grade'); box.textContent = '';
-    if (!ls.length) box.append(el('div', { class: 'vazio', text: agencias.length ? 'Nenhuma agência com essa busca.' : 'Nenhuma agência cadastrada ainda.' }));
-    ls.forEach(a => box.append(el('div', { class: 'cartao item-cartao' + (a.ativo ? '' : ' inativo') },
-      el('h3', {}, a.nome, a.codigo_silbeck ? el('small', { text: 'Silbeck ' + a.codigo_silbeck }) : null),
-      el('p', { text: [a.cnpj ? 'CNPJ ' + a.cnpj : '', a.comissao != null ? 'Comissão ' + Number(a.comissao).toLocaleString('pt-BR') + '%' : ''].filter(Boolean).join(' · ') || 'Sem CNPJ' }),
-      el('p', { text: [a.telefone, a.email].filter(Boolean).join(' · ') || 'Sem contato' }),
-      a.observacoes ? el('p', { text: a.observacoes }) : null,
-      el('div', { class: 'acoes' }, el('button', { class: 'btn-mini', type: 'button', text: 'Editar', onclick: () => formAgencia(a) }),
-        el('button', { class: 'btn-mini', type: 'button', text: a.ativo ? 'Desativar' : 'Reativar', onclick: async () => { try { await chamarApi('/api/agencia', { id: a.id, ativo: !a.ativo }); carregarAgencias(); } catch (e) { toast(e.message); } } })))));
+    if (!ls.length) box.append(el('div', { class: 'vazio', text: q ? 'Nenhuma empresa com essa busca.' : agVer === 'agencias' ? 'Nenhuma agência marcada ainda. Em "Todas as empresas do Silbeck", marque as agências e operadoras.' : 'Nenhuma empresa do Silbeck ainda: toque em "Sincronizar com o Silbeck".' }));
+    ls.forEach(a => {
+      const marcar = el('button', { class: 'btn-mini', type: 'button', text: ehAgencia(a) ? 'Não é agência' : '✓ É agência ou operadora', onclick: async e => {
+        e.currentTarget.disabled = true;
+        try { await chamarApi('/api/agencia', { id: a.id, eh_agencia: !ehAgencia(a) }); a.eh_agencia = !ehAgencia(a); toast(a.eh_agencia ? a.nome + ' está na aba Agências.' : a.nome + ' saiu da aba Agências.'); pintarAgencias(); }
+        catch (err) { toast(err.message); e.currentTarget.disabled = false; } } });
+      box.append(el('div', { class: 'cartao item-cartao' + (a.ativo ? '' : ' inativo') },
+        el('h3', {}, a.nome, a.silbeck_id ? el('small', { text: 'Silbeck' + (a.codigo_silbeck ? ' cód. ' + a.codigo_silbeck : '') }) : el('small', { class: 'ag-pendente', text: 'Pendente no Silbeck' })),
+        el('p', { text: [a.cnpj ? 'CNPJ ' + a.cnpj : '', a.comissao != null ? 'Comissão ' + Number(a.comissao).toLocaleString('pt-BR') + '%' : ''].filter(Boolean).join(' · ') || 'Sem CNPJ' }),
+        el('p', { text: [a.telefone, a.email].filter(Boolean).join(' · ') || 'Sem contato' }),
+        !a.silbeck_id && !agSemSync ? el('p', { class: 'dica', text: 'Cadastre no Silbeck com o mesmo CNPJ: na próxima sincronização o CRM liga os dois sozinho.' }) : null,
+        a.observacoes ? el('p', { text: a.observacoes }) : null,
+        el('div', { class: 'acoes' },
+          agVer === 'agencias' || ehAgencia(a) ? el('button', { class: 'btn-mini', type: 'button', text: 'Editar', onclick: () => formAgencia(a) }) : null,
+          a.silbeck_id && !agSemSync ? marcar : null,
+          ehAgencia(a) ? el('button', { class: 'btn-mini', type: 'button', text: a.ativo ? 'Desativar' : 'Reativar', onclick: async () => { try { await chamarApi('/api/agencia', { id: a.id, ativo: !a.ativo }); carregarAgencias(); } catch (e) { toast(e.message); } } }) : null)));
+    });
+    if (todasQ.length > ls.length) box.append(el('div', { class: 'vazio', text: 'Mostrando 200 de ' + todasQ.length + ': use a busca para achar a empresa.' }));
   }
   function formAgencia(a) {
     a = a || {};
+    const doSilbeck = !!a.silbeck_id; // nome, CNPJ e código vêm do Silbeck (ele prevalece)
     abrirForm(a.id ? 'Editar agência' : 'Nova agência', [
-      { k: 'nome', rotulo: 'Nome fantasia', valor: a.nome, largo: true },
-      { k: 'cnpj', rotulo: 'CNPJ', valor: a.cnpj, dica: '00.000.000/0000-00' },
+      ...(doSilbeck ? [] : [{ k: 'nome', rotulo: 'Nome fantasia', valor: a.nome, largo: true }, { k: 'cnpj', rotulo: 'CNPJ', valor: a.cnpj, dica: '00.000.000/0000-00 (o mesmo do Silbeck: é por ele que o CRM liga os dois)' }]),
       { k: 'comissao', rotulo: 'Comissão (%)', tipo: 'number', valor: a.comissao ?? '', at: { min: '0', max: '100', step: '0.5' } },
       { k: 'telefone', rotulo: 'WhatsApp do contato', tipo: 'tel', valor: a.telefone },
       { k: 'email', rotulo: 'E-mail de reservas', tipo: 'email', valor: a.email },
-      { k: 'codigo_silbeck', rotulo: 'Código no Silbeck (se já tiver)', valor: a.codigo_silbeck },
       { k: 'observacoes', rotulo: 'Observações', tipo: 'textarea', valor: a.observacoes, largo: true },
-    ], async v => { await chamarApi('/api/agencia', { ...(a.id ? { id: a.id } : {}), ...v }); toast('Agência salva.'); carregarAgencias(); });
+    ], async v => { await chamarApi('/api/agencia', { ...(a.id ? { id: a.id } : {}), ...v }); toast(doSilbeck || a.id ? 'Agência salva.' : 'Agência salva. Cadastre no Silbeck com o mesmo CNPJ para ligar os dois.'); carregarAgencias(); });
   }
   $('ag-nova').addEventListener('click', () => formAgencia(null));
   $('ag-busca').addEventListener('input', pintarAgencias);
+  $('ag-ver').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (!b) return; agVer = b.dataset.v; $('ag-ver').querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); pintarAgencias(); });
+  $('ag-sync').addEventListener('click', async e => {
+    const b = e.currentTarget; b.disabled = true; b.textContent = 'Sincronizando…';
+    try { const r = await chamarApi('/api/agencias/sincronizar', {}); toast(r.empresas + ' empresas no Silbeck: ' + r.novas + ' novas, ' + r.atualizadas + ' atualizadas' + (r.ligadas ? ', ' + r.ligadas + ' pré-cadastros ligados' : '') + '.'); carregarAgencias(); }
+    catch (err) { toast(err.message); }
+    b.disabled = false; b.textContent = 'Sincronizar com o Silbeck';
+  });
 
   // ================= Ajustes do agente =================
   let subAtual = 'rev', revFiltro = 'pendente';

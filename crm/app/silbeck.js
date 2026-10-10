@@ -607,6 +607,23 @@ async function diagnosticoTarifario({ entrada, saida, adultos = 2, codigo = 'CBD
   }
   return out;
 }
+// Cadastro de Empresas do Silbeck (agências, operadoras e empresas que faturam): 250 por página. Para quando a página
+// vem incompleta, vazia ou repetida (se a API ignorar o parâmetro), com teto de 40 páginas.
+const soDigitos = t => String(t || '').replace(/\D/g, '');
+async function empresas(buscar = fetch) {
+  const todas = [], vistos = new Set();
+  for (let pagina = 1; pagina <= 40; pagina++) {
+    const { dados } = await chamar('GET', '/v1/Empresa?pagina=' + pagina, null, buscar);
+    const lista = (dados && (dados.listaEmpresa || (Array.isArray(dados) ? dados : null))) || [];
+    const novas = lista.filter(e => e && e.id != null && !vistos.has(String(e.id)));
+    novas.forEach(e => vistos.add(String(e.id)));
+    todas.push(...novas.map(e => ({ silbeck_id: String(e.id), codigo: e.codigo != null && String(e.codigo).trim() ? String(e.codigo).trim() : null,
+      nome: String(e.nome || '').trim().replace(/\s+/g, ' ').slice(0, 160), cnpj: soDigitos(e.documento) || null,
+      telefone: String(e.celular || e.telefone || '').trim().slice(0, 40) || null, email: String(e.email || '').trim().slice(0, 160) || null })));
+    if (lista.length < 250 || !novas.length) break;
+  }
+  return todas.filter(e => e.nome);
+}
 // Diagnóstico de uma reserva (/saude/silbeck-reserva): itens, situação e adiantamentos, sem nomes nem contatos
 async function diagnosticoReserva({ id, entrada } = {}, buscar = fetch) {
   if (!/^\d+$/.test(String(id || ''))) throw new ErroSilbeck('informe o número da reserva (id)', 400);
@@ -614,4 +631,4 @@ async function diagnosticoReserva({ id, entrada } = {}, buscar = fetch) {
   return { reserva: String(id), achou: itens.length > 0, itens: itens.map(x => ({ item_id: x.id, codigo: x.codigoTipoApartamento, codigo_crm: x.codigo_crm, status: x.statusDescricao || x.status,
     entrada: x.dataEntrada, saida: x.dataSaida, adiantamentos: (x.listaAdiantamento || []).length })) };
 }
-module.exports = { diagnosticoReserva, itensDaReserva, definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _diaISO: diaISO, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
+module.exports = { empresas, diagnosticoReserva, itensDaReserva, definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _diaISO: diaISO, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
