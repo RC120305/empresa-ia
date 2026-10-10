@@ -49,7 +49,7 @@ const opc = v => (v === null || v === undefined || v === '' ? null : v);
 const frac = (v, nome, { padrao = 0, obrigatorio = false } = {}) => {
   if (opc(v) === null) { if (obrigatorio) throw new ErroCalculo(`Informe "${nome}".`); return padrao; }
   const n = num(v, nome);
-  if (n < 0 || n >= 1) throw new ErroCalculo(`"${nome}" deve ser uma fração entre 0 e 1 (ex.: 0,13 para 13%).`);
+  if (n < 0 || n >= 1) throw new ErroCalculo(`"${nome}" deve ficar entre 0% e 100% (ex.: 13 para 13%).`);
   return n;
 };
 // Aceita um total, uma lista ou um objeto { chave: valor } e devolve a soma (valores vazios = 0).
@@ -112,7 +112,7 @@ function calcular(entrada = {}) {
   const quartos = tipos.reduce((s, t) => s + t.qtde, 0);
 
   const ocupacao = num(entrada.ocupacao, 'ocupação média anual');
-  if (ocupacao <= 0 || ocupacao > 1) throw new ErroCalculo('A ocupação deve ser uma fração entre 0 e 1 (ex.: 0,30 para 30%).');
+  if (ocupacao <= 0 || ocupacao > 1) throw new ErroCalculo('A ocupação deve ser maior que 0% e no máximo 100% (ex.: 30 para 30%).');
   const margem = opc(entrada.margem) === null ? 0.2 : num(entrada.margem, 'margem de lucro');
   if (margem < 0) throw new ErroCalculo('A margem de lucro não pode ser negativa.');
   const diasAlta = opc(entrada.diasAlta) === null ? 0 : num(entrada.diasAlta, 'dias de alta temporada');

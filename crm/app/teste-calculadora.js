@@ -75,7 +75,7 @@ perto(calcular({ ...exemplo(), custosFixos: 11354, custosVariaveis: [62], ocupac
 assert.ok(calcular({ ...exemplo(), ocupacao: 0.5 }).precos.padrao < r.precos.padrao);
 // Taxas que somam 100% ou mais, entradas inválidas e dias demais dão erro claro em português
 assert.throws(() => calcular({ ...exemplo(), taxas: { ...exemplo().taxas, imposto: 0.5, cartao: 0.5 } }), /somam 100%/);
-assert.throws(() => calcular({ ...exemplo(), taxas: { ...exemplo().taxas, imposto: 6 } }), /fração entre 0 e 1/);
+assert.throws(() => calcular({ ...exemplo(), taxas: { ...exemplo().taxas, imposto: 6 } }), /entre 0% e 100%/);
 assert.throws(() => calcular({ ...exemplo(), ocupacao: 0 }), /ocupação/);
 assert.throws(() => calcular({ ...exemplo(), ocupacao: 35 }), /ocupação/);
 assert.throws(() => calcular({ ...exemplo(), quartos: [] }), /ao menos um tipo de quarto/);

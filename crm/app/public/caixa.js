@@ -180,10 +180,11 @@
     vagas: ['Vagas'],
     pagamentos: ['Pagamentos'],
     painel: ['Painel'],
+    diaria: ['Diária ideal'],
     regua: ['Régua de mensagens', 'Mensagens automáticas antes e depois da estadia, com modelos aprovados pela Meta. Chega na etapa F, com o 99117.'],
     ajustes: ['Ajustes do agente'],
   };
-  const PRONTAS = ['conversas', 'funil', 'tarefas', 'produtos', 'agencias', 'vagas', 'pagamentos', 'painel', 'ajustes'];
+  const PRONTAS = ['conversas', 'funil', 'tarefas', 'produtos', 'agencias', 'vagas', 'pagamentos', 'painel', 'diaria', 'ajustes'];
   function irPara(v) {
     document.querySelectorAll('.nav [data-vista]').forEach(x => x.setAttribute('aria-selected', String(x.dataset.vista === v)));
     const [titulo, texto] = SECOES[v];
@@ -195,6 +196,7 @@
     if (v === 'produtos') carregarProdutos();
     if (v === 'agencias') carregarAgencias();
     if (v === 'painel') pintarPainelIndicadores();
+    if (v === 'diaria') carregarDiaria();
     if (v === 'pagamentos') carregarPagamentos();
     if (v === 'vagas') carregarMapaVagas();
     if (v === 'ajustes') abrirSub(subAtual);
@@ -3144,6 +3146,166 @@
         el('button', { class: 'btn-mini', type: 'button', text: 'Mandar um teste', onclick: () => chamarApi('/api/push-teste', {}).then(t => toast(t.enviados ? 'Teste enviado. Deve chegar em segundos.' : 'Nenhum aparelho recebeu. Tente desligar e ligar de novo.')).catch(e => toast(e.message)) }),
         el('button', { class: 'btn-mini', type: 'button', text: 'Desligar', onclick: desligarAvisos })) : null,
       avisos === 'ligado' ? linhaResumo() : null);
+  }
+
+  // ================= Diária ideal (calculadora, só o dono) =================
+  // Descobre a diária mínima real e o preço com lucro a partir dos custos, da ocupação, dos impostos e das comissões.
+  // O cálculo é feito no servidor (calculadora.js, testado contra um exemplo real); aqui a tela só preenche e mostra.
+  // Percentuais são digitados como o dono pensa (13 = 13%) e viajam como fração (0,13).
+  let di = null, diTimer = 0, diVez = 0;
+  const DI_TAXAS = [['imposto', 'Imposto sobre a receita (Simples etc.)', 'Ex.: 6'], ['cartao', 'Taxa do cartão de crédito', 'Ex.: 3,8'], ['debito', 'Taxa do cartão de débito', 'Ex.: 2'],
+    ['booking', 'Comissão do Booking', 'Ex.: 16'], ['airbnb', 'Comissão do Airbnb', 'Ex.: 16'], ['agencia', 'Comissão de agências e operadoras', 'Ex.: 15'], ['juros', 'Juros ao mês no parcelamento', 'Ex.: 2,5']];
+  const diTxt = v => String(v ?? '').trim().replace(',', '.');
+  const diPct = v => { const n = diTxt(v); return n === '' ? '' : Number.isFinite(Number(n)) ? Number(n) / 100 : n; }; // 13 vira 0,13; texto inválido segue e o servidor avisa
+  const diDePct = x => x == null ? '' : String(Math.round(x * 10000) / 100).replace('.', ',');
+  const diDeNum = x => x == null ? '' : String(x).replace('.', ',');
+  const diSoma = o => Object.values(o).reduce((s, v) => s + (Number(diTxt(v)) || 0), 0);
+  const diEstadoVazio = () => ({ ocupacao: '', margem: '20', diasAlta: '', diasBaixa: '', diariaAtual: '', taxas: { parcelas: '' }, temporadas: { baixa: '', media: '', alta: '' }, fixos: {}, vars: {}, quartos: [] });
+  function diDeEntrada(e) { // entrada guardada (frações) → texto dos campos
+    const f = diEstadoVazio();
+    if (!e) return f;
+    Object.assign(f, { ocupacao: diDePct(e.ocupacao), margem: e.margem == null ? '20' : diDePct(e.margem), diasAlta: diDeNum(e.diasAlta), diasBaixa: diDeNum(e.diasBaixa), diariaAtual: diDeNum(e.diariaAtual) });
+    for (const [k] of DI_TAXAS) f.taxas[k] = diDePct((e.taxas || {})[k]);
+    f.taxas.parcelas = diDeNum((e.taxas || {}).parcelas);
+    for (const k of ['baixa', 'media', 'alta']) f.temporadas[k] = diDeNum((e.temporadas || {})[k]);
+    for (const [k, v] of Object.entries(e.custosFixos || {})) f.fixos[k] = v ? diDeNum(v) : '';
+    for (const [k, v] of Object.entries(e.custosVariaveis || {})) f.vars[k] = v ? diDeNum(v) : '';
+    f.quartos = (e.quartos || []).map(q => ({ nome: q.nome || '', qtde: diDeNum(q.qtde), cap: diDeNum(q.cap), mult: diDeNum(q.mult) }));
+    return f;
+  }
+  function diPayload() { // texto dos campos → entrada para o servidor
+    const f = di.f, taxas = { parcelas: f.taxas.parcelas };
+    for (const [k] of DI_TAXAS) taxas[k] = diPct(f.taxas[k]);
+    return { ocupacao: diPct(f.ocupacao), margem: diPct(f.margem), diasAlta: f.diasAlta, diasBaixa: f.diasBaixa, diariaAtual: f.diariaAtual,
+      custosFixos: f.fixos, custosVariaveis: f.vars, taxas, temporadas: f.temporadas, quartos: f.quartos };
+  }
+  const diVazio = () => { const f = di.f; return f.ocupacao === '' && !f.quartos.length && !diSoma(f.fixos) && !diSoma(f.vars); };
+  const diPorCento = x => x == null ? '—' : (Math.round(x * 1000) / 10).toLocaleString('pt-BR') + '%';
+  function diMarcar(sujo) { di.sujo = sujo; const s = $('di-estado'); if (s) s.textContent = sujo ? 'Alterações ainda não salvas' : 'Tudo salvo'; }
+  function diAgendar() { diMarcar(true); clearTimeout(diTimer); diTimer = setTimeout(diCalcular, 450); }
+  async function diCalcular() {
+    const vez = ++diVez, alvo = $('di-res');
+    if (!alvo) return;
+    if (diVazio()) { alvo.replaceChildren(el('div', { class: 'vazio', text: 'Preencha os dados ao lado (ou toque em "Puxar do Silbeck"): o resultado aparece aqui na hora.' })); return; }
+    try {
+      const r = await chamarApi('/api/calculadora-diaria/calcular', { entrada: diPayload() });
+      if (vez === diVez) pintarDiariaResultado(alvo, r.resultado);
+    } catch (e) { if (vez === diVez) alvo.replaceChildren(el('div', { class: 'vazio', text: 'Ainda não dá para calcular: ' + e.message })); }
+  }
+  function diInput(chave, dono, dica, extra) { // campo de texto decimal ligado a dono[chave]
+    const i = el('input', { type: 'text', inputmode: 'decimal', autocomplete: 'off', placeholder: dica || '', value: dono[chave] ?? '', ...(extra || {}) });
+    i.addEventListener('input', () => { dono[chave] = i.value; diAgendar(); });
+    return i;
+  }
+  const diCampo = (rotulo, chave, dono, dica, dicaLonga) => el('label', { class: 'campo' }, rotulo, diInput(chave, dono, dica), dicaLonga ? el('small', { class: 'di-dica', text: dicaLonga }) : null);
+  function diGrupo(titulo, texto, ...filhos) { return el('div', { class: 'cartao pn-bloco' }, el('h2', { class: 'pn-sec', text: titulo }), texto ? el('p', { class: 'dica', text: texto }) : null, ...filhos); }
+  function diLinhas(linhas, dono, rotuloTotal, sufixo) {
+    const total = el('b', { class: 'di-total-v', text: brl(diSoma(dono)) + sufixo });
+    const grade = el('div', { class: 'di-linhas' }, ...linhas.map(l => {
+      const i = diInput(l.chave, dono, '0,00'); i.addEventListener('input', () => { total.textContent = brl(diSoma(dono)) + sufixo; });
+      return el('label', { class: 'campo' }, l.nome, i);
+    }));
+    return [grade, el('div', { class: 'di-total' }, rotuloTotal, total)];
+  }
+  function diQuartos() {
+    const corpo = el('tbody');
+    const linha = q => {
+      const tr = el('tr'), c = (k, dica, larg) => { const td = el('td'), i = el('input', { type: 'text', inputmode: k === 'nome' ? 'text' : 'decimal', placeholder: dica, value: q[k] ?? '', 'aria-label': dica, class: larg ? 'di-larg' : 'di-estreito' }); i.addEventListener('input', () => { q[k] = i.value; diAgendar(); }); td.append(i); return td; };
+      tr.append(c('nome', 'Nome do quarto', true), c('qtde', 'Qtde'), c('cap', 'Pessoas'), c('mult', 'Multiplic.'),
+        el('td', {}, el('button', { class: 'btn-mini', type: 'button', text: 'Remover', onclick: () => { di.f.quartos.splice(di.f.quartos.indexOf(q), 1); tr.remove(); diAgendar(); } })));
+      return tr;
+    };
+    di.f.quartos.forEach(q => corpo.append(linha(q)));
+    const ref = di.estrutura.multiplicadoresRef.map(m => m.tipo + ' ' + String(m.min).replace('.', ',') + (m.max !== m.min ? ' a ' + String(m.max).replace('.', ',') : '')).join(' · ');
+    return [el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela di-tab-q' }, el('thead', {}, el('tr', {}, ...['Quarto', 'Qtde', 'Pessoas', 'Multiplicador', ''].map(t => el('th', { text: t })))), corpo)),
+      el('div', { class: 'barra-ferr' }, el('button', { class: 'btn btn-editar', type: 'button', text: '+ Tipo de quarto', onclick: () => { const q = { nome: '', qtde: '', cap: '', mult: '1' }; di.f.quartos.push(q); corpo.append(linha(q)); } })),
+      el('p', { class: 'dica', text: 'O multiplicador compara o preço do quarto com o do duplo padrão (1,00). Se você já cobra preços diferentes, use a proporção real (ex.: R$ 240 contra R$ 200 = 1,20). Referência: ' + ref + '.' })];
+  }
+  async function diPuxarSilbeck(b) {
+    b.disabled = true; b.textContent = 'Consultando o Silbeck…';
+    try {
+      const s = await chamarApi('/api/calculadora-diaria/silbeck', null, 'GET'), f = di.f, feito = [];
+      if (s.quartos.length && !f.quartos.some(q => q.nome || q.qtde)) { f.quartos = s.quartos.map(q => ({ nome: q.nome, qtde: String(q.qtde), cap: '', mult: '1' })); feito.push(s.quartos.length + ' tipos de quarto'); }
+      if (s.ocupacao != null && f.ocupacao === '') { f.ocupacao = diDePct(s.ocupacao); feito.push('ocupação dos últimos 12 meses (' + diPorCento(s.ocupacao) + ')'); }
+      if (s.adr != null && f.diariaAtual === '') { f.diariaAtual = diDeNum(Math.round(s.adr)); feito.push('diária média realizada (' + brl(s.adr) + ')'); }
+      if (s.comissaoAgencia != null && f.taxas.agencia === '') { f.taxas.agencia = diDePct(s.comissaoAgencia); feito.push('comissão típica das agências'); }
+      pintarDiaria(); diAgendar();
+      toast(feito.length ? 'Preenchi do Silbeck: ' + feito.join(', ') + '. Confira e ajuste.' : 'Nada novo para preencher: os campos já estavam com valor.');
+    } catch (e) { toast('Não deu para consultar o Silbeck agora: ' + e.message); }
+    b.disabled = false; b.textContent = 'Puxar do Silbeck';
+  }
+  function pintarDiariaResultado(alvo, r) {
+    const tile = (rot, v, sub) => el('div', { class: 'cartao pn-tile' }, el('span', { class: 'rotulo', text: rot }), el('span', { class: 'pn-num', text: v }), sub ? el('span', { class: 'pn-sub', text: sub }) : null);
+    const i = r.indicadores, p = r.precos, c = r.comparacao, kids = [];
+    if (c) kids.push(el('div', { class: 'di-alerta ' + (c.situacao === 'abaixo' ? 'abaixo' : 'ok') }, c.situacao === 'abaixo'
+      ? `Sua diária atual (${brl(c.atual)}) está ${brl(Math.abs(c.diferenca))} abaixo do preço padrão calculado (${brl(p.padrao)}). Revise o preço.`
+      : `Sua diária atual (${brl(c.atual)}) está no padrão ou acima (${brl(p.padrao)}): a lucratividade está maior que a meta.`));
+    kids.push(el('div', { class: 'pn-tiles' }, tile('Diária amigo (piso)', brl(p.amigo), 'Só cobre os custos. Nunca venda abaixo disso.'), tile('Diária padrão (com cartão)', brl(p.padrao), 'Seu preço de tabela, com a margem desejada.'),
+      c ? tile('Sua diária atual', brl(c.atual), (c.diferencaPct >= 0 ? '+' : '') + diPorCento(c.diferencaPct) + ' em relação ao padrão') : null));
+    kids.push(el('h2', { class: 'pn-sec', text: 'Indicadores' }), el('div', { class: 'pn-tiles' },
+      i.pontoEquilibrioPct != null ? tile('Ponto de equilíbrio', diPorCento(i.pontoEquilibrioPct), String(Math.round(i.pontoEquilibrioDiarias * 10) / 10).replace('.', ',') + ' diárias por mês' + (i.pontoEquilibrioPct > 0.5 ? ' (acima de 50%: frágil)' : '')) : null,
+      i.lucroMensal != null ? tile('Lucro mensal estimado', brl(i.lucroMensal), 'Sobram ' + brl(i.sobraPorDiaria) + ' por diária vendida') : null,
+      tile('Custo por diária vendida', brl(i.custoFixoPorDiaria + i.custoVariavelPorDiaria), brl(i.custoFixoPorDiaria) + ' fixo + ' + brl(i.custoVariavelPorDiaria) + ' variável'),
+      tile('Faturamento potencial', brl(i.faturamentoPotencial), 'Hotel cheio, ao preço padrão por mês'),
+      i.faturamentoEstimado != null ? tile('Faturamento estimado', brl(i.faturamentoEstimado), 'Com a ocupação informada e a diária atual') : null));
+    const lin = (nome, v, nota) => el('tr', {}, el('td', { text: nome }), el('td', { class: 'n', text: brl(v) }), el('td', { class: 'di-nota', text: nota }));
+    kids.push(el('h2', { class: 'pn-sec', text: 'Preço recomendado por canal (quarto duplo padrão)' }), el('div', { class: 'cartao pn-bloco' }, el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela' }, el('tbody', {},
+      lin('Venda direta, à vista', p.base, 'Com imposto, sem cartão'), lin('Padrão, com cartão', p.padrao, 'Preço de tabela'), lin('Booking.com', p.booking, 'Com comissão e cartão'), lin('Airbnb', p.airbnb, 'Com comissão, sem cartão'),
+      lin('Agência / operadora', p.agencia, 'Com comissão e cartão'), lin('Parcelado', p.parcelada, 'Com juros do parcelamento'), lin('Débito', p.debito, 'Com taxa do débito'),
+      lin('Diária limpa', p.limpa, 'Custo + margem, sem impostos'), lin('Diária amigo', p.amigo, 'Piso: lucro zero'))))));
+    const t = r.temporadas, num0 = x => String(x).replace('.', ',') + '×', moeda = x => brl(x).replace('R$ ', '');
+    kids.push(el('h2', { class: 'pn-sec', text: 'Preço por tipo de quarto e temporada' }), el('p', { class: 'dica', text: `Multiplicadores da temporada (média ponderada pelos dias = 1,00): baixa ${num0(t.multiplicadores.baixa)} (${t.dias.baixa} dias), média ${num0(t.multiplicadores.media)} (${t.dias.media}), alta ${num0(t.multiplicadores.alta)} (${t.dias.alta}). Arredonde ao praticar.` }),
+      el('div', { class: 'cartao pn-bloco' }, el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela' },
+        el('thead', {}, el('tr', {}, el('th', { text: 'Quarto' }), ...['Baixa', 'Média', 'Alta'].map(x => el('th', { class: 'n', text: 'Direta ' + x })), ...['Baixa', 'Média', 'Alta'].map(x => el('th', { class: 'n', text: 'Booking ' + x })), el('th', { class: 'n', text: 'Mínima' }), el('th', { class: 'n', text: 'Médio anual' }))),
+        el('tbody', {}, ...r.quartos.map(q => el('tr', {}, el('td', { text: q.nome + ' (' + q.qtde + ') ' + num0(q.mult) }), ...['baixa', 'media', 'alta'].map(k => el('td', { class: 'n', text: moeda(q.direta[k]) })), ...['baixa', 'media', 'alta'].map(k => el('td', { class: 'n', text: moeda(q.booking[k]) })), el('td', { class: 'n', text: moeda(q.minima) }), el('td', { class: 'n', text: moeda(q.medioAnual) }))))))));
+    if (r.avisos.length) kids.push(el('div', { class: 'di-alerta abaixo' }, ...r.avisos.map(a => el('div', { text: a }))));
+    alvo.replaceChildren(...kids.filter(Boolean));
+  }
+  function pintarDiariaCenarios() {
+    const box = $('di-cenarios'); if (!box) return;
+    const cs = di.cenarios;
+    if (!cs.length) { box.replaceChildren(el('p', { class: 'dica', text: 'Nenhum cenário guardado ainda. Preencha, toque em "Guardar como cenário" e compare versões (ex.: "hoje", "ocupação +10 pontos", "margem 30%").' })); return; }
+    box.replaceChildren(el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela' },
+      el('thead', {}, el('tr', {}, ...['Cenário', 'Guardado em', 'Amigo', 'Padrão', 'Booking', 'Equilíbrio', 'Lucro/mês', ''].map((t, k) => el('th', { class: k > 1 && k < 7 ? 'n' : '', text: t })))),
+      el('tbody', {}, ...cs.map(c => { const r = c.resumo; return el('tr', {}, el('td', { text: c.nome }), el('td', { text: new Date(c.criado_em).toLocaleDateString('pt-BR') }),
+        ...(r ? [brl(r.amigo), brl(r.padrao), brl(r.booking), diPorCento(r.pontoEquilibrioPct), r.lucroMensal == null ? '—' : brl(r.lucroMensal)] : ['incompleto', '—', '—', '—', '—']).map(t => el('td', { class: 'n', text: t })),
+        el('td', {}, el('button', { class: 'btn-mini', type: 'button', text: 'Abrir', onclick: () => { di.f = diDeEntrada(c.entrada); pintarDiaria(); diCalcular(); diMarcar(true); toast('Cenário "' + c.nome + '" aberto. Salve para torná-lo o preenchimento atual.'); } }),
+          el('button', { class: 'btn-mini', type: 'button', text: 'Apagar', onclick: async () => { if (!confirm('Apagar o cenário "' + c.nome + '"?')) return; try { const j = await chamarApi('/api/calculadora-diaria/apagar-cenario', { id: c.id }); di.cenarios = j.cenarios; pintarDiariaCenarios(); } catch (e) { toast(e.message); } } }))); })))));
+  }
+  function pintarDiaria() {
+    const f = di.f, corpo = $('di-corpo');
+    const barra = el('div', { class: 'barra-ferr' },
+      el('button', { class: 'btn btn-enviar', type: 'button', text: 'Salvar', onclick: async e => { const b = e.currentTarget; b.disabled = true; try { const j = await chamarApi('/api/calculadora-diaria/salvar', { entrada: diPayload() }); di.cenarios = j.cenarios; diMarcar(false); toast('Preenchimento salvo.'); } catch (err) { toast(err.message); } b.disabled = false; } }),
+      el('button', { class: 'btn btn-editar', type: 'button', text: 'Guardar como cenário', onclick: () => abrirForm('Guardar como cenário', [{ k: 'nome', rotulo: 'Nome do cenário', dica: 'Ex.: Hoje, Ocupação +10 pontos', largo: true }], async v => {
+        const j = await chamarApi('/api/calculadora-diaria/salvar', { entrada: diPayload(), cenario: true, nome: v.nome }); di.cenarios = j.cenarios; diMarcar(false); pintarDiariaCenarios(); toast('Cenário guardado.'); }, null, 'Guardar') }),
+      el('button', { class: 'btn btn-editar', type: 'button', text: 'Puxar do Silbeck', onclick: e => diPuxarSilbeck(e.currentTarget) }),
+      el('span', { class: 'dica', id: 'di-estado', text: di.sujo ? 'Alterações ainda não salvas' : 'Tudo salvo' }));
+    const dados = diGrupo('1. Dados do hotel', 'Use a média dos últimos 12 meses. Sem o número, comece com 30% de ocupação e ajuste depois.',
+      el('div', { class: 'di-linhas' },
+        diCampo('Ocupação média anual (%)', 'ocupacao', f, 'Ex.: 30', 'Diárias vendidas ÷ diárias disponíveis.'), diCampo('Margem de lucro desejada (%)', 'margem', f, 'Ex.: 20', 'Nunca zero; de 10% a 20% ou mais.'),
+        diCampo('Dias de alta temporada no ano', 'diasAlta', f, 'Ex.: 30', 'Feriados, férias e dias de pico.'), diCampo('Dias de baixa temporada no ano', 'diasBaixa', f, 'Ex.: 150', 'Períodos de menor procura.'),
+        diCampo('Diária atual do quarto duplo padrão (R$)', 'diariaAtual', f, 'Ex.: 300', 'Para comparar com o preço calculado. Pode deixar vazio.')));
+    const fixos = diGrupo('2. Custos fixos mensais', 'O que chega todo mês, com a pousada cheia ou vazia. Teste: "se ficasse vazia o mês todo, essa conta ainda chegaria?". Não use zero no pró-labore: coloque quanto você precisaria retirar.', ...diLinhas(di.estrutura.linhasFixos, f.fixos, 'Total de custos fixos por mês', ''));
+    const vars = diGrupo('3. Custos variáveis por diária', 'Só existem com hóspede. Informe o custo de 1 diária de um quarto com 2 pessoas. Água e energia: a parte que passa da conta do mês mais vazio, dividida pelas diárias vendidas.', ...diLinhas(di.estrutura.linhasVariaveis, f.vars, 'Total de custos variáveis por diária', ' por diária'));
+    const taxas = diGrupo('4. Impostos, taxas e comissões (em %)', 'Digite 13 para 13%. Canal que você não usa, deixe vazio.',
+      el('div', { class: 'di-linhas' }, ...DI_TAXAS.map(([k, rot, dica]) => diCampo(rot, k, f.taxas, dica)), diCampo('Nº de parcelas do cartão', 'parcelas', f.taxas, 'Ex.: 5')));
+    const quartos = diGrupo('5. Tipos de quarto', 'Um tipo por linha. O duplo padrão é a base (multiplicador 1,00).', ...diQuartos());
+    const temp = diGrupo('6. Temporadas (opcional)', `Quanto o preço varia entre as temporadas. Vazio usa a proporção sugerida (baixa ${String(di.estrutura.temporadasPadrao.baixa).replace('.', ',')}, média 1, alta ${String(di.estrutura.temporadasPadrao.alta).replace('.', ',')}). O sistema ajusta para que a receita anual não mude.`,
+      el('div', { class: 'di-linhas' }, diCampo('Baixa', 'baixa', f.temporadas, '0,45'), diCampo('Média', 'media', f.temporadas, '1'), diCampo('Alta', 'alta', f.temporadas, '1,40')));
+    const res = el('div', { class: 'di-res', id: 'di-res' });
+    const cen = el('div', { class: 'cartao pn-bloco' }, el('h2', { class: 'pn-sec', text: 'Cenários guardados' }), el('div', { id: 'di-cenarios' }));
+    corpo.replaceChildren(barra, el('div', { class: 'di-grade' }, el('div', { class: 'di-form' }, dados, fixos, vars, taxas, quartos, temp), el('div', { class: 'di-lado' }, res, cen)));
+    pintarDiariaCenarios(); diCalcular();
+  }
+  async function carregarDiaria() {
+    const corpo = $('di-corpo');
+    if (!di) corpo.replaceChildren(el('p', { class: 'lat-txt', text: 'Carregando…' }));
+    try {
+      const j = await chamarApi('/api/calculadora-diaria', null, 'GET');
+      if (di && di.sujo) return; // não atropela o que está sendo digitado
+      di = { estrutura: j.estrutura, cenarios: j.cenarios, f: diDeEntrada(j.atual), sujo: false };
+      pintarDiaria();
+    } catch (e) { corpo.replaceChildren(el('div', { class: 'vazio', text: /dono/i.test(e.message) ? 'A calculadora de diária é só para o dono.' : 'Não deu para abrir a calculadora agora: ' + e.message })); }
   }
 
   // ---------- Início ----------

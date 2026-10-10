@@ -56,6 +56,7 @@
       <button role="tab" aria-selected="false" data-vista="vagas"><span class="ic" aria-hidden="true">🛏</span><span class="tx">Vagas</span></button>
       <button role="tab" aria-selected="false" data-vista="pagamentos"><span class="ic" aria-hidden="true">💳</span><span class="tx">Pagamentos</span></button>
       <button role="tab" aria-selected="false" data-vista="painel"><span class="ic" aria-hidden="true">📈</span><span class="tx">Painel</span></button>
+      <button role="tab" aria-selected="false" data-vista="diaria"><span class="ic" aria-hidden="true">💲</span><span class="tx">Diária ideal</span></button>
       <button role="tab" aria-selected="false" data-vista="regua"><span class="ic" aria-hidden="true">✉</span><span class="tx">Régua de mensagens</span></button>
       <button role="tab" aria-selected="false" data-vista="ajustes"><span class="ic" aria-hidden="true">⚙</span><span class="tx">Ajustes do agente</span><span class="qtd num" id="qtd-rev" hidden>0</span></button>
     </nav>
@@ -285,6 +286,11 @@
     </section>
 
     <!-- PAINEL DE INDICADORES -->
+    <!-- DIÁRIA IDEAL (calculadora, só o dono) -->
+    <section data-painel="diaria" hidden>
+      <div class="pn-rolagem" id="di-corpo"></div>
+    </section>
+
     <section data-painel="painel" hidden>
       <div class="barra-ferr">
         <div class="chips" role="group" aria-label="Período" id="pn-periodo"><button class="chip" type="button" aria-pressed="false" data-d="7">7 dias</button><button class="chip" type="button" aria-pressed="true" data-d="mes">Este mês</button><button class="chip" type="button" aria-pressed="false" data-d="30">30 dias</button><button class="chip" type="button" aria-pressed="false" data-d="90">90 dias</button><button class="chip" type="button" aria-pressed="false" data-d="f30">Próximos 30 dias</button><button class="chip" type="button" aria-pressed="false" data-d="f90">Próximos 90 dias</button></div>

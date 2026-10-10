@@ -82,7 +82,11 @@ Entrada: 6 quartos (3 Duplo Standard 1,00; 2 Vista Mar 1,20; 1 Família 1,55); o
 - **Comparar cenários** (extra nosso, o original não tem).
 
 ## 5. Como encaixar no CRM (proposta)
-**Status (10/10/2026):** o cálculo está pronto e testado em `crm/app/calculadora.js` (função pura `calcular(entrada)`, mais as listas de linhas de custo para montar o formulário), com os casos da seção 3 em `crm/app/teste-calculadora.js` (roda dentro do `teste.js`, que é o que o CI executa). Ainda **não** está ligado ao servidor: faltam as rotas, a tela e a migração (por isso o módulo ainda não entra no Dockerfile; incluir no `COPY` quando o `server.js` passar a usá-lo). Percentuais entram como fração (0,13 = 13%); a tela converte.
+**Status (10/10/2026):** pronto e testado, falta só o dono usar com os números reais do hotel.
+- **Cálculo:** `crm/app/calculadora.js` (função pura) com os casos da seção 3 em `crm/app/teste-calculadora.js`.
+- **Rotas (só o dono):** `GET /api/calculadora-diaria` (preenchimento salvo, cenários e a estrutura do formulário), `POST .../calcular`, `POST .../salvar` (preenchimento atual, e opcionalmente um cenário com nome; até 30), `POST .../apagar-cenario` e `GET .../silbeck` (sugestões: tipos de quarto, ocupação e diária média dos últimos 12 meses, comissão típica das agências). Tudo é guardado na tabela `config` (chave `calculadora_diaria`): **não há migração nova para rodar**.
+- **Tela:** menu "Diária ideal" (💲), com formulário em seis blocos (dados do hotel, custos fixos, custos variáveis, impostos e comissões, tipos de quarto, temporadas), resultado ao vivo, botão "Puxar do Silbeck", "Salvar" e cenários para comparar. Percentuais são digitados como o dono pensa (13 = 13%) e viajam como fração (0,13).
+- **Testes:** 12 verificações das rotas no `teste.js` (acesso só do dono, cálculo do exemplo, erros em português, salvar e apagar cenários, sugestões do Silbeck).
 
 - **Onde:** nova tela no Painel do hotel ("Calculadora de diária"), na área do dono. Back-end no `crm/app/server.js` (rotas `GET/POST /api/calculadora-diaria`), cálculo em módulo puro `crm/app/calculadora.js` com os testes da seção 3; migração `030_calculadora_diaria.sql` para salvar cenários (nome, data, entradas e resultados em JSON).
 - **Dados que já temos para pré-preencher:** quartos e tipos (acomodações, migração 026), ocupação, diária média e diárias vendidas (Painel/Silbeck, `GET /api/painel-hotel`), comissões e condições das agências (migrações 027–029). Custos fixos e variáveis o dono informa uma vez e o sistema guarda.
