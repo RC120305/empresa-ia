@@ -108,6 +108,16 @@ perto(ponderar(x => (x.direta.baixa * 150 + x.direta.media * 185 + x.direta.alta
 perto(ponderar(x => (x.booking.baixa * 150 + x.booking.media * 185 + x.booking.alta * 30) / 365), 376.51, 'Booking: média ponderada', 0.1);
 assert.equal(limparEntrada(real()).ajustarPeloMix, true, 'ao limpar, o padrão é ajustar'); assert.equal(limparEntrada({ ...real(), ajustarPeloMix: false }).ajustarPeloMix, false);
 perto(calcular(limparEntrada({ ...real(), ajustarPeloMix: false })).quartos[0].medioAnual, 322.25, 'sem ajuste, o quarto base fica no preço padrão');
+// Ocupação por temporada: a média do ano sai dos dias de cada temporada e o peso dos preços passa a ser dias × ocupação
+const sazon = { ...exemplo(), ocupacao: undefined, diasAlta: 94, diasBaixa: 54, ocupacaoTemporadas: { baixa: 0.35, media: 0.55, alta: 0.85 }, temporadas: { baixa: 1, media: 1, alta: 1.5336 }, ajustarPeloMix: true };
+const rs = calcular(sazon);
+perto(rs.base.ocupacaoAnual, (54 * 0.35 + 217 * 0.55 + 94 * 0.85) / 365, 'ocupação anual pelas temporadas', 0.0001); assert.equal(rs.base.diasMedia, 217);
+const mt = rs.temporadas.multiplicadores, pesos = { baixa: 54 * 0.35, media: 217 * 0.55, alta: 94 * 0.85 };
+perto((mt.baixa * pesos.baixa + mt.media * pesos.media + mt.alta * pesos.alta) / (pesos.baixa + pesos.media + pesos.alta), 1, 'média dos multiplicadores ponderada pelas diárias vendidas', 0.001);
+perto(calcular({ ...exemplo(), ocupacao: undefined, ocupacaoTemporadas: { baixa: 0.35, media: 0.35, alta: 0.35 } }).precos.padrao, 322.25, 'mesma ocupação em todas as temporadas = ocupação única', 0.01);
+assert.throws(() => calcular({ ...sazon, ocupacaoTemporadas: { baixa: 0.35, media: 0, alta: 0.85 } }), /entre|maior que 0%/);
+assert.equal(calcular({ ...exemplo(), ocupacaoTemporadas: { baixa: 0.2 } }).base.ocupacaoPorTemporada, null, 'só vale com as três temporadas');
+assert.deepEqual(limparEntrada({ ocupacaoTemporadas: { baixa: '0,35', media: '', alta: '0,85' } }).ocupacaoTemporadas, { baixa: 0.35, media: null, alta: 0.85 }); assert.equal(limparEntrada({ ocupacaoTemporadas: { baixa: '', media: '', alta: '' } }).ocupacaoTemporadas, null);
 // Custos mudam: compararCustos acusa a mudança e só renova a data das linhas alteradas
 const antes = limparEntrada(real());
 let cmp = compararCustos(antes, limparEntrada(real()), '2026-10-10');

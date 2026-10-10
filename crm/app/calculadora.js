@@ -90,7 +90,8 @@ function limparEntrada(e = {}) {
       nome: String((q && q.nome) || '').trim().slice(0, 60), qtde: limpar(q && q.qtde, 'quantidade de quartos', { max: 1000 }),
       cap: limpar(q && q.cap, 'capacidade', { max: 100 }), mult: limpar(q && q.mult, 'multiplicador', { max: 10 }),
     })).filter(q => q.nome || q.qtde),
-    ocupacao: limpar(e.ocupacao, 'ocupação média anual', { max: 1 }), diasAlta: limpar(e.diasAlta, 'dias de alta temporada', { max: 365 }),
+    ocupacao: limpar(e.ocupacao, 'ocupação média anual', { max: 1 }),
+    ocupacaoTemporadas: e.ocupacaoTemporadas && ['baixa', 'media', 'alta'].some(k => opc(e.ocupacaoTemporadas[k]) !== null) ? Object.fromEntries(['baixa', 'media', 'alta'].map(k => [k, limpar(e.ocupacaoTemporadas[k], `ocupação da temporada ${k}`, { max: 1 })])) : null, diasAlta: limpar(e.diasAlta, 'dias de alta temporada', { max: 365 }),
     diasBaixa: limpar(e.diasBaixa, 'dias de baixa temporada', { max: 365 }), diariaAtual: limpar(e.diariaAtual, 'diária atual', { dinheiro: true }),
     margem: limpar(e.margem, 'margem de lucro', { max: 10 }),
     ajustarPeloMix: e.ajustarPeloMix === undefined || e.ajustarPeloMix === null ? true : !!e.ajustarPeloMix,
@@ -117,7 +118,7 @@ const totaisCustos = e => ({ fixos: cent(somar((e || {}).custosFixos, 'custos fi
 
 // entrada: { quartos:[{nome,qtde,cap,mult}], ocupacao, diasAlta, diasBaixa, diariaAtual?, margem?,
 //            custosFixos, custosVariaveis, taxas:{imposto,cartao,debito,booking,airbnb,agencia,parcelas,juros},
-//            temporadas?:{baixa,media,alta} }
+//            temporadas?:{baixa,media,alta}, ocupacaoTemporadas?:{baixa,media,alta}, ajustarPeloMix? }
 function calcular(entrada = {}) {
   const tipos = (entrada.quartos || []).filter(q => opc(q.qtde) !== null && Number(q.qtde) > 0).map(q => ({
     nome: String(q.nome || 'Quarto').trim() || 'Quarto', qtde: Math.round(num(q.qtde, 'quantidade de quartos')),
@@ -128,14 +129,20 @@ function calcular(entrada = {}) {
   if (tipos.some(t => t.mult <= 0)) throw new ErroCalculo('O multiplicador de cada quarto deve ser maior que zero.');
   const quartos = tipos.reduce((s, t) => s + t.qtde, 0);
 
-  const ocupacao = num(entrada.ocupacao, 'ocupação média anual');
-  if (ocupacao <= 0 || ocupacao > 1) throw new ErroCalculo('A ocupação deve ser maior que 0% e no máximo 100% (ex.: 30 para 30%).');
   const margem = opc(entrada.margem) === null ? 0.2 : num(entrada.margem, 'margem de lucro');
   if (margem < 0) throw new ErroCalculo('A margem de lucro não pode ser negativa.');
   const diasAlta = opc(entrada.diasAlta) === null ? 0 : num(entrada.diasAlta, 'dias de alta temporada');
   const diasBaixa = opc(entrada.diasBaixa) === null ? 0 : num(entrada.diasBaixa, 'dias de baixa temporada');
   const diasMedia = DIAS_ANO - diasAlta - diasBaixa;
   if (diasAlta < 0 || diasBaixa < 0 || diasMedia < 0) throw new ErroCalculo('Os dias de alta e baixa temporada somam mais que o ano.');
+
+  // Ocupação: uma média do ano, ou (se informada nas três temporadas) a média ponderada pelos dias de cada temporada.
+  const ocT = entrada.ocupacaoTemporadas || {};
+  const ocupacaoT = ['baixa', 'media', 'alta'].every(k => opc(ocT[k]) !== null)
+    ? Object.fromEntries(['baixa', 'media', 'alta'].map(k => [k, num(ocT[k], `ocupação da temporada ${k}`)])) : null;
+  if (ocupacaoT && Object.values(ocupacaoT).some(x => x <= 0 || x > 1)) throw new ErroCalculo('A ocupação de cada temporada deve ser maior que 0% e no máximo 100%.');
+  const ocupacao = ocupacaoT ? (diasBaixa * ocupacaoT.baixa + diasMedia * ocupacaoT.media + diasAlta * ocupacaoT.alta) / DIAS_ANO : num(entrada.ocupacao, 'ocupação média anual');
+  if (ocupacao <= 0 || ocupacao > 1) throw new ErroCalculo('A ocupação deve ser maior que 0% e no máximo 100% (ex.: 30 para 30%).');
 
   const t = entrada.taxas || {};
   const imposto = frac(t.imposto, 'imposto sobre a receita'), cartao = frac(t.cartao, 'taxa do cartão de crédito');
@@ -182,12 +189,15 @@ function calcular(entrada = {}) {
   if (V === 0) avisos.push('Nenhum custo variável informado.');
   if (ocupacao < 0.1) avisos.push('Ocupação abaixo de 10%: o custo fixo por diária fica muito alto; confira o número.');
 
-  // Temporadas: normaliza para a média ponderada pelos dias ser 1,00 (a receita anual do quarto não muda).
+  // Temporadas: normaliza para a média ponderada ser 1,00 (a receita anual do quarto não muda). O peso é o número de
+  // dias; com a ocupação de cada temporada, o peso é dias × ocupação, ou seja, as diárias VENDIDAS: o preço médio por
+  // diária vendida fica igual ao preço necessário (temporada cheia pesa mais que temporada vazia).
   const informadas = Object.fromEntries(Object.entries(entrada.temporadas || {}).filter(([, v]) => opc(v) !== null));
   const bruto = { ...TEMPORADAS_PADRAO, ...informadas };
   for (const k of ['baixa', 'media', 'alta']) { bruto[k] = num(bruto[k], `multiplicador da temporada ${k}`); if (bruto[k] <= 0) throw new ErroCalculo('Os multiplicadores de temporada devem ser maiores que zero.'); }
   const dias = { baixa: diasBaixa, media: diasMedia, alta: diasAlta };
-  const media = (dias.baixa * bruto.baixa + dias.media * bruto.media + dias.alta * bruto.alta) / DIAS_ANO;
+  const peso = k => dias[k] * (ocupacaoT ? ocupacaoT[k] : 1);
+  const media = (peso('baixa') * bruto.baixa + peso('media') * bruto.media + peso('alta') * bruto.alta) / (peso('baixa') + peso('media') + peso('alta'));
   const temporada = Object.fromEntries(['baixa', 'media', 'alta'].map(k => [k, bruto[k] / media]));
 
   // Preço por tipo de quarto = preço do canal × multiplicador do quarto × multiplicador da temporada.
@@ -205,7 +215,7 @@ function calcular(entrada = {}) {
 
   const arred = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v !== 'number' ? v : (/Pct$/.test(k) ? Math.round(v * 10000) / 10000 : cent(v))]));
   return {
-    base: { quartos, disponiveis, vendidas: Math.round(vendidas * 100) / 100, diasMedia, custoFixoMensal: cent(F), custoVariavelPorDiaria: cent(V) },
+    base: { quartos, disponiveis, vendidas: Math.round(vendidas * 100) / 100, diasMedia, ocupacaoAnual: Math.round(ocupacao * 10000) / 10000, ocupacaoPorTemporada: ocupacaoT, custoFixoMensal: cent(F), custoVariavelPorDiaria: cent(V) },
     precos: arred(preco),
     comparacao: comparacao && arred(comparacao),
     indicadores: arred(ind),
