@@ -2800,7 +2800,7 @@ const API_EQUIPE = {
     exigirDonoCalculadora(eu);
     const guardado = (await lerConfig('calculadora_diaria', fetch)) || {};
     return { ok: true, estrutura: { linhasFixos: calculadora.LINHAS_FIXOS, linhasVariaveis: calculadora.LINHAS_VARIAVEIS, multiplicadoresRef: calculadora.MULTIPLICADORES_REF, temporadasPadrao: calculadora.TEMPORADAS_PADRAO },
-      atual: guardado.atual || null, cenarios: guardado.cenarios || [] };
+      atual: guardado.atual || null, cenarios: guardado.cenarios || [], historico: guardado.historico || [], datas: guardado.datas || {}, atualEm: guardado.atualEm || null };
   },
   'POST /api/calculadora-diaria/calcular': async (corpo, eu) => {
     exigirDonoCalculadora(eu);
@@ -2810,7 +2810,11 @@ const API_EQUIPE = {
     exigirDonoCalculadora(eu);
     const entrada = comErroCalculo(() => calculadora.limparEntrada(corpo.entrada));
     const guardado = (await lerConfig('calculadora_diaria', fetch)) || {};
-    const novo = { atual: entrada, cenarios: guardado.cenarios || [] };
+    // Custos variam: guarda a data de cada linha que mudou e um registro no histórico (até 36) quando algo mudou
+    const agora = new Date().toISOString(), hoje = agora.slice(0, 10);
+    const cmp = calculadora.compararCustos(guardado.atual, entrada, hoje, guardado.datas);
+    const novo = { ...guardado, atual: entrada, cenarios: guardado.cenarios || [], datas: cmp.datas, atualEm: cmp.mudou ? agora : guardado.atualEm || null };
+    if (cmp.mudou) { const t = calculadora.totaisCustos(entrada); novo.historico = [{ em: agora, por: eu.nome || null, totalFixos: t.fixos, totalVariaveis: t.variaveis, entrada }, ...(guardado.historico || [])].slice(0, 36); }
     if (corpo.cenario) { // guarda também como cenário comparável (nome obrigatório); o resumo só existe se o cálculo fecha
       const nome = String(corpo.nome || '').trim().slice(0, 80);
       if (!nome) throw new ErroEnvio(400, 'Dê um nome ao cenário.');
@@ -2821,7 +2825,7 @@ const API_EQUIPE = {
     }
     const r = await gravarConfig('calculadora_diaria', novo, fetch, eu.id);
     if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar agora. Tente de novo.');
-    return { ok: true, cenarios: novo.cenarios };
+    return { ok: true, cenarios: novo.cenarios, historico: novo.historico || [], datas: novo.datas, atualEm: novo.atualEm };
   },
   'POST /api/calculadora-diaria/apagar-cenario': async (corpo, eu) => {
     exigirDonoCalculadora(eu);

@@ -685,6 +685,19 @@ falso.listen(0, () => {
       assert.equal((await api('/api/calculadora-diaria/apagar-cenario', { id: crypto.randomUUID() }, 'token-dono')).status, 404);
       cj = await (await api('/api/calculadora-diaria/apagar-cenario', { id: cj.cenarios[0].id }, 'token-dono')).json();
       assert.equal(cj.cenarios.length, 1); assert.equal(cj.cenarios[0].nome, 'Hoje');
+      // Custos variam: histórico, data por linha e data da última atualização
+      cj = await (await api('/api/calculadora-diaria', null, 'token-dono', 'GET')).json();
+      const h0 = cj.historico.length;
+      assert.ok(h0 >= 1 && cj.atualEm && cj.historico[0].totalFixos !== undefined, 'o primeiro salvamento com custos entra no histórico');
+      let sv = await (await api('/api/calculadora-diaria/salvar', { entrada }, 'token-dono')).json(); // custos voltam a ser os do exemplo
+      const h1 = sv.historico.length; assert.equal(h1, h0 + 1, 'mudou em relação ao último salvamento: entra no histórico');
+      assert.equal(sv.historico[0].totalFixos, 11354); assert.equal(sv.historico[0].totalVariaveis, 62); assert.equal(sv.datas.fixos.salarios, new Date().toISOString().slice(0, 10));
+      sv = await (await api('/api/calculadora-diaria/salvar', { entrada }, 'token-dono')).json();
+      assert.equal(sv.historico.length, h1, 'salvar igual não duplica o histórico');
+      sv = await (await api('/api/calculadora-diaria/salvar', { entrada: { ...entrada, custosFixos: { ...entrada.custosFixos, salarios: '4.200' } } }, 'token-dono')).json();
+      assert.equal(sv.historico.length, h1 + 1); assert.equal(sv.historico[0].totalFixos, 11754, 'milhar com ponto (4.200) vale 4200');
+      cj = await (await api('/api/calculadora-diaria', null, 'token-dono', 'GET')).json();
+      assert.equal(cj.historico.length, h1 + 1); assert.ok(cj.datas.fixos.salarios); assert.equal(cj.atual.custosFixos.salarios, 4200); assert.ok(cj.historico.length <= 36);
       // sugestões do Silbeck (simulador nos testes): acomodações, ocupação em fração e ADR
       r = await api('/api/calculadora-diaria/silbeck', null, 'token-dono', 'GET');
       cj = await r.json();

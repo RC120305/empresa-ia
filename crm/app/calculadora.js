@@ -40,8 +40,10 @@ const MULTIPLICADORES_REF = [
 const TEMPORADAS_PADRAO = { baixa: 0.452, media: 1, alta: 1.405 };
 
 const cent = x => Math.round(x * 100) / 100;
-const num = (v, nome) => {
-  const n = typeof v === 'string' ? Number(v.replace(',', '.')) : Number(v);
+// Dinheiro digitado no padrão brasileiro: "3.800" e "3.800,50" são milhares; "3800,5" e "3800.5" são decimais.
+const brDinheiro = t => { t = t.trim(); return t.includes(',') ? t.replace(/\./g, '').replace(',', '.') : /^\d{1,3}(\.\d{3})+$/.test(t) ? t.replace(/\./g, '') : t; };
+const num = (v, nome, { dinheiro = false } = {}) => {
+  const n = typeof v === 'string' ? Number(dinheiro ? brDinheiro(v) : v.trim().replace(',', '.')) : Number(v);
   if (v === null || v === undefined || v === '' || !Number.isFinite(n)) throw new ErroCalculo(`Informe um número válido em "${nome}".`);
   return n;
 };
@@ -58,7 +60,7 @@ function somar(custos, nome) {
   const valores = typeof custos === 'object' ? Object.values(custos) : [custos];
   return valores.reduce((s, v) => {
     if (opc(v) === null) return s;
-    const n = num(v, nome);
+    const n = num(v, nome, { dinheiro: true });
     if (n < 0) throw new ErroCalculo(`"${nome}" não pode ter valor negativo.`);
     return s + n;
   }, 0);
@@ -72,16 +74,16 @@ const divisor = (nome, ...partes) => {
 // Limpa o que veio da tela antes de guardar: só os campos conhecidos, números de verdade (vírgula aceita),
 // custos só nas linhas conhecidas. Campo vazio fica null (rascunho incompleto pode ser salvo; calcular() exige o resto).
 const MAX = 1e9;
-function limpar(v, nome, { min = 0, max = MAX } = {}) {
+function limpar(v, nome, { min = 0, max = MAX, dinheiro = false } = {}) {
   if (opc(v) === null) return null;
-  const n = num(v, nome);
+  const n = num(v, nome, { dinheiro });
   if (n < min || n > max) throw new ErroCalculo(`"${nome}" fora do limite permitido.`);
   return n;
 }
 function limparEntrada(e = {}) {
   if (!e || typeof e !== 'object') throw new ErroCalculo('Dados inválidos.');
   if (!Array.isArray(e.quartos || [])) throw new ErroCalculo('Os tipos de quarto devem ser uma lista.');
-  const custos = (origem, linhas, rotulo) => Object.fromEntries(linhas.map(l => [l.chave, limpar((origem || {})[l.chave], `${rotulo}: ${l.nome}`) || 0]));
+  const custos = (origem, linhas, rotulo) => Object.fromEntries(linhas.map(l => [l.chave, limpar((origem || {})[l.chave], `${rotulo}: ${l.nome}`, { dinheiro: true }) || 0]));
   const t = e.taxas || {}, tp = e.temporadas || null;
   return {
     quartos: (e.quartos || []).slice(0, 20).map(q => ({
@@ -89,7 +91,7 @@ function limparEntrada(e = {}) {
       cap: limpar(q && q.cap, 'capacidade', { max: 100 }), mult: limpar(q && q.mult, 'multiplicador', { max: 10 }),
     })).filter(q => q.nome || q.qtde),
     ocupacao: limpar(e.ocupacao, 'ocupação média anual', { max: 1 }), diasAlta: limpar(e.diasAlta, 'dias de alta temporada', { max: 365 }),
-    diasBaixa: limpar(e.diasBaixa, 'dias de baixa temporada', { max: 365 }), diariaAtual: limpar(e.diariaAtual, 'diária atual'),
+    diasBaixa: limpar(e.diasBaixa, 'dias de baixa temporada', { max: 365 }), diariaAtual: limpar(e.diariaAtual, 'diária atual', { dinheiro: true }),
     margem: limpar(e.margem, 'margem de lucro', { max: 10 }),
     custosFixos: custos(e.custosFixos, LINHAS_FIXOS, 'custo fixo'), custosVariaveis: custos(e.custosVariaveis, LINHAS_VARIAVEIS, 'custo variável'),
     taxas: Object.fromEntries(['imposto', 'cartao', 'debito', 'booking', 'airbnb', 'agencia', 'juros'].map(k => [k, limpar(t[k], `taxa ${k}`, { max: 1 })])
@@ -97,6 +99,20 @@ function limparEntrada(e = {}) {
     temporadas: tp && ['baixa', 'media', 'alta'].some(k => opc(tp[k]) !== null) ? Object.fromEntries(['baixa', 'media', 'alta'].map(k => [k, limpar(tp[k], `multiplicador da temporada ${k}`, { max: 20 })])) : null,
   };
 }
+
+// Custos mudam com o tempo: compara o que estava salvo com o que chegou e devolve se algo mudou e a data
+// de atualização de cada linha (só as linhas que mudaram ganham a data de hoje; as demais mantêm a anterior).
+const GRUPOS_CUSTO = [['fixos', 'custosFixos'], ['vars', 'custosVariaveis'], ['taxas', 'taxas']];
+function compararCustos(antes, depois, hoje, datasAntes = {}) {
+  const datas = Object.fromEntries(GRUPOS_CUSTO.map(([g]) => [g, { ...(datasAntes[g] || {}) }]));
+  let mudou = false;
+  for (const [g, campo] of GRUPOS_CUSTO) for (const k of Object.keys((depois || {})[campo] || {})) {
+    const antigo = Number(((antes || {})[campo] || {})[k] ?? 0) || 0, novo = Number(depois[campo][k] ?? 0) || 0;
+    if (antigo !== novo) { datas[g][k] = hoje; mudou = true; }
+  }
+  return { mudou, datas };
+}
+const totaisCustos = e => ({ fixos: cent(somar((e || {}).custosFixos, 'custos fixos')), variaveis: cent(somar((e || {}).custosVariaveis, 'custos variáveis')) });
 
 // entrada: { quartos:[{nome,qtde,cap,mult}], ocupacao, diasAlta, diasBaixa, diariaAtual?, margem?,
 //            custosFixos, custosVariaveis, taxas:{imposto,cartao,debito,booking,airbnb,agencia,parcelas,juros},
@@ -145,7 +161,7 @@ function calcular(entrada = {}) {
   };
 
   // Comparação com a diária atual (opcional) e indicadores.
-  const atual = opc(entrada.diariaAtual) === null ? null : num(entrada.diariaAtual, 'diária atual');
+  const atual = opc(entrada.diariaAtual) === null ? null : num(entrada.diariaAtual, 'diária atual', { dinheiro: true });
   const ind = { custoFixoPorDiaria, custoVariavelPorDiaria: V, faturamentoPotencial: disponiveis * preco.padrao, custoFixoMensal: F,
     custoVariavelMensal: V * vendidas, custoTotalMensal: F + V * vendidas };
   let comparacao = null;
@@ -192,4 +208,4 @@ function calcular(entrada = {}) {
   };
 }
 
-module.exports = { calcular, limparEntrada, ErroCalculo, somar, LINHAS_FIXOS, LINHAS_VARIAVEIS, MULTIPLICADORES_REF, TEMPORADAS_PADRAO };
+module.exports = { calcular, limparEntrada, compararCustos, totaisCustos, ErroCalculo, somar, LINHAS_FIXOS, LINHAS_VARIAVEIS, MULTIPLICADORES_REF, TEMPORADAS_PADRAO };

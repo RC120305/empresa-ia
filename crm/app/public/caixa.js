@@ -3197,13 +3197,21 @@
     i.addEventListener('input', () => { dono[chave] = i.value; diAgendar(); });
     return i;
   }
-  const diCampo = (rotulo, chave, dono, dica, dicaLonga) => el('label', { class: 'campo' }, rotulo, diInput(chave, dono, dica), dicaLonga ? el('small', { class: 'di-dica', text: dicaLonga }) : null);
+  const DI_VELHO = 45; // dias sem mexer num custo para ele ser marcado como "velho"
+  const diDias = d => Math.round((Date.parse(hojeBR() + 'T12:00:00Z') - Date.parse(d + 'T12:00:00Z')) / 864e5);
+  function diQuando(grupo, chave) { // "atualizado há N dias" sob o campo (a data vem do servidor: só muda quando o valor muda)
+    const d = di.datas && di.datas[grupo] && di.datas[grupo][chave];
+    if (!d) return null;
+    const n = diDias(d);
+    return el('small', { class: 'di-quando' + (n > DI_VELHO ? ' velho' : ''), text: n <= 0 ? 'atualizado hoje' : n === 1 ? 'atualizado ontem' : 'atualizado há ' + n + ' dias' });
+  }
+  const diCampo = (rotulo, chave, dono, dica, dicaLonga, grupo) => el('label', { class: 'campo' }, rotulo, diInput(chave, dono, dica), dicaLonga ? el('small', { class: 'di-dica', text: dicaLonga }) : null, grupo ? diQuando(grupo, chave) : null);
   function diGrupo(titulo, texto, ...filhos) { return el('div', { class: 'cartao pn-bloco' }, el('h2', { class: 'pn-sec', text: titulo }), texto ? el('p', { class: 'dica', text: texto }) : null, ...filhos); }
-  function diLinhas(linhas, dono, rotuloTotal, sufixo) {
+  function diLinhas(linhas, dono, rotuloTotal, sufixo, grupo) {
     const total = el('b', { class: 'di-total-v', text: brl(diSoma(dono)) + sufixo });
     const grade = el('div', { class: 'di-linhas' }, ...linhas.map(l => {
       const i = diInput(l.chave, dono, '0,00'); i.addEventListener('input', () => { total.textContent = brl(diSoma(dono)) + sufixo; });
-      return el('label', { class: 'campo' }, l.nome, i);
+      return el('label', { class: 'campo' }, l.nome, i, diQuando(grupo, l.chave));
     }));
     return [grade, el('div', { class: 'di-total' }, rotuloTotal, total)];
   }
@@ -3261,6 +3269,37 @@
     if (r.avisos.length) kids.push(el('div', { class: 'di-alerta abaixo' }, ...r.avisos.map(a => el('div', { text: a }))));
     alvo.replaceChildren(...kids.filter(Boolean));
   }
+  function diGuardou(j) { // depois de salvar: atualiza cenários, histórico, datas e o aviso, sem perder o que está na tela
+    di.cenarios = j.cenarios; di.historico = j.historico || []; di.datas = j.datas || {}; di.atualEm = j.atualEm || null;
+    diMarcar(false); pintarDiaria();
+  }
+  function diAviso() { // custos variam: lembra de revisar quando faz tempo que ninguém atualiza
+    if (!di.atualEm) return el('div', { class: 'di-alerta abaixo' }, 'Os custos ainda não foram preenchidos. Sem eles, o cálculo não fecha. Preencha o que souber e salve; o que faltar vale zero até você completar.');
+    const n = diDias(di.atualEm.slice(0, 10));
+    return n > 30 ? el('div', { class: 'di-alerta abaixo' }, `Faz ${n} dias que os custos foram atualizados. Confira as contas do mês, os salários e as comissões dos canais, e salve de novo.`)
+      : el('p', { class: 'dica', text: n <= 0 ? 'Custos atualizados hoje.' : `Custos atualizados há ${n} ${n === 1 ? 'dia' : 'dias'}. Revise todo mês.` });
+  }
+  function diImportar() { // aceita o texto do botão "Copiar para o CRM" do formulário de custos (ou só a entrada)
+    abrirForm('Importar preenchimento', [
+      { tipo: 'nota', rotulo: 'Cole aqui o texto copiado do formulário de custos. Isso substitui o que está na tela; nada é salvo até você tocar em "Salvar".' },
+      { k: 'texto', rotulo: 'Texto copiado', tipo: 'textarea', largo: true, dica: '{"calculadoraDiaria":1,"entrada":{...}}' }], async v => {
+      let j; try { j = JSON.parse(String(v.texto || '').trim()); } catch (e) { throw new Error('Esse texto não parece o preenchimento copiado do formulário. Copie de novo, inteiro.'); }
+      const e = j && j.entrada ? j.entrada : j;
+      if (!e || typeof e !== 'object' || !('custosFixos' in e || 'custosVariaveis' in e || 'quartos' in e)) throw new Error('Não achei custos nesse texto.');
+      di.f = diDeEntrada(e); pintarDiaria(); diCalcular(); diMarcar(true); toast('Preenchimento importado. Confira e toque em Salvar.');
+    }, null, 'Importar');
+  }
+  function pintarDiariaHistorico() {
+    const box = $('di-historico'); if (!box) return;
+    const hs = di.historico;
+    if (!hs.length) { box.replaceChildren(el('p', { class: 'dica', text: 'Cada vez que você salva custos diferentes, o CRM registra aqui o total, para acompanhar a alta dos custos mês a mês.' })); return; }
+    box.replaceChildren(el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela' },
+      el('thead', {}, el('tr', {}, ...['Data', 'Fixos por mês', 'Variação', 'Variáveis por diária', 'Variação', ''].map((t, k) => el('th', { class: k && k < 5 ? 'n' : '', text: t })))),
+      el('tbody', {}, ...hs.map((h, i) => { const ant = hs[i + 1], var_ = (a, b) => !ant || !b ? '—' : (a >= b ? '+' : '') + diPorCento((a - b) / b);
+        return el('tr', {}, el('td', { text: new Date(h.em).toLocaleDateString('pt-BR') + (h.por ? ' · ' + h.por : '') }), el('td', { class: 'n', text: brl(h.totalFixos) }), el('td', { class: 'n', text: ant ? var_(h.totalFixos, ant.totalFixos) : '—' }),
+          el('td', { class: 'n', text: brl(h.totalVariaveis) }), el('td', { class: 'n', text: ant ? var_(h.totalVariaveis, ant.totalVariaveis) : '—' }),
+          el('td', {}, el('button', { class: 'btn-mini', type: 'button', text: 'Abrir', onclick: () => { di.f = diDeEntrada(h.entrada); pintarDiaria(); diCalcular(); diMarcar(true); toast('Custos de ' + new Date(h.em).toLocaleDateString('pt-BR') + ' abertos. Salve para torná-los os atuais.'); } }))); })))));
+  }
   function pintarDiariaCenarios() {
     const box = $('di-cenarios'); if (!box) return;
     const cs = di.cenarios;
@@ -3275,27 +3314,29 @@
   function pintarDiaria() {
     const f = di.f, corpo = $('di-corpo');
     const barra = el('div', { class: 'barra-ferr' },
-      el('button', { class: 'btn btn-enviar', type: 'button', text: 'Salvar', onclick: async e => { const b = e.currentTarget; b.disabled = true; try { const j = await chamarApi('/api/calculadora-diaria/salvar', { entrada: diPayload() }); di.cenarios = j.cenarios; diMarcar(false); toast('Preenchimento salvo.'); } catch (err) { toast(err.message); } b.disabled = false; } }),
+      el('button', { class: 'btn btn-enviar', type: 'button', text: 'Salvar', onclick: async e => { const b = e.currentTarget; b.disabled = true; try { const j = await chamarApi('/api/calculadora-diaria/salvar', { entrada: diPayload() }); diGuardou(j); toast('Preenchimento salvo.'); } catch (err) { toast(err.message); } b.disabled = false; } }),
       el('button', { class: 'btn btn-editar', type: 'button', text: 'Guardar como cenário', onclick: () => abrirForm('Guardar como cenário', [{ k: 'nome', rotulo: 'Nome do cenário', dica: 'Ex.: Hoje, Ocupação +10 pontos', largo: true }], async v => {
-        const j = await chamarApi('/api/calculadora-diaria/salvar', { entrada: diPayload(), cenario: true, nome: v.nome }); di.cenarios = j.cenarios; diMarcar(false); pintarDiariaCenarios(); toast('Cenário guardado.'); }, null, 'Guardar') }),
+        const j = await chamarApi('/api/calculadora-diaria/salvar', { entrada: diPayload(), cenario: true, nome: v.nome }); diGuardou(j); toast('Cenário guardado.'); }, null, 'Guardar') }),
       el('button', { class: 'btn btn-editar', type: 'button', text: 'Puxar do Silbeck', onclick: e => diPuxarSilbeck(e.currentTarget) }),
+      el('button', { class: 'btn btn-editar', type: 'button', text: 'Importar preenchimento', onclick: diImportar }),
       el('span', { class: 'dica', id: 'di-estado', text: di.sujo ? 'Alterações ainda não salvas' : 'Tudo salvo' }));
     const dados = diGrupo('1. Dados do hotel', 'Use a média dos últimos 12 meses. Sem o número, comece com 30% de ocupação e ajuste depois.',
       el('div', { class: 'di-linhas' },
         diCampo('Ocupação média anual (%)', 'ocupacao', f, 'Ex.: 30', 'Diárias vendidas ÷ diárias disponíveis.'), diCampo('Margem de lucro desejada (%)', 'margem', f, 'Ex.: 20', 'Nunca zero; de 10% a 20% ou mais.'),
         diCampo('Dias de alta temporada no ano', 'diasAlta', f, 'Ex.: 30', 'Feriados, férias e dias de pico.'), diCampo('Dias de baixa temporada no ano', 'diasBaixa', f, 'Ex.: 150', 'Períodos de menor procura.'),
         diCampo('Diária atual do quarto duplo padrão (R$)', 'diariaAtual', f, 'Ex.: 300', 'Para comparar com o preço calculado. Pode deixar vazio.')));
-    const fixos = diGrupo('2. Custos fixos mensais', 'O que chega todo mês, com a pousada cheia ou vazia. Teste: "se ficasse vazia o mês todo, essa conta ainda chegaria?". Não use zero no pró-labore: coloque quanto você precisaria retirar.', ...diLinhas(di.estrutura.linhasFixos, f.fixos, 'Total de custos fixos por mês', ''));
-    const vars = diGrupo('3. Custos variáveis por diária', 'Só existem com hóspede. Informe o custo de 1 diária de um quarto com 2 pessoas. Água e energia: a parte que passa da conta do mês mais vazio, dividida pelas diárias vendidas.', ...diLinhas(di.estrutura.linhasVariaveis, f.vars, 'Total de custos variáveis por diária', ' por diária'));
+    const fixos = diGrupo('2. Custos fixos mensais', 'O que chega todo mês, com a pousada cheia ou vazia. Teste: "se ficasse vazia o mês todo, essa conta ainda chegaria?". Não use zero no pró-labore: coloque quanto você precisaria retirar.', ...diLinhas(di.estrutura.linhasFixos, f.fixos, 'Total de custos fixos por mês', '', 'fixos'));
+    const vars = diGrupo('3. Custos variáveis por diária', 'Só existem com hóspede. Informe o custo de 1 diária de um quarto com 2 pessoas. Água e energia: a parte que passa da conta do mês mais vazio, dividida pelas diárias vendidas.', ...diLinhas(di.estrutura.linhasVariaveis, f.vars, 'Total de custos variáveis por diária', ' por diária', 'vars'));
     const taxas = diGrupo('4. Impostos, taxas e comissões (em %)', 'Digite 13 para 13%. Canal que você não usa, deixe vazio.',
-      el('div', { class: 'di-linhas' }, ...DI_TAXAS.map(([k, rot, dica]) => diCampo(rot, k, f.taxas, dica)), diCampo('Nº de parcelas do cartão', 'parcelas', f.taxas, 'Ex.: 5')));
+      el('div', { class: 'di-linhas' }, ...DI_TAXAS.map(([k, rot, dica]) => diCampo(rot, k, f.taxas, dica, null, 'taxas')), diCampo('Nº de parcelas do cartão', 'parcelas', f.taxas, 'Ex.: 5')));
     const quartos = diGrupo('5. Tipos de quarto', 'Um tipo por linha. O duplo padrão é a base (multiplicador 1,00).', ...diQuartos());
     const temp = diGrupo('6. Temporadas (opcional)', `Quanto o preço varia entre as temporadas. Vazio usa a proporção sugerida (baixa ${String(di.estrutura.temporadasPadrao.baixa).replace('.', ',')}, média 1, alta ${String(di.estrutura.temporadasPadrao.alta).replace('.', ',')}). O sistema ajusta para que a receita anual não mude.`,
       el('div', { class: 'di-linhas' }, diCampo('Baixa', 'baixa', f.temporadas, '0,45'), diCampo('Média', 'media', f.temporadas, '1'), diCampo('Alta', 'alta', f.temporadas, '1,40')));
     const res = el('div', { class: 'di-res', id: 'di-res' });
     const cen = el('div', { class: 'cartao pn-bloco' }, el('h2', { class: 'pn-sec', text: 'Cenários guardados' }), el('div', { id: 'di-cenarios' }));
-    corpo.replaceChildren(barra, el('div', { class: 'di-grade' }, el('div', { class: 'di-form' }, dados, fixos, vars, taxas, quartos, temp), el('div', { class: 'di-lado' }, res, cen)));
-    pintarDiariaCenarios(); diCalcular();
+    const his = el('div', { class: 'cartao pn-bloco' }, el('h2', { class: 'pn-sec', text: 'Histórico dos custos' }), el('div', { id: 'di-historico' }));
+    corpo.replaceChildren(barra, diAviso(), el('div', { class: 'di-grade' }, el('div', { class: 'di-form' }, dados, fixos, vars, taxas, quartos, temp), el('div', { class: 'di-lado' }, res, cen, his)));
+    pintarDiariaCenarios(); pintarDiariaHistorico(); diCalcular();
   }
   async function carregarDiaria() {
     const corpo = $('di-corpo');
@@ -3303,7 +3344,7 @@
     try {
       const j = await chamarApi('/api/calculadora-diaria', null, 'GET');
       if (di && di.sujo) return; // não atropela o que está sendo digitado
-      di = { estrutura: j.estrutura, cenarios: j.cenarios, f: diDeEntrada(j.atual), sujo: false };
+      di = { estrutura: j.estrutura, cenarios: j.cenarios, historico: j.historico || [], datas: j.datas || {}, atualEm: j.atualEm || null, f: diDeEntrada(j.atual), sujo: false };
       pintarDiaria();
     } catch (e) { corpo.replaceChildren(el('div', { class: 'vazio', text: /dono/i.test(e.message) ? 'A calculadora de diária é só para o dono.' : 'Não deu para abrir a calculadora agora: ' + e.message })); }
   }

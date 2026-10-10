@@ -2,7 +2,7 @@
 // Caso de referência = exemplo real estudado (crm/calculadora-diaria.md §3). Diferença de até 1 centavo é aceita
 // nos preços por quarto (a planilha original arredonda os multiplicadores antes).
 const assert = require('assert');
-const { calcular, limparEntrada, ErroCalculo, somar, LINHAS_FIXOS, LINHAS_VARIAVEIS } = require(require('path').join(__dirname, 'calculadora'));
+const { calcular, limparEntrada, compararCustos, totaisCustos, ErroCalculo, somar, LINHAS_FIXOS, LINHAS_VARIAVEIS } = require(require('path').join(__dirname, 'calculadora'));
 
 const perto = (a, b, msg, tol = 0.011) => assert.ok(Math.abs(a - b) <= tol, `${msg}: veio ${a}, esperado ${b}`);
 const lista = valores => Object.fromEntries(valores.map((v, i) => [`l${i}`, v]));
@@ -69,7 +69,8 @@ assert.equal(calcular({ ...exemplo(), diariaAtual: 400 }).comparacao.situacao, '
 const ruim = calcular({ ...exemplo(), diariaAtual: 50 });
 assert.equal(ruim.indicadores.pontoEquilibrioDiarias, undefined); assert.ok(ruim.avisos.some(a => /ponto de equilíbrio/.test(a)));
 // Aceita número como texto com vírgula (campo digitado) e custos como total ou lista
-assert.equal(somar('1500,50', 'x'), 1500.5); assert.equal(somar([100, '', null, 20], 'x'), 120); assert.equal(somar(undefined, 'x'), 0);
+assert.equal(somar('1500,50', 'x'), 1500.5); assert.equal(somar('3.800', 'x'), 3800); assert.equal(somar('3.800,50', 'x'), 3800.5); assert.equal(somar('1.234.567', 'x'), 1234567); assert.equal(somar('3800.5', 'x'), 3800.5); assert.equal(somar('12.5', 'x'), 12.5);
+assert.equal(limparEntrada({ diariaAtual: '1.200' }).diariaAtual, 1200); assert.equal(limparEntrada({ quartos: [{ nome: 'A', qtde: 1, mult: '1.25' }] }).quartos[0].mult, 1.25, 'multiplicador não é dinheiro'); assert.equal(somar([100, '', null, 20], 'x'), 120); assert.equal(somar(undefined, 'x'), 0);
 perto(calcular({ ...exemplo(), custosFixos: 11354, custosVariaveis: [62], ocupacao: '0,35' }).precos.padrao, 322.25, 'custos como total e texto');
 // Mais ocupação dilui o custo fixo: diária cai
 assert.ok(calcular({ ...exemplo(), ocupacao: 0.5 }).precos.padrao < r.precos.padrao);
@@ -98,6 +99,17 @@ assert.throws(() => limparEntrada({ custosFixos: { salarios: 'abc' } }), /númer
 assert.throws(() => limparEntrada({ quartos: Array(5).fill({ nome: 'x', qtde: 1e12 }) }), /fora do limite/);
 assert.equal(limparEntrada({ quartos: Array(40).fill({ nome: 'x', qtde: 1 }) }).quartos.length, 20, 'no máximo 20 tipos');
 try { calcular({}); } catch (e) { assert.ok(e instanceof ErroCalculo, 'erro de dado é ErroCalculo'); }
+// Custos mudam: compararCustos acusa a mudança e só renova a data das linhas alteradas
+const antes = limparEntrada(real());
+let cmp = compararCustos(antes, limparEntrada(real()), '2026-10-10');
+assert.equal(cmp.mudou, false); assert.deepEqual(cmp.datas, { fixos: {}, vars: {}, taxas: {} });
+const depoisE = limparEntrada({ ...real(), custosFixos: { ...porChave(LINHAS_FIXOS, FIXOS), salarios: 4200 }, taxas: { ...exemplo().taxas, booking: 0.16 } });
+cmp = compararCustos(antes, depoisE, '2026-11-02', { fixos: { salarios: '2026-10-10', contador: '2026-10-10' }, vars: {}, taxas: {} });
+assert.equal(cmp.mudou, true); assert.deepEqual(cmp.datas.fixos, { salarios: '2026-11-02', contador: '2026-10-10' }, 'só o salário muda de data');
+assert.deepEqual(cmp.datas.taxas, { booking: '2026-11-02' }); assert.deepEqual(cmp.datas.vars, {});
+cmp = compararCustos(null, antes, '2026-10-10'); assert.equal(cmp.mudou, true); assert.equal(cmp.datas.fixos.salarios, '2026-10-10'); assert.equal(cmp.datas.fixos.aluguel, undefined, 'linha que continua zero não ganha data');
+assert.equal(compararCustos(null, limparEntrada({}), 'x').mudou, false, 'tudo zerado não é mudança');
+assert.deepEqual(totaisCustos(antes), { fixos: 11354, variaveis: 62 }); assert.deepEqual(totaisCustos(null), { fixos: 0, variaveis: 0 });
 // Listas de custos para a tela: chaves únicas e a quantidade do modelo estudado
 assert.equal(LINHAS_FIXOS.length, 23); assert.equal(LINHAS_VARIAVEIS.length, 10);
 assert.equal(new Set([...LINHAS_FIXOS, ...LINHAS_VARIAVEIS].map(l => l.chave)).size, 33);
