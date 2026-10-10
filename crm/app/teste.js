@@ -651,6 +651,45 @@ falso.listen(0, () => {
     assert.ok(ph.reservas.origem.length && ph.reservas.origem.reduce((t, o) => t + o.reservas, 0) === ph.reservas.reservas, 'origem soma todas as reservas');
     assert.ok(!/Ana|Souza|@/.test(JSON.stringify(ph)), 'sem dados pessoais');
     assert.equal((await api('/api/painel-hotel?ini=' + emDias(0) + '&fim=' + emDias(400), null, 'token-equipe', 'GET')).status, 400);
+    // Calculadora de diária ideal: só o dono; guarda o preenchimento e os cenários na tabela config
+    {
+      const C = require('./calculadora'), porChave = (ls, vs) => Object.fromEntries(ls.map((l, i) => [l.chave, vs[i]]));
+      const entrada = { quartos: [{ nome: 'Duplo Standard', qtde: 3, cap: 2, mult: 1 }, { nome: 'Duplo Vista Mar', qtde: 2, cap: 2, mult: 1.2 }, { nome: 'Família', qtde: 1, cap: 4, mult: 1.55 }],
+        ocupacao: '0,35', diasAlta: 30, diasBaixa: 150, diariaAtual: 300, margem: 0.2,
+        custosFixos: porChave(C.LINHAS_FIXOS, [60, 0, 0, 3800, 3000, 630, 304, 0, 250, 400, 400, 500, 250, 300, 200, 800, 100, 150, 60, 150, 0, 0, 0]),
+        custosVariaveis: porChave(C.LINHAS_VARIAVEIS, [24, 3, 8, 5, 12, 4, 3, 3, 0, 0]),
+        taxas: { imposto: 0.06, cartao: 0.038, debito: 0.02, booking: 0.13, airbnb: 0.1, parcelas: 5, juros: 0.025 } };
+      for (const [rota, corpoC, metodo] of [['/api/calculadora-diaria', null, 'GET'], ['/api/calculadora-diaria/calcular', { entrada }], ['/api/calculadora-diaria/salvar', { entrada }], ['/api/calculadora-diaria/silbeck', null, 'GET'], ['/api/calculadora-diaria/apagar-cenario', { id: crypto.randomUUID() }]])
+        assert.equal((await api(rota, corpoC, 'token-equipe', metodo)).status, 403, 'só o dono: ' + rota);
+      r = await api('/api/calculadora-diaria', null, 'token-dono', 'GET');
+      let cj = await r.json();
+      assert.equal(r.status, 200); assert.equal(cj.estrutura.linhasFixos.length, 23); assert.equal(cj.estrutura.linhasVariaveis.length, 10); assert.equal(cj.atual, null); assert.deepEqual(cj.cenarios, []);
+      r = await api('/api/calculadora-diaria/calcular', { entrada }, 'token-dono');
+      cj = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(cj)); assert.equal(cj.resultado.precos.amigo, 242.22); assert.equal(cj.resultado.precos.padrao, 322.25); assert.equal(cj.resultado.indicadores.lucroMensal, 2506);
+      assert.equal(cj.resultado.quartos[1].direta.media, 478.54);
+      r = await api('/api/calculadora-diaria/calcular', { entrada: { ...entrada, ocupacao: 0 } }, 'token-dono');
+      assert.equal(r.status, 400); assert.match((await r.json()).erro, /ocupação/);
+      assert.equal((await api('/api/calculadora-diaria/calcular', { entrada: { ...entrada, taxas: { imposto: 0.6, cartao: 0.5 } } }, 'token-dono')).status, 400);
+      // salvar o preenchimento atual (rascunho incompleto também vale) e depois um cenário com nome
+      assert.equal((await api('/api/calculadora-diaria/salvar', { entrada: { ocupacao: '0,2' } }, 'token-dono')).status, 200);
+      assert.equal((await api('/api/calculadora-diaria/salvar', { entrada, cenario: true, nome: '  ' }, 'token-dono')).status, 400);
+      r = await api('/api/calculadora-diaria/salvar', { entrada, cenario: true, nome: 'Hoje' }, 'token-dono');
+      cj = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(cj)); assert.equal(cj.cenarios.length, 1); assert.equal(cj.cenarios[0].nome, 'Hoje'); assert.equal(cj.cenarios[0].resumo.padrao, 322.25); assert.equal(cj.cenarios[0].resumo.situacao, 'abaixo');
+      r = await api('/api/calculadora-diaria/salvar', { entrada: { ocupacao: '0,2' }, cenario: true, nome: 'Rascunho' }, 'token-dono');
+      cj = await r.json(); assert.equal(cj.cenarios.length, 2); assert.equal(cj.cenarios[0].resumo, null, 'cenário incompleto guarda sem resumo');
+      cj = await (await api('/api/calculadora-diaria', null, 'token-dono', 'GET')).json();
+      assert.equal(cj.atual.ocupacao, 0.2); assert.equal(cj.cenarios.length, 2); assert.equal(Object.keys(cj.atual.custosFixos).length, 23);
+      assert.equal((await api('/api/calculadora-diaria/apagar-cenario', { id: 'x' }, 'token-dono')).status, 400);
+      assert.equal((await api('/api/calculadora-diaria/apagar-cenario', { id: crypto.randomUUID() }, 'token-dono')).status, 404);
+      cj = await (await api('/api/calculadora-diaria/apagar-cenario', { id: cj.cenarios[0].id }, 'token-dono')).json();
+      assert.equal(cj.cenarios.length, 1); assert.equal(cj.cenarios[0].nome, 'Hoje');
+      // sugestões do Silbeck (simulador nos testes): acomodações, ocupação em fração e ADR
+      r = await api('/api/calculadora-diaria/silbeck', null, 'token-dono', 'GET');
+      cj = await r.json();
+      assert.equal(r.status, 200, JSON.stringify(cj).slice(0, 300)); assert.ok(cj.quartos.length && cj.quartos.every(q => q.qtde > 0 && q.nome)); assert.ok(cj.ocupacao === null || (cj.ocupacao >= 0 && cj.ocupacao <= 1));
+    }
     r = await api('/api/vagas?inicio=' + emDias(1) + '&dias=60', null, 'token-equipe', 'GET');
     const vm = await r.json();
     assert.equal(r.status, 200); assert.equal(vm.dias.length, 60, 'mapa da aba Vagas: 60 noites numa consulta'); assert.ok(vm.tipos.every(t => t.vagas.length === 60 && Number(t.total) > 0));

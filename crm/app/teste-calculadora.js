@@ -2,7 +2,7 @@
 // Caso de referência = exemplo real estudado (crm/calculadora-diaria.md §3). Diferença de até 1 centavo é aceita
 // nos preços por quarto (a planilha original arredonda os multiplicadores antes).
 const assert = require('assert');
-const { calcular, somar, LINHAS_FIXOS, LINHAS_VARIAVEIS } = require(require('path').join(__dirname, 'calculadora'));
+const { calcular, limparEntrada, ErroCalculo, somar, LINHAS_FIXOS, LINHAS_VARIAVEIS } = require(require('path').join(__dirname, 'calculadora'));
 
 const perto = (a, b, msg, tol = 0.011) => assert.ok(Math.abs(a - b) <= tol, `${msg}: veio ${a}, esperado ${b}`);
 const lista = valores => Object.fromEntries(valores.map((v, i) => [`l${i}`, v]));
@@ -82,6 +82,22 @@ assert.throws(() => calcular({ ...exemplo(), quartos: [] }), /ao menos um tipo d
 assert.throws(() => calcular({ ...exemplo(), diasAlta: 300, diasBaixa: 100 }), /somam mais que o ano/);
 assert.throws(() => calcular({ ...exemplo(), custosFixos: { a: -5 } }), /negativo/);
 assert.throws(() => calcular({ ...exemplo(), custosFixos: { a: 'abc' } }), /número válido/);
+// limparEntrada: guarda só campos e linhas conhecidos, aceita vírgula, vazio vira null; o que sai calcula igual ao original
+const porChave = (linhas, valores) => Object.fromEntries(linhas.map((l, i) => [l.chave, valores[i]]));
+const real = () => ({ ...exemplo(), custosFixos: porChave(LINHAS_FIXOS, FIXOS), custosVariaveis: porChave(LINHAS_VARIAVEIS, VARIAVEIS) });
+const suja = { ...real(), custosFixos: { ...porChave(LINHAS_FIXOS, FIXOS), intruso: 99 }, extra: 'x', taxas: { ...exemplo().taxas, intruso: 1 }, quartos: [...exemplo().quartos, { nome: '', qtde: '' }] };
+const limpa = limparEntrada(suja);
+assert.equal(limpa.extra, undefined); assert.equal(limpa.taxas.intruso, undefined); assert.equal(Object.keys(limpa.custosFixos).length, 23);
+assert.equal(limpa.quartos.length, 4, 'linha de quarto totalmente vazia sai');
+assert.deepEqual(limparEntrada({ quartos: [{ nome: 'A', qtde: '2', mult: '1,5' }], ocupacao: '0,3', temporadas: { baixa: '', media: '', alta: '' } }).quartos, [{ nome: 'A', qtde: 2, cap: null, mult: 1.5 }]);
+assert.equal(limparEntrada({ temporadas: { baixa: '', media: null } }).temporadas, null);
+perto(calcular(limpa).precos.padrao, 322.25, 'calcula igual depois de limpar');
+perto(calcular(limparEntrada({ ...real(), temporadas: { baixa: '', media: '', alta: '' } })).quartos[0].direta.media, calcular({ ...real(), temporadas: undefined }).quartos[0].direta.media, 'temporadas vazias = padrão');
+assert.throws(() => limparEntrada({ ocupacao: 5 }), ErroCalculo); assert.throws(() => limparEntrada({ margem: -1 }), /fora do limite/);
+assert.throws(() => limparEntrada({ custosFixos: { salarios: 'abc' } }), /número válido/); assert.throws(() => limparEntrada({ quartos: 'x' }), /lista/);
+assert.throws(() => limparEntrada({ quartos: Array(5).fill({ nome: 'x', qtde: 1e12 }) }), /fora do limite/);
+assert.equal(limparEntrada({ quartos: Array(40).fill({ nome: 'x', qtde: 1 }) }).quartos.length, 20, 'no máximo 20 tipos');
+try { calcular({}); } catch (e) { assert.ok(e instanceof ErroCalculo, 'erro de dado é ErroCalculo'); }
 // Listas de custos para a tela: chaves únicas e a quantidade do modelo estudado
 assert.equal(LINHAS_FIXOS.length, 23); assert.equal(LINHAS_VARIAVEIS.length, 10);
 assert.equal(new Set([...LINHAS_FIXOS, ...LINHAS_VARIAVEIS].map(l => l.chave)).size, 33);

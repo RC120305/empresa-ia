@@ -3,6 +3,9 @@
 // contra um exemplo real (custo total 242,22; diária padrão 322,25; ponto de equilíbrio 26,5%...).
 // Percentuais entram como fração (0,13 = 13%). A tela converte "13" para 0,13 antes de chamar.
 
+// Erro de dado informado (vira 400 com a mensagem na tela); qualquer outro erro é bug.
+class ErroCalculo extends Error {}
+
 const DIAS_MES = 30;
 const DIAS_ANO = 365;
 
@@ -39,14 +42,14 @@ const TEMPORADAS_PADRAO = { baixa: 0.452, media: 1, alta: 1.405 };
 const cent = x => Math.round(x * 100) / 100;
 const num = (v, nome) => {
   const n = typeof v === 'string' ? Number(v.replace(',', '.')) : Number(v);
-  if (v === null || v === undefined || v === '' || !Number.isFinite(n)) throw new Error(`Informe um número válido em "${nome}".`);
+  if (v === null || v === undefined || v === '' || !Number.isFinite(n)) throw new ErroCalculo(`Informe um número válido em "${nome}".`);
   return n;
 };
 const opc = v => (v === null || v === undefined || v === '' ? null : v);
 const frac = (v, nome, { padrao = 0, obrigatorio = false } = {}) => {
-  if (opc(v) === null) { if (obrigatorio) throw new Error(`Informe "${nome}".`); return padrao; }
+  if (opc(v) === null) { if (obrigatorio) throw new ErroCalculo(`Informe "${nome}".`); return padrao; }
   const n = num(v, nome);
-  if (n < 0 || n >= 1) throw new Error(`"${nome}" deve ser uma fração entre 0 e 1 (ex.: 0,13 para 13%).`);
+  if (n < 0 || n >= 1) throw new ErroCalculo(`"${nome}" deve ser uma fração entre 0 e 1 (ex.: 0,13 para 13%).`);
   return n;
 };
 // Aceita um total, uma lista ou um objeto { chave: valor } e devolve a soma (valores vazios = 0).
@@ -56,15 +59,44 @@ function somar(custos, nome) {
   return valores.reduce((s, v) => {
     if (opc(v) === null) return s;
     const n = num(v, nome);
-    if (n < 0) throw new Error(`"${nome}" não pode ter valor negativo.`);
+    if (n < 0) throw new ErroCalculo(`"${nome}" não pode ter valor negativo.`);
     return s + n;
   }, 0);
 }
 const divisor = (nome, ...partes) => {
   const d = 1 - partes.reduce((s, p) => s + p, 0);
-  if (d <= 0) throw new Error(`Impostos e taxas somam 100% ou mais no preço "${nome}": revise os percentuais.`);
+  if (d <= 0) throw new ErroCalculo(`Impostos e taxas somam 100% ou mais no preço "${nome}": revise os percentuais.`);
   return d;
 };
+
+// Limpa o que veio da tela antes de guardar: só os campos conhecidos, números de verdade (vírgula aceita),
+// custos só nas linhas conhecidas. Campo vazio fica null (rascunho incompleto pode ser salvo; calcular() exige o resto).
+const MAX = 1e9;
+function limpar(v, nome, { min = 0, max = MAX } = {}) {
+  if (opc(v) === null) return null;
+  const n = num(v, nome);
+  if (n < min || n > max) throw new ErroCalculo(`"${nome}" fora do limite permitido.`);
+  return n;
+}
+function limparEntrada(e = {}) {
+  if (!e || typeof e !== 'object') throw new ErroCalculo('Dados inválidos.');
+  if (!Array.isArray(e.quartos || [])) throw new ErroCalculo('Os tipos de quarto devem ser uma lista.');
+  const custos = (origem, linhas, rotulo) => Object.fromEntries(linhas.map(l => [l.chave, limpar((origem || {})[l.chave], `${rotulo}: ${l.nome}`) || 0]));
+  const t = e.taxas || {}, tp = e.temporadas || null;
+  return {
+    quartos: (e.quartos || []).slice(0, 20).map(q => ({
+      nome: String((q && q.nome) || '').trim().slice(0, 60), qtde: limpar(q && q.qtde, 'quantidade de quartos', { max: 1000 }),
+      cap: limpar(q && q.cap, 'capacidade', { max: 100 }), mult: limpar(q && q.mult, 'multiplicador', { max: 10 }),
+    })).filter(q => q.nome || q.qtde),
+    ocupacao: limpar(e.ocupacao, 'ocupação média anual', { max: 1 }), diasAlta: limpar(e.diasAlta, 'dias de alta temporada', { max: 365 }),
+    diasBaixa: limpar(e.diasBaixa, 'dias de baixa temporada', { max: 365 }), diariaAtual: limpar(e.diariaAtual, 'diária atual'),
+    margem: limpar(e.margem, 'margem de lucro', { max: 10 }),
+    custosFixos: custos(e.custosFixos, LINHAS_FIXOS, 'custo fixo'), custosVariaveis: custos(e.custosVariaveis, LINHAS_VARIAVEIS, 'custo variável'),
+    taxas: Object.fromEntries(['imposto', 'cartao', 'debito', 'booking', 'airbnb', 'agencia', 'juros'].map(k => [k, limpar(t[k], `taxa ${k}`, { max: 1 })])
+      .concat([['parcelas', limpar(t.parcelas, 'número de parcelas', { max: 60 })]])),
+    temporadas: tp && ['baixa', 'media', 'alta'].some(k => opc(tp[k]) !== null) ? Object.fromEntries(['baixa', 'media', 'alta'].map(k => [k, limpar(tp[k], `multiplicador da temporada ${k}`, { max: 20 })])) : null,
+  };
+}
 
 // entrada: { quartos:[{nome,qtde,cap,mult}], ocupacao, diasAlta, diasBaixa, diariaAtual?, margem?,
 //            custosFixos, custosVariaveis, taxas:{imposto,cartao,debito,booking,airbnb,agencia,parcelas,juros},
@@ -75,18 +107,18 @@ function calcular(entrada = {}) {
     cap: q.cap ? Math.round(num(q.cap, 'capacidade')) : null,
     mult: opc(q.mult) === null ? 1 : num(q.mult, `multiplicador de ${q.nome || 'quarto'}`),
   }));
-  if (!tipos.length) throw new Error('Cadastre ao menos um tipo de quarto com quantidade.');
-  if (tipos.some(t => t.mult <= 0)) throw new Error('O multiplicador de cada quarto deve ser maior que zero.');
+  if (!tipos.length) throw new ErroCalculo('Cadastre ao menos um tipo de quarto com quantidade.');
+  if (tipos.some(t => t.mult <= 0)) throw new ErroCalculo('O multiplicador de cada quarto deve ser maior que zero.');
   const quartos = tipos.reduce((s, t) => s + t.qtde, 0);
 
   const ocupacao = num(entrada.ocupacao, 'ocupação média anual');
-  if (ocupacao <= 0 || ocupacao > 1) throw new Error('A ocupação deve ser uma fração entre 0 e 1 (ex.: 0,30 para 30%).');
+  if (ocupacao <= 0 || ocupacao > 1) throw new ErroCalculo('A ocupação deve ser uma fração entre 0 e 1 (ex.: 0,30 para 30%).');
   const margem = opc(entrada.margem) === null ? 0.2 : num(entrada.margem, 'margem de lucro');
-  if (margem < 0) throw new Error('A margem de lucro não pode ser negativa.');
+  if (margem < 0) throw new ErroCalculo('A margem de lucro não pode ser negativa.');
   const diasAlta = opc(entrada.diasAlta) === null ? 0 : num(entrada.diasAlta, 'dias de alta temporada');
   const diasBaixa = opc(entrada.diasBaixa) === null ? 0 : num(entrada.diasBaixa, 'dias de baixa temporada');
   const diasMedia = DIAS_ANO - diasAlta - diasBaixa;
-  if (diasAlta < 0 || diasBaixa < 0 || diasMedia < 0) throw new Error('Os dias de alta e baixa temporada somam mais que o ano.');
+  if (diasAlta < 0 || diasBaixa < 0 || diasMedia < 0) throw new ErroCalculo('Os dias de alta e baixa temporada somam mais que o ano.');
 
   const t = entrada.taxas || {};
   const imposto = frac(t.imposto, 'imposto sobre a receita'), cartao = frac(t.cartao, 'taxa do cartão de crédito');
@@ -134,8 +166,9 @@ function calcular(entrada = {}) {
   if (ocupacao < 0.1) avisos.push('Ocupação abaixo de 10%: o custo fixo por diária fica muito alto; confira o número.');
 
   // Temporadas: normaliza para a média ponderada pelos dias ser 1,00 (a receita anual do quarto não muda).
-  const bruto = { ...TEMPORADAS_PADRAO, ...(entrada.temporadas || {}) };
-  for (const k of ['baixa', 'media', 'alta']) { bruto[k] = num(bruto[k], `multiplicador da temporada ${k}`); if (bruto[k] <= 0) throw new Error('Os multiplicadores de temporada devem ser maiores que zero.'); }
+  const informadas = Object.fromEntries(Object.entries(entrada.temporadas || {}).filter(([, v]) => opc(v) !== null));
+  const bruto = { ...TEMPORADAS_PADRAO, ...informadas };
+  for (const k of ['baixa', 'media', 'alta']) { bruto[k] = num(bruto[k], `multiplicador da temporada ${k}`); if (bruto[k] <= 0) throw new ErroCalculo('Os multiplicadores de temporada devem ser maiores que zero.'); }
   const dias = { baixa: diasBaixa, media: diasMedia, alta: diasAlta };
   const media = (dias.baixa * bruto.baixa + dias.media * bruto.media + dias.alta * bruto.alta) / DIAS_ANO;
   const temporada = Object.fromEntries(['baixa', 'media', 'alta'].map(k => [k, bruto[k] / media]));
@@ -159,4 +192,4 @@ function calcular(entrada = {}) {
   };
 }
 
-module.exports = { calcular, somar, LINHAS_FIXOS, LINHAS_VARIAVEIS, MULTIPLICADORES_REF, TEMPORADAS_PADRAO };
+module.exports = { calcular, limparEntrada, ErroCalculo, somar, LINHAS_FIXOS, LINHAS_VARIAVEIS, MULTIPLICADORES_REF, TEMPORADAS_PADRAO };

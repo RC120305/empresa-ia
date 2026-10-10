@@ -2,7 +2,7 @@ FROM mirror.gcr.io/library/node:22-alpine
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force && apk add --no-cache ffmpeg
-COPY server.js gilberto.js silbeck.js transcricao.js orcamento.js drive.js produtos.js vitrine.js massagem.js voucher.js bb.js pedidos.js push.js ./
+COPY server.js calculadora.js gilberto.js silbeck.js transcricao.js orcamento.js drive.js produtos.js vitrine.js massagem.js voucher.js bb.js pedidos.js push.js ./
 COPY fontes ./fontes
 COPY public ./public
 # Instruções e base do Gilberto, copiadas de crm/gilberto/ e contexto/ na publicação

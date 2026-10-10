@@ -15,6 +15,7 @@ const produtos = require('./produtos');
 const vitrine = require('./vitrine');
 const massagem = require('./massagem');
 const bb = require('./bb');
+const calculadora = require('./calculadora');
 const pedidos = require('./pedidos');
 const push = require('./push');
 const path = require('path');
@@ -2117,6 +2118,9 @@ async function negocioDaConversa(conversa, campos = 'id', buscar = fetch) {
 }
 const eventoNegocio = (negocio, texto, por, buscar = fetch) => buscar(`${SUPABASE_URL}/rest/v1/negocio_eventos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' },
   body: JSON.stringify({ negocio_id: negocio, texto: texto.slice(0, 300), por }), signal: AbortSignal.timeout(5000) }).catch(() => null);
+// Calculadora de diária: só o dono; erro de dado informado (ErroCalculo) vira 400 com a mensagem para a tela
+const exigirDonoCalculadora = eu => { if (!eu || eu.papel !== 'dono') throw new ErroEnvio(403, 'Só o dono usa a calculadora de diária.'); };
+const comErroCalculo = f => { try { return f(); } catch (e) { if (e instanceof calculadora.ErroCalculo) throw new ErroEnvio(400, e.message); throw e; } };
 const API_EQUIPE = {
   // Lista da equipe (para o "responsável" da conversa)
   // Avisos no celular: chave pública (para o aparelho se inscrever), inscrever, cancelar e testar
@@ -2789,6 +2793,58 @@ const API_EQUIPE = {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(ini || '') || !/^\d{4}-\d{2}-\d{2}$/.test(fim || '') || fim < ini) throw new ErroEnvio(400, 'Período inválido.');
     if ((Date.parse(fim) - Date.parse(ini)) / 864e5 > 366) throw new ErroEnvio(400, 'Período de no máximo 1 ano.');
     return painelHotel(ini, fim);
+  },
+  // Calculadora de diária ideal (só o dono). Fica na tabela config (chave calculadora_diaria): o preenchimento atual
+  // e até 30 cenários guardados. O cálculo é o de calculadora.js (testado contra o exemplo real estudado).
+  'GET /api/calculadora-diaria': async (corpo, eu) => {
+    exigirDonoCalculadora(eu);
+    const guardado = (await lerConfig('calculadora_diaria', fetch)) || {};
+    return { ok: true, estrutura: { linhasFixos: calculadora.LINHAS_FIXOS, linhasVariaveis: calculadora.LINHAS_VARIAVEIS, multiplicadoresRef: calculadora.MULTIPLICADORES_REF, temporadasPadrao: calculadora.TEMPORADAS_PADRAO },
+      atual: guardado.atual || null, cenarios: guardado.cenarios || [] };
+  },
+  'POST /api/calculadora-diaria/calcular': async (corpo, eu) => {
+    exigirDonoCalculadora(eu);
+    return { ok: true, resultado: comErroCalculo(() => calculadora.calcular(calculadora.limparEntrada(corpo.entrada))) };
+  },
+  'POST /api/calculadora-diaria/salvar': async (corpo, eu) => {
+    exigirDonoCalculadora(eu);
+    const entrada = comErroCalculo(() => calculadora.limparEntrada(corpo.entrada));
+    const guardado = (await lerConfig('calculadora_diaria', fetch)) || {};
+    const novo = { atual: entrada, cenarios: guardado.cenarios || [] };
+    if (corpo.cenario) { // guarda também como cenário comparável (nome obrigatório); o resumo só existe se o cálculo fecha
+      const nome = String(corpo.nome || '').trim().slice(0, 80);
+      if (!nome) throw new ErroEnvio(400, 'Dê um nome ao cenário.');
+      if (novo.cenarios.length >= 30) throw new ErroEnvio(400, 'Já são 30 cenários guardados: apague algum antes.');
+      let resumo = null;
+      try { const r = calculadora.calcular(entrada); resumo = { amigo: r.precos.amigo, padrao: r.precos.padrao, booking: r.precos.booking, pontoEquilibrioPct: r.indicadores.pontoEquilibrioPct ?? null, lucroMensal: r.indicadores.lucroMensal ?? null, situacao: r.comparacao ? r.comparacao.situacao : null }; } catch (e) { if (!(e instanceof calculadora.ErroCalculo)) throw e; }
+      novo.cenarios = [{ id: crypto.randomUUID(), nome, criado_em: new Date().toISOString(), criado_por: eu.nome || null, entrada, resumo }, ...novo.cenarios];
+    }
+    const r = await gravarConfig('calculadora_diaria', novo, fetch, eu.id);
+    if (!r.ok) throw new ErroEnvio(502, 'Não deu para salvar agora. Tente de novo.');
+    return { ok: true, cenarios: novo.cenarios };
+  },
+  'POST /api/calculadora-diaria/apagar-cenario': async (corpo, eu) => {
+    exigirDonoCalculadora(eu);
+    if (!uuidOk(corpo.id)) throw new ErroEnvio(400, 'Cenário inválido.');
+    const guardado = (await lerConfig('calculadora_diaria', fetch)) || {};
+    const cenarios = (guardado.cenarios || []).filter(c => c.id !== corpo.id);
+    if (cenarios.length === (guardado.cenarios || []).length) throw new ErroEnvio(404, 'Cenário não encontrado.');
+    const r = await gravarConfig('calculadora_diaria', { ...guardado, cenarios }, fetch, eu.id);
+    if (!r.ok) throw new ErroEnvio(502, 'Não deu para apagar agora. Tente de novo.');
+    return { ok: true, cenarios };
+  },
+  // Sugestões para preencher: acomodações e ocupação dos últimos 12 meses no Silbeck, a diária média realizada (ADR)
+  // e a comissão típica das agências cadastradas. São só sugestões: o dono confere e ajusta na tela.
+  'GET /api/calculadora-diaria/silbeck': async (corpo, eu) => {
+    exigirDonoCalculadora(eu);
+    const fim = new Date().toISOString().slice(0, 10), ini = silbeck.somarDias(fim, -364);
+    const h = await painelHotel(ini, fim);
+    const ag = (await getJson(`${SUPABASE_URL}/rest/v1/agencias?eh_agencia=eq.true&ativo=eq.true&select=comissao_pct&limit=500`, fetch)).map(a => Number(a.comissao_pct)).filter(n => n > 0 && n < 100).sort((a, b) => a - b);
+    return { ok: true, periodo: { ini, fim }, fonte: h.fonte,
+      quartos: (h.por_tipo || []).map(t => ({ codigo: t.codigo, nome: t.nome, qtde: t.unidades, ocupacao: t.ocupacao })),
+      ocupacao: h.atual && h.atual.ocupacao != null ? Math.round(h.atual.ocupacao * 10) / 1000 : null,
+      adr: h.atual && h.atual.adr != null ? h.atual.adr : null,
+      comissaoAgencia: ag.length ? Math.round(ag[ag.length >> 1] * 10) / 1000 : null, erros: h.erros || [] };
   },
   // Financeiro das agências: importar reservas do Silbeck por período de check-in, pagamentos e faturas
   'POST /api/agencia-reservas/importar': async corpo => {
