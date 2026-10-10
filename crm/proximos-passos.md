@@ -19,6 +19,8 @@
 - **Banco de fotos gerenciável (02/10/2026):** na caixa, 🖼 Banco de fotos → ⚙ Gerenciar: tirar e devolver fotos de cada categoria e **trazer fotos do Drive** ("Imagens do hotel cabanas"; recorte automático 4:3, 1200x900, com descrição para o Gilberto). Ligado e testado pelo dono em 02/10 (migração 011, API do Drive e pasta compartilhada com `crm-runtime@cabanas-crm.iam.gserviceaccount.com` como Leitor).
 - **Na caixa (02/10/2026):** sugestão do Gilberto, balões enviados um por vez com pausa de digitação e **fotos, vídeos, áudios e documentos** (recebidos guardados no Storage; envio pelo 📎; envio de foto testado pelo dono).
 
+- **Agências e operadoras (10/10/2026):** cadastro sincronizado com as Empresas do Silbeck (ligação pelo CNPJ; a aba mostra só as marcadas como agência), condições de cada uma (comissão, sinal e %, faturamento e vencimento) e **Reservas e financeiro** (reservas do Silbeck pelo código da empresa, valores sobre o líquido, sinal, fatura fechada por período e pagamentos). Falta o dono: migrações 027, 028 e 029. **Decisão do dono (10/10/2026): por enquanto, reserva de agência e operadora só pelo Silbeck** (motor do site ou balcão); criar a reserva da agência pelo WhatsApp (Gilberto ou equipe, via API) fica para um segundo momento e depende do OK para mudar a regra do Gilberto (hoje ele passa agência para a equipe) e do código de faturamento "empresa" (Márcio).
+
 ## 1. O que depende do dono
 | # | O quê | Por quê |
 |---|---|---|
