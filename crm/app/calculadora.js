@@ -93,6 +93,7 @@ function limparEntrada(e = {}) {
     ocupacao: limpar(e.ocupacao, 'ocupação média anual', { max: 1 }), diasAlta: limpar(e.diasAlta, 'dias de alta temporada', { max: 365 }),
     diasBaixa: limpar(e.diasBaixa, 'dias de baixa temporada', { max: 365 }), diariaAtual: limpar(e.diariaAtual, 'diária atual', { dinheiro: true }),
     margem: limpar(e.margem, 'margem de lucro', { max: 10 }),
+    ajustarPeloMix: e.ajustarPeloMix === undefined || e.ajustarPeloMix === null ? true : !!e.ajustarPeloMix,
     custosFixos: custos(e.custosFixos, LINHAS_FIXOS, 'custo fixo'), custosVariaveis: custos(e.custosVariaveis, LINHAS_VARIAVEIS, 'custo variável'),
     taxas: Object.fromEntries(['imposto', 'cartao', 'debito', 'booking', 'airbnb', 'agencia', 'juros'].map(k => [k, limpar(t[k], `taxa ${k}`, { max: 1 })])
       .concat([['parcelas', limpar(t.parcelas, 'número de parcelas', { max: 60 })]])),
@@ -190,10 +191,16 @@ function calcular(entrada = {}) {
   const temporada = Object.fromEntries(['baixa', 'media', 'alta'].map(k => [k, bruto[k] / media]));
 
   // Preço por tipo de quarto = preço do canal × multiplicador do quarto × multiplicador da temporada.
+  // Mix de quartos: o preço calculado (diária padrão etc.) é o que o hotel precisa cobrar EM MÉDIA por diária vendida.
+  // Com quartos de preços muito diferentes, usar esse valor no quarto base faria a média de todos os quartos passar do
+  // necessário. Com ajustarPeloMix, o quarto base (multiplicador 1) sai por preço ÷ multiplicador médio dos quartos
+  // (ponderado pela quantidade), e a média de todos os quartos fecha no preço necessário. A planilha original não faz isso.
+  const mixMedio = tipos.reduce((s, q) => s + q.qtde * q.mult, 0) / quartos;
+  const escala = entrada.ajustarPeloMix === true ? 1 / mixMedio : 1;
   const porQuarto = tipos.map(q => {
-    const lin = base => Object.fromEntries(['baixa', 'media', 'alta'].map(k => [k, cent(base * q.mult * temporada[k])]));
+    const lin = base => Object.fromEntries(['baixa', 'media', 'alta'].map(k => [k, cent(base * escala * q.mult * temporada[k])]));
     return { nome: q.nome, qtde: q.qtde, cap: q.cap, mult: q.mult, direta: lin(preco.padrao), booking: lin(preco.booking),
-      minima: cent(custoTotal * q.mult), medioAnual: cent(preco.padrao * q.mult) };
+      minima: cent(custoTotal * escala * q.mult), medioAnual: cent(preco.padrao * escala * q.mult) };
   });
 
   const arred = o => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v !== 'number' ? v : (/Pct$/.test(k) ? Math.round(v * 10000) / 10000 : cent(v))]));
@@ -204,6 +211,7 @@ function calcular(entrada = {}) {
     indicadores: arred(ind),
     temporadas: { dias, multiplicadores: Object.fromEntries(Object.entries(temporada).map(([k, v]) => [k, Math.round(v * 10000) / 10000])) },
     quartos: porQuarto,
+    mix: { multiplicadorMedio: Math.round(mixMedio * 10000) / 10000, ajustado: entrada.ajustarPeloMix === true },
     avisos,
   };
 }

@@ -3160,10 +3160,11 @@
   const diDePct = x => x == null ? '' : String(Math.round(x * 10000) / 100).replace('.', ',');
   const diDeNum = x => x == null ? '' : String(x).replace('.', ',');
   const diSoma = o => Object.values(o).reduce((s, v) => s + (Number(diTxt(v)) || 0), 0);
-  const diEstadoVazio = () => ({ ocupacao: '', margem: '20', diasAlta: '', diasBaixa: '', diariaAtual: '', taxas: { parcelas: '' }, temporadas: { baixa: '', media: '', alta: '' }, fixos: {}, vars: {}, quartos: [] });
+  const diEstadoVazio = () => ({ ajustarMix: true, ocupacao: '', margem: '20', diasAlta: '', diasBaixa: '', diariaAtual: '', taxas: { parcelas: '' }, temporadas: { baixa: '', media: '', alta: '' }, fixos: {}, vars: {}, quartos: [] });
   function diDeEntrada(e) { // entrada guardada (frações) → texto dos campos
     const f = diEstadoVazio();
     if (!e) return f;
+    f.ajustarMix = e.ajustarPeloMix !== false;
     Object.assign(f, { ocupacao: diDePct(e.ocupacao), margem: e.margem == null ? '20' : diDePct(e.margem), diasAlta: diDeNum(e.diasAlta), diasBaixa: diDeNum(e.diasBaixa), diariaAtual: diDeNum(e.diariaAtual) });
     for (const [k] of DI_TAXAS) f.taxas[k] = diDePct((e.taxas || {})[k]);
     f.taxas.parcelas = diDeNum((e.taxas || {}).parcelas);
@@ -3176,7 +3177,7 @@
   function diPayload() { // texto dos campos → entrada para o servidor
     const f = di.f, taxas = { parcelas: f.taxas.parcelas };
     for (const [k] of DI_TAXAS) taxas[k] = diPct(f.taxas[k]);
-    return { ocupacao: diPct(f.ocupacao), margem: diPct(f.margem), diasAlta: f.diasAlta, diasBaixa: f.diasBaixa, diariaAtual: f.diariaAtual,
+    return { ajustarPeloMix: f.ajustarMix, ocupacao: diPct(f.ocupacao), margem: diPct(f.margem), diasAlta: f.diasAlta, diasBaixa: f.diasBaixa, diariaAtual: f.diariaAtual,
       custosFixos: f.fixos, custosVariaveis: f.vars, taxas, temporadas: f.temporadas, quartos: f.quartos };
   }
   const diVazio = () => { const f = di.f; return f.ocupacao === '' && !f.quartos.length && !diSoma(f.fixos) && !diSoma(f.vars); };
@@ -3262,7 +3263,7 @@
       lin('Agência / operadora', p.agencia, 'Com comissão e cartão'), lin('Parcelado', p.parcelada, 'Com juros do parcelamento'), lin('Débito', p.debito, 'Com taxa do débito'),
       lin('Diária limpa', p.limpa, 'Custo + margem, sem impostos'), lin('Diária amigo', p.amigo, 'Piso: lucro zero'))))));
     const t = r.temporadas, num0 = x => String(x).replace('.', ',') + '×', moeda = x => brl(x).replace('R$ ', '');
-    kids.push(el('h2', { class: 'pn-sec', text: 'Preço por tipo de quarto e temporada' }), el('p', { class: 'dica', text: `Multiplicadores da temporada (média ponderada pelos dias = 1,00): baixa ${num0(t.multiplicadores.baixa)} (${t.dias.baixa} dias), média ${num0(t.multiplicadores.media)} (${t.dias.media}), alta ${num0(t.multiplicadores.alta)} (${t.dias.alta}). Arredonde ao praticar.` }),
+    kids.push(el('h2', { class: 'pn-sec', text: 'Preço por tipo de quarto e temporada' }), el('p', { class: 'dica', text: `Multiplicadores da temporada (média ponderada pelos dias = 1,00): baixa ${num0(t.multiplicadores.baixa)} (${t.dias.baixa} dias), média ${num0(t.multiplicadores.media)} (${t.dias.media}), alta ${num0(t.multiplicadores.alta)} (${t.dias.alta}). ` + (r.mix.ajustado ? `Preços ajustados pelo mix de quartos (multiplicador médio ${num0(r.mix.multiplicadorMedio)}): a média de todos os quartos fecha no preço necessário. ` : 'Sem ajuste pelo mix: o quarto base fica no preço médio e os demais sobem a partir dele. ') + 'Arredonde ao praticar.' }),
       el('div', { class: 'cartao pn-bloco' }, el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela' },
         el('thead', {}, el('tr', {}, el('th', { text: 'Quarto' }), ...['Baixa', 'Média', 'Alta'].map(x => el('th', { class: 'n', text: 'Direta ' + x })), ...['Baixa', 'Média', 'Alta'].map(x => el('th', { class: 'n', text: 'Booking ' + x })), el('th', { class: 'n', text: 'Mínima' }), el('th', { class: 'n', text: 'Médio anual' }))),
         el('tbody', {}, ...r.quartos.map(q => el('tr', {}, el('td', { text: q.nome + ' (' + q.qtde + ') ' + num0(q.mult) }), ...['baixa', 'media', 'alta'].map(k => el('td', { class: 'n', text: moeda(q.direta[k]) })), ...['baixa', 'media', 'alta'].map(k => el('td', { class: 'n', text: moeda(q.booking[k]) })), el('td', { class: 'n', text: moeda(q.minima) }), el('td', { class: 'n', text: moeda(q.medioAnual) }))))))));
@@ -3329,7 +3330,9 @@
     const vars = diGrupo('3. Custos variáveis por diária', 'Só existem com hóspede. Informe o custo de 1 diária de um quarto com 2 pessoas. Água e energia: a parte que passa da conta do mês mais vazio, dividida pelas diárias vendidas.', ...diLinhas(di.estrutura.linhasVariaveis, f.vars, 'Total de custos variáveis por diária', ' por diária', 'vars'));
     const taxas = diGrupo('4. Impostos, taxas e comissões (em %)', 'Digite 13 para 13%. Canal que você não usa, deixe vazio.',
       el('div', { class: 'di-linhas' }, ...DI_TAXAS.map(([k, rot, dica]) => diCampo(rot, k, f.taxas, dica, null, 'taxas')), diCampo('Nº de parcelas do cartão', 'parcelas', f.taxas, 'Ex.: 5')));
-    const quartos = diGrupo('5. Tipos de quarto', 'Um tipo por linha. O duplo padrão é a base (multiplicador 1,00).', ...diQuartos());
+    const mixCaixa = el('input', { type: 'checkbox', id: 'di-mix', checked: f.ajustarMix }); mixCaixa.addEventListener('change', () => { f.ajustarMix = mixCaixa.checked; diAgendar(); });
+    const quartos = diGrupo('5. Tipos de quarto', 'Um tipo por linha. O quarto base tem multiplicador 1,00; os outros são a proporção entre o preço do quarto e o do base (ex.: R$ 780 contra R$ 598 = 1,30). O tarifário do hotel dá esses números.', ...diQuartos(),
+      el('label', { class: 'di-mix' }, mixCaixa, el('span', {}, el('b', { text: 'Ajustar o preço pelo mix de quartos (recomendado). ' }), 'O preço calculado é o que o hotel precisa cobrar em média por diária vendida. Como os quartos têm preços diferentes, o quarto base sai mais barato que essa média e a média de todos os quartos fecha no valor necessário. Desligado, o quarto base fica no preço médio e os demais sobem a partir dele.')));
     const temp = diGrupo('6. Temporadas (opcional)', `Quanto o preço varia entre as temporadas. Vazio usa a proporção sugerida (baixa ${String(di.estrutura.temporadasPadrao.baixa).replace('.', ',')}, média 1, alta ${String(di.estrutura.temporadasPadrao.alta).replace('.', ',')}). O sistema ajusta para que a receita anual não mude.`,
       el('div', { class: 'di-linhas' }, diCampo('Baixa', 'baixa', f.temporadas, '0,45'), diCampo('Média', 'media', f.temporadas, '1'), diCampo('Alta', 'alta', f.temporadas, '1,40')));
     const res = el('div', { class: 'di-res', id: 'di-res' });

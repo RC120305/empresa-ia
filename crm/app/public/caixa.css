@@ -664,3 +664,4 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
 .di-nota{color:var(--cor-texto-sec);font-size:13px}
 .di-res .pn-tiles{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}.di-res .pn-num{font-size:23px;white-space:nowrap}
 .di-quando{font-weight:400;font-size:12px;color:var(--cor-texto-sec)}.di-quando.velho{color:var(--cor-destaque-texto);font-weight:600}
+.di-mix{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin-top:8px;color:var(--cor-texto)}.di-mix input{width:18px;height:18px;margin-top:2px;accent-color:var(--cor-primaria);flex:none}.di-mix b{font-weight:600}

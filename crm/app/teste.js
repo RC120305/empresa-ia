@@ -655,7 +655,7 @@ falso.listen(0, () => {
     {
       const C = require('./calculadora'), porChave = (ls, vs) => Object.fromEntries(ls.map((l, i) => [l.chave, vs[i]]));
       const entrada = { quartos: [{ nome: 'Duplo Standard', qtde: 3, cap: 2, mult: 1 }, { nome: 'Duplo Vista Mar', qtde: 2, cap: 2, mult: 1.2 }, { nome: 'Família', qtde: 1, cap: 4, mult: 1.55 }],
-        ocupacao: '0,35', diasAlta: 30, diasBaixa: 150, diariaAtual: 300, margem: 0.2,
+        ocupacao: '0,35', diasAlta: 30, diasBaixa: 150, diariaAtual: 300, margem: 0.2, ajustarPeloMix: false, // false: conferir a tabela por quarto contra a planilha original
         custosFixos: porChave(C.LINHAS_FIXOS, [60, 0, 0, 3800, 3000, 630, 304, 0, 250, 400, 400, 500, 250, 300, 200, 800, 100, 150, 60, 150, 0, 0, 0]),
         custosVariaveis: porChave(C.LINHAS_VARIAVEIS, [24, 3, 8, 5, 12, 4, 3, 3, 0, 0]),
         taxas: { imposto: 0.06, cartao: 0.038, debito: 0.02, booking: 0.13, airbnb: 0.1, parcelas: 5, juros: 0.025 } };
@@ -668,6 +668,9 @@ falso.listen(0, () => {
       cj = await r.json();
       assert.equal(r.status, 200, JSON.stringify(cj)); assert.equal(cj.resultado.precos.amigo, 242.22); assert.equal(cj.resultado.precos.padrao, 322.25); assert.equal(cj.resultado.indicadores.lucroMensal, 2506);
       assert.equal(cj.resultado.quartos[1].direta.media, 478.54);
+      { const { ajustarPeloMix, ...semFlag } = entrada; // sem informar, o CRM ajusta pelo mix de quartos (o quarto base fica mais barato que o padrão)
+        const rr = await (await api('/api/calculadora-diaria/calcular', { entrada: semFlag }, 'token-dono')).json();
+        assert.equal(rr.resultado.mix.ajustado, true); assert.ok(rr.resultado.quartos[0].medioAnual < 322.25, 'quarto base abaixo do padrão pelo mix'); assert.equal(rr.resultado.precos.padrao, 322.25); }
       r = await api('/api/calculadora-diaria/calcular', { entrada: { ...entrada, ocupacao: 0 } }, 'token-dono');
       assert.equal(r.status, 400); assert.match((await r.json()).erro, /ocupação/);
       assert.equal((await api('/api/calculadora-diaria/calcular', { entrada: { ...entrada, taxas: { imposto: 0.6, cartao: 0.5 } } }, 'token-dono')).status, 400);

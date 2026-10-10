@@ -93,12 +93,21 @@ assert.equal(limpa.quartos.length, 4, 'linha de quarto totalmente vazia sai');
 assert.deepEqual(limparEntrada({ quartos: [{ nome: 'A', qtde: '2', mult: '1,5' }], ocupacao: '0,3', temporadas: { baixa: '', media: '', alta: '' } }).quartos, [{ nome: 'A', qtde: 2, cap: null, mult: 1.5 }]);
 assert.equal(limparEntrada({ temporadas: { baixa: '', media: null } }).temporadas, null);
 perto(calcular(limpa).precos.padrao, 322.25, 'calcula igual depois de limpar');
-perto(calcular(limparEntrada({ ...real(), temporadas: { baixa: '', media: '', alta: '' } })).quartos[0].direta.media, calcular({ ...real(), temporadas: undefined }).quartos[0].direta.media, 'temporadas vazias = padrão');
+perto(calcular(limparEntrada({ ...real(), ajustarPeloMix: false, temporadas: { baixa: '', media: '', alta: '' } })).quartos[0].direta.media, calcular({ ...real(), temporadas: undefined }).quartos[0].direta.media, 'temporadas vazias = padrão');
 assert.throws(() => limparEntrada({ ocupacao: 5 }), ErroCalculo); assert.throws(() => limparEntrada({ margem: -1 }), /fora do limite/);
 assert.throws(() => limparEntrada({ custosFixos: { salarios: 'abc' } }), /número válido/); assert.throws(() => limparEntrada({ quartos: 'x' }), /lista/);
 assert.throws(() => limparEntrada({ quartos: Array(5).fill({ nome: 'x', qtde: 1e12 }) }), /fora do limite/);
 assert.equal(limparEntrada({ quartos: Array(40).fill({ nome: 'x', qtde: 1 }) }).quartos.length, 20, 'no máximo 20 tipos');
 try { calcular({}); } catch (e) { assert.ok(e instanceof ErroCalculo, 'erro de dado é ErroCalculo'); }
+// Mix de quartos: com ajustarPeloMix o quarto base sai por preço ÷ multiplicador médio, e a média ponderada dos quartos fecha no preço necessário
+const mx = calcular({ ...exemplo(), ajustarPeloMix: true });
+const nU = mx.quartos.reduce((s, x) => s + x.qtde, 0), ponderar = f => mx.quartos.reduce((s, x) => s + x.qtde * f(x), 0) / nU;
+perto(mx.mix.multiplicadorMedio, (3 * 1 + 2 * 1.2 + 1 * 1.55) / 6, 'multiplicador médio dos quartos', 0.0001); assert.equal(mx.mix.ajustado, true); assert.equal(r.mix.ajustado, false);
+perto(ponderar(x => x.medioAnual), 322.25, 'média dos quartos = diária padrão', 0.05); perto(ponderar(x => x.minima), 242.22, 'média das mínimas = diária amigo', 0.05);
+perto(ponderar(x => (x.direta.baixa * 150 + x.direta.media * 185 + x.direta.alta * 30) / 365), 322.25, 'média ponderada por quartos e dias', 0.1);
+perto(ponderar(x => (x.booking.baixa * 150 + x.booking.media * 185 + x.booking.alta * 30) / 365), 376.51, 'Booking: média ponderada', 0.1);
+assert.equal(limparEntrada(real()).ajustarPeloMix, true, 'ao limpar, o padrão é ajustar'); assert.equal(limparEntrada({ ...real(), ajustarPeloMix: false }).ajustarPeloMix, false);
+perto(calcular(limparEntrada({ ...real(), ajustarPeloMix: false })).quartos[0].medioAnual, 322.25, 'sem ajuste, o quarto base fica no preço padrão');
 // Custos mudam: compararCustos acusa a mudança e só renova a data das linhas alteradas
 const antes = limparEntrada(real());
 let cmp = compararCustos(antes, limparEntrada(real()), '2026-10-10');
