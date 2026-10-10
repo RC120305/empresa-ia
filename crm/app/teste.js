@@ -645,6 +645,8 @@ falso.listen(0, () => {
     assert.ok(ph.atual.receita > 0 && ph.atual.adr > 0 && ph.atual.revpar > 0 && ph.atual.revpar <= ph.atual.adr, 'RevPAR nunca passa da diária média');
     assert.ok(ph.reservas.reservas > 0 && ph.reservas.canais.length && ph.reservas.noites_por_reserva > 0 && ph.reservas.pax_por_reserva > 0, JSON.stringify(ph.reservas).slice(0, 300));
     assert.ok(ph.por_tipo.length > 3 && ph.por_tipo.every(t => t.ocupacao >= 0 && t.ocupacao <= 100));
+    assert.equal(ph.reservas.antecedencia_faixas.reduce((t, f) => t + f.reservas, 0), ph.reservas.antecedencia_n, 'as faixas somam todas as reservas com data');
+    assert.ok(ph.reservas.antecedencia_mediana != null && ph.reservas.antecedencia_canais.length);
     assert.ok(!/Ana|Souza|@/.test(JSON.stringify(ph)), 'sem dados pessoais');
     assert.equal((await api('/api/painel-hotel?ini=' + emDias(0) + '&fim=' + emDias(400), null, 'token-equipe', 'GET')).status, 400);
     r = await api('/api/vagas?inicio=' + emDias(1) + '&dias=60', null, 'token-equipe', 'GET');

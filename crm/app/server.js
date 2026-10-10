@@ -1440,7 +1440,13 @@ async function painelHotel(ini, fim, buscar = fetch) {
     if (!l) return null;
     const vivas = l.filter(r => !r.cancelada), canais = new Map();
     for (const r of vivas) { const k = canalDaReserva(r, doCrm), x = canais.get(k) || { canal: k, reservas: 0, noites: 0, receita: 0 }; x.reservas++; x.noites += r.noites; x.receita = r2(x.receita + Number(r.valor_total)); canais.set(k, x); }
-    const ant = vivas.filter(r => r.cadastro && r.data_entrada).map(r => Math.max(0, (Date.parse(r.data_entrada) - Date.parse(r.cadastro)) / 864e5));
+    const antDe = r => Math.max(0, Math.round((Date.parse(r.data_entrada) - Date.parse(r.cadastro)) / 864e5));
+    const comData = vivas.filter(r => r.cadastro && r.data_entrada && !isNaN(Date.parse(r.cadastro))), ant = comData.map(antDe);
+    const mediana = l => { if (!l.length) return null; const o = [...l].sort((x, y) => x - y), m = o.length >> 1; return o.length % 2 ? o[m] : Math.round((o[m - 1] + o[m]) / 2); };
+    // Antecedência em faixas e por canal: mostra se poucas reservas muito antecipadas puxam a média para cima
+    const FAIXAS = [['até 7 dias', 0, 7], ['8 a 30 dias', 8, 30], ['31 a 90 dias', 31, 90], ['91 a 180 dias', 91, 180], ['mais de 180 dias', 181, Infinity]];
+    const antPorCanal = new Map();
+    for (const r of comData) { const k = canalDaReserva(r, doCrm); (antPorCanal.get(k) || antPorCanal.set(k, []).get(k)).push(antDe(r)); }
     const soma = f => vivas.reduce((t, r) => t + (Number(f(r)) || 0), 0);
     return { reservas: vivas.length, canceladas: l.length - vivas.length, receita: r2(soma(r => r.valor_total)), hospedes: soma(r => r.pax), noites: soma(r => r.noites),
       pax_por_reserva: vivas.length ? Math.round(10 * soma(r => r.pax) / vivas.length) / 10 : null,
@@ -1448,12 +1454,15 @@ async function painelHotel(ini, fim, buscar = fetch) {
       diarias_por_reserva: vivas.length ? Math.round(10 * soma(r => r.noites) / vivas.length) / 10 : null, // apartamento × noite
       ticket_medio: vivas.length ? r2(soma(r => r.valor_total) / vivas.length) : null,
       antecedencia_media: ant.length ? Math.round(ant.reduce((a, b) => a + b, 0) / ant.length) : null,
+      antecedencia_mediana: mediana(ant), antecedencia_n: ant.length,
+      antecedencia_faixas: FAIXAS.map(([rotulo, de, ate]) => ({ faixa: rotulo, reservas: ant.filter(d => d >= de && d <= ate).length })),
+      antecedencia_canais: [...antPorCanal].map(([canal, l]) => ({ canal, reservas: l.length, mediana: mediana(l), media: Math.round(l.reduce((a, b) => a + b, 0) / l.length) })).sort((a, b) => b.reservas - a.reservas),
       canais: [...canais.values()].sort((a, b) => b.receita - a.receita) };
   };
   const r = { ok: true, periodo: { ini, fim, dias, ant_ini: antIni, ant_fim: antFim }, fonte: silbeck.MODO(), unidades,
     atual: resumoOc(oc, dias), anterior: resumoOc(ocAnt, dias), reservas: resumoRes(lista), reservas_ant: resumoRes(listaAnt), por_tipo: porTipo.sort((a, b) => b.ocupacao - a.ocupacao), erros };
   if (r.anterior) delete r.anterior.por_dia;
-  if (r.reservas_ant) delete r.reservas_ant.canais;
+  if (r.reservas_ant) { delete r.reservas_ant.canais; delete r.reservas_ant.antecedencia_faixas; delete r.reservas_ant.antecedencia_canais; }
   cachePainel.set(chave, { ate: Date.now() + (erros.length ? 60e3 : 10 * 60e3), r });
   if (cachePainel.size > 50) cachePainel.delete(cachePainel.keys().next().value);
   return r;

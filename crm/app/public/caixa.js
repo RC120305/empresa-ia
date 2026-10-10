@@ -2867,7 +2867,8 @@
       r ? pnTile('Permanência média', pnNum1(r.noites_por_reserva) + ' noites', 'quantas noites o hóspede fica' + (r.diarias_por_reserva && r.diarias_por_reserva !== r.noites_por_reserva ? ' · ' + pnNum1(r.diarias_por_reserva) + ' diárias por reserva (com mais de um apto)' : '') + (a && a.permanencia ? ' · Silbeck: ' + pnNum1(a.permanencia) : ''), pnDeltaV(r.noites_por_reserva, ra && ra.noites_por_reserva, pnNum1)) : null,
       r ? pnTile('Hóspedes por reserva', pnNum1(r.pax_por_reserva), r.hospedes + ' hóspedes em ' + r.reservas + ' reservas com entrada no período') : null,
       r ? pnTile('Valor médio da reserva', pnBrl0(r.ticket_medio), 'hospedagem por reserva', pnDeltaV(r.ticket_medio, ra && ra.ticket_medio, pnBrl0)) : null,
-      r ? pnTile('Antecedência média', r.antecedencia_media != null ? r.antecedencia_media + ' dias' : '—', 'entre a reserva e o check-in') : null,
+      r ? pnTile('Antecedência (mediana)', r.antecedencia_mediana != null ? r.antecedencia_mediana + ' dias' : '—', 'metade das reservas foi feita com até ' + (r.antecedencia_mediana ?? '—') + ' dias do check-in · média ' + (r.antecedencia_media ?? '—') + ' dias',
+        pnDeltaV(r.antecedencia_mediana, ra && ra.antecedencia_mediana, v => v + ' dias')) : null,
       r ? pnTile('Vendido pelo WhatsApp (CRM)', pnBrl0(crm ? crm.receita : 0), (crm ? crm.reservas : 0) + ' reserva(s) · ' + (r.receita ? Math.round(100 * (crm ? crm.receita : 0) / r.receita) : 0) + '% do faturamento') : null,
       r ? pnTile('Cancelamentos', String(r.canceladas), r.reservas + r.canceladas ? Math.round(100 * r.canceladas / (r.reservas + r.canceladas)) + '% das reservas com entrada no período' : 'nenhuma reserva no período', pnInverte(pnDelta(r.canceladas, ra && ra.canceladas))) : null));
     const grade = el('div', { class: 'pn-grade' });
@@ -2877,6 +2878,11 @@
     if (r && r.canais.length) grade.append(pnBloco('Canais de venda', 'Por onde vieram as reservas com entrada no período (faturamento de hospedagem).',
       pnBarras(r.canais.map(c => [c.canal + ' (' + c.reservas + ')', c.receita, null, (r.receita ? Math.round(100 * c.receita / r.receita) : 0) + '%', pnBrl0(c.receita)])),
       el('p', { class: 'dica', text: 'Entre parênteses, o número de reservas.' })));
+    if (r && r.antecedencia_n) grade.append(pnBloco('Antecedência das reservas', 'Com quantos dias antes do check-in as reservas do período foram feitas (data de cadastro no Silbeck). A mediana não é puxada por poucas reservas feitas muito antes.',
+      pnBarras(r.antecedencia_faixas.map(f => [f.faixa, f.reservas, null, null, f.reservas + ' · ' + Math.round(100 * f.reservas / r.antecedencia_n) + '%'])),
+      el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela' },
+        el('thead', {}, el('tr', {}, ...['Canal', 'Reservas', 'Mediana', 'Média'].map((t, i) => el('th', { class: i ? 'n' : '', text: t })))),
+        el('tbody', {}, ...r.antecedencia_canais.map(c => el('tr', {}, el('td', { text: c.canal }), el('td', { class: 'n', text: String(c.reservas) }), el('td', { class: 'n', text: c.mediana + ' d' }), el('td', { class: 'n', text: c.media + ' d' }))))))));
     if (h.por_tipo.length) grade.append(pnBloco('Ocupação por acomodação', 'Quanto de cada tipo foi ocupado no período.',
       pnBarras(h.por_tipo.map(t => [t.nome, t.ocupacao, null, t.unidades + ' un.', pnNum1(t.ocupacao) + '%']))));
     box.append(grade);
