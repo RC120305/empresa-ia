@@ -2157,6 +2157,8 @@ falso.listen(0, () => {
       const O = require('./orcamento');
       assert.equal(O.CATALOGO.BANG4.nome, 'Bangalô Quádruplo'); assert.equal(O.FOTO_DE.BANG3, 'BG');
     }
+    // Calculadora de diária (cálculo puro): roda os testes próprios, que usam o exemplo real estudado
+    require('child_process').execFileSync(process.execPath, [require('path').join(__dirname, 'teste-calculadora.js')], { stdio: 'inherit' });
     // Todo módulo local usado pelo servidor precisa estar no Dockerfile (senão o Cloud Run não sobe)
     const fsD = require('fs'), docker = fsD.readFileSync(require('path').join(__dirname, 'Dockerfile'), 'utf8');
     const locais = new Set(fsD.readdirSync(__dirname).filter(f => f.endsWith('.js') && f !== 'teste.js').flatMap(f => [...fsD.readFileSync(require('path').join(__dirname, f), 'utf8').matchAll(/require\('\.\/([\w-]+)'\)/g)].map(m => m[1] + '.js')));
