@@ -1,5 +1,5 @@
 {
-  "atualizado_em": "2026-10-03",
+  "atualizado_em": "2026-10-09",
   "videos": [
     {
       "id_drive": "1dHFSi5BJR-VxsuKcx0Q_fKZKphtSUYn1",
@@ -271,6 +271,447 @@
       ],
       "folha_quadros": "design/videos/catalogo/quadros/DJI_0114.jpg",
       "catalogado_em": "2026-10-03",
+      "status": "descrito, aguardando o dono"
+    },
+    {
+      "id_drive": "1M1YiS8EO5-2gxtDq_MtX7ljp6fCJyQYG",
+      "arquivo_local": "design/videos/brutos/IMG_6886.MOV",
+      "titulo_drive": "IMG_6886.MOV",
+      "nome_sugerido": "2026-10_deck_fogueira-entardecer_celular_01.mov",
+      "tecnico": {
+        "duracao_s": 8.34,
+        "resolucao": "1080x1920",
+        "orientacao": "vertical",
+        "fps": 30,
+        "audio": true,
+        "data_gravacao": "2026-10-08"
+      },
+      "origem": {
+        "dono_imagem": "a confirmar",
+        "credito": ""
+      },
+      "local": {
+        "tipo": "hotel",
+        "nome": "",
+        "confirmado": false
+      },
+      "ambiente": [
+        "externo"
+      ],
+      "acomodacao": "",
+      "area_hotel": [
+        "a confirmar"
+      ],
+      "atividades": [
+        "nenhuma"
+      ],
+      "pessoas": [
+        "sem pessoas"
+      ],
+      "criancas": false,
+      "rostos_identificaveis": false,
+      "luz": "fim de tarde",
+      "camera": "celular na mão",
+      "qualidade": "boa",
+      "descricao": "Caminhada lenta entrando no deck da fogueira ao entardecer: banco de madeira em L em primeiro plano, fogueira acesa em caixa de tijolos ao centro, banco curvo de alvenaria com almofadas e luz embutida ao fundo, palmeiras em volta e postes de luz acesos. Sem pessoas.",
+      "melhores_trechos": [
+        "T1 (0,0–4,2 s) gancho"
+      ],
+      "trechos": [
+        {
+          "id": "T1",
+          "ini": 0.0,
+          "fim": 4.2,
+          "descricao": "Entrada pelo poste de luz: banco em L, fogueira acesa e banco curvo com almofadas ao fundo.",
+          "ambiente": "externo",
+          "pessoas": "sem pessoas",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "gancho",
+            "fundo para texto"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T2",
+          "ini": 4.2,
+          "fim": 8.3,
+          "descricao": "Câmera vira para a direita sob as palmeiras: bancos de madeira, fogueira e trilha de pedrisco.",
+          "ambiente": "externo",
+          "pessoas": "sem pessoas",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "meio"
+          ],
+          "qualidade": "boa"
+        }
+      ],
+      "a_confirmar": [
+        "É uma área do Hotel Cabanas? Qual o nome do espaço (ex.: deck da fogueira) e onde fica?",
+        "Quando a fogueira é acesa (dias, horário) e se é para todos os hóspedes, sem custo?",
+        "Quem gravou (direito de uso: Hotel Cabanas?)"
+      ],
+      "folha_quadros": "design/videos/catalogo/quadros/IMG_6886.jpg",
+      "catalogado_em": "2026-10-09",
+      "status": "descrito, aguardando o dono"
+    },
+    {
+      "id_drive": "1kCmyuR6ytHHh9Lakvr2YjG5LuNmPggGp",
+      "arquivo_local": "design/videos/brutos/IMG_6887.MOV",
+      "titulo_drive": "IMG_6887.MOV",
+      "nome_sugerido": "2026-10_deck_fogueira-entardecer_celular_02.mov",
+      "tecnico": {
+        "duracao_s": 12.41,
+        "resolucao": "1080x1920",
+        "orientacao": "vertical",
+        "fps": 30,
+        "audio": true,
+        "data_gravacao": "2026-10-08"
+      },
+      "origem": {
+        "dono_imagem": "a confirmar",
+        "credito": ""
+      },
+      "local": {
+        "tipo": "hotel",
+        "nome": "",
+        "confirmado": false
+      },
+      "ambiente": [
+        "externo"
+      ],
+      "acomodacao": "",
+      "area_hotel": [
+        "a confirmar"
+      ],
+      "atividades": [
+        "nenhuma"
+      ],
+      "pessoas": [
+        "sem pessoas"
+      ],
+      "criancas": false,
+      "rostos_identificaveis": false,
+      "luz": "fim de tarde",
+      "camera": "celular na mão",
+      "qualidade": "boa",
+      "descricao": "Mesma entrada no deck da fogueira, um pouco mais longa: poste de luz, banco em L, fogueira acesa e banco curvo com almofadas e luz embutida; depois giro para a direita sob as palmeiras até a trilha de pedrisco. Sem pessoas.",
+      "melhores_trechos": [
+        "T1 (0,0–6,2 s) gancho"
+      ],
+      "trechos": [
+        {
+          "id": "T1",
+          "ini": 0.0,
+          "fim": 6.2,
+          "descricao": "Entrada pelo poste: banco em L em primeiro plano, fogueira acesa e banco curvo iluminado ao fundo.",
+          "ambiente": "externo",
+          "pessoas": "sem pessoas",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "gancho",
+            "fundo para texto"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T2",
+          "ini": 6.2,
+          "fim": 12.4,
+          "descricao": "Giro sob as palmeiras: bancos de madeira, fogueira ao fundo e trilha de pedrisco com poste aceso.",
+          "ambiente": "externo",
+          "pessoas": "sem pessoas",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "meio",
+            "fecho"
+          ],
+          "qualidade": "boa"
+        }
+      ],
+      "a_confirmar": [
+        "É uma área do Hotel Cabanas? Qual o nome do espaço (ex.: deck da fogueira) e onde fica?",
+        "Quando a fogueira é acesa (dias, horário) e se é para todos os hóspedes, sem custo?",
+        "Quem gravou (direito de uso: Hotel Cabanas?)"
+      ],
+      "folha_quadros": "design/videos/catalogo/quadros/IMG_6887.jpg",
+      "catalogado_em": "2026-10-09",
+      "status": "descrito, aguardando o dono"
+    },
+    {
+      "id_drive": "1huO9s17AGy2Gy1yngEAlDvRurhz52llT",
+      "arquivo_local": "design/videos/brutos/IMG_6888.MOV",
+      "titulo_drive": "IMG_6888.MOV",
+      "nome_sugerido": "2026-10_deck_fogueira-entardecer_celular_03.mov",
+      "tecnico": {
+        "duracao_s": 13.48,
+        "resolucao": "1080x1920",
+        "orientacao": "vertical",
+        "fps": 30,
+        "audio": true,
+        "data_gravacao": "2026-10-08"
+      },
+      "origem": {
+        "dono_imagem": "a confirmar",
+        "credito": ""
+      },
+      "local": {
+        "tipo": "hotel",
+        "nome": "",
+        "confirmado": false
+      },
+      "ambiente": [
+        "externo"
+      ],
+      "acomodacao": "",
+      "area_hotel": [
+        "a confirmar"
+      ],
+      "atividades": [
+        "nenhuma"
+      ],
+      "pessoas": [
+        "sem pessoas",
+        "pessoas ao longe (sem rosto)"
+      ],
+      "criancas": false,
+      "rostos_identificaveis": false,
+      "luz": "fim de tarde",
+      "camera": "celular na mão",
+      "qualidade": "boa",
+      "descricao": "Aproximação da fogueira: começa com a caixa de tijolos no centro do deck e chega perto do fogo (chamas e lenha bem visíveis), com o banco curvo de almofadas e a luz embutida ao fundo; depois afasta e mostra os bancos de madeira, um quiosque de sapê ao fundo e um adulto em pé ao longe no final.",
+      "melhores_trechos": [
+        "T1 (0,0–6,7 s) close do fogo"
+      ],
+      "trechos": [
+        {
+          "id": "T1",
+          "ini": 0.0,
+          "fim": 6.7,
+          "descricao": "Aproximação até o close da fogueira acesa, banco curvo com almofadas ao fundo.",
+          "ambiente": "externo",
+          "pessoas": "sem pessoas",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "gancho",
+            "fundo para texto"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T2",
+          "ini": 6.7,
+          "fim": 13.5,
+          "descricao": "Fogo em primeiro plano, depois afasta para os bancos e o quiosque de sapê; adulto em pé ao longe no fim.",
+          "ambiente": "externo",
+          "pessoas": "pessoas ao longe (sem rosto)",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "meio"
+          ],
+          "qualidade": "boa"
+        }
+      ],
+      "a_confirmar": [
+        "É uma área do Hotel Cabanas? Qual o nome do espaço (ex.: deck da fogueira) e onde fica?",
+        "Quando a fogueira é acesa (dias, horário) e se é para todos os hóspedes, sem custo?",
+        "Quem gravou (direito de uso: Hotel Cabanas?)",
+        "Adulto que aparece no fim (T2): pode aparecer no Instagram?"
+      ],
+      "folha_quadros": "design/videos/catalogo/quadros/IMG_6888.jpg",
+      "catalogado_em": "2026-10-09",
+      "status": "descrito, aguardando o dono"
+    },
+    {
+      "id_drive": "1nN6sJKz7V1HlyjGTHE_Of-SEqZX_4F96",
+      "arquivo_local": "design/videos/brutos/IMG_6889.MOV",
+      "titulo_drive": "IMG_6889.MOV",
+      "nome_sugerido": "2026-10_deck_fogueira-entardecer_celular_04.mov",
+      "tecnico": {
+        "duracao_s": 18.42,
+        "resolucao": "1080x1920",
+        "orientacao": "vertical",
+        "fps": 30,
+        "audio": true,
+        "data_gravacao": "2026-10-08"
+      },
+      "origem": {
+        "dono_imagem": "a confirmar",
+        "credito": ""
+      },
+      "local": {
+        "tipo": "hotel",
+        "nome": "",
+        "confirmado": false
+      },
+      "ambiente": [
+        "externo"
+      ],
+      "acomodacao": "",
+      "area_hotel": [
+        "a confirmar"
+      ],
+      "atividades": [
+        "nenhuma"
+      ],
+      "pessoas": [
+        "sem pessoas"
+      ],
+      "criancas": false,
+      "rostos_identificaveis": false,
+      "luz": "fim de tarde",
+      "camera": "celular na mão",
+      "qualidade": "boa",
+      "descricao": "Volta completa pelo deck da fogueira: começa no close do fogo, afasta mostrando o banco curvo com almofadas e luz embutida, passeia ao longo do banco e termina nos bancos de madeira com o quiosque de sapê e as palmeiras ao fundo. Movimento um pouco rápido no meio (leve tremor). Sem pessoas.",
+      "melhores_trechos": [
+        "T1 (0,0–6,1 s) close do fogo",
+        "T3 (12,3–18,4 s) fecho com o quiosque"
+      ],
+      "trechos": [
+        {
+          "id": "T1",
+          "ini": 0.0,
+          "fim": 6.1,
+          "descricao": "Close do fogo e afastamento: fogueira acesa no centro do deck, banco curvo iluminado atrás.",
+          "ambiente": "externo",
+          "pessoas": "sem pessoas",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "gancho"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T2",
+          "ini": 6.1,
+          "fim": 12.3,
+          "descricao": "Passeio ao longo do banco curvo com almofadas e a faixa de luz; fogueira à direita. Leve tremor.",
+          "ambiente": "externo",
+          "pessoas": "sem pessoas",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "meio"
+          ],
+          "qualidade": "tremida"
+        },
+        {
+          "id": "T3",
+          "ini": 12.3,
+          "fim": 18.4,
+          "descricao": "Fogueira, bancos de madeira e quiosque de sapê sob as palmeiras.",
+          "ambiente": "externo",
+          "pessoas": "sem pessoas",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "meio",
+            "fecho"
+          ],
+          "qualidade": "boa"
+        }
+      ],
+      "a_confirmar": [
+        "É uma área do Hotel Cabanas? Qual o nome do espaço (ex.: deck da fogueira) e onde fica?",
+        "Quando a fogueira é acesa (dias, horário) e se é para todos os hóspedes, sem custo?",
+        "Quem gravou (direito de uso: Hotel Cabanas?)"
+      ],
+      "folha_quadros": "design/videos/catalogo/quadros/IMG_6889.jpg",
+      "catalogado_em": "2026-10-09",
+      "status": "descrito, aguardando o dono"
+    },
+    {
+      "id_drive": "1SfYfzbWNTNIcF3oq7He0L0BR2Rtmwj60",
+      "arquivo_local": "design/videos/brutos/IMG_6890.MOV",
+      "titulo_drive": "IMG_6890.MOV",
+      "nome_sugerido": "2026-10_deck_fogueira-entardecer_celular_05.mov",
+      "tecnico": {
+        "duracao_s": 19.35,
+        "resolucao": "1080x1920",
+        "orientacao": "vertical",
+        "fps": 30,
+        "audio": true,
+        "data_gravacao": "2026-10-08"
+      },
+      "origem": {
+        "dono_imagem": "a confirmar",
+        "credito": ""
+      },
+      "local": {
+        "tipo": "hotel",
+        "nome": "",
+        "confirmado": false
+      },
+      "ambiente": [
+        "externo"
+      ],
+      "acomodacao": "",
+      "area_hotel": [
+        "a confirmar"
+      ],
+      "atividades": [
+        "nenhuma"
+      ],
+      "pessoas": [
+        "sem pessoas"
+      ],
+      "criancas": false,
+      "rostos_identificaveis": false,
+      "luz": "fim de tarde",
+      "camera": "celular na mão",
+      "qualidade": "boa",
+      "descricao": "Começa de cima, bem em cima da fogueira (lenha queimando na caixa com grelha), afasta para o deck e percorre o banco curvo com almofadas e luz embutida; termina nos bancos de madeira, no quiosque de sapê e no pergolado com trepadeira e poste aceso. Leve tremor no meio. Sem pessoas.",
+      "melhores_trechos": [
+        "T1 (0,0–6,5 s) fogo visto de cima",
+        "T3 (12,9–19,4 s) fecho"
+      ],
+      "trechos": [
+        {
+          "id": "T1",
+          "ini": 0.0,
+          "fim": 6.5,
+          "descricao": "Fogo visto de cima e afastamento até o deck com o banco curvo iluminado.",
+          "ambiente": "externo",
+          "pessoas": "sem pessoas",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "gancho",
+            "fundo para texto"
+          ],
+          "qualidade": "boa"
+        },
+        {
+          "id": "T2",
+          "ini": 6.5,
+          "fim": 12.9,
+          "descricao": "Passeio ao longo do banco curvo com almofadas; fogueira no centro. Leve tremor.",
+          "ambiente": "externo",
+          "pessoas": "sem pessoas",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "meio"
+          ],
+          "qualidade": "tremida"
+        },
+        {
+          "id": "T3",
+          "ini": 12.9,
+          "fim": 19.4,
+          "descricao": "Bancos de madeira, quiosque de sapê e pergolado com poste aceso.",
+          "ambiente": "externo",
+          "pessoas": "sem pessoas",
+          "atividade": "nenhuma",
+          "uso_sugerido": [
+            "fecho"
+          ],
+          "qualidade": "boa"
+        }
+      ],
+      "a_confirmar": [
+        "É uma área do Hotel Cabanas? Qual o nome do espaço (ex.: deck da fogueira) e onde fica?",
+        "Quando a fogueira é acesa (dias, horário) e se é para todos os hóspedes, sem custo?",
+        "Quem gravou (direito de uso: Hotel Cabanas?)"
+      ],
+      "folha_quadros": "design/videos/catalogo/quadros/IMG_6890.jpg",
+      "catalogado_em": "2026-10-09",
       "status": "descrito, aguardando o dono"
     }
   ]
