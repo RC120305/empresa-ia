@@ -98,6 +98,20 @@
   "molde": "design/ferramentas/animador/moldes/noite-letra-por-letra.json"
  },
  {
+  "id": "sabores-letra-que-salta",
+  "tipo": "video",
+  "nome": "Sabores · letra que salta",
+  "status": "em_teste",
+  "desc": "Uma palavra gigante em negrito que entra letra por letra, cada uma dando um pequeno salto; logo abaixo, uma frase em letra serifada e um pin com o lugar. Corta para um detalhe com uma frase curta em negrito.",
+  "quando": "Gastronomia, café da manhã, lanchonete: abrir com uma palavra de impacto (Sabores, Manhãs, Descanso) e fechar com uma informação útil.",
+  "exemplo": {
+   "video": "copia-sabores"
+  },
+  "obs": "Cópia do Reels de restaurante que você mandou (09/10): mesma fonte pesada, salto por letra (~14 letras/s), frase serifada, pin e corte com frase final.",
+  "animador": "receita",
+  "molde": "design/ferramentas/animador/moldes/sabores-letra-que-salta.json"
+ },
+ {
   "id": "arte-sem-faixa",
   "tipo": "criativo",
   "nome": "Sem faixa",

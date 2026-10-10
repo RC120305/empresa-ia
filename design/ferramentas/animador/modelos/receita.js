@@ -5,13 +5,13 @@
 //   ini, fim, texto ("\n" quebra a linha), destaque?: "palavra outra" (palavras em negrito/cor),
 //   x?: 0–1 (centro do bloco; ou a margem esquerda se alinhar=esquerda), y: 0–1 (centro vertical), largura?: 0–1,
 //   alinhar?: centro|esquerda|direita, tamanho?: px (em 1080 de largura), entrelinha?: 1.15,
-//   fonte?: montserrat|josefin|playfair|plexmono, peso?: 400, pesoDestaque?: 800, caixa?: alta|normal, espacamento?: em (entre letras), espacoPalavra?: em (entre palavras, padrão 0.27),
+//   fonte?: montserrat|josefin|playfair (itálico)|serif (Playfair reta)|plexmono, peso?: 400, pesoDestaque?: 800, caixa?: alta|normal, espacamento?: em (entre letras), espacoPalavra?: em (entre palavras, padrão 0.27),
 //   cor?: "#hex", corDestaque?: "#hex" (só quando destaqueEstilo=cor), destaqueEstilo?: negrito|cor,
 //   sombra?: suave|forte|nenhuma,
-//   entrada?: fade|desfoque|desfoque-palavra|desfoque-letra|palavra|letra|linha|subir|nenhuma,
+//   entrada?: fade|desfoque|desfoque-palavra|desfoque-letra|pop-letra|palavra|letra|linha|subir|nenhuma,
 //   duracaoEntrada?: s (fade/desfoque, padrão 0.5), intervalo?: s entre palavras/letras, atraso?: [s por palavra],
 //   saida?: fade|desfoque|nenhuma, duracaoSaida?: s}]}
-const FONTES_RECEITA = {montserrat: "Montserrat, sans-serif", josefin: "Josefin, 'Josefin Sans', sans-serif", playfair: "Playfair, 'Playfair Display', Georgia, serif", plexmono: "PlexMono, 'IBM Plex Mono', monospace"};
+const FONTES_RECEITA = {montserrat: "Montserrat, sans-serif", josefin: "Josefin, 'Josefin Sans', sans-serif", playfair: "Playfair, 'Playfair Display', Georgia, serif", serif: "Playfair, 'Playfair Display', Georgia, serif", plexmono: "PlexMono, 'IBM Plex Mono', monospace"};
 const SOMBRAS_RECEITA = {suave: "0 1px 10px rgba(0,0,0,.45), 0 0 2px rgba(0,0,0,.25)", forte: "0 2px 12px rgba(0,0,0,.65), 0 0 3px rgba(0,0,0,.5)", nenhuma: "none"};
 
 MODELOS["receita"] = (palco, r, {fps, w, h}) => {
@@ -41,14 +41,14 @@ MODELOS["receita"] = (palco, r, {fps, w, h}) => {
       ln.split(" ").filter(Boolean).forEach(p => {
         const d = dest.includes(limpa(p));
         spans.push(el("span", {fontFamily: fam, fontSize: tam + "px", lineHeight: t.entrelinha || 1.15,
-          fontWeight: d && !porCor ? pesoDest : pesoBase, fontStyle: t.fonte === "playfair" ? "italic" : "normal",
+          fontWeight: d && !porCor ? pesoDest : pesoBase, fontStyle: t.fonte === "playfair" ? "italic" : "normal",  // "serif" = Playfair reta
           letterSpacing: (t.espacamento ?? (alta ? 0.06 : 0)) + "em", textTransform: alta ? "uppercase" : "none",
           color: d && porCor ? (t.corDestaque || CORES.laranja) : (t.cor || "#FFFFFF"), textShadow: SOMBRAS_RECEITA[t.sombra] ?? SOMBRAS_RECEITA.suave,
           display: "inline-block", willChange: "opacity, filter, transform"}, bloco, p));
       });
     });
     const ent = t.entrada || "fade";
-    const porLetra = ent === "letra" || ent === "desfoque-letra";
+    const porLetra = ent === "letra" || ent === "desfoque-letra" || ent === "pop-letra";
     const unidades = porLetra ? spans.flatMap(s => { const tx = s.textContent; s.textContent = ""; return [...tx].map(ch => el("span", {display: "inline-block", whiteSpace: "pre"}, s, ch)); }) : spans;
     const ini = Math.round(t.ini * fps), fim = Math.round(t.fim * fps);
     const dEnt = Math.max(1, Math.round((t.duracaoEntrada ?? 0.5) * fps)), dSai = Math.max(1, Math.round((t.duracaoSaida ?? 0.3) * fps));
@@ -58,6 +58,8 @@ MODELOS["receita"] = (palco, r, {fps, w, h}) => {
     const aplica = (s, lf) => {
       if (ent === "nenhuma") { s.style.opacity = lf >= 0 ? 1 : 0; return; }
       if (ent === "letra") { s.style.opacity = lf >= 0 ? 1 : 0; return; }
+      // pop-letra: cada letra nasce pequena e cresce com um leve salto (molinha)
+      if (ent === "pop-letra") { const v = lf < 0 ? 0 : spring(lf, fps, {damping: 12, stiffness: 180}); s.style.opacity = lf < 0 ? 0 : Math.min(1, lf / 2); s.style.transform = `scale(${0.25 + 0.75 * v})`; s.style.transformOrigin = "50% 80%"; return; }
       if (ent === "palavra" || ent === "subir") { const v = spring(lf, fps, {damping: 14, stiffness: 120}); s.style.opacity = Math.min(1, Math.max(0, v)); s.style.transform = `translateY(${(1 - v) * (ent === "subir" ? 40 : 24)}px)`; return; }
       // desfoque: sai do borrado e ganha nitidez, com um leve zoom
       const v = interp(lf, [0, dEnt], [0, 1], ease.outCubic || (x => 1 - Math.pow(1 - x, 3)));
@@ -68,11 +70,12 @@ MODELOS["receita"] = (palco, r, {fps, w, h}) => {
       bloco.style.display = vis ? "flex" : "none"; if (!vis) return;
       const out = interp(f, [fim, fim + dSai], [1, 0]);
       const so = t.saida || "fade";
-      bloco.style.opacity = so === "nenhuma" ? (f < fim ? 1 : 0) : out;
+      const fora = so === "nenhuma" ? (f < fim ? 1 : 0) : out;  // 1 = ainda na tela
+      bloco.style.opacity = fora;
       bloco.style.filter = so === "desfoque" ? `blur(${(1 - out) * tam * 0.28}px)` : "none";
-      if (ent === "fade") { bloco.style.opacity = interp(lf, [0, dEnt], [0, 1]) * (so === "nenhuma" ? 1 : out); unidades.forEach(s => { s.style.opacity = 1; }); return; }
-      if (ent === "desfoque") { unidades.forEach(s => aplica(s, lf)); return; }
-      if (ent === "linha") { const v = spring(lf, fps, {damping: 16, stiffness: 110}); unidades.forEach(s => { s.style.opacity = 1; }); bloco.style.opacity = Math.min(1, v) * out; bloco.style.transform = `translateY(calc(-50% + ${(1 - v) * 30}px))`; return; }
+      if (ent === "fade") { bloco.style.opacity = interp(lf, [0, dEnt], [0, 1]) * fora; unidades.forEach(s => { s.style.opacity = 1; }); return; }
+      if (ent === "desfoque" || ent === "nenhuma") { unidades.forEach(s => aplica(s, lf)); return; }  // tudo junto, sem escalonar
+      if (ent === "linha") { const v = spring(lf, fps, {damping: 16, stiffness: 110}); unidades.forEach(s => { s.style.opacity = 1; }); bloco.style.opacity = Math.min(1, v) * fora; bloco.style.transform = `translateY(calc(-50% + ${(1 - v) * 30}px))`; return; }
       unidades.forEach((s, k) => aplica(s, lf - atrasoDe(k)));
     };
   });

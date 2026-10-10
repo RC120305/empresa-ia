@@ -1,0 +1,86 @@
+{
+ "referencia": "Reels @bonitoway/@miterrarestaurante (pedido ped-mv13nwdf, vídeo de 4 s enviado pelo dono em 09/10/2026): cena 1 de 3,5 s (pessoa saboreando) com 'Sabores' gigante em sans pesada (Montserrat Black) entrando letra por letra com salto (~14 letras/s), depois 'que vão além dos pratos' em serifada reta e '📍 Miterra Restaurante' em negrito; corte para o cardápio com frase em negrito de 2 linhas embaixo.",
+ "formato": {
+  "w": 1080,
+  "h": 1920,
+  "fps": 30
+ },
+ "cenas": [
+  {
+   "foto": "design/videos/2026-10/copia-sabores/foto-casal-cafe.jpg",
+   "dur": 3.5,
+   "zoom": "entrar",
+   "foco": 0.42
+  },
+  {
+   "foto": "design/videos/2026-10/copia-sabores/foto-cesta-frutas.jpg",
+   "dur": 2.7,
+   "zoom": "sair",
+   "foco": 0.42
+  }
+ ],
+ "legenda": {
+  "cor": "#FFFFFF",
+  "sombra": "suave",
+  "alinhar": "centro",
+  "x": 0.5,
+  "largura": 0.94,
+  "saida": "nenhuma"
+ },
+ "textos": [
+  {
+   "ini": 0.05,
+   "fim": 3.5,
+   "texto": "Sabores",
+   "fonte": "montserrat",
+   "peso": 900,
+   "tamanho": 158,
+   "espacamento": -0.01,
+   "y": 0.584,
+   "entrada": "pop-letra",
+   "intervalo": 0.07,
+   "entrelinha": 1.0
+  },
+  {
+   "ini": 0.7,
+   "fim": 3.5,
+   "texto": "que começam no café da manhã",
+   "fonte": "serif",
+   "peso": 400,
+   "tamanho": 64,
+   "y": 0.636,
+   "entrada": "fade",
+   "duracaoEntrada": 0.25,
+   "entrelinha": 1.1
+  },
+  {
+   "ini": 0.7,
+   "fim": 3.5,
+   "texto": "📍 Hotel Cabanas",
+   "fonte": "montserrat",
+   "peso": 800,
+   "tamanho": 52,
+   "y": 0.674,
+   "entrada": "fade",
+   "duracaoEntrada": 0.25
+  },
+  {
+   "ini": 3.5,
+   "fim": 6.2,
+   "texto": "O café da manhã está incluso,\ndas 6h30 às 9h30.",
+   "fonte": "montserrat",
+   "peso": 800,
+   "tamanho": 44,
+   "sombra": "forte",
+   "y": 0.805,
+   "entrada": "nenhuma",
+   "entrelinha": 1.2
+  }
+ ],
+ "escurecer": 0.2,
+ "musica": {
+  "arquivo": "design/videos/musicas/stereo_color-upbeat-acoustic-guitar-493692.mp3",
+  "inicioSeg": 0,
+  "volume": 0.8
+ }
+}
