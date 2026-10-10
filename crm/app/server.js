@@ -1456,13 +1456,18 @@ async function painelHotel(ini, fim, buscar = fetch) {
       antecedencia_media: ant.length ? Math.round(ant.reduce((a, b) => a + b, 0) / ant.length) : null,
       antecedencia_mediana: mediana(ant), antecedencia_n: ant.length,
       antecedencia_faixas: FAIXAS.map(([rotulo, de, ate]) => ({ faixa: rotulo, reservas: ant.filter(d => d >= de && d <= ate).length })),
+      origem: (() => { // estado de origem do hóspede (ficha no Silbeck); sem ficha = não informado
+        const m = new Map();
+        for (const r of vivas) { const k = r.origem ? (r.origem.uf || 'Exterior: ' + r.origem.pais) : 'Não informado'; const x = m.get(k) || { origem: k, reservas: 0, hospedes: 0, receita: 0 }; x.reservas++; x.hospedes += r.pax; x.receita = r2(x.receita + Number(r.valor_total)); m.set(k, x); }
+        return [...m.values()].sort((a, b) => (a.origem === 'Não informado') - (b.origem === 'Não informado') || b.reservas - a.reservas);
+      })(),
       antecedencia_canais: [...antPorCanal].map(([canal, l]) => ({ canal, reservas: l.length, mediana: mediana(l), media: Math.round(l.reduce((a, b) => a + b, 0) / l.length) })).sort((a, b) => b.reservas - a.reservas),
       canais: [...canais.values()].sort((a, b) => b.receita - a.receita) };
   };
   const r = { ok: true, periodo: { ini, fim, dias, ant_ini: antIni, ant_fim: antFim }, fonte: silbeck.MODO(), unidades,
     atual: resumoOc(oc, dias), anterior: resumoOc(ocAnt, dias), reservas: resumoRes(lista), reservas_ant: resumoRes(listaAnt), por_tipo: porTipo.sort((a, b) => b.ocupacao - a.ocupacao), erros };
   if (r.anterior) delete r.anterior.por_dia;
-  if (r.reservas_ant) { delete r.reservas_ant.canais; delete r.reservas_ant.antecedencia_faixas; delete r.reservas_ant.antecedencia_canais; }
+  if (r.reservas_ant) { delete r.reservas_ant.canais; delete r.reservas_ant.origem; delete r.reservas_ant.antecedencia_faixas; delete r.reservas_ant.antecedencia_canais; }
   cachePainel.set(chave, { ate: Date.now() + (erros.length ? 60e3 : 10 * 60e3), r });
   if (cachePainel.size > 50) cachePainel.delete(cachePainel.keys().next().value);
   return r;

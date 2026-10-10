@@ -2893,6 +2893,18 @@
       el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela' },
         el('thead', {}, el('tr', {}, ...['Canal', 'Reservas', 'Mediana', 'Média'].map((t, i) => el('th', { class: i ? 'n' : '', text: t })))),
         el('tbody', {}, ...r.antecedencia_canais.map(c => el('tr', {}, el('td', { text: c.canal }), el('td', { class: 'n', text: String(c.reservas) }), el('td', { class: 'n', text: c.mediana + ' d' }), el('td', { class: 'n', text: c.media + ' d' }))))))));
+    if (r && r.origem && r.origem.length) {
+      const conhecidas = r.origem.filter(o => o.origem !== 'Não informado'), semInfo = r.origem.find(o => o.origem === 'Não informado');
+      const NOME_UF = { AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais', PA: 'Pará', PB: 'Paraíba', PR: 'Paraná', PE: 'Pernambuco', PI: 'Piauí', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SP: 'São Paulo', SE: 'Sergipe', TO: 'Tocantins' };
+      const top = conhecidas.slice(0, 10), resto = conhecidas.slice(10);
+      if (resto.length) top.push(resto.reduce((x, o) => ({ origem: 'Outros (' + resto.length + ')', reservas: x.reservas + o.reservas, hospedes: x.hospedes + o.hospedes, receita: x.receita + o.receita }), { reservas: 0, hospedes: 0, receita: 0 }));
+      const pc = pctSoma100(top.map(o => o.reservas));
+      grade.append(pnBloco('!Origem dos hóspedes por estado', 'De onde vêm os hóspedes das reservas com entrada no período (estado na ficha do hóspede no Silbeck).' + (semInfo ? ' ' + semInfo.reservas + ' reserva(s) ainda sem estado na ficha não entram na conta.' : ''),
+        top.length ? pnBarras(top.map((o, i) => [(NOME_UF[o.origem] ? NOME_UF[o.origem] + ' (' + o.origem + ')' : o.origem), o.reservas, null, pnBrl0(o.receita), o.reservas + ' res. · ' + pc[i] + '%'])) : el('div', { class: 'vazio', text: 'Nenhuma reserva do período tem o estado do hóspede na ficha.' }),
+        top.length ? el('details', { class: 'pn-tabela-ver' }, el('summary', { text: 'Ver em tabela' }), el('div', { class: 'pn-rola' }, el('table', { class: 'pn-tabela' },
+          el('thead', {}, el('tr', {}, ...['Origem', 'Reservas', 'Hóspedes', 'Faturamento'].map((t, i) => el('th', { class: i ? 'n' : '', text: t })))),
+          el('tbody', {}, ...conhecidas.map(o => el('tr', {}, el('td', { text: NOME_UF[o.origem] || o.origem }), el('td', { class: 'n', text: String(o.reservas) }), el('td', { class: 'n', text: String(o.hospedes) }), el('td', { class: 'n', text: pnBrl0(o.receita) }))))))) : null));
+    }
     if (h.por_tipo.length) grade.append(pnBloco('Ocupação por acomodação', 'Quanto de cada tipo foi ocupado no período.',
       pnBarras(h.por_tipo.map(t => [t.nome, t.ocupacao, null, t.unidades + ' un.', pnNum1(t.ocupacao) + '%']))));
     box.append(grade);

@@ -647,6 +647,7 @@ falso.listen(0, () => {
     assert.ok(ph.por_tipo.length > 3 && ph.por_tipo.every(t => t.ocupacao >= 0 && t.ocupacao <= 100));
     assert.equal(ph.reservas.antecedencia_faixas.reduce((t, f) => t + f.reservas, 0), ph.reservas.antecedencia_n, 'as faixas somam todas as reservas com data');
     assert.ok(ph.reservas.antecedencia_mediana != null && ph.reservas.antecedencia_canais.length);
+    assert.ok(ph.reservas.origem.length && ph.reservas.origem.reduce((t, o) => t + o.reservas, 0) === ph.reservas.reservas, 'origem soma todas as reservas');
     assert.ok(!/Ana|Souza|@/.test(JSON.stringify(ph)), 'sem dados pessoais');
     assert.equal((await api('/api/painel-hotel?ini=' + emDias(0) + '&fim=' + emDias(400), null, 'token-equipe', 'GET')).status, 400);
     r = await api('/api/vagas?inicio=' + emDias(1) + '&dias=60', null, 'token-equipe', 'GET');
@@ -962,6 +963,9 @@ falso.listen(0, () => {
       assert.equal(S._resumoReserva({ id: 1, listaReservaItem: [{ status: 2, dataEntrada: '2026-11-01', dataSaida: '2026-11-03', valorTotalDiaria: 0, listaTotal: [{ diaria: { valor: 1500 } }], listaData: [{ valorDiaria: 1 }] }] }).valor_total, 1500);
       const rz = S._resumoReserva({ id: 2, listaReservaItem: [{ status: 2, dataEntrada: '2026-11-01', dataSaida: '2026-11-04', qtdeApartamento: 2, listaData: [{ valorDiaria: 700 }, { valorDiaria: 700 }, { valorDiaria: 800 }] }] });
       assert.deepEqual([rz.valor_total, rz.noites, rz.estadia], [4400, 6, 3]);
+      // Origem do hóspede: sigla ou nome do estado (sem acento); país de fora do Brasil
+      const org = h => S._resumoReserva({ id: 3, listaReservaItem: [{ status: 2, dataEntrada: '2026-11-01', dataSaida: '2026-11-02', listaHospede: h }] }).origem;
+      assert.deepEqual([org([{ estado: '' }, { estado: 'ms', pais: 'Brasil' }]), org([{ estado: 'São Paulo' }]), org([{ estado: 'X', pais: 'Argentina' }]), org([{ estado: '' }])], [{ uf: 'MS' }, { uf: 'SP' }, { pais: 'Argentina' }, null]);
       assert.deepEqual([rsm.codigo_empresa, rsm.comissao_pct, rsm.valor_total, rsm.sinal_pago, rsm.data_entrada, rsm.data_saida, rsm.cancelada, rsm.acomodacao], ['901', null, 600, 100, '2026-11-01', '2026-11-03', false, 'STANDARD']);
       const AG = 'abababab-abab-abab-abab-abababababab', passado = emDias(-10), saida = emDias(-8);
       agenciasF = [{ id: AG, nome: 'Rio Azul', codigo_silbeck: '901', comissao: 10, cobra_sinal: true, sinal_percentual: 30, fatura: true, fatura_prazo_dias: 30, eh_agencia: true }];

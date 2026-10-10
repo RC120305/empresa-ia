@@ -636,6 +636,18 @@ function valorDoItem(x) {
   return (x.listaData || []).reduce((t, y) => t + (Number(y.valorDiaria) || 0), 0) * (Number(x.qtdeApartamento) || 1);
 }
 const noitesDoItem = x => Math.max(0, Math.round((Date.parse(diaISO(x.dataSaida)) - Date.parse(diaISO(x.dataEntrada))) / 864e5));
+// Estado de origem do hóspede (ficha no Silbeck): sigla da UF; país quando não é o Brasil
+const UFS = { ACRE: 'AC', ALAGOAS: 'AL', AMAPA: 'AP', AMAZONAS: 'AM', BAHIA: 'BA', CEARA: 'CE', 'DISTRITO FEDERAL': 'DF', 'ESPIRITO SANTO': 'ES', GOIAS: 'GO', MARANHAO: 'MA',
+  'MATO GROSSO': 'MT', 'MATO GROSSO DO SUL': 'MS', 'MINAS GERAIS': 'MG', PARA: 'PA', PARAIBA: 'PB', PARANA: 'PR', PERNAMBUCO: 'PE', PIAUI: 'PI', 'RIO DE JANEIRO': 'RJ',
+  'RIO GRANDE DO NORTE': 'RN', 'RIO GRANDE DO SUL': 'RS', RONDONIA: 'RO', RORAIMA: 'RR', 'SANTA CATARINA': 'SC', 'SAO PAULO': 'SP', SERGIPE: 'SE', TOCANTINS: 'TO' };
+const SIGLAS = new Set(Object.values(UFS));
+function origemHospede(h) {
+  const tira = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim();
+  const pais = tira(h.pais), est = tira(h.estado);
+  if (pais && !/^(BRASIL|BRAZIL|BR|BRA)$/.test(pais)) return { pais: String(h.pais).trim() };
+  const uf = SIGLAS.has(est) ? est : UFS[est] || null;
+  return uf ? { uf } : null;
+}
 function resumoReserva(r) {
   const itens = r.listaReservaItem || [];
   const vivos = itens.filter(x => Number(x.status) !== 3);
@@ -654,7 +666,9 @@ function resumoReserva(r) {
     portal: String(r.nomePortal || '').trim() || null, cadastro: r.dataHora ? dia(r.dataHora) : null,
     pax: base.reduce((t, x) => t + ((Number(x.quantidadeAdulto) || 0) + (Number(x.quantidadeCrianca) || 0)) * (Number(x.qtdeApartamento) || 1), 0),
     noites: base.reduce((t, x) => t + noitesDoItem(x) * (Number(x.qtdeApartamento) || 1), 0), // diárias vendidas (apartamento × noite)
-    estadia: base.length ? Math.max(...base.map(noitesDoItem)) : 0 }; // noites que o hóspede fica
+    estadia: base.length ? Math.max(...base.map(noitesDoItem)) : 0, // noites que o hóspede fica
+    // Origem: o primeiro hóspede com estado (ou país) na ficha; o titular costuma vir primeiro
+    origem: base.flatMap(x => x.listaHospede || []).map(origemHospede).find(Boolean) || null };
 }
 // Relatório de ocupação do Silbeck (geral): por dia e totais do período
 async function ocupacao({ de, ate }, buscar = fetch) {
