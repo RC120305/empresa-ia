@@ -2581,6 +2581,15 @@ const API_EQUIPE = {
     if (corpo.comissao !== undefined) { const c = corpo.comissao === '' || corpo.comissao === null ? null : Number(corpo.comissao); if (c !== null && !(c >= 0 && c <= 100)) throw new ErroEnvio(400, 'Comissão de 0 a 100%.'); dados.comissao = c; }
     if (corpo.ativo !== undefined) dados.ativo = !!corpo.ativo;
     if (corpo.eh_agencia !== undefined) dados.eh_agencia = !!corpo.eh_agencia;
+    // Condições comerciais (dono, 10/10/2026): sinal para garantir a reserva e faturamento do restante
+    const numOuNulo = x => x === '' || x === null || x === undefined ? null : Number(String(x).replace(',', '.'));
+    if (corpo.cobra_sinal !== undefined) dados.cobra_sinal = !!corpo.cobra_sinal;
+    if (corpo.sinal_percentual !== undefined) { const p = numOuNulo(corpo.sinal_percentual); if (p !== null && !(p > 0 && p <= 100)) throw new ErroEnvio(400, 'Sinal de 1% a 100%.'); dados.sinal_percentual = p; }
+    if (corpo.fatura !== undefined) dados.fatura = !!corpo.fatura;
+    if (corpo.fatura_prazo_dias !== undefined) { const d = numOuNulo(corpo.fatura_prazo_dias); if (d !== null && !(Number.isInteger(d) && d >= 0 && d <= 180)) throw new ErroEnvio(400, 'Prazo da fatura de 0 a 180 dias.'); dados.fatura_prazo_dias = d; }
+    if (dados.cobra_sinal === true && corpo.sinal_percentual !== undefined && dados.sinal_percentual === null) throw new ErroEnvio(400, 'Diga quanto é o sinal (%).');
+    if (dados.cobra_sinal === false) dados.sinal_percentual = null;
+    if (dados.fatura === false) dados.fatura_prazo_dias = null;
     if (corpo.id) {
       if (!/^[0-9a-f-]{36}$/i.test(corpo.id)) throw new ErroEnvio(400, 'Agência inválida.');
       if (dados.nome === null) throw new ErroEnvio(400, 'Diga o nome da agência.');

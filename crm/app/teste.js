@@ -882,6 +882,17 @@ falso.listen(0, () => {
     assert.equal(chamadas.findLast(c => c.url === '/rest/v1/agencias').corpo.comissao, 12.5);
     assert.equal((await api('/api/agencia', { nome: 'X', comissao: 150 })).status, 400);
     assert.equal((await api('/api/agencia', { nome: '' })).status, 400);
+    // Condições da agência: sinal (%), faturamento do restante e vencimento
+    r = await api('/api/agencia', { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', cobra_sinal: true, sinal_percentual: '30', fatura: true, fatura_prazo_dias: '30' });
+    assert.equal(r.status, 200, await r.clone().text());
+    let cAg = chamadas.findLast(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/agencias?id=eq.')).corpo;
+    assert.deepEqual([cAg.cobra_sinal, cAg.sinal_percentual, cAg.fatura, cAg.fatura_prazo_dias], [true, 30, true, 30]);
+    r = await api('/api/agencia', { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', cobra_sinal: false, sinal_percentual: '', fatura: false, fatura_prazo_dias: '' });
+    cAg = chamadas.findLast(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/agencias?id=eq.')).corpo;
+    assert.deepEqual([cAg.cobra_sinal, cAg.sinal_percentual, cAg.fatura, cAg.fatura_prazo_dias], [false, null, false, null]);
+    assert.equal((await api('/api/agencia', { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', cobra_sinal: true, sinal_percentual: '' })).status, 400, 'sinal sem %');
+    assert.equal((await api('/api/agencia', { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', sinal_percentual: '150' })).status, 400);
+    assert.equal((await api('/api/agencia', { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', fatura_prazo_dias: '2.5' })).status, 400);
     // Agências sincronizadas com as Empresas do Silbeck (simulador: 4 empresas); opção 2 do dono: entram fora da aba
     {
       assert.equal((await api('/api/agencias/sincronizar', {})).status, 503, 'sem a migração 027');

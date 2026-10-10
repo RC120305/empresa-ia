@@ -1529,6 +1529,9 @@
     pintarAgencias();
   }
   const ehAgencia = a => a.eh_agencia !== false;
+  const pct = n => Number(n).toLocaleString('pt-BR') + '%';
+  const condicoesAgencia = a => [a.cobra_sinal === false ? 'Sem sinal' : a.sinal_percentual ? 'Sinal de ' + pct(a.sinal_percentual) : 'Sinal: falta definir o %',
+    a.fatura ? 'restante faturado' + (a.fatura_prazo_dias != null ? ' (vence ' + a.fatura_prazo_dias + ' dias após o check-out)' : '') : 'restante pago no hotel'].join(' · ');
   function pintarAgencias() {
     const q = semAcento($('ag-busca').value.trim()), qd = q.replace(/\D/g, '');
     const base = agVer === 'agencias' ? agencias.filter(ehAgencia) : agencias.filter(a => a.silbeck_id);
@@ -1544,6 +1547,7 @@
       box.append(el('div', { class: 'cartao item-cartao' + (a.ativo ? '' : ' inativo') },
         el('h3', {}, a.nome, a.silbeck_id ? el('small', { text: 'Silbeck' + (a.codigo_silbeck ? ' cód. ' + a.codigo_silbeck : '') }) : el('small', { class: 'ag-pendente', text: 'Pendente no Silbeck' })),
         el('p', { text: [a.cnpj ? 'CNPJ ' + a.cnpj : '', a.comissao != null ? 'Comissão ' + Number(a.comissao).toLocaleString('pt-BR') + '%' : ''].filter(Boolean).join(' · ') || 'Sem CNPJ' }),
+        ehAgencia(a) && 'cobra_sinal' in a ? el('p', { class: 'ag-cond', text: condicoesAgencia(a) }) : null,
         el('p', { text: [a.telefone, a.email].filter(Boolean).join(' · ') || 'Sem contato' }),
         !a.silbeck_id && !agSemSync ? el('p', { class: 'dica', text: 'Cadastre no Silbeck com o mesmo CNPJ: na próxima sincronização o CRM liga os dois sozinho.' }) : null,
         a.observacoes ? el('p', { text: a.observacoes }) : null,
@@ -1560,10 +1564,18 @@
     abrirForm(a.id ? 'Editar agência' : 'Nova agência', [
       ...(doSilbeck ? [] : [{ k: 'nome', rotulo: 'Nome fantasia', valor: a.nome, largo: true }, { k: 'cnpj', rotulo: 'CNPJ', valor: a.cnpj, dica: '00.000.000/0000-00 (o mesmo do Silbeck: é por ele que o CRM liga os dois)' }]),
       { k: 'comissao', rotulo: 'Comissão (%)', tipo: 'number', valor: a.comissao ?? '', at: { min: '0', max: '100', step: '0.5' } },
+      ...(a.id && !('cobra_sinal' in a) ? [{ tipo: 'nota', rotulo: 'Sinal e faturamento: falta rodar a migração 028 no Supabase.' }] : [
+        { k: 'cobra_sinal', rotulo: 'Cobra sinal para garantir a reserva', tipo: 'check', valor: a.cobra_sinal !== false },
+        { k: 'sinal_percentual', rotulo: 'Sinal (% do total)', tipo: 'number', valor: a.sinal_percentual ?? '', dica: 'Ex.: 30', at: { min: '1', max: '100', step: '1' } },
+        { k: 'fatura', rotulo: 'Fatura o restante para a agência', tipo: 'check', valor: !!a.fatura },
+        { k: 'fatura_prazo_dias', rotulo: 'Vencimento da fatura (dias após o check-out)', tipo: 'number', valor: a.fatura_prazo_dias ?? '', dica: 'Ex.: 30', at: { min: '0', max: '180', step: '1' } }]),
       { k: 'telefone', rotulo: 'WhatsApp do contato', tipo: 'tel', valor: a.telefone },
       { k: 'email', rotulo: 'E-mail de reservas', tipo: 'email', valor: a.email },
       { k: 'observacoes', rotulo: 'Observações', tipo: 'textarea', valor: a.observacoes, largo: true },
-    ], async v => { await chamarApi('/api/agencia', { ...(a.id ? { id: a.id } : {}), ...v }); toast(doSilbeck || a.id ? 'Agência salva.' : 'Agência salva. Cadastre no Silbeck com o mesmo CNPJ para ligar os dois.'); carregarAgencias(); });
+    ], async v => {
+      if ('cobra_sinal' in v && !v.cobra_sinal) v.sinal_percentual = '';
+      if ('fatura' in v && !v.fatura) v.fatura_prazo_dias = '';
+      await chamarApi('/api/agencia', { ...(a.id ? { id: a.id } : {}), ...v }); toast(doSilbeck || a.id ? 'Agência salva.' : 'Agência salva. Cadastre no Silbeck com o mesmo CNPJ para ligar os dois.'); carregarAgencias(); });
   }
   $('ag-nova').addEventListener('click', () => formAgencia(null));
   $('ag-busca').addEventListener('input', pintarAgencias);
