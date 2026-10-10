@@ -646,3 +646,4 @@ section[data-painel="pagamentos"]{gap:10px;overflow:hidden}
 .apto-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
 .apto-soltas summary{cursor:pointer;font-size:13px;padding:4px 0}
 .gal-acoes{display:flex;flex-wrap:wrap;gap:4px}
+#con-busca{flex:1;min-width:200px}
