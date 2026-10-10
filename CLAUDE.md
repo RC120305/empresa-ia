@@ -17,6 +17,7 @@ Este repositório é uma "empresa" de agentes de IA que trabalham para o **Hotel
 - `design/`: kit do Designer de Criativos (`modelos/`, `ferramentas/`) e peças prontas em `pecas/`.
 - `social/`: planos e análises do Estrategista de Social Media e Tráfego.
 - `.claude/skills/aprender-youtube/`: skill que lê as transcrições de vídeos/canais do YouTube (`ferramentas/youtube/transcrever.py`) e gera cadernos em `contexto/aprendizados/` para a RH aplicar nos funcionários. Acione com `/aprender-youtube <link>`. Requer `www.youtube.com` liberado na rede do ambiente.
+- `.claude/skills/aprender-curso/` + `ferramentas/curso/estudar_curso.py`: usa a sessão de login do dono em um curso online comprado, extrai as aulas (fora do git, em `conhecimento/cursos/`) e gera uma **skill portátil** com a síntese. Acione com `/aprender-curso <link>`. Senha nunca no chat.
 - **Produção de conteúdo do Instagram (skills que orquestram a equipe):**
   - `.claude/skills/conteudo-mensal/`: `/conteudo-mensal <mês>`: pauta (Estrategista) → OK do dono → textos (Marketing) → artes (Designer) → publicação no Drive (pasta "Conteúdo Instagram"). Perfil de voz e plano de postagem em `references/perfil-cabanas.md`.
   - `.claude/skills/alterar-conteudo/`: `/alterar-conteudo`: refaz posts existentes, com proposta + OK antes de reescrever.
