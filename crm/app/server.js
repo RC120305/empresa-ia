@@ -1422,7 +1422,9 @@ async function painelHotel(ini, fim, buscar = fetch) {
       t.vagas.forEach(n => { if (n != null) { x.livres += Number(n); x.dias++; } });
       tipos.set(t.codigo, x);
     }
-    porTipo = [...tipos.values()].filter(t => t.total > 0 && t.dias).map(t => ({ codigo: t.codigo, nome: t.nome, unidades: t.total, ocupacao: Math.round(1000 * Math.max(0, 1 - t.livres / (t.total * t.dias))) / 10 }));
+    // Ocupação de cada tipo contra as unidades DELE (3 Cabanas Casal × 31 noites = 93 diárias possíveis)
+    porTipo = [...tipos.values()].filter(t => t.total > 0 && t.dias).map(t => { const possiveis = t.total * t.dias, vendidas = Math.max(0, possiveis - t.livres);
+      return { codigo: t.codigo, nome: t.nome, unidades: t.total, possiveis, vendidas, ocupacao: Math.round(1000 * vendidas / possiveis) / 10 }; });
     unidades = porTipo.reduce((s, t) => s + t.unidades, 0);
   } catch (e) { erros.push('acomodações: ' + String(e.message || e).slice(0, 120)); }
   const resumoOc = (o, nDias) => {

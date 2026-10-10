@@ -644,7 +644,8 @@ falso.listen(0, () => {
     assert.ok(ph.unidades > 0 && ph.atual.ocupacao >= 0 && ph.atual.ocupacao <= 100 && ph.atual.por_dia.length === 61, JSON.stringify(ph.atual).slice(0, 300));
     assert.ok(ph.atual.receita > 0 && ph.atual.adr > 0 && ph.atual.revpar > 0 && ph.atual.revpar <= ph.atual.adr, 'RevPAR nunca passa da diária média');
     assert.ok(ph.reservas.reservas > 0 && ph.reservas.canais.length && ph.reservas.noites_por_reserva > 0 && ph.reservas.pax_por_reserva > 0, JSON.stringify(ph.reservas).slice(0, 300));
-    assert.ok(ph.por_tipo.length > 3 && ph.por_tipo.every(t => t.ocupacao >= 0 && t.ocupacao <= 100));
+    assert.ok(ph.por_tipo.length > 3 && ph.por_tipo.every(t => t.ocupacao >= 0 && t.ocupacao <= 100 && t.possiveis === t.unidades * 61 && Math.abs(t.ocupacao - 100 * t.vendidas / t.possiveis) < 0.1), 'cada tipo contra as próprias unidades');
+    assert.ok(ph.por_tipo.every((t, i, l) => !i || l[i - 1].ocupacao >= t.ocupacao), 'ranking do maior para o menor');
     assert.equal(ph.reservas.antecedencia_faixas.reduce((t, f) => t + f.reservas, 0), ph.reservas.antecedencia_n, 'as faixas somam todas as reservas com data');
     assert.ok(ph.reservas.antecedencia_mediana != null && ph.reservas.antecedencia_canais.length);
     assert.ok(ph.reservas.origem.length && ph.reservas.origem.reduce((t, o) => t + o.reservas, 0) === ph.reservas.reservas, 'origem soma todas as reservas');

@@ -2905,8 +2905,8 @@
           el('thead', {}, el('tr', {}, ...['Origem', 'Reservas', 'Hóspedes', 'Faturamento'].map((t, i) => el('th', { class: i ? 'n' : '', text: t })))),
           el('tbody', {}, ...conhecidas.map(o => el('tr', {}, el('td', { text: NOME_UF[o.origem] || o.origem }), el('td', { class: 'n', text: String(o.reservas) }), el('td', { class: 'n', text: String(o.hospedes) }), el('td', { class: 'n', text: pnBrl0(o.receita) }))))))) : null));
     }
-    if (h.por_tipo.length) grade.append(pnBloco('Ocupação por acomodação', 'Quanto de cada tipo foi ocupado no período.',
-      pnBarras(h.por_tipo.map(t => [t.nome, t.ocupacao, null, t.unidades + ' un.', pnNum1(t.ocupacao) + '%']))));
+    if (h.por_tipo.length) grade.append(pnBloco('!Ranking das acomodações', 'Ocupação de cada tipo contando só as unidades dele: diárias vendidas ÷ (unidades do tipo × noites do período). Ex.: 3 Cabanas Casal em 31 noites = 93 diárias possíveis.',
+      pnBarras(h.por_tipo.map((t, i) => [(i + 1) + 'º ' + t.nome, t.ocupacao, null, t.vendidas != null ? t.vendidas + ' de ' + t.possiveis + ' diárias · ' + t.unidades + ' un.' : t.unidades + ' un.', pnNum1(t.ocupacao) + '%']))));
     box.append(grade);
   }
   function pnTile(rotulo, num, sub, delta) {
