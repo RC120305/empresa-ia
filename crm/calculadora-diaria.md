@@ -19,38 +19,76 @@ Origem: estudo do curso "CDR – Calculadora da Diária Rentável" (Viver de Pou
 
 **Tipos de quarto (até 12):** nome, quantidade, capacidade, multiplicador (duplo padrão = 1,00). Referências do modelo: single 0,55–0,65; varanda 1,05–1,15; vista 1,15–1,25; hidro 1,30–1,50; triplo 1,25–1,35; 4 pessoas 1,45–1,60; suíte master 1,55–1,80; 5–6 pessoas 1,70–2,00; banheiro compartilhado 0,40–0,55.
 
-## 3. Cálculo (conferido contra o exemplo preenchido)
+## 3. Cálculo (todas as fórmulas conferidas, centavo a centavo, contra o exemplo preenchido)
 ```
-F  = soma dos custos fixos mensais
-V  = soma dos custos variáveis por diária
-disponíveis = quartos × 30
-vendidas    = disponíveis × ocupação
-custo_fixo_por_diária = F / vendidas
-custo_total = custo_fixo_por_diária + V          # "diária amigo" (lucro zero)
-diária_limpa = custo_total × (1 + margem)
-preço_com_taxas(p) = diária_limpa / (1 − imposto − p)   # p = taxa do cartão, comissão do canal etc.
-ponto_de_equilíbrio(%) = F / (diária_atual − V) / disponíveis
-lucro_mensal = vendidas × (diária_atual × (1 − imposto) − V) − F
-faturamento_potencial = disponíveis × diária_atual ; estimado = vendidas × diária_atual
+F  = soma dos custos fixos mensais          V = soma dos custos variáveis por diária (duplo)
+disponíveis = quartos × 30                  vendidas = disponíveis × ocupação
+custo_total = F / vendidas + V              # DIÁRIA AMIGO (lucro zero; "nunca venda abaixo disso")
+limpa   = custo_total × (1 + margem)        # markup sobre o custo
+base    = limpa / (1 − imposto)             # imposto, sem cartão (à vista)
+padrão  = limpa / (1 − imposto − cartão)    # preço de tabela
+booking = limpa / (1 − imposto − comissão_booking − cartão)
+airbnb  = limpa / (1 − imposto − comissão_airbnb)             # sem taxa de cartão
+parcelada = limpa / (1 − imposto − cartão − juros_mês × parcelas)
+débito  = limpa / (1 − imposto − taxa_débito)
+(agência: mesmo padrão do Booking, com a comissão da agência)
+
+diferença = atual − padrão ; % = diferença / padrão ; situação: atual < padrão → "abaixo do padrão"
+faturamento_potencial = disponíveis × padrão ; estimado = vendidas × atual
+custo_variável_mensal = V × vendidas ; custo_total_mensal = F + V × vendidas
+margem_de_contribuição = atual − V ; % = margem / atual
+ponto_de_equilíbrio_diárias = F / margem ; em % = diárias / disponíveis      # ignora o imposto
+lucro_mensal = vendidas × (atual × (1 − imposto) − V) − F ; sobra_por_diária = lucro / vendidas
 ```
-**Caso de teste (exemplo do curso, hostel de 6 quartos):** F = 11.354, V = 62, ocupação 35%, margem 20%, imposto 6%, cartão 3,8%, diária atual 300 → disponíveis 180; vendidas 63; fixo/diária 180,22; custo total **242,22**; padrão com cartão **322,25**; ponto de equilíbrio **26,5%**; lucro mensal **R$ 2.506**. O código novo só vale se reproduzir esses números.
+Observação: os percentuais **somam no denominador** (não em cascata).
 
-Observações do método: as taxas somam *no denominador* (não em cascata); o ponto de equilíbrio usa a diária atual e **ignora** o imposto; o lucro usa a diária atual **com** imposto. Alerta do dashboard: "abaixo do padrão" quando diária atual < preço padrão.
+### Preço por tipo de quarto e temporada
+```
+preço(quarto, canal, temporada) = preço_do_canal × multiplicador_do_quarto × multiplicador_da_temporada
+diária mínima do quarto = custo_total × multiplicador_do_quarto
+médio anual do quarto  = padrão × multiplicador_do_quarto
+```
+Temporadas: dias baixa e alta são informados; média = 365 − baixa − alta. Os três multiplicadores são normalizados para a **média ponderada pelos dias ser 1,00** (a receita anual do quarto não muda; só se distribui entre as temporadas). No exemplo: baixa 0,5594 (150 dias), média 1,2375 (185), alta 1,7387 (30). Quartos vazios da tabela são ignorados.
 
-## 4. Saídas
-- Diária amigo, limpa, só com imposto, com cartão (padrão), por canal (Booking, Airbnb, agência), parcelada (com juros) e no débito. A fórmula exata de canal, parcelado e débito não foi vista na planilha: usar o mesmo padrão do cartão (`preço_com_taxas`) e, no parcelado, acrescentar o juros; **validar quando tivermos os números do exemplo**.
-- Indicadores: ponto de equilíbrio (ocupação e nº de diárias), lucro mensal, custo fixo e variável por diária, margem de contribuição, faturamento potencial e estimado.
-- Temporadas (baixa/média/alta): dias, ocupação esperada (exemplo: 10%, 35%, 70%) e multiplicador de preço (exemplo: 0,56×, 1,24×, 1,74×; média ponderada pelos dias ≈ 1). **A fórmula dos multiplicadores não ficou clara.** Proposta própria: o usuário informa o multiplicador de cada temporada (com sugestão) e o sistema normaliza para a média ponderada pelos dias ser 1, de modo que a receita anual não mude.
-- Preço por tipo de quarto: `preço = diária_do_canal × multiplicador_do_quarto × multiplicador_da_temporada`, com piso ("mínima") e média anual. Arredondar para o inteiro mais próximo.
+### Casos de teste (o código novo só vale se reproduzir estes números)
+Entrada: 6 quartos (3 Duplo Standard 1,00; 2 Vista Mar 1,20; 1 Família 1,55); ocupação 35%; baixa 150 dias, alta 30; diária atual 300; margem 20%; imposto 6%; cartão 3,8%; débito 2%; Booking 13%; Airbnb 10%; 5 parcelas a 2,5%; F = 11.354 (23 linhas); V = 62 (10 linhas).
+
+| Saída | Esperado |
+|---|---|
+| disponíveis / vendidas | 180 / 63 |
+| custo fixo por diária / total (amigo) | 180,22 / **242,22** |
+| limpa / base / padrão | 290,67 / 309,22 / **322,25** |
+| Booking / Airbnb | 376,51 / 346,03 |
+| parcelada / débito | 374,09 / 315,94 |
+| diferença vs padrão | −22,25 (−6,9%), abaixo do padrão |
+| faturamento potencial / estimado | 58.004,43 / 18.900,00 |
+| custo variável mensal / custo total mensal | 3.906 / 15.260 |
+| margem de contribuição | 238,00 (79,3%) |
+| ponto de equilíbrio | 47,7 diárias (26,5%) |
+| lucro mensal / sobra por diária | 2.506,00 / 39,78 |
+| Duplo Standard, venda direta: baixa/média/alta | 180,25 / 398,78 / 560,29 |
+| Duplo Vista Mar, venda direta | 216,30 / 478,54 / 672,34 |
+| Família, venda direta | 279,39 / 618,11 / 868,44 |
+| Duplo Standard, Booking | 210,60 / 465,93 / 654,63 |
+| mínima / médio anual (Standard, Vista, Família) | 242,22/322,25; 290,67/386,70; 375,44/499,48 |
+
+(Diferenças de 1 centavo são aceitáveis: a planilha arredonda os multiplicadores antes.)
+
+## 4. Saídas da tela
+- **Cabeçalho do resultado:** alerta (abaixo/ok), diária amigo, padrão e atual.
+- **Indicadores:** ponto de equilíbrio (% e diárias), lucro mensal, custos fixo e variável por diária, faturamento potencial e estimado.
+- **Preço recomendado por canal:** venda direta (base), Booking, Airbnb (e agência, parcelada e débito).
+- **Tabela por quarto:** baixa/média/alta em venda direta e Booking, mínima e médio anual.
+- **Comparar cenários** (extra nosso, o original não tem).
 
 ## 5. Como encaixar no CRM (proposta)
-- **Onde:** nova tela no Painel do hotel ("Calculadora de diária"), na área do dono. Back-end no `crm/app/server.js` (rotas `GET/POST /api/calculadora-diaria`), cálculo em módulo puro `crm/app/calculadora.js` com testes do caso acima; migração `030_calculadora_diaria.sql` para salvar cenários (nome, data, entradas e resultados em JSON).
-- **Dados que já temos para pré-preencher** (não digitar de novo): quartos e tipos (cadastro de acomodações, migração 026), ocupação, diária média e diárias vendidas (Painel/Silbeck, `GET /api/painel-hotel`), taxas e comissões de agência (cadastro de agências, migrações 027–029). Custos fixos e variáveis o dono informa uma vez e o sistema guarda.
+- **Onde:** nova tela no Painel do hotel ("Calculadora de diária"), na área do dono. Back-end no `crm/app/server.js` (rotas `GET/POST /api/calculadora-diaria`), cálculo em módulo puro `crm/app/calculadora.js` com os testes da seção 3; migração `030_calculadora_diaria.sql` para salvar cenários (nome, data, entradas e resultados em JSON).
+- **Dados que já temos para pré-preencher:** quartos e tipos (acomodações, migração 026), ocupação, diária média e diárias vendidas (Painel/Silbeck, `GET /api/painel-hotel`), comissões e condições das agências (migrações 027–029). Custos fixos e variáveis o dono informa uma vez e o sistema guarda.
 - **Cenários:** guardar versões ("hoje", "se a ocupação subir 10 pontos", "com margem de 30%") e comparar lado a lado; reestudo sugerido a cada 3 meses (aviso no sino).
-- **Gilberto/vendas:** o piso por temporada pode alimentar a política de desconto (não oferecer abaixo da "diária amigo" sem aprovação do dono).
-- **Regras:** só o dono vê e edita; nada é publicado nem muda tarifa no Silbeck sozinho: a calculadora recomenda, o dono decide.
+- **Gilberto/vendas:** a diária amigo do tipo de quarto e da temporada pode servir de piso para descontos (nunca abaixo sem aprovação do dono).
+- **Regras:** só o dono vê e edita; a calculadora recomenda, o dono decide; nada muda tarifa no Silbeck sozinho.
 
-## 6. O que falta para fechar
-1. Fórmulas de canal, parcelado, débito e dos multiplicadores de temporada (abas 2 e 4 da planilha): confirmar com números do exemplo.
-2. Custos reais do Hotel Cabanas (fixos e variáveis) e as taxas efetivas de cada canal.
-3. Decisão do dono sobre os multiplicadores de temporada que quer usar.
+## 6. Decisões em aberto
+1. **Multiplicadores de temporada:** a planilha mostra 0,56× / 1,24× / 1,74× (ocupações esperadas 10% / 35% / 70%), mas não deu para deduzir a regra que os gera. Proposta nossa: o dono informa a relação entre temporadas (sugestão do exemplo: baixa ≈ 0,45 e alta ≈ 1,40 da média) e o sistema normaliza para média ponderada 1,00. Melhor ainda: sugerir a partir das ocupações reais por mês do Silbeck.
+2. **Custos do Hotel Cabanas:** fixos (23 linhas), variáveis por diária (10 linhas) e taxas efetivas de cada canal.
+3. **Impostos e canais próprios:** o regime tributário e as comissões reais (Booking, Airbnb, agências, Expedia, Decolar...) podem ser mais que os da planilha.
