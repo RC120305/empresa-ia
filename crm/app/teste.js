@@ -45,6 +45,7 @@ const MP4_DRIVE = Buffer.concat([Buffer.from('\x00\x00\x00\x18ftypmp42'), Buffer
 let bbPago = false;
 const configF = {}, pedidosParceiroF = [];
 let agenciasF = null;
+const agResF = [], agFatF = [], agPagF = [];
 const pushF = [], pushRecebidos = []; // inscrições de avisos no celular e o que o "serviço de push" recebeu
 let iaOferta = '';
 const RAIZ_DRIVE = '1j2JGPBtyArVGkrOpj-ZdwmJ5w0qHlsO5';
@@ -256,6 +257,26 @@ const falso = http.createServer((req, res) => {
     if (req.url.startsWith('/rest/v1/tarefas?id=eq.') && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
     if (req.url.startsWith('/rest/v1/produtos?ativo=eq.true')) return responder(200, PRODS);
     if (req.url.startsWith('/rest/v1/respostas?ativo=eq.true')) return responder(200, [{ id: 'r-1', pergunta: 'Aceita pet?', resposta: 'Não aceitamos pets, {nome}.', fixa: true }, { id: 'r-2', pergunta: 'Fica longe do centro?', resposta: 'São 6 km de asfalto.', fixa: false }, { id: 'r-3', pergunta: 'Qual o horário do café?', resposta: 'O café é das 7h às 10h.', fixa: false, origem: 'correcao' }]);
+    // Financeiro das agências (029): reservas, faturas e pagamentos
+    if (/^\/rest\/v1\/agencia_(reservas|faturas|pagamentos)/.test(req.url)) {
+      const u = new URL(req.url, 'http://x'), tab = { agencia_reservas: agResF, agencia_faturas: agFatF, agencia_pagamentos: agPagF }[u.pathname.split('/').pop()];
+      const filtrar = l => l.filter(x => [...u.searchParams].every(([k, v]) => ['select', 'order', 'limit', 'on_conflict'].includes(k) ? true
+        : v.startsWith('eq.') ? String(x[k]) === v.slice(3) : v.startsWith('in.(') ? v.slice(4, -1).split(',').includes(String(x[k])) : v === 'is.null' ? x[k] == null : v.startsWith('gte.') ? String(x[k]) >= v.slice(4) : true));
+      if (req.method === 'GET') return responder(200, filtrar(tab));
+      if (req.method === 'POST') {
+        const novos = (Array.isArray(json) ? json : [json]).map(x => {
+          const ja = u.searchParams.get('on_conflict') && tab.find(y => y.silbeck_id === x.silbeck_id);
+          if (ja) return Object.assign(ja, x);
+          const n = { id: crypto.randomUUID(), ...(tab === agFatF ? { numero: tab.length + 1, situacao: 'aberta', emitida_em: '2026-10-10' } : {}), ...(tab === agResF ? { fatura_id: null, cancelada: false } : {}), ...x }; tab.push(n); return n;
+        });
+        return responder(201, novos);
+      }
+      if (req.method === 'PATCH') { filtrar(tab).forEach(x => Object.assign(x, json)); res.writeHead(204); return res.end(); }
+    }
+    if (req.url.startsWith('/rest/v1/agencias?') && req.method === 'GET' && !req.url.startsWith('/rest/v1/agencias?select=')) {
+      const id = (req.url.match(/[?&]id=eq\.([^&]+)/) || [])[1];
+      return agenciasF ? responder(200, agenciasF.filter(a => !id || a.id === id)) : responder(400, {});
+    }
     if (req.url.startsWith('/rest/v1/agencias?select=') && req.method === 'GET') return agenciasF ? responder(200, agenciasF) : responder(400, { message: 'column agencias.silbeck_id does not exist' });
     if ((req.url === '/rest/v1/produtos' || req.url === '/rest/v1/agencias' || req.url === '/rest/v1/respostas') && req.method === 'POST') { if (json && json.codigo === 'DUP') return responder(409, {}); res.writeHead(201); return res.end(); }
     if (/^\/rest\/v1\/(produtos|agencias|respostas|sugestoes)\?id=eq\./.test(req.url) && req.method === 'PATCH') { res.writeHead(204); return res.end(); }
@@ -915,6 +936,54 @@ falso.listen(0, () => {
       r = await api('/api/agencia', { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', eh_agencia: true });
       assert.equal(r.status, 200); assert.equal(chamadas.findLast(c => c.metodo === 'PATCH' && c.url.startsWith('/rest/v1/agencias?id=eq.')).corpo.eh_agencia, true);
       agenciasF = null; delete configF.agencias_sync;
+    }
+    // Financeiro das agências: reservas do Silbeck pelo código da empresa, sinal, fatura por período e pagamentos
+    {
+      const S = require('./silbeck'), listaAntes = S.listaReservas;
+      // Resumo de uma reserva do Silbeck: ignora item cancelado e adiantamento estornado
+      const rsm = S._resumoReserva({ id: 9, codigoEmpresa: ' 901 ', percentualComissaoEmpresa: 0, titular: 'X', listaReservaItem: [
+        { status: 2, statusDescricao: 'CONFIRMADA', nomeTipoApartamento: 'STANDARD', dataEntrada: '2026-11-01T00:00:00', dataSaida: '2026-11-03', valorTotalDiaria: 600, listaAdiantamento: [{ valor: 100, situacao: 'Ativo' }, { valor: 50, situacao: 'Estornado' }] },
+        { status: 3, nomeTipoApartamento: 'CABANA', dataEntrada: '2026-11-01', dataSaida: '2026-11-05', valorTotalDiaria: 900, listaAdiantamento: [] }] });
+      assert.deepEqual([rsm.codigo_empresa, rsm.comissao_pct, rsm.valor_total, rsm.sinal_pago, rsm.data_entrada, rsm.data_saida, rsm.cancelada, rsm.acomodacao], ['901', null, 600, 100, '2026-11-01', '2026-11-03', false, 'STANDARD']);
+      const AG = 'abababab-abab-abab-abab-abababababab', passado = emDias(-10), saida = emDias(-8);
+      agenciasF = [{ id: AG, nome: 'Rio Azul', codigo_silbeck: '901', comissao: 10, cobra_sinal: true, sinal_percentual: 30, fatura: true, fatura_prazo_dias: 30, eh_agencia: true }];
+      S.listaReservas = async () => [
+        { silbeck_id: '7001', codigo_empresa: '901', comissao_pct: null, titular: 'Ana', acomodacao: 'STANDARD', data_entrada: passado, data_saida: saida, valor_total: 1000, sinal_pago: 0, status_silbeck: 2, status_descricao: 'CONFIRMADA', cancelada: false },
+        { silbeck_id: '7002', codigo_empresa: '555', comissao_pct: null, titular: 'B', acomodacao: 'X', data_entrada: passado, data_saida: saida, valor_total: 500, sinal_pago: 0, status_silbeck: 2, cancelada: false }];
+      try {
+        r = await api('/api/agencia-reservas/importar', { de: emDias(-30), ate: emDias(30) });
+        const ji = await r.json();
+        assert.equal(r.status, 200, JSON.stringify(ji)); assert.deepEqual([ji.lidas, ji.da_agencia], [2, 1]);
+        const res = agResF.find(x => x.silbeck_id === '7001');
+        assert.deepEqual([res.agencia_id, res.comissao_pct, res.valor_liquido, res.sinal_previsto], [AG, 10, 900, 270], 'comissão descontada; sinal de 30% do líquido');
+        r = await api('/api/agencia-reservas/importar', { de: emDias(-30), ate: emDias(30) });
+        assert.equal(agResF.filter(x => x.silbeck_id === '7001').length, 1, 'importar de novo não duplica');
+        // Sinal pago por boleto: só no CRM
+        r = await api('/api/agencia-pagamento', { agencia_id: AG, tipo: 'sinal', agencia_reserva_id: res.id, valor: '270', forma: 'boleto' });
+        assert.equal(r.status, 200, await r.clone().text()); assert.equal(agPagF.at(-1).silbeck_adiantamento_id, undefined);
+        // Sinal por Pix lançado no Silbeck: o Silbeck não acha a reserva 7001 (simulador) → erro e nada registrado
+        const nPag = agPagF.length;
+        assert.equal((await api('/api/agencia-pagamento', { agencia_id: AG, tipo: 'sinal', agencia_reserva_id: res.id, valor: '10', forma: 'pix' })).status, 502);
+        assert.equal(agPagF.length, nPag, 'sem lançar no Silbeck, nada registrado');
+        // Fatura do período: saldo = líquido 900 − sinal 270 = 630; vencimento = fim do período + 30 dias
+        r = await api('/api/agencia-fatura', { agencia_id: AG, de: emDias(-31), ate: emDias(-1), reserva_ids: [res.id] });
+        const jf = await r.json();
+        assert.equal(r.status, 200, JSON.stringify(jf));
+        assert.deepEqual([jf.fatura.valor, jf.fatura.vencimento, res.fatura_id], [630, require('./silbeck').somarDias(emDias(-1), 30), jf.fatura.id]);
+        assert.equal((await api('/api/agencia-fatura', { agencia_id: AG, de: emDias(-31), ate: emDias(-1), reserva_ids: [res.id] })).status, 409, 'já está em outra fatura');
+        assert.equal((await api('/api/agencia-fatura', { agencia_id: AG, de: emDias(-5), ate: emDias(-1), reserva_ids: [res.id] })).status, 409);
+        r = await api('/api/agencia-pagamento', { agencia_id: AG, tipo: 'fatura', fatura_id: jf.fatura.id, valor: '600', forma: 'transferencia' });
+        assert.ok((await r.json()).aviso.includes('Falta R$ 30 '));
+        r = await api('/api/agencia-pagamento', { agencia_id: AG, tipo: 'fatura', fatura_id: jf.fatura.id, valor: '30', forma: 'transferencia' });
+        assert.ok((await r.json()).aviso.includes('quitada')); assert.equal(agFatF.at(-1).situacao, 'paga');
+        assert.equal((await api('/api/agencia-fatura-acao', { id: jf.fatura.id, acao: 'cancelar' })).status, 409, 'fatura com pagamento não cancela');
+        // Outra fatura sem pagamento: cancela e a reserva volta para "a faturar"
+        res.fatura_id = null; agFatF.at(-1).situacao = 'cancelada';
+        const jf2 = await (await api('/api/agencia-fatura', { agencia_id: AG, de: emDias(-31), ate: emDias(-1), reserva_ids: [res.id] })).json();
+        assert.equal((await api('/api/agencia-fatura-acao', { id: jf2.fatura.id, acao: 'cancelar' })).status, 200);
+        assert.deepEqual([res.fatura_id, agFatF.find(f => f.id === jf2.fatura.id).situacao], [null, 'cancelada']);
+        assert.equal((await api('/api/agencia-pagamento', { agencia_id: AG, tipo: 'sinal', agencia_reserva_id: res.id, valor: '0' })).status, 400);
+      } finally { S.listaReservas = listaAntes; agenciasF = null; }
     }
     r = await api('/api/resposta', { pergunta: 'Aceita pet?', resposta: 'Não aceitamos pets.', atalho: '/Pet!', fixa: true });
     assert.equal(r.status, 200, await r.clone().text());

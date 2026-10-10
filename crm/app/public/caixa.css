@@ -318,6 +318,16 @@ section[data-painel="funil"],section[data-painel="tarefas"]{gap:10px;overflow:hi
 .dica{margin:0;font-size:13px;color:var(--cor-texto-sec)}
 .ag-pendente{color:var(--cor-alerta)!important}
 .ag-cond{font-weight:600;color:var(--cor-secundaria-texto)}
+.ag-lista{display:flex;flex-direction:column;gap:10px}
+.ag-fin-tit{display:flex;flex-direction:column;gap:2px;flex:1;min-width:200px}
+.ag-fin-tit h2{margin:0;font-size:18px}
+.ag-fin-sec{margin:6px 0 0;font-size:15px}
+.ag-fin-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px}
+.ag-fat{display:flex;flex-direction:column;gap:10px;padding:14px}
+.ag-fat h3{margin:0}
+.ag-fat-item{cursor:pointer}
+.ag-alerta .pn-num{color:var(--cor-alerta)}
+@media (max-width:600px){.ag-fin .pn-tiles{grid-template-columns:repeat(2,1fr)}.ag-fin .pn-num{font-size:20px}.ag-fin .pn-tile{padding:10px}}.ag-erro .pn-num{color:var(--cor-erro)}
 .funil{flex:1;min-height:0;display:grid;grid-template-columns:repeat(6,minmax(190px,1fr));gap:10px;overflow:auto;padding-bottom:6px;align-items:start}
 .coluna{background:color-mix(in srgb,var(--cor-superficie) 55%,var(--cor-fundo));border:1px solid var(--cor-borda);border-radius:var(--r-lg);padding:8px;display:flex;flex-direction:column;gap:8px;border-top:3px solid var(--c);min-height:120px}
 .coluna.alvo{background:var(--cor-primaria-suave);outline:2px dashed var(--cor-primaria);outline-offset:-2px}

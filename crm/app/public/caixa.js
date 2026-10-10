@@ -1552,6 +1552,7 @@
         !a.silbeck_id && !agSemSync ? el('p', { class: 'dica', text: 'Cadastre no Silbeck com o mesmo CNPJ: na próxima sincronização o CRM liga os dois sozinho.' }) : null,
         a.observacoes ? el('p', { text: a.observacoes }) : null,
         el('div', { class: 'acoes' },
+          ehAgencia(a) ? el('button', { class: 'btn-mini', type: 'button', text: '💼 Reservas e financeiro', onclick: () => abrirFinanceiro(a) }) : null,
           agVer === 'agencias' || ehAgencia(a) ? el('button', { class: 'btn-mini', type: 'button', text: 'Editar', onclick: () => formAgencia(a) }) : null,
           a.silbeck_id && !agSemSync ? marcar : null,
           ehAgencia(a) ? el('button', { class: 'btn-mini', type: 'button', text: a.ativo ? 'Desativar' : 'Reativar', onclick: async () => { try { await chamarApi('/api/agencia', { id: a.id, ativo: !a.ativo }); carregarAgencias(); } catch (e) { toast(e.message); } } }) : null)));
@@ -1586,6 +1587,159 @@
     catch (err) { toast(err.message); }
     b.disabled = false; b.textContent = 'Sincronizar com o Silbeck';
   });
+
+  // ================= Agências: reservas e financeiro (dono, 10/10/2026) =================
+  // Reservas da agência (vindas do Silbeck pelo código da empresa), sinal, fatura fechada por período e pagamentos.
+  // Tudo sobre o LÍQUIDO (a comissão já vem descontada).
+  let finAg = null, finDados = null, finFiltro = 'todas';
+  const hojeBR = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Campo_Grande' });
+  const diaMais = (d, n) => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); };
+  const dataBR = d => d ? d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4) : '';
+  const FORMAS = [['pix', 'Pix'], ['transferencia', 'Transferência/depósito'], ['boleto', 'Boleto'], ['cartao', 'Cartão'], ['dinheiro', 'Dinheiro'], ['outro', 'Outro']];
+  const SIT_RES = { sinal: ['Aguardando sinal', 'pendente'], garantida: ['Garantida', 'ok'], afaturar: ['A faturar', 'pendente'], faturada: ['Faturada', 'off'], vencida: ['Fatura vencida', 'erro'], paga: ['Paga', 'ok'], concluida: ['Concluída (restante no hotel)', 'ok'], cancelada: ['Cancelada', 'off'] };
+  function sitReserva(r, fats, fora) {
+    const hoje = hojeBR();
+    if (r.cancelada) return 'cancelada';
+    if (r.fatura_id) { const f = fats[r.fatura_id]; return f && f.situacao === 'paga' ? 'paga' : f && f.vencimento < hoje ? 'vencida' : 'faturada'; }
+    const pago = Number(r.sinal_pago) + (fora[r.id] || 0);
+    if (!r.data_saida || r.data_saida > hoje) return pago + 0.01 < Number(r.sinal_previsto) ? 'sinal' : 'garantida';
+    if (!finAg.fatura) return 'concluida';
+    return Number(r.valor_liquido) - pago > 0.01 ? 'afaturar' : 'paga';
+  }
+  async function abrirFinanceiro(a) {
+    finAg = a; finFiltro = 'todas';
+    $('ag-lista').hidden = true; $('ag-fin').hidden = false;
+    await carregarFinanceiro();
+  }
+  function fecharFinanceiro() { finAg = null; $('ag-fin').hidden = true; $('ag-lista').hidden = false; carregarAgencias(); }
+  async function carregarFinanceiro() {
+    const box = $('ag-fin'); box.replaceChildren(el('p', { class: 'dica', text: 'Carregando…' }));
+    const [rs, fs, ps] = await Promise.all([
+      sb.from('agencia_reservas').select('*').eq('agencia_id', finAg.id).order('data_entrada', { ascending: false }).limit(2000),
+      sb.from('agencia_faturas').select('*').eq('agencia_id', finAg.id).order('numero', { ascending: false }).limit(500),
+      sb.from('agencia_pagamentos').select('*').eq('agencia_id', finAg.id).order('data', { ascending: false }).limit(1000)]);
+    if (rs.error || fs.error || ps.error) { box.replaceChildren(el('button', { class: 'btn btn-editar', type: 'button', text: '← Agências', onclick: fecharFinanceiro }), el('div', { class: 'vazio', text: 'O financeiro das agências ainda não está no banco: falta rodar a migração 029 no Supabase.' })); return; }
+    const fora = {};
+    (ps.data || []).filter(p => p.tipo === 'sinal' && !p.silbeck_adiantamento_id && p.agencia_reserva_id).forEach(p => { fora[p.agencia_reserva_id] = (fora[p.agencia_reserva_id] || 0) + Number(p.valor); });
+    const fats = Object.fromEntries((fs.data || []).map(f => [f.id, f]));
+    const pagoFat = {};
+    (ps.data || []).filter(p => p.tipo === 'fatura' && p.fatura_id).forEach(p => { pagoFat[p.fatura_id] = (pagoFat[p.fatura_id] || 0) + Number(p.valor); });
+    finDados = { reservas: rs.data || [], faturas: fs.data || [], pagamentos: ps.data || [], fora, fats, pagoFat };
+    pintarFinanceiro();
+  }
+  function pintarFinanceiro() {
+    const { reservas, faturas, pagamentos, fora, fats, pagoFat } = finDados, a = finAg, hoje = hojeBR();
+    const box = $('ag-fin'); box.textContent = '';
+    const sits = reservas.map(r => ({ r, s: sitReserva(r, fats, fora), pago: Number(r.sinal_pago) + (fora[r.id] || 0) }));
+    const soma = l => l.reduce((t, x) => t + x, 0);
+    const aFaturar = soma(sits.filter(x => x.s === 'afaturar').map(x => Number(x.r.valor_liquido) - x.pago));
+    const abertas = faturas.filter(f => f.situacao === 'aberta');
+    const emAberto = soma(abertas.map(f => Number(f.valor) - (pagoFat[f.id] || 0)));
+    const vencido = soma(abertas.filter(f => f.vencimento < hoje).map(f => Number(f.valor) - (pagoFat[f.id] || 0)));
+    const sinalPend = soma(sits.filter(x => x.s === 'sinal').map(x => Number(x.r.sinal_previsto) - x.pago));
+    const tile = (rotulo, num, sub, cl) => el('div', { class: 'cartao pn-tile' + (cl ? ' ' + cl : '') }, el('span', { class: 'rotulo', text: rotulo }), el('span', { class: 'pn-num', text: brl(num) }), el('span', { class: 'pn-sub', text: sub }));
+    box.append(
+      el('div', { class: 'barra-ferr' }, el('button', { class: 'btn btn-editar', type: 'button', text: '← Agências', onclick: fecharFinanceiro }),
+        el('div', { class: 'ag-fin-tit' }, el('h2', { text: a.nome }), el('span', { class: 'ag-cond', text: [a.comissao != null ? 'Comissão ' + pct(a.comissao) + ' (já descontada)' : 'Sem comissão cadastrada', 'cobra_sinal' in a ? condicoesAgencia(a) : ''].filter(Boolean).join(' · ') })),
+        el('button', { class: 'btn btn-editar', type: 'button', text: 'Importar do Silbeck', onclick: importarReservasAg }),
+        a.fatura ? el('button', { class: 'btn btn-enviar', type: 'button', text: 'Fechar fatura', onclick: montarFatura }) : null),
+      el('div', { class: 'pn-tiles' },
+        tile('Sinais a receber', sinalPend, sits.filter(x => x.s === 'sinal').length + ' reserva(s) aguardando sinal', sinalPend > 0 ? 'ag-alerta' : ''),
+        a.fatura ? tile('A faturar', aFaturar, sits.filter(x => x.s === 'afaturar').length + ' reserva(s) com check-out feito') : null,
+        a.fatura ? tile('Faturas em aberto', emAberto, abertas.length + ' fatura(s)') : null,
+        a.fatura ? tile('Vencido', vencido, vencido > 0 ? 'cobrar a agência' : 'nada vencido', vencido > 0 ? 'ag-erro' : '') : null),
+      el('div', { id: 'ag-fat-montar' }));
+    // Reservas
+    const chips = el('div', { class: 'chips', role: 'group', 'aria-label': 'Situação' }, [['todas', 'Todas'], ['sinal', 'Aguardando sinal'], ['garantida', 'Garantidas'], ...(a.fatura ? [['afaturar', 'A faturar'], ['faturada', 'Faturadas'], ['vencida', 'Vencidas']] : [['concluida', 'Concluídas']]), ['paga', 'Pagas'], ['cancelada', 'Canceladas']]
+      .map(([v, t]) => el('button', { class: 'chip', type: 'button', 'aria-pressed': String(finFiltro === v), text: t + (v === 'todas' ? '' : ' (' + sits.filter(x => x.s === v).length + ')'), onclick: () => { finFiltro = v; pintarFinanceiro(); } })));
+    const lista = sits.filter(x => finFiltro === 'todas' || x.s === finFiltro);
+    box.append(el('h3', { class: 'ag-fin-sec', text: 'Reservas da agência' }), chips,
+      lista.length ? el('div', { class: 'ag-fin-lista' }, lista.map(({ r, s, pago }) => {
+        const [rot, cl] = SIT_RES[s];
+        return el('div', { class: 'lat-card' },
+          el('b', { text: 'Reserva ' + r.silbeck_id + ' · ' + (r.titular || 'sem titular') }),
+          el('small', { text: [r.acomodacao, r.data_entrada ? dataBR(r.data_entrada) + ' a ' + dataBR(r.data_saida) : ''].filter(Boolean).join(' · ') }),
+          el('small', { text: 'Total ' + brl(r.valor_total) + (r.comissao_pct ? ' · comissão ' + pct(r.comissao_pct) : '') + ' · líquido ' + brl(r.valor_liquido) }),
+          el('small', { text: (Number(r.sinal_previsto) > 0 ? 'Sinal ' + brl(pago) + ' de ' + brl(r.sinal_previsto) : 'Sem sinal' + (pago > 0 ? ' · pago ' + brl(pago) : '')) + ' · saldo ' + brl(Math.max(0, Number(r.valor_liquido) - pago)) + (r.fatura_id && fats[r.fatura_id] ? ' · fatura nº ' + fats[r.fatura_id].numero : '') }),
+          el('small', {}, el('span', { class: 'cob-sit ' + cl, text: rot }), r.status_descricao ? ' · Silbeck: ' + r.status_descricao.toLowerCase() : ''),
+          s === 'sinal' || s === 'garantida' ? el('div', { class: 'acoes' }, el('button', { class: 'btn-mini', type: 'button', text: 'Registrar sinal', onclick: () => formPagamentoAg('sinal', r, Math.max(0, Number(r.sinal_previsto) - pago)) })) : null);
+      })) : el('div', { class: 'vazio', text: reservas.length ? 'Nenhuma reserva nessa situação.' : 'Nenhuma reserva desta agência ainda. Elas chegam do Silbeck a cada hora (reservas lançadas com a empresa desta agência). Para trazer reservas antigas, use "Importar do Silbeck".' }));
+    // Faturas
+    if (a.fatura || faturas.length) box.append(el('h3', { class: 'ag-fin-sec', text: 'Faturas' }),
+      faturas.length ? el('div', { class: 'ag-fin-lista' }, faturas.map(f => {
+        const pagoF = pagoFat[f.id] || 0, venc = f.situacao === 'aberta' && f.vencimento < hoje;
+        return el('div', { class: 'lat-card' },
+          el('b', { text: 'Fatura nº ' + f.numero + ' · ' + brl(f.valor) }),
+          el('small', { text: 'Check-outs de ' + dataBR(f.periodo_ini) + ' a ' + dataBR(f.periodo_fim) + ' · ' + reservas.filter(r => r.fatura_id === f.id).length + ' reserva(s) · emitida em ' + dataBR(f.emitida_em) }),
+          el('small', {}, el('span', { class: 'cob-sit ' + (f.situacao === 'paga' ? 'ok' : f.situacao === 'cancelada' ? 'off' : venc ? 'erro' : 'pendente'), text: f.situacao === 'paga' ? 'Paga' : f.situacao === 'cancelada' ? 'Cancelada' : venc ? 'Vencida' : 'Em aberto' }),
+            ' · vence ' + dataBR(f.vencimento) + (pagoF ? ' · pago ' + brl(pagoF) : '')),
+          f.observacoes ? el('small', { text: f.observacoes }) : null,
+          f.situacao === 'aberta' ? el('div', { class: 'acoes' },
+            el('button', { class: 'btn-mini', type: 'button', text: 'Registrar pagamento', onclick: () => formPagamentoAg('fatura', f, Math.max(0, Number(f.valor) - pagoF)) }),
+            !pagoF ? el('button', { class: 'btn-mini', type: 'button', text: 'Cancelar fatura', onclick: async () => { if (!confirm('Cancelar a fatura nº ' + f.numero + '? As reservas voltam para "A faturar".')) return; try { await chamarApi('/api/agencia-fatura-acao', { id: f.id, acao: 'cancelar' }); toast('Fatura cancelada.'); carregarFinanceiro(); } catch (e) { toast(e.message); } } }) : null) : null);
+      })) : el('div', { class: 'vazio', text: 'Nenhuma fatura ainda. Depois do check-out, as reservas entram em "A faturar": use "Fechar fatura" e escolha o período.' }));
+    // Pagamentos
+    if (pagamentos.length) box.append(el('h3', { class: 'ag-fin-sec', text: 'Pagamentos recebidos' }),
+      el('div', { class: 'ag-fin-lista' }, pagamentos.slice(0, 100).map(p => el('div', { class: 'lat-card' },
+        el('b', { text: brl(p.valor) + ' · ' + (p.tipo === 'sinal' ? 'sinal' : 'fatura') + ' · ' + dataBR(p.data) }),
+        el('small', { text: [(FORMAS.find(f => f[0] === p.forma) || [0, p.forma])[1], p.tipo === 'sinal' ? 'reserva ' + ((reservas.find(r => r.id === p.agencia_reserva_id) || {}).silbeck_id || '?') + (p.silbeck_adiantamento_id ? ' · lançado no Silbeck' : ' · só no CRM') : 'fatura nº ' + ((fats[p.fatura_id] || {}).numero || '?'), p.observacao].filter(Boolean).join(' · ') })))));
+  }
+  function formPagamentoAg(tipo, alvo, sugerido) {
+    abrirForm(tipo === 'sinal' ? 'Sinal da reserva ' + alvo.silbeck_id : 'Pagamento da fatura nº ' + alvo.numero, [
+      { k: 'valor', rotulo: 'Valor (R$)', tipo: 'number', valor: sugerido ? sugerido.toFixed(2) : '', at: { min: '0.01', step: '0.01' } },
+      { k: 'data', rotulo: 'Data do pagamento', tipo: 'date', valor: hojeBR() },
+      { k: 'forma', rotulo: 'Forma', tipo: 'select', valor: 'pix', opcoes: FORMAS },
+      ...(tipo === 'sinal' ? [{ k: 'lancar_silbeck', rotulo: 'Lançar no Silbeck (Pix, transferência ou dinheiro): confirma a reserva lá', tipo: 'check', valor: true }] : []),
+      { k: 'observacao', rotulo: 'Observação', valor: '', largo: true },
+    ], async v => {
+      const j = await chamarApi('/api/agencia-pagamento', { agencia_id: finAg.id, tipo, ...(tipo === 'sinal' ? { agencia_reserva_id: alvo.id } : { fatura_id: alvo.id }), ...v });
+      toast(j.aviso || 'Pagamento registrado.'); carregarFinanceiro();
+    }, null, 'Registrar');
+  }
+  function importarReservasAg() {
+    abrirForm('Importar reservas do Silbeck', [
+      { tipo: 'nota', rotulo: 'Traz as reservas lançadas no Silbeck com a empresa desta agência (código ' + (finAg.codigo_silbeck || '?') + '), pela data de check-in. As novas chegam sozinhas a cada hora; use isto para reservas antigas.' },
+      { k: 'de', rotulo: 'Check-in de', tipo: 'date', valor: diaMais(hojeBR(), -90) },
+      { k: 'ate', rotulo: 'até', tipo: 'date', valor: diaMais(hojeBR(), 365) },
+    ], async v => { const j = await chamarApi('/api/agencia-reservas/importar', v); toast(j.lidas + ' reservas lidas no Silbeck, ' + j.da_agencia + ' de agências.'); carregarFinanceiro(); }, null, 'Importar');
+  }
+  // Fechar fatura: escolhe o período (data de check-out) e as reservas "A faturar"; vencimento = fim do período + prazo
+  function montarFatura() {
+    const { reservas, fats, fora } = finDados, hoje = hojeBR();
+    const ini = el('input', { type: 'date', value: diaMais(hoje.slice(0, 8) + '01', -1).slice(0, 8) + '01' }), fim = el('input', { type: 'date', value: diaMais(hoje.slice(0, 8) + '01', -1) });
+    const venc = el('input', { type: 'date' }), obs = el('input', { type: 'text', placeholder: 'Ex.: NF 123, boleto enviado por e-mail' });
+    const lista = el('div', { class: 'ag-fin-lista' }), total = el('b');
+    let escolhidas = new Set();
+    const calcular = () => {
+      const elegiveis = reservas.filter(r => sitReserva(r, fats, fora) === 'afaturar' && r.data_saida >= ini.value && r.data_saida <= fim.value);
+      escolhidas = new Set(elegiveis.map(r => r.id)); // período novo: todas do período já marcadas (desmarque o que não entra)
+      lista.replaceChildren(...(elegiveis.length ? elegiveis.map(r => {
+        const saldo = Number(r.valor_liquido) - Number(r.sinal_pago) - (fora[r.id] || 0);
+        const cb = el('input', { type: 'checkbox', checked: escolhidas.has(r.id) });
+        cb.addEventListener('change', () => { if (cb.checked) escolhidas.add(r.id); else escolhidas.delete(r.id); somar(elegiveis); });
+        return el('label', { class: 'lat-card ag-fat-item' }, el('span', {}, cb, ' Reserva ' + r.silbeck_id + ' · ' + (r.titular || '') + ' · check-out ' + dataBR(r.data_saida)), el('small', { text: 'Saldo ' + brl(saldo) + ' (líquido ' + brl(r.valor_liquido) + ' menos sinal ' + brl(Number(r.sinal_pago) + (fora[r.id] || 0)) + ')' }));
+      }) : [el('div', { class: 'vazio', text: 'Nenhuma reserva a faturar com check-out nesse período.' })]));
+      if (!venc.dataset.mexeu) venc.value = diaMais(fim.value || hoje, finAg.fatura_prazo_dias ?? 30);
+      somar(elegiveis);
+    };
+    const somar = el_ => { const t = el_.filter(r => escolhidas.has(r.id)).reduce((s, r) => s + Math.max(0, Number(r.valor_liquido) - Number(r.sinal_pago) - (fora[r.id] || 0)), 0); total.textContent = escolhidas.size + ' reserva(s) · ' + brl(t); };
+    venc.addEventListener('change', () => { venc.dataset.mexeu = '1'; });
+    ini.addEventListener('change', calcular); fim.addEventListener('change', calcular);
+    const todas = el('button', { class: 'btn-mini', type: 'button', text: 'Marcar todas', onclick: calcular });
+    const emitir = el('button', { class: 'btn btn-enviar', type: 'button', text: 'Emitir fatura', onclick: async e => {
+      if (!escolhidas.size) { toast('Marque as reservas da fatura.'); return; }
+      e.currentTarget.disabled = true;
+      try { const j = await chamarApi('/api/agencia-fatura', { agencia_id: finAg.id, de: ini.value, ate: fim.value, reserva_ids: [...escolhidas], vencimento: venc.value, observacoes: obs.value }); toast('Fatura nº ' + j.fatura.numero + ' emitida: ' + brl(j.fatura.valor) + ', vence ' + dataBR(j.fatura.vencimento) + '.'); carregarFinanceiro(); }
+      catch (err) { toast(err.message); e.currentTarget.disabled = false; }
+    } });
+    $('ag-fat-montar').replaceChildren(el('div', { class: 'cartao ag-fat' },
+      el('h3', { text: 'Fechar fatura' }),
+      el('div', { class: 'grade2' }, el('label', { class: 'campo' }, 'Check-out de', ini), el('label', { class: 'campo' }, 'até', fim)),
+      el('div', { class: 'acoes' }, todas), lista,
+      el('div', { class: 'grade2' }, el('label', { class: 'campo' }, 'Vencimento', venc), el('label', { class: 'campo' }, 'Observação (nota fiscal, boleto…)', obs)),
+      el('div', { class: 'acoes' }, total, emitir, el('button', { class: 'btn btn-editar', type: 'button', text: 'Fechar', onclick: () => $('ag-fat-montar').replaceChildren() }))));
+    calcular();
+  }
 
   // ================= Ajustes do agente =================
   let subAtual = 'rev', revFiltro = 'pendente';

@@ -1390,6 +1390,130 @@ async function sincronizarAgencias(buscar = fetch) {
   console.log(JSON.stringify({ evento: 'agencias_sincronizadas', ...resumo }));
   return resumo;
 }
+// ---------- Financeiro das agências (dono, 10/10/2026) ----------
+// Reservas da agência vêm do Silbeck pelo código da empresa (motor, balcão ou CRM). Valores sobre o LÍQUIDO (a comissão
+// já vem descontada): sinal = % do líquido; o saldo (líquido menos o sinal pago) entra na fatura, fechada por período.
+const r2 = n => Math.round(Number(n || 0) * 100) / 100;
+const FORMAS_PAGAMENTO = ['pix', 'transferencia', 'boleto', 'cartao', 'dinheiro', 'outro'];
+async function lerTabela(url, buscar, migracao) {
+  const r = await buscar(url, { headers: cabecalhosBanco(), signal: AbortSignal.timeout(8000) }).catch(() => null);
+  if (!r || !r.ok) throw new ErroEnvio(503, 'Falta rodar a migração ' + migracao + ' no Supabase.');
+  return r.json();
+}
+function valoresDaReserva(x, ag) {
+  const pct = x.comissao_pct != null ? Number(x.comissao_pct) : ag.comissao != null ? Number(ag.comissao) : 0;
+  const liquido = r2(Number(x.valor_total) * (1 - pct / 100));
+  return { comissao_pct: pct || null, valor_liquido: liquido, sinal_previsto: ag.cobra_sinal === false ? 0 : r2(liquido * (Number(ag.sinal_percentual) || 0) / 100) };
+}
+async function sincronizarReservasAgencias({ de, ate, tipoData = 'cadastro' }, buscar = fetch) {
+  const ags = await lerTabela(`${SUPABASE_URL}/rest/v1/agencias?eh_agencia=eq.true&codigo_silbeck=not.is.null&select=id,codigo_silbeck,comissao,cobra_sinal,sinal_percentual`, buscar, '027 e 028');
+  const porCodigo = new Map(ags.map(a => [String(a.codigo_silbeck).trim(), a]));
+  if (!porCodigo.size) return { lidas: 0, da_agencia: 0 };
+  const lista = await silbeck.listaReservas({ de, ate, tipoData }, buscar).catch(e => { throw new ErroEnvio(502, 'Não deu para ler as reservas do Silbeck: ' + String(e.message || e).slice(0, 150)); });
+  const agora = new Date().toISOString();
+  const linhas = lista.filter(r => r.codigo_empresa && porCodigo.has(r.codigo_empresa)).map(r => {
+    const ag = porCodigo.get(r.codigo_empresa), { codigo_empresa, ...resto } = r;
+    return { ...resto, agencia_id: ag.id, ...valoresDaReserva(r, ag), sincronizado_em: agora, atualizado_em: agora };
+  });
+  for (let i = 0; i < linhas.length; i += 200) {
+    const g = await buscar(`${SUPABASE_URL}/rest/v1/agencia_reservas?on_conflict=silbeck_id`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify(linhas.slice(i, i + 200)), signal: AbortSignal.timeout(10000) }).catch(() => null);
+    if (!g || !g.ok) throw new ErroEnvio(g && (g.status === 404 || g.status === 400) ? 503 : 502, 'Não deu para gravar as reservas das agências (falta a migração 029?).');
+  }
+  return { lidas: lista.length, da_agencia: linhas.length };
+}
+// De hora em hora: reservas novas (cadastradas nos últimos 3 dias) e atualização das que ainda não foram faturadas
+async function atualizarReservasAgencias(buscar = fetch) {
+  const hoje = diaBonito(new Date());
+  const r1 = await sincronizarReservasAgencias({ de: silbeck.somarDias(hoje, -3), ate: hoje, tipoData: 'cadastro' }, buscar);
+  const abertas = await getJson(`${SUPABASE_URL}/rest/v1/agencia_reservas?cancelada=eq.false&fatura_id=is.null&data_saida=gte.${silbeck.somarDias(hoje, -45)}&select=data_entrada&order=data_entrada.asc&limit=1000`, buscar);
+  const datas = abertas.map(x => x.data_entrada).filter(Boolean);
+  const r2_ = datas.length ? await sincronizarReservasAgencias({ de: datas[0], ate: datas.at(-1) < silbeck.somarDias(hoje, 400) ? datas.at(-1) : silbeck.somarDias(hoje, 400), tipoData: 'entrada' }, buscar) : { da_agencia: 0 };
+  return { novas_ou_atualizadas: r1.da_agencia + r2_.da_agencia };
+}
+async function agenciaDe(id, buscar = fetch, campos = 'id,nome,comissao,cobra_sinal,sinal_percentual,fatura,fatura_prazo_dias') {
+  if (!uuidOk(id)) throw new ErroEnvio(400, 'Agência inválida.');
+  const a = (await lerTabela(`${SUPABASE_URL}/rest/v1/agencias?id=eq.${id}&select=${campos}`, buscar, '028'))[0];
+  if (!a) throw new ErroEnvio(404, 'Agência não encontrada.');
+  return a;
+}
+// Sinal pago "por fora" do Silbeck (boleto, cartão...): registrado só no CRM, soma ao que o Silbeck mostra
+async function sinaisForaDoSilbeck(ids, buscar = fetch) {
+  if (!ids.length) return {};
+  const l = await getJson(`${SUPABASE_URL}/rest/v1/agencia_pagamentos?tipo=eq.sinal&silbeck_adiantamento_id=is.null&agencia_reserva_id=in.(${ids.join(',')})&select=agencia_reserva_id,valor`, buscar);
+  return l.reduce((m, p) => { m[p.agencia_reserva_id] = r2((m[p.agencia_reserva_id] || 0) + Number(p.valor)); return m; }, {});
+}
+async function registrarPagamentoAgencia(corpo, eu, buscar = fetch) {
+  const ag = await agenciaDe(corpo.agencia_id, buscar);
+  const tipo = corpo.tipo === 'fatura' ? 'fatura' : corpo.tipo === 'sinal' ? 'sinal' : null;
+  if (!tipo) throw new ErroEnvio(400, 'Diga se é pagamento de sinal ou de fatura.');
+  const valor = r2(String(corpo.valor || '').replace(',', '.'));
+  if (!(valor > 0 && valor <= 1000000)) throw new ErroEnvio(400, 'Valor inválido.');
+  const data = /^\d{4}-\d{2}-\d{2}$/.test(corpo.data || '') ? corpo.data : diaBonito(new Date());
+  const forma = FORMAS_PAGAMENTO.includes(corpo.forma) ? corpo.forma : 'outro';
+  const linha = { agencia_id: ag.id, tipo, valor, data, forma, observacao: String(corpo.observacao || '').trim().slice(0, 300) || null, criado_por: eu ? eu.id : null };
+  let aviso = null;
+  if (tipo === 'sinal') {
+    if (!uuidOk(corpo.agencia_reserva_id)) throw new ErroEnvio(400, 'Escolha a reserva do sinal.');
+    const res = (await getJson(`${SUPABASE_URL}/rest/v1/agencia_reservas?id=eq.${corpo.agencia_reserva_id}&agencia_id=eq.${ag.id}&select=*`, buscar))[0];
+    if (!res) throw new ErroEnvio(404, 'Reserva não encontrada nesta agência.');
+    if (res.cancelada) throw new ErroEnvio(409, 'Essa reserva está cancelada no Silbeck.');
+    linha.agencia_reserva_id = res.id;
+    // Pix, transferência ou dinheiro: lança o adiantamento no Silbeck (confirma a reserva lá)
+    if (corpo.lancar_silbeck !== false && ['pix', 'transferencia', 'dinheiro'].includes(forma)) {
+      try {
+        const it = (await silbeck.itensDaReserva(res.silbeck_id, res.data_entrada, buscar)).find(x => Number(x.status) !== 3);
+        if (!it) throw new Error('item da reserva não encontrado');
+        const a = await silbeck.lancarAdiantamento({ item_id: it.id, valor, tipo: forma === 'dinheiro' ? 1 : 8, observacao: 'Sinal agência ' + ag.nome + (linha.observacao ? ' · ' + linha.observacao : '') }, buscar);
+        linha.silbeck_adiantamento_id = a.id != null ? String(a.id) : 'lancado';
+        await patchBanco('agencia_reservas', `id=eq.${res.id}`, { sinal_pago: r2(Number(res.sinal_pago) + valor), atualizado_em: new Date().toISOString() }).catch(() => {});
+        aviso = 'Sinal lançado no Silbeck (reserva ' + res.silbeck_id + ')' + (a.confirmado === false ? ', mas a reserva NÃO ficou confirmada lá: confirme no Silbeck.' : ' e reserva confirmada.');
+      } catch (e) { throw new ErroEnvio(502, 'Não deu para lançar o sinal no Silbeck (' + String(e.message || e).slice(0, 120) + '). Nada foi registrado: tente de novo ou registre sem lançar no Silbeck.'); }
+    } else aviso = 'Sinal registrado só no CRM: lance no Silbeck se precisar.';
+  } else {
+    if (!uuidOk(corpo.fatura_id)) throw new ErroEnvio(400, 'Escolha a fatura.');
+    const f = (await getJson(`${SUPABASE_URL}/rest/v1/agencia_faturas?id=eq.${corpo.fatura_id}&agencia_id=eq.${ag.id}&select=id,numero,valor,situacao`, buscar))[0];
+    if (!f) throw new ErroEnvio(404, 'Fatura não encontrada nesta agência.');
+    if (f.situacao === 'cancelada') throw new ErroEnvio(409, 'Essa fatura foi cancelada.');
+    linha.fatura_id = f.id;
+    const pagos = (await getJson(`${SUPABASE_URL}/rest/v1/agencia_pagamentos?fatura_id=eq.${f.id}&select=valor`, buscar)).reduce((t, p) => t + Number(p.valor), 0);
+    const total = r2(pagos + valor);
+    if (total >= Number(f.valor) - 0.01 && f.situacao !== 'paga') await patchBanco('agencia_faturas', `id=eq.${f.id}`, { situacao: 'paga' });
+    aviso = total >= Number(f.valor) - 0.01 ? 'Fatura nº ' + f.numero + ' quitada.' : 'Falta ' + produtos.brl(r2(Number(f.valor) - total)) + ' na fatura nº ' + f.numero + '.';
+  }
+  const g = await buscar(`${SUPABASE_URL}/rest/v1/agencia_pagamentos`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=minimal' }, body: JSON.stringify(linha), signal: AbortSignal.timeout(5000) }).catch(() => null);
+  if (!g || !g.ok) throw new ErroEnvio(502, 'Não deu para registrar o pagamento' + (linha.silbeck_adiantamento_id ? ' no CRM (o sinal JÁ foi lançado no Silbeck: não lance de novo)' : '') + '.');
+  return { ok: true, aviso };
+}
+async function fecharFaturaAgencia(corpo, eu, buscar = fetch) {
+  const ag = await agenciaDe(corpo.agencia_id, buscar);
+  const de = corpo.de, ate = corpo.ate;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(de || '') || !/^\d{4}-\d{2}-\d{2}$/.test(ate || '') || ate < de) throw new ErroEnvio(400, 'Período inválido.');
+  const ids = (Array.isArray(corpo.reserva_ids) ? corpo.reserva_ids : []).filter(uuidOk);
+  if (!ids.length) throw new ErroEnvio(400, 'Escolha as reservas da fatura.');
+  const rs = await getJson(`${SUPABASE_URL}/rest/v1/agencia_reservas?agencia_id=eq.${ag.id}&id=in.(${ids.join(',')})&select=id,silbeck_id,data_saida,valor_liquido,sinal_pago,cancelada,fatura_id`, buscar);
+  if (rs.length !== ids.length) throw new ErroEnvio(404, 'Alguma reserva não é desta agência.');
+  const ruim = rs.find(r => r.cancelada || r.fatura_id || !r.data_saida || r.data_saida < de || r.data_saida > ate);
+  if (ruim) throw new ErroEnvio(409, 'A reserva ' + ruim.silbeck_id + (ruim.cancelada ? ' está cancelada' : ruim.fatura_id ? ' já está em outra fatura' : ' tem o check-out fora do período') + '.');
+  const fora = await sinaisForaDoSilbeck(ids, buscar);
+  const valor = r2(rs.reduce((t, r) => t + Math.max(0, Number(r.valor_liquido) - Number(r.sinal_pago) - (fora[r.id] || 0)), 0));
+  if (!(valor > 0)) throw new ErroEnvio(400, 'Nada a faturar: os sinais já cobrem essas reservas.');
+  const vencimento = /^\d{4}-\d{2}-\d{2}$/.test(corpo.vencimento || '') ? corpo.vencimento : silbeck.somarDias(ate, ag.fatura_prazo_dias ?? 30);
+  const f = await buscar(`${SUPABASE_URL}/rest/v1/agencia_faturas`, { method: 'POST', headers: { ...cabecalhosBanco(), Prefer: 'return=representation' }, signal: AbortSignal.timeout(5000),
+    body: JSON.stringify({ agencia_id: ag.id, periodo_ini: de, periodo_fim: ate, vencimento, valor, observacoes: String(corpo.observacoes || '').trim().slice(0, 500) || null, criado_por: eu ? eu.id : null }) }).catch(() => null);
+  if (!f || !f.ok) throw new ErroEnvio(f && f.status === 404 ? 503 : 502, 'Não deu para criar a fatura (falta a migração 029?).');
+  const fatura = (await f.json())[0];
+  await patchBanco('agencia_reservas', `id=in.(${ids.join(',')})`, { fatura_id: fatura.id, atualizado_em: new Date().toISOString() });
+  return { ok: true, fatura };
+}
+async function cancelarFaturaAgencia(id, buscar = fetch) {
+  if (!uuidOk(id)) throw new ErroEnvio(400, 'Fatura inválida.');
+  if ((await getJson(`${SUPABASE_URL}/rest/v1/agencia_pagamentos?fatura_id=eq.${id}&select=id&limit=1`, buscar)).length) throw new ErroEnvio(409, 'Essa fatura já tem pagamento registrado: não dá para cancelar.');
+  await patchBanco('agencia_faturas', `id=eq.${id}`, { situacao: 'cancelada' });
+  await patchBanco('agencia_reservas', `fatura_id=eq.${id}`, { fatura_id: null, atualizado_em: new Date().toISOString() });
+  return { ok: true };
+}
+
 // A cada hora (pelo agendador de 2 em 2 min): lembra a última vez no config, porque o servidor reinicia
 let tentouSyncAgencias = 0;
 async function sincronizarAgenciasDeHora(buscar = fetch, agora = Date.now()) {
@@ -1397,7 +1521,9 @@ async function sincronizarAgenciasDeHora(buscar = fetch, agora = Date.now()) {
   tentouSyncAgencias = agora;
   const ult = await lerConfig('agencias_sync', buscar).catch(() => null);
   if (ult && ult.quando && agora - Date.parse(ult.quando) < 3600e3) return null;
-  return sincronizarAgencias(buscar);
+  const r = await sincronizarAgencias(buscar);
+  r.reservas = await atualizarReservasAgencias(buscar).catch(e => ({ erro: String(e.message || e).slice(0, 150) }));
+  return r;
 }
 
 // ---------- Oportunidades (sem sino): retomar orçamentos parados e o resumo do dia ----------
@@ -2571,8 +2697,20 @@ const API_EQUIPE = {
     }
     return { ok: true };
   },
+  // Financeiro das agências: importar reservas do Silbeck por período de check-in, pagamentos e faturas
+  'POST /api/agencia-reservas/importar': async corpo => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(corpo.de || '') || !/^\d{4}-\d{2}-\d{2}$/.test(corpo.ate || '') || corpo.ate < corpo.de) throw new ErroEnvio(400, 'Período inválido.');
+    if ((Date.parse(corpo.ate) - Date.parse(corpo.de)) / 864e5 > 400) throw new ErroEnvio(400, 'Período de no máximo 400 dias.');
+    return { ok: true, ...(await sincronizarReservasAgencias({ de: corpo.de, ate: corpo.ate, tipoData: 'entrada' })) };
+  },
+  'POST /api/agencia-pagamento': async (corpo, eu) => registrarPagamentoAgencia(corpo, eu),
+  'POST /api/agencia-fatura': async (corpo, eu) => fecharFaturaAgencia(corpo, eu),
+  'POST /api/agencia-fatura-acao': async corpo => {
+    if (corpo.acao === 'cancelar') return cancelarFaturaAgencia(corpo.id);
+    throw new ErroEnvio(400, 'Ação inválida.');
+  },
   // Agências e operadoras: traz o cadastro de Empresas do Silbeck agora (botão "Sincronizar com o Silbeck")
-  'POST /api/agencias/sincronizar': async () => ({ ok: true, ...(await sincronizarAgencias()) }),
+  'POST /api/agencias/sincronizar': async () => { const r = await sincronizarAgencias(); r.reservas = await atualizarReservasAgencias().catch(e => ({ erro: String(e.message || e).slice(0, 150) })); return { ok: true, ...r }; },
   // Agências e operadoras parceiras
   'POST /api/agencia': async corpo => {
     const dados = {};

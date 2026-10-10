@@ -35,6 +35,7 @@ Arquivos numerados, aplicados em ordem no **SQL Editor** do Supabase (New query 
 | `026_apartamentos.sql` | `apartamentos` (os 21 apartamentos pela numeração, com categoria e o que distingue cada um) e `fotos_biblioteca.apartamento` (foto ligada a um apartamento) | rodada pelo dono em 08/10/2026 |
 | `027_agencias_silbeck.sql` | `agencias.silbeck_id`, `eh_agencia` e `sincronizado_em`: o CRM traz as Empresas do Silbeck (ligação pelo CNPJ) e a aba Agências mostra só as marcadas como agência/operadora | (pendente: rodar no SQL Editor) |
 | `028_agencias_condicoes.sql` | condições de cada agência/operadora: `cobra_sinal`, `sinal_percentual`, `fatura` e `fatura_prazo_dias` (a comissão já existia) | (pendente: rodar no SQL Editor) |
+| `029_financeiro_agencias.sql` | `agencia_reservas` (reservas da agência vindas do Silbeck, com líquido, sinal previsto e pago), `agencia_faturas` (fechadas por período) e `agencia_pagamentos` (sinal e fatura) | (pendente: rodar no SQL Editor) |
 
 ## Segurança
 - RLS ligada em todas as tabelas, sem políticas por enquanto: só o servidor (chave secreta) acessa. As políticas por papel (§3.10 da especificação) entram junto com o login da equipe.

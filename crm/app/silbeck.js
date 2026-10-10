@@ -516,8 +516,8 @@ async function cotarCombinacao(entrada, codigos, buscar = fetch) {
   return { ok: true, fonte: disp.fonte, opcao: op };
 }
 // Pagamento recebido: lança o adiantamento no item da reserva (Pix = tipo 8). A reserva confirma sozinha.
-async function lancarAdiantamento({ item_id, valor, observacao }, buscar = fetch) {
-  const r = await chamar('POST', '/v1/Adiantamento', { valor: reais(Number(valor)), idConta: Number(item_id), tipoFormaPagamento: 8, observacao: String(observacao || '').slice(0, 200) }, buscar);
+async function lancarAdiantamento({ item_id, valor, observacao, tipo = 8 }, buscar = fetch) { // tipo: 8 Pix/depósito, 1 dinheiro
+  const r = await chamar('POST', '/v1/Adiantamento', { valor: reais(Number(valor)), idConta: Number(item_id), tipoFormaPagamento: tipo, observacao: String(observacao || '').slice(0, 200) }, buscar);
   return { ok: true, id: r.dados && r.dados.id, confirmado: !!(r.dados && r.dados.confirmado), fonte: r.fonte };
 }
 
@@ -624,6 +624,34 @@ async function empresas(buscar = fetch) {
   }
   return todas.filter(e => e.nome);
 }
+// Reservas do Silbeck num período (tipoData: cadastro, entrada...), resumidas para o controle das agências:
+// empresa (agência), comissão, datas, diárias, adiantamentos ativos e situação. Em blocos de até 31 dias.
+function resumoReserva(r) {
+  const itens = r.listaReservaItem || [];
+  const vivos = itens.filter(x => Number(x.status) !== 3);
+  const base = vivos.length ? vivos : itens;
+  const dia = x => diaISO(x);
+  const soma = (l, f) => Math.round(l.reduce((t, x) => t + (Number(f(x)) || 0), 0) * 100) / 100;
+  const adiant = soma(base.flatMap(x => (x.listaAdiantamento || []).filter(a => !a.situacao || /^ativ/i.test(a.situacao))), a => a.valor);
+  const st = base.length ? Number(base[0].status) : null;
+  return { silbeck_id: String(r.id), codigo_empresa: r.codigoEmpresa != null && String(r.codigoEmpresa).trim() ? String(r.codigoEmpresa).trim() : null,
+    comissao_pct: Number(r.percentualComissaoEmpresa) > 0 ? Number(r.percentualComissaoEmpresa) : null, titular: r.titular || null,
+    acomodacao: [...new Set(base.map(x => x.nomeTipoApartamento || x.codigoTipoApartamento).filter(Boolean))].join(' + ') || null,
+    data_entrada: base.length ? base.map(x => dia(x.dataEntrada)).sort()[0] : null, data_saida: base.length ? base.map(x => dia(x.dataSaida)).sort().at(-1) : null,
+    valor_total: soma(base, x => x.valorTotalDiaria), sinal_pago: adiant, status_silbeck: st, status_descricao: base.length ? (base[0].statusDescricao || null) : null,
+    cancelada: itens.length > 0 && !vivos.length };
+}
+async function listaReservas({ de, ate, tipoData = 'cadastro', idReserva } = {}, buscar = fetch) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(de || '') || !/^\d{4}-\d{2}-\d{2}$/.test(ate || '') || ate < de) throw new ErroSilbeck('período inválido', 400);
+  const saida = [];
+  for (let ini = de; ini <= ate; ini = somarDias(ini, 31)) {
+    const fim = somarDias(ini, 30) < ate ? somarDias(ini, 30) : ate;
+    const { dados } = await chamar('GET', `/v1/ListaReserva?dataInicial=${ini}&dataFinal=${fim}&tipoData=${tipoData}${idReserva ? '&idReserva=' + idReserva : ''}`, null, buscar);
+    const lista = (dados && (dados.listaReserva || dados)) || [];
+    if (Array.isArray(lista)) saida.push(...lista.map(resumoReserva));
+  }
+  return [...new Map(saida.map(r => [r.silbeck_id, r])).values()];
+}
 // Diagnóstico de uma reserva (/saude/silbeck-reserva): itens, situação e adiantamentos, sem nomes nem contatos
 async function diagnosticoReserva({ id, entrada } = {}, buscar = fetch) {
   if (!/^\d+$/.test(String(id || ''))) throw new ErroSilbeck('informe o número da reserva (id)', 400);
@@ -631,4 +659,4 @@ async function diagnosticoReserva({ id, entrada } = {}, buscar = fetch) {
   return { reserva: String(id), achou: itens.length > 0, itens: itens.map(x => ({ item_id: x.id, codigo: x.codigoTipoApartamento, codigo_crm: x.codigo_crm, status: x.statusDescricao || x.status,
     entrada: x.dataEntrada, saida: x.dataSaida, adiantamentos: (x.listaAdiantamento || []).length })) };
 }
-module.exports = { empresas, diagnosticoReserva, itensDaReserva, definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _diaISO: diaISO, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
+module.exports = { somarDias, listaReservas, _resumoReserva: resumoReserva, empresas, diagnosticoReserva, itensDaReserva, definirFontePromocao, promocao, diagnosticoTarifario, diagnosticoTarifa, _paraCRM: paraCRM, _diaISO: diaISO, _categoriasDoGrupo: categoriasDoGrupo, diagnosticoCotacao, registrarFalhaCotacao, diagnostico, diagnosticoCache, segredo, cotar, cotarCombinacao, vagas, reservar, lancarAdiantamento, distribuir, MODO, ErroSilbeck, LIMITE_ACOMODACOES, LIMITE_PESSOAS };
